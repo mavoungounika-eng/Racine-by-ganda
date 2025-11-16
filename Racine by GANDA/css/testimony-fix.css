@@ -1,0 +1,95 @@
+/* Corrections d'affichage pour la section témoignage */
+
+/* Force l'affichage de tous les éléments critiques */
+.testimony-section,
+.testimony-section * {
+    visibility: visible !important;
+}
+
+.services-flow,
+.services-2,
+.testimony-wrap,
+.carousel-testimony,
+.carousel-testimony .item,
+.trust-badge,
+.star-rating,
+.heading-section {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.services-2 {
+    display: flex !important;
+}
+
+/* Assurer que le carousel fonctionne même sans JavaScript */
+.carousel-testimony .item {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* Correction pour les étoiles */
+.star-rating i {
+    display: inline !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Correction pour les icônes */
+.services-2 .icon,
+.services-2 .icon span {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Correction pour le texte */
+.services-2 .text,
+.services-2 .text h3,
+.services-2 .text p,
+.testimony-wrap .text,
+.testimony-wrap .text p,
+.testimony-wrap .text .name,
+.testimony-wrap .text .position {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Style de base pour le carousel en mode fallback */
+@media screen {
+    .carousel-testimony {
+        display: block !important;
+    }
+    
+    .carousel-testimony .item {
+        display: block !important;
+        float: none !important;
+        width: 100% !important;
+        margin-bottom: 30px !important;
+    }
+    
+    .carousel-testimony .item:last-child {
+        margin-bottom: 0 !important;
+    }
+}
+
+/* Responsive pour petits écrans */
+@media (max-width: 768px) {
+    .carousel-testimony .item {
+        margin-bottom: 20px !important;
+    }
+    
+    .services-2 {
+        margin-bottom: 15px !important;
+    }
+}
+
+/* Debug : bordure rouge pour identifier les éléments cachés */
+.debug .testimony-section *[style*="display: none"],
+.debug .testimony-section *[style*="visibility: hidden"],
+.debug .testimony-section *[style*="opacity: 0"] {
+    border: 2px solid red !important;
+    background-color: rgba(255, 0, 0, 0.1) !important;
+}
