@@ -1,0 +1,93 @@
+@@extends('layouts.admin')
+
+@section('title', 'Pages CMS')
+
+@section('content')
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Pages CMS</h1>
+        <a href="{{ route('cms.admin.pages.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Créer une page
+        </a>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Slug</th>
+                            <th>Titre</th>
+                            <th>Type</th>
+                            <th>Template</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($pages as $page)
+                            <tr>
+                                <td><code>{{ $page->slug }}</code></td>
+                                <td>{{ $page->title }}</td>
+                                <td>
+                                    <span class="badge-racine-orange" style="font-size: 0.75rem;">{{ $page->type ?? 'N/A' }}</span>
+                                </td>
+                                <td>{{ $page->template ?? 'N/A' }}</td>
+                                <td>
+                                    @if($page->is_published)
+                                        <span class="badge bg-success">Publiée</span>
+                                    @else
+                                        <span class="badge bg-warning">Brouillon</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ route('admin.cms.sections.index', ['page' => $page->slug]) }}" 
+                                           class="btn btn-outline-info" title="Sections">
+                                            <i class="fas fa-list"></i>
+                                        </a>
+                                        <a href="{{ route('cms.admin.pages.edit', $page) }}" 
+                                           class="btn btn-outline-primary" title="Éditer">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('cms.admin.pages.destroy', $page) }}" 
+                                              method="POST" class="d-inline"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette page ?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    Aucune page CMS créée. <a href="{{ route('cms.admin.pages.create') }}">Créer la première</a>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if($pages->hasPages())
+                <div class="mt-3">
+                    {{ $pages->links() }}
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endsection
+

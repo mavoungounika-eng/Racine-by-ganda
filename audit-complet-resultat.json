@@ -1,0 +1,639 @@
+{
+    "date": "2025-12-07 20:22:08",
+    "layouts": [
+        {
+            "fichier": "resources/views/layouts/admin-master.blade.php",
+            "bootstrap": false,
+            "tailwind": false,
+            "racine_css": false,
+            "jquery": false,
+            "alpine": true,
+            "tailwind_cdn": false,
+            "bootstrap_cdn": false,
+            "framework": "unknown"
+        },
+        {
+            "fichier": "resources/views/layouts/admin.blade.php",
+            "bootstrap": true,
+            "tailwind": false,
+            "racine_css": true,
+            "jquery": true,
+            "alpine": false,
+            "tailwind_cdn": false,
+            "bootstrap_cdn": false,
+            "framework": "Bootstrap"
+        },
+        {
+            "fichier": "resources/views/layouts/auth.blade.php",
+            "bootstrap": true,
+            "tailwind": false,
+            "racine_css": true,
+            "jquery": true,
+            "alpine": false,
+            "tailwind_cdn": false,
+            "bootstrap_cdn": false,
+            "framework": "Bootstrap"
+        },
+        {
+            "fichier": "resources/views/layouts/creator.blade.php",
+            "bootstrap": true,
+            "tailwind": false,
+            "racine_css": true,
+            "jquery": true,
+            "alpine": false,
+            "tailwind_cdn": false,
+            "bootstrap_cdn": false,
+            "framework": "Bootstrap"
+        },
+        {
+            "fichier": "resources/views/layouts/frontend.blade.php",
+            "bootstrap": true,
+            "tailwind": false,
+            "racine_css": true,
+            "jquery": true,
+            "alpine": false,
+            "tailwind_cdn": false,
+            "bootstrap_cdn": false,
+            "framework": "Bootstrap"
+        },
+        {
+            "fichier": "resources/views/layouts/internal.blade.php",
+            "bootstrap": true,
+            "tailwind": false,
+            "racine_css": false,
+            "jquery": true,
+            "alpine": false,
+            "tailwind_cdn": false,
+            "bootstrap_cdn": false,
+            "framework": "Bootstrap"
+        },
+        {
+            "fichier": "resources/views/layouts/master.blade.php",
+            "bootstrap": false,
+            "tailwind": false,
+            "racine_css": false,
+            "jquery": false,
+            "alpine": false,
+            "tailwind_cdn": false,
+            "bootstrap_cdn": false,
+            "framework": "unknown"
+        }
+    ],
+    "vues": {
+        "total": 158,
+        "layouts_utilises": {
+            "layouts.admin": [
+                "resources/views/admin/categories/create.blade.php",
+                "resources/views/admin/categories/edit.blade.php",
+                "resources/views/admin/categories/index.blade.php",
+                "resources/views/admin/cms/pages/create.blade.php.obsolete",
+                "resources/views/admin/cms/pages/edit.blade.php.obsolete",
+                "resources/views/admin/cms/pages/index.blade.php.obsolete",
+                "resources/views/admin/cms/sections/create.blade.php.obsolete",
+                "resources/views/admin/cms/sections/edit.blade.php.obsolete",
+                "resources/views/admin/cms/sections/index.blade.php.obsolete",
+                "resources/views/admin/creators/index.blade.php",
+                "resources/views/admin/dashboard.blade.php",
+                "resources/views/admin/finances/index.blade.php",
+                "resources/views/admin/notifications/index.blade.php",
+                "resources/views/admin/orders/index.blade.php",
+                "resources/views/admin/orders/qrcode.blade.php",
+                "resources/views/admin/orders/scan.blade.php",
+                "resources/views/admin/orders/show.blade.php",
+                "resources/views/admin/products/create.blade.php",
+                "resources/views/admin/products/edit.blade.php",
+                "resources/views/admin/products/index.blade.php",
+                "resources/views/admin/roles/create.blade.php",
+                "resources/views/admin/roles/edit.blade.php",
+                "resources/views/admin/roles/index.blade.php",
+                "resources/views/admin/settings/index.blade.php",
+                "resources/views/admin/stats/index.blade.php",
+                "resources/views/admin/stock-alerts/index.blade.php",
+                "resources/views/admin/users/create.blade.php",
+                "resources/views/admin/users/edit.blade.php",
+                "resources/views/admin/users/index.blade.php",
+                "resources/views/admin/users/show.blade.php"
+            ],
+            "layouts.frontend": [
+                "resources/views/frontend/about.blade.php",
+                "resources/views/frontend/albums.blade.php",
+                "resources/views/frontend/atelier.blade.php",
+                "resources/views/frontend/brand-guidelines.blade.php",
+                "resources/views/frontend/ceo.blade.php",
+                "resources/views/frontend/checkout/card-cancel.blade.php",
+                "resources/views/frontend/checkout/card-success.blade.php",
+                "resources/views/frontend/checkout/index.blade.php",
+                "resources/views/frontend/checkout/mobile-money-cancel.blade.php",
+                "resources/views/frontend/checkout/mobile-money-form.blade.php",
+                "resources/views/frontend/checkout/mobile-money-pending.blade.php",
+                "resources/views/frontend/checkout/mobile-money-success.blade.php",
+                "resources/views/frontend/contact.blade.php",
+                "resources/views/frontend/creator-shop.blade.php",
+                "resources/views/frontend/creators.blade.php",
+                "resources/views/frontend/events.blade.php",
+                "resources/views/frontend/help.blade.php",
+                "resources/views/frontend/home.blade.php",
+                "resources/views/frontend/marketplace.blade.php",
+                "resources/views/frontend/portfolio.blade.php",
+                "resources/views/frontend/privacy.blade.php",
+                "resources/views/frontend/product.blade.php",
+                "resources/views/frontend/returns.blade.php",
+                "resources/views/frontend/search/results.blade.php",
+                "resources/views/frontend/shipping.blade.php",
+                "resources/views/frontend/shop.blade.php",
+                "resources/views/frontend/showroom.blade.php",
+                "resources/views/frontend/terms.blade.php",
+                "resources/views/profile/delete-account.blade.php",
+                "resources/views/profile/notifications.blade.php",
+                "resources/views/profile/review-create.blade.php",
+                "resources/views/profile/review-edit.blade.php",
+                "resources/views/profile/reviews.blade.php",
+                "resources/views/profile/wishlist.blade.php",
+                "resources/views/checkout/cancel.blade.php",
+                "resources/views/checkout/index.blade.php",
+                "resources/views/checkout/success.blade.php",
+                "resources/views/auth/2fa/challenge.blade.php",
+                "resources/views/auth/2fa/manage.blade.php",
+                "resources/views/auth/2fa/recovery-codes.blade.php",
+                "resources/views/auth/2fa/setup.blade.php",
+                "resources/views/auth/login-female.blade.php",
+                "resources/views/auth/login-male.blade.php",
+                "resources/views/auth/login.blade.php",
+                "modules/CMS/Resources/views/public/album.blade.php",
+                "modules/CMS/Resources/views/public/event.blade.php",
+                "modules/CMS/Resources/views/public/faq.blade.php",
+                "modules/CMS/Resources/views/public/page.blade.php",
+                "modules/CMS/Resources/views/public/portfolio.blade.php",
+                "modules/Frontend/Resources/views/dashboards/admin.blade.php",
+                "modules/Frontend/Resources/views/dashboards/client.blade.php",
+                "modules/Frontend/Resources/views/dashboards/staff.blade.php",
+                "modules/Frontend/Resources/views/dashboards/super-admin.blade.php"
+            ],
+            "layouts.internal": [
+                "resources/views/profile/addresses.blade.php",
+                "resources/views/profile/index.blade.php",
+                "resources/views/profile/loyalty.blade.php",
+                "resources/views/profile/order-detail.blade.php",
+                "resources/views/profile/orders.blade.php",
+                "modules/Analytics/Resources/views/dashboard.blade.php"
+            ],
+            "layouts.creator": [
+                "resources/views/creator/dashboard.blade.php",
+                "resources/views/creator/finances/index.blade.php",
+                "resources/views/creator/notifications/index.blade.php",
+                "resources/views/creator/orders/index.blade.php",
+                "resources/views/creator/orders/show.blade.php",
+                "resources/views/creator/products/create.blade.php",
+                "resources/views/creator/products/edit.blade.php",
+                "resources/views/creator/products/index.blade.php",
+                "resources/views/creator/profile/edit.blade.php",
+                "resources/views/creator/stats/index.blade.php"
+            ],
+            "layouts.auth": [
+                "resources/views/auth/erp-login.blade.php"
+            ],
+            "layouts.admin-master": [
+                "modules/CMS/Resources/views/admin/albums/create.blade.php",
+                "modules/CMS/Resources/views/admin/albums/edit.blade.php",
+                "modules/CMS/Resources/views/admin/albums/index.blade.php",
+                "modules/CMS/Resources/views/admin/banners/create.blade.php",
+                "modules/CMS/Resources/views/admin/banners/edit.blade.php",
+                "modules/CMS/Resources/views/admin/banners/index.blade.php",
+                "modules/CMS/Resources/views/admin/blocks/create.blade.php",
+                "modules/CMS/Resources/views/admin/blocks/edit.blade.php",
+                "modules/CMS/Resources/views/admin/blocks/index.blade.php",
+                "modules/CMS/Resources/views/admin/dashboard.blade.php",
+                "modules/CMS/Resources/views/admin/events/create.blade.php",
+                "modules/CMS/Resources/views/admin/events/edit.blade.php",
+                "modules/CMS/Resources/views/admin/events/index.blade.php",
+                "modules/CMS/Resources/views/admin/faq/categories.blade.php",
+                "modules/CMS/Resources/views/admin/faq/create.blade.php",
+                "modules/CMS/Resources/views/admin/faq/edit.blade.php",
+                "modules/CMS/Resources/views/admin/faq/index.blade.php",
+                "modules/CMS/Resources/views/admin/pages/create.blade.php",
+                "modules/CMS/Resources/views/admin/pages/edit.blade.php",
+                "modules/CMS/Resources/views/admin/pages/index.blade.php",
+                "modules/CMS/Resources/views/admin/portfolio/create.blade.php",
+                "modules/CMS/Resources/views/admin/portfolio/edit.blade.php",
+                "modules/CMS/Resources/views/admin/portfolio/index.blade.php",
+                "modules/CMS/Resources/views/admin/settings.blade.php",
+                "modules/CRM/Resources/views/contacts/create.blade.php",
+                "modules/CRM/Resources/views/contacts/edit.blade.php",
+                "modules/CRM/Resources/views/contacts/index.blade.php",
+                "modules/CRM/Resources/views/contacts/show.blade.php",
+                "modules/CRM/Resources/views/dashboard.blade.php",
+                "modules/CRM/Resources/views/interactions/index.blade.php",
+                "modules/CRM/Resources/views/opportunities/create.blade.php",
+                "modules/CRM/Resources/views/opportunities/edit.blade.php",
+                "modules/CRM/Resources/views/opportunities/index.blade.php",
+                "modules/ERP/Resources/views/dashboard.blade.php",
+                "modules/ERP/Resources/views/materials/create.blade.php",
+                "modules/ERP/Resources/views/materials/edit.blade.php",
+                "modules/ERP/Resources/views/materials/index.blade.php",
+                "modules/ERP/Resources/views/materials/show.blade.php",
+                "modules/ERP/Resources/views/purchases/create.blade.php",
+                "modules/ERP/Resources/views/purchases/index.blade.php",
+                "modules/ERP/Resources/views/purchases/show.blade.php",
+                "modules/ERP/Resources/views/stocks/adjust.blade.php",
+                "modules/ERP/Resources/views/stocks/index.blade.php",
+                "modules/ERP/Resources/views/stocks/movements.blade.php",
+                "modules/ERP/Resources/views/suppliers/create.blade.php",
+                "modules/ERP/Resources/views/suppliers/edit.blade.php",
+                "modules/ERP/Resources/views/suppliers/index.blade.php",
+                "modules/ERP/Resources/views/suppliers/show.blade.php"
+            ]
+        },
+        "sans_layout": [
+            "resources/views/admin/login.blade.php",
+            "resources/views/creator/auth/login.blade.php",
+            "resources/views/creator/auth/pending.blade.php",
+            "resources/views/creator/auth/register.blade.php",
+            "resources/views/creator/auth/suspended.blade.php",
+            "resources/views/auth/hub.blade.php",
+            "resources/views/auth/login-neutral.blade.php",
+            "resources/views/auth/register.blade.php",
+            "modules/Analytics/Resources/views/export/report.blade.php",
+            "modules/Assistant/Resources/views/chat.blade.php"
+        ],
+        "incoherentes": []
+    },
+    "routes": [
+        {
+            "fichier": "routes/web.php",
+            "nombre_routes": 148,
+            "middleware_auth": true,
+            "middleware_admin": true,
+            "has_middleware": true
+        },
+        {
+            "fichier": "modules/Analytics/routes/web.php",
+            "nombre_routes": 11,
+            "middleware_auth": true,
+            "middleware_admin": true,
+            "has_middleware": true
+        },
+        {
+            "fichier": "modules/Assistant/routes/web.php",
+            "nombre_routes": 4,
+            "middleware_auth": false,
+            "middleware_admin": false,
+            "has_middleware": false
+        },
+        {
+            "fichier": "modules/Auth/routes/web.php",
+            "nombre_routes": 6,
+            "middleware_auth": true,
+            "middleware_admin": true,
+            "has_middleware": true
+        },
+        {
+            "fichier": "modules/CMS/routes/api.php",
+            "nombre_routes": 40,
+            "middleware_auth": true,
+            "middleware_admin": false,
+            "has_middleware": true
+        },
+        {
+            "fichier": "modules/CMS/routes/web.php",
+            "nombre_routes": 55,
+            "middleware_auth": true,
+            "middleware_admin": true,
+            "has_middleware": true
+        },
+        {
+            "fichier": "modules/CRM/routes/web.php",
+            "nombre_routes": 7,
+            "middleware_auth": true,
+            "middleware_admin": true,
+            "has_middleware": true
+        },
+        {
+            "fichier": "modules/ERP/routes/web.php",
+            "nombre_routes": 10,
+            "middleware_auth": true,
+            "middleware_admin": true,
+            "has_middleware": true
+        },
+        {
+            "fichier": "modules/Frontend/routes/web.php",
+            "nombre_routes": 6,
+            "middleware_auth": true,
+            "middleware_admin": true,
+            "has_middleware": false
+        }
+    ],
+    "modules": [
+        {
+            "nom": "Accounting",
+            "chemin": "modules/Accounting",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "Analytics",
+            "chemin": "modules/Analytics",
+            "routes": [
+                "web.php"
+            ],
+            "controllers": [
+                "AnalyticsDashboardController.php",
+                "AnalyticsExportController.php"
+            ],
+            "models": [],
+            "views": 2,
+            "layouts": []
+        },
+        {
+            "nom": "Assistant",
+            "chemin": "modules/Assistant",
+            "routes": [
+                "web.php"
+            ],
+            "controllers": [
+                "AmiraController.php"
+            ],
+            "models": [],
+            "views": 1,
+            "layouts": []
+        },
+        {
+            "nom": "Atelier",
+            "chemin": "modules/Atelier",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "Auth",
+            "chemin": "modules/Auth",
+            "routes": [
+                "web.php"
+            ],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "Boutique",
+            "chemin": "modules/Boutique",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "Brand",
+            "chemin": "modules/Brand",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "CMS",
+            "chemin": "modules/CMS",
+            "routes": [
+                "api.php",
+                "web.php"
+            ],
+            "controllers": [
+                "CmsAdminController.php",
+                "CmsApiController.php",
+                "CmsBannerController.php",
+                "CmsBlockController.php",
+                "CmsDashboardController.php",
+                "CmsFaqController.php",
+                "CmsPageController.php",
+                "CmsPublicController.php"
+            ],
+            "models": [
+                "CmsAlbum.php",
+                "CmsBanner.php",
+                "CmsBlock.php",
+                "CmsEvent.php",
+                "CmsFaq.php",
+                "CmsFaqCategory.php",
+                "CmsMedia.php",
+                "CmsMenu.php",
+                "CmsMenuItem.php",
+                "CmsPage.php",
+                "CmsPortfolio.php",
+                "CmsSetting.php"
+            ],
+            "views": 29,
+            "layouts": []
+        },
+        {
+            "nom": "CRM",
+            "chemin": "modules/CRM",
+            "routes": [
+                "web.php"
+            ],
+            "controllers": [
+                "CrmContactController.php",
+                "CrmDashboardController.php",
+                "CrmInteractionController.php",
+                "CrmOpportunityController.php"
+            ],
+            "models": [
+                "CrmContact.php",
+                "CrmInteraction.php",
+                "CrmOpportunity.php"
+            ],
+            "views": 9,
+            "layouts": []
+        },
+        {
+            "nom": "Core",
+            "chemin": "modules/Core",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "ERP",
+            "chemin": "modules/ERP",
+            "routes": [
+                "web.php"
+            ],
+            "controllers": [
+                "ErpDashboardController.php",
+                "ErpPurchaseController.php",
+                "ErpRawMaterialController.php",
+                "ErpStockController.php",
+                "ErpSupplierController.php"
+            ],
+            "models": [
+                "ErpProductDetail.php",
+                "ErpPurchase.php",
+                "ErpPurchaseItem.php",
+                "ErpRawMaterial.php",
+                "ErpStock.php",
+                "ErpStockMovement.php",
+                "ErpSupplier.php"
+            ],
+            "views": 15,
+            "layouts": []
+        },
+        {
+            "nom": "Frontend",
+            "chemin": "modules/Frontend",
+            "routes": [
+                "web.php"
+            ],
+            "controllers": [
+                "DashboardController.php"
+            ],
+            "models": [],
+            "views": 4,
+            "layouts": []
+        },
+        {
+            "nom": "HR",
+            "chemin": "modules/HR",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "Reporting",
+            "chemin": "modules/Reporting",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "Showroom",
+            "chemin": "modules/Showroom",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        },
+        {
+            "nom": "Social",
+            "chemin": "modules/Social",
+            "routes": [],
+            "controllers": [],
+            "models": [],
+            "views": 0,
+            "layouts": []
+        }
+    ],
+    "design": {
+        "racine_css": {
+            "existe": true,
+            "variables": "0/5"
+        },
+        "usage_racine_css": 4
+    },
+    "erreurs": [],
+    "avertissements": [
+        "⚠️  Vue resources/views/admin/categories/create.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/categories/edit.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/categories/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/categories/index.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/admin/login.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/login.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/admin/orders/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/orders/qrcode.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/orders/scan.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/orders/scan.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/admin/orders/show.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/products/create.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/products/edit.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/products/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/roles/create.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/roles/edit.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/roles/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/roles/index.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/admin/stock-alerts/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/users/create.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/users/edit.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/users/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/users/show.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/admin/users/show.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/frontend/about.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/albums.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/atelier.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/brand-guidelines.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/ceo.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/checkout/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/checkout/index.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/frontend/checkout/mobile-money-pending.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/frontend/contact.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/creator-shop.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/creators.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/events.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/help.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/home.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/marketplace.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/portfolio.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/privacy.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/product.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/returns.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/returns.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/frontend/shipping.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/shop.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/showroom.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/frontend/terms.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/delete-account.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/notifications.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/notifications.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/profile/order-detail.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/orders.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/review-create.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/review-edit.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/reviews.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/profile/wishlist.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/auth/login.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/auth/pending.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/auth/register.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/auth/suspended.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/dashboard.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/finances/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/notifications/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/orders/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/orders/show.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/products/create.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/products/edit.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/products/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/profile/edit.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/creator/stats/index.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/2fa/challenge.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/2fa/challenge.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/auth/2fa/manage.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/2fa/recovery-codes.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/2fa/recovery-codes.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/auth/2fa/setup.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/2fa/setup.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue resources/views/auth/hub.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/login-female.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/login-male.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/login-neutral.blade.php : Contient du CSS inline",
+        "⚠️  Vue resources/views/auth/register.blade.php : Contient du CSS inline",
+        "⚠️  Vue modules/Analytics/Resources/views/dashboard.blade.php : Contient du CSS inline",
+        "⚠️  Vue modules/Analytics/Resources/views/export/report.blade.php : Contient du CSS inline",
+        "⚠️  Vue modules/Assistant/Resources/views/chat.blade.php : Contient du CSS inline",
+        "⚠️  Vue modules/Assistant/Resources/views/chat.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue modules/CMS/Resources/views/admin/dashboard.blade.php : Contient du CSS inline",
+        "⚠️  Vue modules/ERP/Resources/views/purchases/create.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue modules/ERP/Resources/views/stocks/adjust.blade.php : Contient du JavaScript inline",
+        "⚠️  Vue modules/Frontend/Resources/views/dashboards/client.blade.php : Contient du CSS inline"
+    ]
+}

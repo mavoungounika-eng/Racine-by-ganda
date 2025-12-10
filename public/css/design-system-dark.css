@@ -1,0 +1,462 @@
+/**
+ * ============================================
+ * DESIGN SYSTEM DARK - RACINE BY GANDA
+ * Thème Sombre Luxe
+ * ============================================
+ */
+
+:root[data-theme="dark"] {
+    /* Backgrounds */
+    --bg-primary: #160D0C;
+    --bg-secondary: #1A1110;
+    --bg-card: #1f1412;
+    --bg-soft: #251917;
+
+    /* Text Colors */
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-soft: rgba(255, 255, 255, 0.6);
+    --text-muted: rgba(255, 255, 255, 0.4);
+
+    /* Accent Colors */
+    --accent-primary: #ED5F1E;
+    --accent-secondary: #FFB800;
+    --accent-gold: #D4AF37;
+    --accent-red: #DC2626;
+
+    /* Border & Shadow */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-soft: rgba(255, 255, 255, 0.05);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --shadow-soft: rgba(0, 0, 0, 0.3);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
+    --gradient-soft: linear-gradient(135deg, #160D0C 0%, #1A1110 100%);
+    --gradient-card: linear-gradient(135deg, #1f1412 0%, #251917 100%);
+}
+
+/* ============================================
+   SECTIONS & CONTAINERS
+   ============================================ */
+
+.section-dark {
+    background: var(--gradient-soft);
+    color: var(--text-primary);
+}
+
+.section-dark-solid {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.section-dark-card {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.container-dark {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 30px var(--shadow-color);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card-dark {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 30px var(--shadow-soft);
+    border-radius: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-dark:hover {
+    box-shadow: 0 12px 40px var(--shadow-color);
+    transform: translateY(-4px);
+    border-color: rgba(255, 184, 0, 0.3);
+}
+
+.card-dark-premium {
+    background: var(--bg-card);
+    border: 2px solid var(--accent-secondary);
+    box-shadow: 0 12px 40px rgba(255, 184, 0, 0.3);
+}
+
+.card-dark-soft {
+    background: var(--bg-soft);
+    border: 1px solid var(--border-soft);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn-dark-primary {
+    background: var(--gradient-primary);
+    color: var(--bg-primary);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    box-shadow: 0 6px 20px rgba(237, 95, 30, 0.5);
+    transition: all 0.4s ease;
+}
+
+.btn-dark-primary:hover {
+    box-shadow: 0 8px 30px rgba(237, 95, 30, 0.6),
+        0 0 40px rgba(255, 184, 0, 0.3);
+    transform: translateY(-2px) scale(1.02);
+}
+
+.btn-dark-secondary {
+    background: transparent;
+    color: var(--accent-primary);
+    border: 2px solid var(--accent-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.4s ease;
+}
+
+.btn-dark-secondary:hover {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    box-shadow: 0 6px 20px rgba(237, 95, 30, 0.4);
+}
+
+.btn-dark-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    transition: all 0.4s ease;
+}
+
+.btn-dark-outline:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.badge-dark {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-dark-orange {
+    background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
+    color: var(--bg-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(237, 95, 30, 0.4);
+}
+
+.badge-dark-gold {
+    background: var(--accent-gold);
+    color: var(--bg-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+
+.form-input-dark {
+    background: var(--bg-soft);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-input-dark:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(237, 95, 30, 0.2),
+        0 0 20px rgba(237, 95, 30, 0.1);
+    outline: none;
+    background: var(--bg-card);
+}
+
+.form-label-dark {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   EFFECTS & ANIMATIONS
+   ============================================ */
+
+.glow-dark {
+    box-shadow: 0 0 30px rgba(255, 184, 0, 0.5),
+        0 0 60px rgba(255, 184, 0, 0.3);
+}
+
+.glow-dark-soft {
+    box-shadow: 0 0 20px rgba(255, 184, 0, 0.3);
+}
+
+.glow-dark-gold {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.6),
+        0 0 80px rgba(212, 175, 55, 0.4);
+}
+
+.shimmer-dark {
+    background: linear-gradient(90deg,
+            var(--bg-card) 0%,
+            var(--bg-soft) 50%,
+            var(--bg-card) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.luxury-pulse {
+    animation: luxuryPulse 3s ease-in-out infinite;
+}
+
+@keyframes luxuryPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 8px 30px rgba(237, 95, 30, 0.3);
+    }
+
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 12px 40px rgba(237, 95, 30, 0.5),
+            0 0 60px rgba(255, 184, 0, 0.3);
+    }
+}
+
+.luxury-entrance {
+    animation: luxuryEntrance 1s ease-out;
+}
+
+@keyframes luxuryEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.luxury-hover {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.luxury-hover:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(237, 95, 30, 0.4);
+}
+
+/* ============================================
+   STYLE FÉMININ (Dark Mode)
+   ============================================ */
+
+.style-female[data-theme="dark"] {
+    --accent-primary: #FFB800;
+    --accent-secondary: #D4AF37;
+}
+
+.style-female[data-theme="dark"] .card-dark {
+    border-radius: 2rem;
+}
+
+.style-female[data-theme="dark"] .btn-dark-primary {
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #FFB800 0%, #D4AF37 100%);
+}
+
+.style-female[data-theme="dark"] .glow-dark {
+    box-shadow: 0 0 40px rgba(255, 184, 0, 0.6),
+        0 0 80px rgba(212, 175, 55, 0.4);
+}
+
+/* ============================================
+   STYLE MASCULIN (Dark Mode)
+   ============================================ */
+
+.style-male[data-theme="dark"] {
+    --accent-primary: #ED5F1E;
+    --accent-secondary: #160D0C;
+}
+
+.style-male[data-theme="dark"] .card-dark {
+    border-radius: 0.75rem;
+}
+
+.style-male[data-theme="dark"] .btn-dark-primary {
+    border-radius: 0.5rem;
+}
+
+/* ============================================
+   CONTRASTE & LUMINOSITÉ
+   ============================================ */
+
+.contrast-bright[data-theme="dark"] {
+    --bg-primary: #1A1110;
+    --bg-secondary: #251917;
+    --text-primary: #FFFFFF;
+}
+
+.contrast-dark[data-theme="dark"] {
+    --bg-primary: #0A0605;
+    --bg-secondary: #160D0C;
+    --text-primary: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================
+   GOLDEN LIGHT FILTER
+   ============================================ */
+
+.golden-light-active[data-theme="dark"]::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%,
+            rgba(255, 184, 0, 0.12) 0%,
+            rgba(212, 175, 55, 0.06) 50%,
+            transparent 100%);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* ============================================
+   ANIMATIONS LUXURY BOOST
+   ============================================ */
+
+.animations-luxury .card-dark {
+    animation: luxuryEntrance 1s ease-out;
+}
+
+.animations-luxury .btn-dark-primary {
+    animation: luxuryPulse 3s ease-in-out infinite;
+}
+
+.animations-luxury .luxury-hover:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 25px 50px rgba(237, 95, 30, 0.5),
+        0 0 80px rgba(255, 184, 0, 0.4);
+}
+
+/* ============================================
+   ANIMATIONS SOFT
+   ============================================ */
+
+.animations-soft .card-dark {
+    transition: all 0.6s ease;
+}
+
+.animations-soft .card-dark:hover {
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   ANIMATIONS NONE
+   ============================================ */
+
+.animations-none * {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.bg-dark-primary {
+    background: var(--bg-primary);
+}
+
+.bg-dark-secondary {
+    background: var(--bg-secondary);
+}
+
+.bg-dark-card {
+    background: var(--bg-card);
+}
+
+.bg-dark-soft {
+    background: var(--bg-soft);
+}
+
+.text-dark-primary {
+    color: var(--text-primary);
+}
+
+.text-dark-secondary {
+    color: var(--text-secondary);
+}
+
+.text-dark-soft {
+    color: var(--text-soft);
+}
+
+.border-dark {
+    border-color: var(--border-color);
+}
+
+.border-dark-soft {
+    border-color: var(--border-soft);
+}
+
+/* ============================================
+   MOTIFS AFRICAINS
+   ============================================ */
+
+.pattern-african-dark {
+    position: relative;
+}
+
+.pattern-african-dark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(237, 95, 30, 0.03) 10px,
+            rgba(237, 95, 30, 0.03) 20px),
+        repeating-linear-gradient(-45deg,
+            transparent,
+            transparent 10px,
+            rgba(255, 184, 0, 0.02) 10px,
+            rgba(255, 184, 0, 0.02) 20px);
+    pointer-events: none;
+}

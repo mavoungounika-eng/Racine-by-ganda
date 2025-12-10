@@ -94,6 +94,13 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        'funnel' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/funnel.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'replace_placeholders' => true,
+        ],
+
         'stderr' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -125,6 +132,14 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
+        ],
+
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => 30,
+            'replace_placeholders' => true,
         ],
 
     ],

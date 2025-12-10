@@ -1,0 +1,43 @@
+// Variables personnalisées RACINE
+$racine-orange: #E65100;
+$racine-black: #1A1A1A;
+$font-family-sans-serif: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+// Override Bootstrap variables
+$primary: $racine-orange;
+$dark: $racine-black;
+
+// Import Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Styles personnalisés supplémentaires
+.bg-racine-black {
+    background-color: $racine-black !important;
+}
+
+.text-racine-orange {
+    color: $racine-orange !important;
+}
+
+.btn-racine-primary {
+    @include button-variant($racine-orange, $racine-orange);
+    color: white;
+    &:hover {
+        color: white;
+        background-color: darken($racine-orange, 10%);
+        border-color: darken($racine-orange, 10%);
+    }
+}
+
+.btn-outline-racine-orange {
+    @include button-outline-variant($racine-orange);
+    color: $racine-orange;
+    &:hover {
+        color: white;
+    }
+}
+
+// Utilitaires de texte
+.font-heading {
+    font-family: 'Playfair Display', serif; // Assurez-vous d'importer cette font si nécessaire
+}

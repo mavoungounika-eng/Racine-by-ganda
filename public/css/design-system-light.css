@@ -1,0 +1,351 @@
+/**
+ * ============================================
+ * DESIGN SYSTEM LIGHT - RACINE BY GANDA
+ * Thème Clair Premium
+ * ============================================
+ */
+
+:root[data-theme="light"] {
+    /* Backgrounds */
+    --bg-primary: #FAF7F4;
+    --bg-secondary: #F4EFEC;
+    --bg-card: #FFFFFF;
+    --bg-soft: #FFF9F5;
+
+    /* Text Colors */
+    --text-primary: #160D0C;
+    --text-secondary: #4A4A4A;
+    --text-soft: #6B6B6B;
+    --text-muted: #9CA3AF;
+
+    /* Accent Colors */
+    --accent-primary: #ED5F1E;
+    --accent-secondary: #FFB800;
+    --accent-gold: #D4AF37;
+    --accent-red: #DC2626;
+
+    /* Border & Shadow */
+    --border-color: #E5E0DD;
+    --border-soft: #F0EBE8;
+    --shadow-color: rgba(22, 13, 12, 0.1);
+    --shadow-soft: rgba(22, 13, 12, 0.05);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
+    --gradient-soft: linear-gradient(135deg, #FAF7F4 0%, #F4EFEC 100%);
+    --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #FFF9F5 100%);
+}
+
+/* ============================================
+   SECTIONS & CONTAINERS
+   ============================================ */
+
+.section-light {
+    background: var(--gradient-soft);
+    color: var(--text-primary);
+}
+
+.section-light-solid {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.section-light-white {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.container-light {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card-light {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px var(--shadow-soft);
+    border-radius: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-light:hover {
+    box-shadow: 0 8px 30px var(--shadow-color);
+    transform: translateY(-2px);
+}
+
+.card-light-premium {
+    background: var(--bg-card);
+    border: 2px solid var(--accent-secondary);
+    box-shadow: 0 8px 30px rgba(255, 184, 0, 0.2);
+}
+
+.card-light-soft {
+    background: var(--bg-soft);
+    border: 1px solid var(--border-soft);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn-light-primary {
+    background: var(--gradient-primary);
+    color: var(--bg-card);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(237, 95, 30, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-light-primary:hover {
+    box-shadow: 0 6px 20px rgba(237, 95, 30, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-light-secondary {
+    background: var(--bg-card);
+    color: var(--accent-primary);
+    border: 2px solid var(--accent-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-light-secondary:hover {
+    background: var(--accent-primary);
+    color: var(--bg-card);
+}
+
+.btn-light-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-light-outline:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.badge-light {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-light-orange {
+    background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
+    color: var(--bg-card);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.badge-light-gold {
+    background: var(--accent-gold);
+    color: var(--bg-card);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+
+.form-input-light {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-input-light:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(237, 95, 30, 0.1);
+    outline: none;
+}
+
+.form-label-light {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   EFFECTS & ANIMATIONS
+   ============================================ */
+
+.glow-light {
+    box-shadow: 0 0 20px rgba(255, 184, 0, 0.3);
+}
+
+.glow-light-soft {
+    box-shadow: 0 0 15px rgba(255, 184, 0, 0.2);
+}
+
+.shimmer-light {
+    background: linear-gradient(90deg,
+            var(--bg-card) 0%,
+            var(--bg-soft) 50%,
+            var(--bg-card) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.fade-in-light {
+    animation: fadeInLight 0.6s ease-out;
+}
+
+@keyframes fadeInLight {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   STYLE FÉMININ (Light Mode)
+   ============================================ */
+
+.style-female[data-theme="light"] {
+    --accent-primary: #FFB800;
+    --accent-secondary: #D4AF37;
+}
+
+.style-female[data-theme="light"] .card-light {
+    border-radius: 2rem;
+}
+
+.style-female[data-theme="light"] .btn-light-primary {
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #FFB800 0%, #D4AF37 100%);
+}
+
+/* ============================================
+   STYLE MASCULIN (Light Mode)
+   ============================================ */
+
+.style-male[data-theme="light"] {
+    --accent-primary: #ED5F1E;
+    --accent-secondary: #160D0C;
+}
+
+.style-male[data-theme="light"] .card-light {
+    border-radius: 0.75rem;
+}
+
+.style-male[data-theme="light"] .btn-light-primary {
+    border-radius: 0.5rem;
+}
+
+/* ============================================
+   CONTRASTE & LUMINOSITÉ
+   ============================================ */
+
+.contrast-bright[data-theme="light"] {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #FAF7F4;
+    --text-primary: #000000;
+}
+
+.contrast-dark[data-theme="light"] {
+    --bg-primary: #F4EFEC;
+    --bg-secondary: #E5E0DD;
+    --text-primary: #160D0C;
+}
+
+/* ============================================
+   GOLDEN LIGHT FILTER
+   ============================================ */
+
+.golden-light-active[data-theme="light"]::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%,
+            rgba(255, 184, 0, 0.08) 0%,
+            transparent 70%);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.bg-light-primary {
+    background: var(--bg-primary);
+}
+
+.bg-light-secondary {
+    background: var(--bg-secondary);
+}
+
+.bg-light-card {
+    background: var(--bg-card);
+}
+
+.bg-light-soft {
+    background: var(--bg-soft);
+}
+
+.text-light-primary {
+    color: var(--text-primary);
+}
+
+.text-light-secondary {
+    color: var(--text-secondary);
+}
+
+.text-light-soft {
+    color: var(--text-soft);
+}
+
+.border-light {
+    border-color: var(--border-color);
+}
+
+.border-light-soft {
+    border-color: var(--border-soft);
+}
