@@ -39,22 +39,28 @@ class OrderTest extends TestCase
         $cartService->add($this->product, 2);
 
         $response = $this->post(route('checkout.place'), [
+            'full_name' => $this->user->name,
+            'email' => $this->user->email,
+            'phone' => '+242 06 123 45 67',
+            'address_line1' => '123 Test Street',
+            'city' => 'Brazzaville',
+            'country' => 'Congo',
+            'shipping_method' => 'home_delivery',
             'payment_method' => 'card',
-            'address_id' => null,
-            'customer_name' => $this->user->name,
-            'customer_email' => $this->user->email,
-            'customer_phone' => '123456789',
-            'customer_address' => '123 Test Street',
         ]);
 
         $response->assertStatus(302);
         
         $this->assertDatabaseHas('orders', [
             'user_id' => $this->user->id,
-            'total_amount' => 20000, // 2 * 10000
+            'payment_method' => 'card',
             'status' => 'pending',
             'payment_status' => 'pending',
         ]);
+        
+        // Vérifier le total (2 * 10000 + 2000 livraison = 22000)
+        $order = Order::where('user_id', $this->user->id)->first();
+        $this->assertEquals(22000, $order->total_amount);
 
         $order = Order::where('user_id', $this->user->id)->first();
         $this->assertDatabaseHas('order_items', [
@@ -75,11 +81,14 @@ class OrderTest extends TestCase
         $cartService->add($this->product, $quantity);
 
         $this->post(route('checkout.place'), [
+            'full_name' => $this->user->name,
+            'email' => $this->user->email,
+            'phone' => '+242 06 123 45 67',
+            'address_line1' => '123 Test Street',
+            'city' => 'Brazzaville',
+            'country' => 'Congo',
+            'shipping_method' => 'home_delivery',
             'payment_method' => 'card',
-            'customer_name' => $this->user->name,
-            'customer_email' => $this->user->email,
-            'customer_phone' => '123456789',
-            'customer_address' => '123 Test Street',
         ]);
 
         $this->product->refresh();
@@ -121,15 +130,19 @@ class OrderTest extends TestCase
         $cartService->add($product2, 3); // 3 * 5000 = 15000
 
         $this->post(route('checkout.place'), [
+            'full_name' => $this->user->name,
+            'email' => $this->user->email,
+            'phone' => '+242 06 123 45 67',
+            'address_line1' => '123 Test Street',
+            'city' => 'Brazzaville',
+            'country' => 'Congo',
+            'shipping_method' => 'home_delivery',
             'payment_method' => 'card',
-            'customer_name' => $this->user->name,
-            'customer_email' => $this->user->email,
-            'customer_phone' => '123456789',
-            'customer_address' => '123 Test Street',
         ]);
 
         $order = Order::where('user_id', $this->user->id)->first();
-        $this->assertEquals(35000, $order->total_amount); // 20000 + 15000
+        // Sous-total : 20000 + 15000 = 35000, Livraison : 2000, Total : 37000
+        $this->assertEquals(37000, $order->total_amount);
     }
 
     /** @test */
@@ -139,11 +152,14 @@ class OrderTest extends TestCase
         $cartService->add($this->product, 1);
 
         $this->post(route('checkout.place'), [
+            'full_name' => $this->user->name,
+            'email' => $this->user->email,
+            'phone' => '+242 06 123 45 67',
+            'address_line1' => '123 Test Street',
+            'city' => 'Brazzaville',
+            'country' => 'Congo',
+            'shipping_method' => 'home_delivery',
             'payment_method' => 'card',
-            'customer_name' => $this->user->name,
-            'customer_email' => $this->user->email,
-            'customer_phone' => '123456789',
-            'customer_address' => '123 Test Street',
         ]);
 
         $order = Order::where('user_id', $this->user->id)->first();
@@ -158,11 +174,14 @@ class OrderTest extends TestCase
         $cartService->add($this->product, 1);
 
         $this->post(route('checkout.place'), [
+            'full_name' => $this->user->name,
+            'email' => $this->user->email,
+            'phone' => '+242 06 123 45 67',
+            'address_line1' => '123 Test Street',
+            'city' => 'Brazzaville',
+            'country' => 'Congo',
+            'shipping_method' => 'home_delivery',
             'payment_method' => 'card',
-            'customer_name' => $this->user->name,
-            'customer_email' => $this->user->email,
-            'customer_phone' => '123456789',
-            'customer_address' => '123 Test Street',
         ]);
 
         $order = Order::where('user_id', $this->user->id)->first();
