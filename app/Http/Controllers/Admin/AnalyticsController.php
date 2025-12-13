@@ -54,8 +54,11 @@ class AnalyticsController extends Controller
         // Filtre par méthode de paiement
         $paymentMethod = $request->get('payment_method');
 
+        // Force refresh si demandé
+        $forceRefresh = $request->has('refresh');
+
         // Récupérer les statistiques
-        $stats = $this->analyticsService->getFunnelStats($startDate, $endDate, $paymentMethod);
+        $stats = $this->analyticsService->getFunnelStats($startDate, $endDate, $paymentMethod, $forceRefresh);
 
         return view('admin.analytics.funnel', compact('stats', 'period', 'paymentMethod'));
     }
@@ -69,8 +72,11 @@ class AnalyticsController extends Controller
         $period = $request->get('period', '7days');
         [$startDate, $endDate] = $this->parsePeriod($period, $request);
 
+        // Force refresh si demandé
+        $forceRefresh = $request->has('refresh');
+
         // Récupérer les statistiques
-        $stats = $this->analyticsService->getSalesStats($startDate, $endDate);
+        $stats = $this->analyticsService->getSalesStats($startDate, $endDate, $forceRefresh);
 
         return view('admin.analytics.sales', compact('stats', 'period'));
     }

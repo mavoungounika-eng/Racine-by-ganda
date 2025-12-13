@@ -95,9 +95,10 @@ return [
         ],
 
         'funnel' => [
-            'driver' => 'single',
+            'driver' => 'daily', // Rotation quotidienne des logs en production
             'path' => storage_path('logs/funnel.log'),
             'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_FUNNEL_DAYS', 30), // Conserver 30 jours de logs
             'replace_placeholders' => true,
         ],
 

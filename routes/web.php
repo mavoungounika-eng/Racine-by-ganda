@@ -73,6 +73,12 @@ Route::prefix('createur')->name('creator.')->group(function () {
         // Statistiques avancées
         Route::get('stats', [\App\Http\Controllers\Creator\CreatorStatsController::class, 'index'])->name('stats.index');
         
+        // Analytics (Phase 4)
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Creator\AnalyticsController::class, 'index'])->name('index');
+            Route::get('/sales', [\App\Http\Controllers\Creator\AnalyticsController::class, 'sales'])->name('sales');
+        });
+        
         // Exports et Rapports
         Route::prefix('export')->name('export.')->group(function () {
             Route::get('orders', [\App\Http\Controllers\Creator\CreatorExportController::class, 'exportOrders'])->name('orders');

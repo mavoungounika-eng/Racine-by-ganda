@@ -4,9 +4,20 @@
 <div class="container py-5">
     {{-- Message de succès --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle mr-2"></i>
-            {{ session('success') }}
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-left: 4px solid #28a745; background: #f8f9fa; border-radius: 8px;">
+            <i class="fas fa-check-circle mr-2" style="color: #28a745; font-size: 1.2rem;"></i>
+            <strong>{{ session('success') }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    {{-- Message d'erreur (au cas où) --}}
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-left: 4px solid #dc3545; background: #f8f9fa; border-radius: 8px;">
+            <i class="fas fa-exclamation-circle mr-2" style="color: #dc3545; font-size: 1.2rem;"></i>
+            <strong>{{ session('error') }}</strong>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -121,9 +132,14 @@
             
             @if($order->payment_status !== 'paid')
                 @if($paymentMethod === 'cash_on_delivery')
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        <strong>Paiement à la livraison :</strong> Vous paierez lors de la réception de votre commande.
+                    <div class="alert alert-info border-left-info">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-truck fa-2x mr-3"></i>
+                            <div>
+                                <strong class="d-block mb-1">Paiement à la livraison</strong>
+                                <p class="mb-0">Votre commande est confirmée. Vous paierez le montant de <strong>{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</strong> lors de la réception de votre commande.</p>
+                            </div>
+                        </div>
                     </div>
                 @elseif($paymentMethod === 'card')
                     <form action="{{ route('checkout.card.pay') }}" method="POST" class="mb-3">

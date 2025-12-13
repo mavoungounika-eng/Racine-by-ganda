@@ -97,38 +97,112 @@ class CheckoutController extends Controller
      */
     public function placeOrder(PlaceOrderRequest $request)
     {
+        // Log d'entrée pour tracer le flux
+        \Log::info('=== CHECKOUT PLACEORDER START ===', [
+            'user_id' => $request->user()->id ?? null,
+            'payment_method' => $request->input('payment_method'),
+            'csrf_token_present' => $request->has('_token'),
+            'session_token' => session()->token(),
+            'request_method' => $request->method(),
+            'request_url' => $request->fullUrl(),
+        ]);
+
         $user = $request->user();
         $data = $request->validated();
+
+        \Log::info('Checkout: Data validated', [
+            'payment_method' => $data['payment_method'] ?? 'NOT SET',
+            'full_name' => $data['full_name'] ?? 'NOT SET',
+            'email' => $data['email'] ?? 'NOT SET',
+        ]);
 
         // Charger le panier
         $cartService = $this->getCartService();
         $items = $cartService->getItems();
         
+        \Log::info('Checkout: Cart loaded', [
+            'items_count' => $items->count(),
+            'cart_total' => $cartService->total(),
+        ]);
+        
         if ($items->isEmpty()) {
+            \Log::warning('Checkout: Cart is empty');
             return redirect()->route('cart.index')
                 ->with('error', 'Votre panier est vide.');
         }
 
         try {
+            \Log::info('Checkout: Calling OrderService::createOrderFromCart', [
+                'user_id' => $user->id,
+                'payment_method' => $data['payment_method'],
+                'items_count' => $items->count(),
+            ]);
+
             // Déléguer la création de commande au service
             $order = $this->orderService->createOrderFromCart($data, $items, $user->id);
 
+            \Log::info('Checkout: Order created', [
+                'order_id' => $order->id ?? 'NO ID',
+                'payment_method' => $order->payment_method ?? 'NOT SET',
+                'payment_status' => $order->payment_status ?? 'NOT SET',
+                'status' => $order->status ?? 'NOT SET',
+            ]);
+
+            // Vérifier que l'order a bien un ID avant redirection
+            if (!$order || !$order->id) {
+                \Log::error('Checkout: Order created but has no ID', [
+                    'user_id' => $user->id,
+                    'payment_method' => $data['payment_method'] ?? 'unknown',
+                    'order' => $order ? 'exists but no id' : 'null',
+                ]);
+                return back()
+                    ->with('error', 'Une erreur est survenue lors de la création de la commande. Veuillez réessayer.')
+                    ->withInput();
+            }
+
             // Vider le panier après création réussie
             $cartService->clear();
+            \Log::info('Checkout: Cart cleared');
+
+            \Log::info('Checkout: Calling redirectToPayment', [
+                'order_id' => $order->id,
+                'payment_method' => $data['payment_method'],
+            ]);
+
+            // Redirection dans le try pour catch les exceptions de redirection
+            $redirect = $this->redirectToPayment($order, $data['payment_method']);
+            
+            \Log::info('Checkout: Redirect created successfully', [
+                'target_url' => $redirect->getTargetUrl(),
+                'session_has_success' => session()->has('success'),
+                'session_success' => session('success'),
+            ]);
+
+            return $redirect;
 
         } catch (OrderException | StockException $e) {
+            \Log::error('Checkout: OrderException or StockException', [
+                'user_id' => $user->id,
+                'payment_method' => $data['payment_method'] ?? 'unknown',
+                'error' => $e->getMessage(),
+                'user_message' => $e->getUserMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
             return back()->with('error', $e->getUserMessage())->withInput();
         } catch (\Throwable $e) {
-            \Log::error('Erreur création commande checkout', [
+            \Log::error('Checkout: Unexpected exception', [
                 'user_id' => $user->id ?? null,
-                'error'   => $e->getMessage(),
-                'trace'   => $e->getTraceAsString(),
+                'payment_method' => $data['payment_method'] ?? 'unknown',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', 'Une erreur est survenue lors de la création de la commande.')->withInput();
+            return back()
+                ->with('error', 'Une erreur est survenue lors de la création de la commande. Veuillez réessayer ou nous contacter.')
+                ->withInput();
         }
-
-        // Redirection selon le mode de paiement
-        return $this->redirectToPayment($order, $data['payment_method']);
     }
 
     /**
@@ -140,24 +214,88 @@ class CheckoutController extends Controller
      */
     protected function redirectToPayment(Order $order, string $paymentMethod)
     {
-        switch ($paymentMethod) {
-            case 'cash_on_delivery':
+        \Log::info('=== REDIRECT TO PAYMENT ===', [
+            'order_id' => $order->id ?? null,
+            'payment_method' => $paymentMethod,
+            'order_exists' => $order ? 'yes' : 'no',
+            'order_has_id' => ($order && $order->id) ? 'yes' : 'no',
+        ]);
+
+        try {
+            switch ($paymentMethod) {
+                case 'cash_on_delivery':
+                    if (!$order->id) {
+                        \Log::error('Checkout: cash_on_delivery selected but order has no ID');
+                        throw new \RuntimeException('Order has no ID');
+                    }
+                    
+                    \Log::info('Checkout: Redirecting to success for cash_on_delivery', [
+                        'order_id' => $order->id,
+                        'order_payment_method' => $order->payment_method,
+                        'order_payment_status' => $order->payment_status,
+                    ]);
+                    
+                    $redirect = redirect()
+                        ->route('checkout.success', $order)
+                        ->with('success', 'Votre commande est enregistrée. Vous paierez à la livraison.');
+                    
+                    \Log::info('Checkout: cash_on_delivery redirect created', [
+                        'target_url' => $redirect->getTargetUrl(),
+                        'session_will_have_success' => true,
+                    ]);
+                    
+                    return $redirect;
+
+                case 'card':
+                    \Log::info('Checkout: Redirecting to card payment', [
+                        'order_id' => $order->id,
+                    ]);
+                    return redirect()
+                        ->route('checkout.card.pay', ['order_id' => $order->id]);
+
+                case 'mobile_money':
+                    \Log::info('Checkout: Redirecting to mobile money form', [
+                        'order_id' => $order->id,
+                    ]);
+                    return redirect()
+                        ->route('checkout.mobile-money.form', ['order' => $order->id]);
+
+                default:
+                    \Log::warning('Checkout: Unknown payment method, defaulting to success', [
+                        'payment_method' => $paymentMethod,
+                        'order_id' => $order->id ?? null,
+                    ]);
+                    return redirect()
+                        ->route('checkout.success', $order)
+                        ->with('success', 'Commande enregistrée.');
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Checkout: Error in redirectToPayment', [
+                'order_id' => $order->id ?? null,
+                'payment_method' => $paymentMethod,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            // Fallback: rediriger vers success même en cas d'erreur
+            if ($order && $order->id) {
+                \Log::info('Checkout: Using fallback redirect to success', [
+                    'order_id' => $order->id,
+                ]);
                 return redirect()
                     ->route('checkout.success', $order)
-                    ->with('success', 'Votre commande est enregistrée. Vous paierez à la livraison.');
-
-            case 'card':
-                return redirect()
-                    ->route('checkout.card.pay', ['order_id' => $order->id]);
-
-            case 'mobile_money':
-                return redirect()
-                    ->route('checkout.mobile-money.form', ['order' => $order->id]);
-
-            default:
-                return redirect()
-                    ->route('checkout.success', $order)
-                    ->with('success', 'Commande enregistrée.');
+                    ->with('success', 'Votre commande a été enregistrée.');
+            }
+            
+            // Si même le fallback échoue, retourner au checkout avec erreur
+            \Log::error('Checkout: Fallback redirect also failed, returning to checkout', [
+                'order' => $order ? 'exists but no id' : 'null',
+            ]);
+            return back()
+                ->with('error', 'Une erreur est survenue lors de la redirection. Votre commande a peut-être été créée. Vérifiez vos commandes.')
+                ->withInput();
         }
     }
 
@@ -166,6 +304,14 @@ class CheckoutController extends Controller
      */
     public function success(Order $order)
     {
+        // Log pour debug (peut être retiré après résolution du bug)
+        \Log::info('Checkout success page accessed', [
+            'order_id' => $order->id ?? null,
+            'payment_method' => $order->payment_method ?? 'unknown',
+            'session_has_success' => session()->has('success'),
+            'session_success' => session('success'),
+        ]);
+
         // Utiliser OrderPolicy pour vérifier l'accès
         $this->authorize('view', $order);
 

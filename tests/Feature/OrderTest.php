@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Cart\DatabaseCartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -31,8 +32,8 @@ class OrderTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function user_can_create_order_from_cart()
+    #[Test]
+    public function user_can_create_order_from_cart(): void
     {
         // Ajouter produit au panier
         $cartService = app(DatabaseCartService::class);
@@ -71,8 +72,8 @@ class OrderTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function order_creation_reduces_product_stock()
+    #[Test]
+    public function order_creation_reduces_product_stock(): void
     {
         $initialStock = $this->product->stock;
         $quantity = 3;
@@ -95,8 +96,8 @@ class OrderTest extends TestCase
         $this->assertEquals($initialStock - $quantity, $this->product->stock);
     }
 
-    /** @test */
-    public function cannot_create_order_with_insufficient_stock()
+    #[Test]
+    public function cannot_create_order_with_insufficient_stock(): void
     {
         $this->product->update(['stock' => 2]);
 
@@ -117,8 +118,8 @@ class OrderTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function order_total_is_calculated_correctly()
+    #[Test]
+    public function order_total_is_calculated_correctly(): void
     {
         $product2 = Product::factory()->create([
             'price' => 5000,
@@ -145,8 +146,8 @@ class OrderTest extends TestCase
         $this->assertEquals(37000, $order->total_amount);
     }
 
-    /** @test */
-    public function order_has_unique_order_number()
+    #[Test]
+    public function order_has_unique_order_number(): void
     {
         $cartService = app(DatabaseCartService::class);
         $cartService->add($this->product, 1);
@@ -167,8 +168,8 @@ class OrderTest extends TestCase
         $this->assertStringStartsWith('CMD-', $order->order_number);
     }
 
-    /** @test */
-    public function order_has_qr_token()
+    #[Test]
+    public function order_has_qr_token(): void
     {
         $cartService = app(DatabaseCartService::class);
         $cartService->add($this->product, 1);

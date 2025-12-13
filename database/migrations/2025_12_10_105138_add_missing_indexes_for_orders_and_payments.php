@@ -24,13 +24,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            // Index sur payment_method pour améliorer les requêtes de filtrage
-            // Utilisé notamment dans CleanupAbandonedOrders et les statistiques
-            if (!$this->hasIndex('orders', 'orders_payment_method_index')) {
-                $table->index('payment_method', 'orders_payment_method_index');
-            }
-        });
+        // Protéger l'ajout de l'index sur payment_method : vérifier que la table et la colonne existent
+        if (Schema::hasTable('orders') && Schema::hasColumn('orders', 'payment_method')) {
+            Schema::table('orders', function (Blueprint $table) {
+                // Index sur payment_method pour améliorer les requêtes de filtrage
+                // Utilisé notamment dans CleanupAbandonedOrders et les statistiques
+                if (!$this->hasIndex('orders', 'orders_payment_method_index')) {
+                    $table->index('payment_method', 'orders_payment_method_index');
+                }
+            });
+        }
 
         Schema::table('payments', function (Blueprint $table) {
             // Index sur provider pour améliorer les requêtes de filtrage par fournisseur
@@ -51,11 +54,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            if ($this->hasIndex('orders', 'orders_payment_method_index')) {
-                $table->dropIndex('orders_payment_method_index');
-            }
-        });
+        // Protéger la suppression de l'index : vérifier que la table et la colonne existent
+        if (Schema::hasTable('orders') && Schema::hasColumn('orders', 'payment_method')) {
+            Schema::table('orders', function (Blueprint $table) {
+                if ($this->hasIndex('orders', 'orders_payment_method_index')) {
+                    $table->dropIndex('orders_payment_method_index');
+                }
+            });
+        }
 
         Schema::table('payments', function (Blueprint $table) {
             if ($this->hasIndex('payments', 'payments_provider_index')) {

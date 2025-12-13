@@ -11,8 +11,8 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function user_can_login_with_valid_credentials()
+    #[Test]
+    public function user_can_login_with_valid_credentials(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -28,8 +28,8 @@ class AuthTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    /** @test */
-    public function user_cannot_login_with_invalid_credentials()
+    #[Test]
+    public function user_cannot_login_with_invalid_credentials(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -45,8 +45,8 @@ class AuthTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
-    public function user_is_redirected_based_on_role_after_login()
+    #[Test]
+    public function user_is_redirected_based_on_role_after_login(): void
     {
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -61,8 +61,8 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('admin.dashboard'));
     }
 
-    /** @test */
-    public function client_is_redirected_to_account_dashboard()
+    #[Test]
+    public function client_is_redirected_to_account_dashboard(): void
     {
         $client = User::factory()->create([
             'role' => 'client',
@@ -77,8 +77,8 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('account.dashboard'));
     }
 
-    /** @test */
-    public function creator_is_redirected_to_creator_dashboard()
+    #[Test]
+    public function creator_is_redirected_to_creator_dashboard(): void
     {
         $creator = User::factory()->create([
             'role' => 'createur',
@@ -93,8 +93,8 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('creator.dashboard'));
     }
 
-    /** @test */
-    public function inactive_user_cannot_login()
+    #[Test]
+    public function inactive_user_cannot_login(): void
     {
         $user = User::factory()->create([
             'status' => 'inactive',
@@ -110,8 +110,8 @@ class AuthTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
-    public function user_can_logout()
+    #[Test]
+    public function user_can_logout(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -122,8 +122,8 @@ class AuthTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
-    public function login_has_rate_limiting()
+    #[Test]
+    public function login_has_rate_limiting(): void
     {
         $user = User::factory()->create([
             'password' => Hash::make('password123'),

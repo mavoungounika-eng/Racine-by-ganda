@@ -21,7 +21,18 @@ use Illuminate\Support\Facades\Log;
  * Responsable de la création de commandes depuis le checkout frontend.
  * Gère la logique métier : calculs, validation, création commande et items.
  * 
- * Utilisé dans le contexte du checkout frontend.
+ * FONCTIONNALITÉS :
+ * - Validation du stock avec verrouillage (via StockValidationService)
+ * - Calcul des montants (sous-total, livraison, total)
+ * - Création de commande et items dans une transaction
+ * - Vidage du panier après création réussie
+ * - Émission d'événement OrderPlaced pour analytics
+ * 
+ * SÉCURITÉ :
+ * - Utilise des transactions DB pour atomicité
+ * - Validation stock avec lockForUpdate() pour éviter race conditions
+ * 
+ * @package App\Services
  */
 class OrderService
 {

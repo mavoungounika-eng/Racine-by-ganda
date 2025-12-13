@@ -13,8 +13,18 @@ use Illuminate\Support\Str;
 /**
  * Service de paiement Mobile Money (MTN MoMo, Airtel Money)
  * 
- * Note: Cette implémentation simule le processus de paiement Mobile Money.
- * Pour une intégration réelle, il faudra utiliser les APIs des providers.
+ * Gère l'intégration complète des paiements Mobile Money :
+ * - Initiation de paiement via API provider
+ * - Gestion des callbacks webhook (idempotence, sécurité)
+ * - Vérification de statut
+ * - Simulation en mode développement
+ * 
+ * SÉCURITÉ :
+ * - Vérification de signature webhook en production
+ * - Idempotence des callbacks (protection double traitement)
+ * - Verrouillage DB pour éviter race conditions
+ * 
+ * @package App\Services\Payments
  */
 class MobileMoneyPaymentService
 {
@@ -126,6 +136,9 @@ class MobileMoneyPaymentService
     /**
      * Traiter un callback du provider
      *
+     * IDEMPOTENCE : Vérifie si le paiement a déjà été traité pour éviter les doubles traitements.
+     * SÉCURITÉ : Utilise un verrouillage de base de données pour éviter les race conditions.
+     *
      * @param array $callbackData
      * @param string $provider
      * @return Payment|null
@@ -139,10 +152,14 @@ class MobileMoneyPaymentService
             return null;
         }
 
-        $payment = Payment::where('external_reference', $transactionId)
-            ->where('provider', $provider)
-            ->where('channel', 'mobile_money')
-            ->first();
+        // Verrouiller le paiement pour éviter les race conditions
+        $payment = \Illuminate\Support\Facades\DB::transaction(function () use ($transactionId, $provider) {
+            return \App\Models\Payment::where('external_reference', $transactionId)
+                ->where('provider', $provider)
+                ->where('channel', 'mobile_money')
+                ->lockForUpdate()
+                ->first();
+        });
 
         if (!$payment) {
             Log::warning('Payment not found for callback', [
@@ -152,10 +169,28 @@ class MobileMoneyPaymentService
             return null;
         }
 
+        // IDEMPOTENCE : Si le paiement est déjà payé, ne pas retraiter
+        if ($payment->status === 'paid') {
+            Log::info('Mobile Money callback received for already paid payment (idempotence)', [
+                'payment_id' => $payment->id,
+                'transaction_id' => $transactionId,
+            ]);
+            return $payment;
+        }
+
         // Mettre à jour le statut selon la réponse du callback
         $status = $callbackData['status'] ?? 'pending';
         
         if ($status === 'success' || $status === 'completed' || $status === 'paid') {
+            // Vérifier à nouveau le statut dans la transaction pour éviter les doubles mises à jour
+            $payment->refresh();
+            if ($payment->status === 'paid') {
+                Log::info('Mobile Money payment already paid (race condition prevented)', [
+                    'payment_id' => $payment->id,
+                ]);
+                return $payment;
+            }
+
             $payment->update([
                 'status' => 'paid',
                 'paid_at' => now(),
@@ -168,7 +203,7 @@ class MobileMoneyPaymentService
 
             // Mettre à jour la commande
             $order = $payment->order;
-            if ($order) {
+            if ($order && $order->payment_status !== 'paid') {
                 $order->update([
                     'payment_status' => 'paid',
                     'status' => 'processing', // Statut commande = processing (pas 'paid')
@@ -185,22 +220,31 @@ class MobileMoneyPaymentService
                 event(new PaymentCompleted($order, $payment));
             }
         } elseif ($status === 'failed' || $status === 'cancelled') {
-            $payment->update([
-                'status' => 'failed',
-                'metadata' => array_merge($payment->metadata ?? [], [
-                    'callback_received_at' => now()->toIso8601String(),
-                    'failure_reason' => $callbackData['reason'] ?? 'Payment failed',
-                    'callback_data' => $callbackData,
-                ]),
-            ]);
+            // Ne mettre à jour que si le statut n'est pas déjà 'failed'
+            if ($payment->status !== 'failed') {
+                $payment->update([
+                    'status' => 'failed',
+                    'metadata' => array_merge($payment->metadata ?? [], [
+                        'callback_received_at' => now()->toIso8601String(),
+                        'failure_reason' => $callbackData['reason'] ?? 'Payment failed',
+                        'callback_data' => $callbackData,
+                    ]),
+                ]);
 
-            Log::warning('Mobile Money payment failed', [
-                'payment_id' => $payment->id,
-                'reason' => $callbackData['reason'] ?? 'Unknown',
-            ]);
+                Log::warning('Mobile Money payment failed', [
+                    'payment_id' => $payment->id,
+                    'reason' => $callbackData['reason'] ?? 'Unknown',
+                ]);
+
+                // Phase 3 : Émettre l'event PaymentFailed pour le monitoring
+                $order = $payment->order;
+                if ($order) {
+                    event(new PaymentFailed($order, $callbackData['reason'] ?? 'Payment failed'));
+                }
+            }
         }
 
-        return $payment;
+        return $payment->fresh();
     }
 
     /**

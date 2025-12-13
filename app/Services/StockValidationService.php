@@ -13,7 +13,16 @@ use Illuminate\Support\Collection;
  * Responsable de la vérification de la disponibilité des produits
  * avant la création d'une commande.
  * 
- * Utilisé dans le contexte du checkout frontend.
+ * FONCTIONNALITÉS :
+ * - Validation avec verrouillage DB (lockForUpdate) pour éviter race conditions
+ * - Vérification en temps réel sans exception (checkStockIssues)
+ * - Validation stricte avec exception (validateStockForCart)
+ * 
+ * SÉCURITÉ :
+ * - Utilise lockForUpdate() pour verrouiller les produits pendant la validation
+ * - Évite les ventes de produits en stock insuffisant
+ * 
+ * @package App\Services
  */
 class StockValidationService
 {

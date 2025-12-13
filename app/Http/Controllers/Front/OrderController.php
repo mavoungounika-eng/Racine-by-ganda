@@ -15,6 +15,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @deprecated Cette classe est OBSOLÈTE et ne doit plus être utilisée.
+ * 
+ * Le tunnel de checkout a été refactorisé et migré vers CheckoutController.
+ * 
+ * ⚠️ IMPORTANT :
+ * - Aucune route n'utilise ce contrôleur
+ * - Les méthodes checkout(), placeOrder() et success() sont obsolètes
+ * - Utiliser CheckoutController à la place
+ * 
+ * @see \App\Http\Controllers\Front\CheckoutController Le contrôleur officiel pour le checkout
+ * 
+ * Cette classe est conservée temporairement pour référence historique uniquement.
+ * Elle sera supprimée dans une future version après vérification complète.
+ * 
+ * Date de dépréciation : 10 décembre 2025
+ */
 class OrderController extends Controller
 {
     protected function getService()
@@ -22,6 +39,15 @@ class OrderController extends Controller
         return Auth::check() ? new DatabaseCartService() : new SessionCartService();
     }
 
+    /**
+     * @deprecated Ne plus utiliser. Tunnel checkout remplacé par CheckoutController@index().
+     * 
+     * Cette méthode est obsolète et n'est utilisée par aucune route.
+     * Utiliser CheckoutController@index() à la place (route: checkout.index).
+     * 
+     * @see \App\Http\Controllers\Front\CheckoutController::index()
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
     public function checkout()
     {
         // ✅ Vérification d'authentification (déjà garantie par middleware auth, mais double vérification)
@@ -64,8 +90,17 @@ class OrderController extends Controller
     }
 
     /**
-     * Créer une nouvelle commande depuis le panier
-     *
+     * @deprecated Ne plus utiliser. Tunnel checkout remplacé par CheckoutController@placeOrder().
+     * 
+     * Cette méthode est obsolète et n'est utilisée par aucune route.
+     * Utiliser CheckoutController@placeOrder() à la place (route: checkout.place).
+     * 
+     * ⚠️ INCOMPATIBILITÉS :
+     * - Utilise payment_method: 'cash' au lieu de 'cash_on_delivery'
+     * - Redirection incompatible avec CheckoutController@success()
+     * - Logique inline au lieu d'utiliser OrderService
+     * 
+     * @see \App\Http\Controllers\Front\CheckoutController::placeOrder()
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      * @throws OrderException Si la commande ne peut pas être créée
@@ -400,6 +435,20 @@ class OrderController extends Controller
         }
     }
 
+    /**
+     * @deprecated Ne plus utiliser. Tunnel checkout remplacé par CheckoutController@success().
+     * 
+     * Cette méthode est obsolète et n'est utilisée par aucune route.
+     * Utiliser CheckoutController@success() à la place (route: checkout.success).
+     * 
+     * ⚠️ INCOMPATIBILITÉS :
+     * - N'utilise pas route model binding (récupère order_id manuellement)
+     * - Logique de récupération complexe et fragile
+     * 
+     * @see \App\Http\Controllers\Front\CheckoutController::success()
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
     public function success(Request $request)
     {
         // Amélioration : Récupération order_id avec plusieurs fallbacks

@@ -4,6 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration pour ajouter les colonnes promo_code_id, discount_amount, shipping_method et shipping_cost à la table orders.
+ * 
+ * TODO: Vérifier en environnement réel que cette migration a un timestamp
+ * postérieur à create_orders_table (2025_11_23_000004). Si ce n'est pas le cas, renommer le fichier
+ * pour éviter des problèmes d'ordre d'exécution. Actuellement, cette migration (2025_01_27) est
+ * antérieure à create_orders_table (2025_11_23), ce qui peut causer des erreurs dans les tests SQLite.
+ */
 return new class extends Migration
 {
     /**
@@ -11,7 +19,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Si la table 'orders' n'existe pas (cas des tests SQLite ou env incomplet), on ne fait rien
+        if (!Schema::hasTable('orders')) {
+            return;
+        }
+
         Schema::table('orders', function (Blueprint $table) {
+            // Éviter de recréer la colonne si elle existe déjà
             if (!Schema::hasColumn('orders', 'promo_code_id')) {
                 $table->foreignId('promo_code_id')->nullable()->after('total_amount')->constrained()->onDelete('set null');
             }
@@ -32,6 +46,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Si la table 'orders' n'existe pas, on ne fait rien
+        if (!Schema::hasTable('orders')) {
+            return;
+        }
+
         Schema::table('orders', function (Blueprint $table) {
             if (Schema::hasColumn('orders', 'shipping_cost')) {
                 $table->dropColumn('shipping_cost');

@@ -7,28 +7,61 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Service d'analytics pour le dashboard admin
+ * Service d'analytics pour les dashboards admin et créateur
  * 
- * Phase 4 : Module Analytics / Dashboard
+ * Phase 4-5 : Module Analytics / Dashboard
  * 
  * Gère les calculs et agrégations pour :
- * - Funnel d'achat (conversion)
- * - Ventes & chiffres d'affaires
+ * - Funnel d'achat (conversion) : événements depuis panier jusqu'au paiement
+ * - Ventes & chiffres d'affaires : KPIs, top produits, répartition paiements
+ * - Statistiques créateur : CA, commandes, top produits par créateur
+ * 
+ * PERFORMANCE :
+ * - Cache TTL 1h sur toutes les méthodes
+ * - Clés de cache basées sur période + filtres
+ * - Support refresh forcé via paramètre
+ * 
+ * @package App\Services
  */
 class AnalyticsService
 {
     /**
      * Obtenir les statistiques du funnel pour une période
      * 
+     * Cache : TTL 1h par défaut, clé basée sur période + filtre
+     * 
      * @param Carbon $startDate
      * @param Carbon $endDate
      * @param string|null $paymentMethod Filtre optionnel par méthode de paiement
+     * @param bool $forceRefresh Forcer le refresh du cache
      * @return array
      */
-    public function getFunnelStats(Carbon $startDate, Carbon $endDate, ?string $paymentMethod = null): array
+    public function getFunnelStats(Carbon $startDate, Carbon $endDate, ?string $paymentMethod = null, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->buildFunnelCacheKey($startDate, $endDate, $paymentMethod);
+        
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+        
+        return Cache::remember($cacheKey, 3600, function () use ($startDate, $endDate, $paymentMethod) {
+            return $this->computeFunnelStats($startDate, $endDate, $paymentMethod);
+        });
+    }
+
+    /**
+     * Calculer les statistiques du funnel (sans cache)
+     * 
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param string|null $paymentMethod
+     * @return array
+     */
+    protected function computeFunnelStats(Carbon $startDate, Carbon $endDate, ?string $paymentMethod = null): array
     {
         $query = FunnelEvent::whereBetween('occurred_at', [$startDate, $endDate]);
 
@@ -103,6 +136,29 @@ class AnalyticsService
     }
 
     /**
+     * Construire la clé de cache pour les stats funnel
+     * 
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param string|null $paymentMethod
+     * @return string
+     */
+    protected function buildFunnelCacheKey(Carbon $startDate, Carbon $endDate, ?string $paymentMethod = null): string
+    {
+        $key = sprintf(
+            'analytics:funnel:%s:%s',
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d')
+        );
+        
+        if ($paymentMethod) {
+            $key .= ':' . $paymentMethod;
+        }
+        
+        return $key;
+    }
+
+    /**
      * Calculer les taux de conversion du funnel
      * 
      * @param array $eventsByType
@@ -134,11 +190,34 @@ class AnalyticsService
     /**
      * Obtenir les statistiques de ventes pour une période
      * 
+     * Cache : TTL 1h par défaut, clé basée sur période
+     * 
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param bool $forceRefresh Forcer le refresh du cache
+     * @return array
+     */
+    public function getSalesStats(Carbon $startDate, Carbon $endDate, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->buildSalesCacheKey($startDate, $endDate);
+        
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+        
+        return Cache::remember($cacheKey, 3600, function () use ($startDate, $endDate) {
+            return $this->computeSalesStats($startDate, $endDate);
+        });
+    }
+
+    /**
+     * Calculer les statistiques de ventes (sans cache)
+     * 
      * @param Carbon $startDate
      * @param Carbon $endDate
      * @return array
      */
-    public function getSalesStats(Carbon $startDate, Carbon $endDate): array
+    protected function computeSalesStats(Carbon $startDate, Carbon $endDate): array
     {
         // KPIs principaux
         $paidOrders = Order::where('payment_status', 'paid')
@@ -238,47 +317,187 @@ class AnalyticsService
     }
 
     /**
-     * Obtenir les statistiques pour un créateur (stub pour Phase 4)
+     * Construire la clé de cache pour les stats ventes
      * 
-     * TODO Phase 4 : Implémenter les statistiques créateur
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return string
+     */
+    protected function buildSalesCacheKey(Carbon $startDate, Carbon $endDate): string
+    {
+        return sprintf(
+            'analytics:sales:%s:%s',
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d')
+        );
+    }
+
+    /**
+     * Invalider le cache analytics (appelé après événements importants)
      * 
-     * Pour filtrer les commandes contenant les produits du créateur :
-     * ```php
-     * Order::whereHas('items.product', function ($q) use ($creatorId) {
-     *     $q->where('user_id', $creatorId);
-     * })
-     * ->where('payment_status', 'paid')
-     * ->whereBetween('created_at', [$startDate, $endDate])
-     * ```
+     * @return void
+     */
+    public function clearCache(): void
+    {
+        // Invalider tous les caches analytics (pattern matching)
+        // Note: En production avec Redis, on pourrait utiliser des tags
+        Cache::flush(); // Simple mais efficace pour l'instant
+    }
+
+    /**
+     * Obtenir les statistiques pour un créateur
      * 
-     * Pour le CA du créateur :
-     * - Filtrer les OrderItems dont le produit appartient au créateur
-     * - Sommer les (price * quantity) de ces items
+     * Cache : TTL 1h par défaut, clé basée sur créateur + période
      * 
-     * Pour le top produits :
-     * - Même logique que getSalesStats() mais avec filtre user_id = $creatorId
+     * @param int $creatorId
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param bool $forceRefresh Forcer le refresh du cache
+     * @return array
+     */
+    public function getCreatorStats(int $creatorId, Carbon $startDate, Carbon $endDate, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->buildCreatorCacheKey($creatorId, $startDate, $endDate);
+        
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+        
+        return Cache::remember($cacheKey, 3600, function () use ($creatorId, $startDate, $endDate) {
+            return $this->computeCreatorStats($creatorId, $startDate, $endDate);
+        });
+    }
+
+    /**
+     * Calculer les statistiques créateur (sans cache)
      * 
      * @param int $creatorId
      * @param Carbon $startDate
      * @param Carbon $endDate
      * @return array
      */
-    public function getCreatorStats(int $creatorId, Carbon $startDate, Carbon $endDate): array
+    protected function computeCreatorStats(int $creatorId, Carbon $startDate, Carbon $endDate): array
     {
-        // TODO : Implémenter
+        // Filtrer les commandes contenant les produits du créateur
+        $ordersQuery = Order::whereHas('items.product', function ($q) use ($creatorId) {
+                $q->where('user_id', $creatorId);
+            })
+            ->where('payment_status', 'paid')
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        // KPIs principaux
+        $ordersCount = $ordersQuery->count();
+        $uniqueOrders = $ordersQuery->distinct('id')->count('id');
+
+        // Calculer le CA du créateur : somme des OrderItems dont le produit appartient au créateur
+        $totalRevenue = OrderItem::whereHas('order', function ($q) use ($startDate, $endDate) {
+                $q->where('payment_status', 'paid')
+                  ->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->whereHas('product', function ($q) use ($creatorId) {
+                $q->where('user_id', $creatorId);
+            })
+            ->select(DB::raw('SUM(price * quantity) as total'))
+            ->value('total') ?? 0.0;
+
+        $averageCart = $ordersCount > 0 ? round($totalRevenue / $ordersCount, 2) : 0;
+
+        // Top produits du créateur
+        $topProducts = OrderItem::whereHas('order', function ($q) use ($startDate, $endDate) {
+                $q->where('payment_status', 'paid')
+                  ->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->whereHas('product', function ($q) use ($creatorId) {
+                $q->where('user_id', $creatorId);
+            })
+            ->select(
+                'product_id',
+                DB::raw('SUM(quantity) as total_quantity'),
+                DB::raw('SUM(price * quantity) as total_revenue')
+            )
+            ->groupBy('product_id')
+            ->orderByDesc('total_quantity')
+            ->limit(10)
+            ->with('product:id,title,slug')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'product_id' => (int) $item->product_id,
+                    'name' => $item->product->title ?? 'Produit supprimé',
+                    'total_quantity' => (int) $item->total_quantity,
+                    'total_revenue' => (float) $item->total_revenue,
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        // Évolution journalière (timeline)
+        $dailyData = Order::whereHas('items.product', function ($q) use ($creatorId) {
+                $q->where('user_id', $creatorId);
+            })
+            ->where('payment_status', 'paid')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(DISTINCT orders.id) as orders_count'),
+                DB::raw('(SELECT SUM(oi.price * oi.quantity) FROM order_items oi 
+                         INNER JOIN products p ON oi.product_id = p.id 
+                         WHERE oi.order_id = orders.id AND p.user_id = ' . $creatorId . ') as revenue')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Calculer le revenue par jour depuis les OrderItems
+        $dailyRevenue = [];
+        foreach ($dailyData as $day) {
+            $dayRevenue = OrderItem::whereHas('order', function ($q) use ($day) {
+                    $q->where('payment_status', 'paid')
+                      ->whereDate('created_at', $day->date);
+                })
+                ->whereHas('product', function ($q) use ($creatorId) {
+                    $q->where('user_id', $creatorId);
+                })
+                ->select(DB::raw('SUM(price * quantity) as total'))
+                ->value('total') ?? 0.0;
+            
+            $dailyRevenue[] = (float) $dayRevenue;
+        }
+
+        $timelineLabels = $dailyData->pluck('date')->toArray();
+        $timelineOrders = $dailyData->pluck('orders_count')->map(fn($v) => (int) $v)->toArray();
+
         return [
             'kpis' => [
-                'revenue_total' => 0.0,
-                'orders_count' => 0,
-                'avg_order_value' => null,
+                'revenue_total' => (float) $totalRevenue,
+                'orders_count' => $ordersCount,
+                'avg_order_value' => $averageCart > 0 ? $averageCart : null,
             ],
-            'top_products' => [],
+            'top_products' => $topProducts,
             'timeline' => [
-                'labels' => [],
-                'orders' => [],
-                'revenue' => [],
+                'labels' => $timelineLabels,
+                'orders' => $timelineOrders,
+                'revenue' => $dailyRevenue,
             ],
         ];
+    }
+
+    /**
+     * Construire la clé de cache pour les stats créateur
+     * 
+     * @param int $creatorId
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return string
+     */
+    protected function buildCreatorCacheKey(int $creatorId, Carbon $startDate, Carbon $endDate): string
+    {
+        return sprintf(
+            'analytics:creator:%d:%s:%s',
+            $creatorId,
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d')
+        );
     }
 }
 

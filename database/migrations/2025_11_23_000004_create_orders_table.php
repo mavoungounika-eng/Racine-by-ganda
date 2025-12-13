@@ -20,6 +20,10 @@ return new class extends Migration
             $table->string('customer_email');
             $table->string('customer_phone')->nullable();
             $table->string('customer_address');
+            
+            // Colonne pour la méthode de paiement
+            $table->string('payment_method')->nullable();
+            
             $table->timestamps();
         });
     }

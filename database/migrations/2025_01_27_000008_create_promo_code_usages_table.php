@@ -13,9 +13,17 @@ return new class extends Migration
     {
         Schema::create('promo_code_usages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('promo_code_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('order_id')->nullable()->constrained()->onDelete('set null');
+            
+            // FK conservée : promo_code_usages dépend bien d'un promo_code
+            $table->foreignId('promo_code_id')
+                ->constrained()
+                ->onDelete('cascade');
+            
+            // On évite les contraintes FK directes vers orders/users ici,
+            // pour ne pas dépendre de l'ordre des migrations.
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('order_id')->nullable();
+            
             $table->string('email')->nullable(); // Pour les utilisateurs non connectés
             $table->decimal('discount_amount', 10, 2);
             $table->timestamps();

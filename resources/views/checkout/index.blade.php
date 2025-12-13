@@ -2,9 +2,77 @@
 
 @section('content')
 <div class="container py-5">
-    <div class="row">
+    {{-- Messages flash --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            {{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <strong>Erreur de validation :</strong>
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    {{-- En-tête avec stepper --}}
+    <div class="row mb-4">
         <div class="col-12">
-            <h1 class="mb-4">Finaliser ma commande</h1>
+            <h1 class="mb-4" style="color: #1c1412; font-weight: 700; letter-spacing: 0.05em;">Finaliser ma commande</h1>
+            
+            {{-- Stepper visuel --}}
+            <div class="checkout-stepper mb-4">
+                <div class="stepper-item completed">
+                    <div class="stepper-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stepper-label">Panier</div>
+                </div>
+                <div class="stepper-line"></div>
+                <div class="stepper-item active">
+                    <div class="stepper-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stepper-label">Informations</div>
+                </div>
+                <div class="stepper-line"></div>
+                <div class="stepper-item">
+                    <div class="stepper-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="stepper-label">Paiement</div>
+                </div>
+                <div class="stepper-line"></div>
+                <div class="stepper-item">
+                    <div class="stepper-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stepper-label">Confirmation</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -259,10 +327,14 @@
                         </div>
 
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block checkout-submit-btn">
                                 <i class="fas fa-lock mr-2"></i>
                                 Valider ma commande
                             </button>
+                            <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                <i class="fas fa-shield-alt mr-1"></i>
+                                Paiement 100% sécurisé
+                            </p>
                         </div>
 
                         {{-- Support / Contact --}}
@@ -281,6 +353,131 @@
         </div>
     </form>
 </div>
+
+@push('styles')
+<style>
+    /* Stepper visuel */
+    .checkout-stepper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+    .stepper-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        position: relative;
+    }
+
+    .stepper-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9ecef;
+        color: #6c757d;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s;
+    }
+
+    .stepper-item.active .stepper-icon {
+        background: linear-gradient(135deg, #ED5F1E 0%, #D4A574 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);
+    }
+
+    .stepper-item.completed .stepper-icon {
+        background: #28a745;
+        color: white;
+    }
+
+    .stepper-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-align: center;
+    }
+
+    .stepper-item.active .stepper-label {
+        color: #ED5F1E;
+    }
+
+    .stepper-item.completed .stepper-label {
+        color: #28a745;
+    }
+
+    .stepper-line {
+        flex: 1;
+        height: 2px;
+        background: #e9ecef;
+        margin: 0 1rem;
+        position: relative;
+        top: -25px;
+    }
+
+    .stepper-item.completed + .stepper-line {
+        background: #28a745;
+    }
+
+    /* Amélioration des cards */
+    .card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        border-bottom: 2px solid rgba(237, 95, 30, 0.2);
+    }
+
+    /* Bouton submit amélioré */
+    .checkout-submit-btn {
+        background: linear-gradient(135deg, #ED5F1E 0%, #D4A574 100%) !important;
+        border: none !important;
+        padding: 1rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.05em !important;
+        box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3) !important;
+        transition: all 0.3s !important;
+    }
+
+    .checkout-submit-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(237, 95, 30, 0.4) !important;
+    }
+
+    @media (max-width: 768px) {
+        .checkout-stepper {
+            padding: 1rem;
+        }
+
+        .stepper-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .stepper-label {
+            font-size: 0.75rem;
+        }
+
+        .stepper-line {
+            margin: 0 0.5rem;
+        }
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>

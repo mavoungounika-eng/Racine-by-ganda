@@ -179,6 +179,31 @@
     
     {{-- CONTENT --}}
     <main role="main">
+    {{-- Messages flash globaux --}}
+    @if(session('success'))
+        <div class="container mt-4">
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 4px solid #28a745; background: #f8f9fa; border-radius: 8px;">
+                <i class="fas fa-check-circle mr-2" style="color: #28a745;"></i>
+                <strong>{{ session('success') }}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="container mt-4">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 4px solid #dc3545; background: #f8f9fa; border-radius: 8px;">
+                <i class="fas fa-exclamation-circle mr-2" style="color: #dc3545;"></i>
+                <strong>{{ session('error') }}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    @endif
+
     @yield('content')
     </main>
     

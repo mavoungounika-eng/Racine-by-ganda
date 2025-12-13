@@ -35,8 +35,8 @@ class PaymentTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function user_can_initiate_card_payment()
+    #[Test]
+    public function user_can_initiate_card_payment(): void
     {
         $response = $this->post(route('checkout.card.pay'), [
             'order_id' => $this->order->id,
@@ -51,8 +51,8 @@ class PaymentTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function payment_requires_authenticated_user()
+    #[Test]
+    public function payment_requires_authenticated_user(): void
     {
         auth()->logout();
         
@@ -63,8 +63,8 @@ class PaymentTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    /** @test */
-    public function user_cannot_pay_for_another_users_order()
+    #[Test]
+    public function user_cannot_pay_for_another_users_order(): void
     {
         $otherUser = User::factory()->create(['role' => 'client']);
         $otherOrder = Order::factory()->create([
@@ -81,8 +81,8 @@ class PaymentTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
-    public function payment_cannot_be_initiated_for_already_paid_order()
+    #[Test]
+    public function payment_cannot_be_initiated_for_already_paid_order(): void
     {
         $this->order->update(['payment_status' => 'paid']);
         
@@ -93,8 +93,8 @@ class PaymentTest extends TestCase
         $response->assertRedirect(route('checkout.card.success', $this->order));
     }
 
-    /** @test */
-    public function webhook_verifies_stripe_signature()
+    #[Test]
+    public function webhook_verifies_stripe_signature(): void
     {
         $payment = Payment::factory()->create([
             'order_id' => $this->order->id,

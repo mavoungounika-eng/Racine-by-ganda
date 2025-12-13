@@ -30,8 +30,6 @@ class AnalyticsController extends Controller
 
     /**
      * Dashboard Analytics créateur
-     * 
-     * TODO Phase 4 : Implémenter la vue avec les statistiques du créateur
      */
     public function index(Request $request)
     {
@@ -41,34 +39,69 @@ class AnalyticsController extends Controller
         $endDate = now();
         $startDate = now()->subDays(30);
 
-        // TODO : Récupérer les statistiques du créateur
-        // $stats = $this->analyticsService->getCreatorStats($creatorId, $startDate, $endDate);
+        // Gestion de la période
+        $period = $request->get('period', '30days');
+        [$startDate, $endDate] = $this->parsePeriod($period, $request);
 
-        // Pour l'instant, retourner un stub
-        return view('creator.analytics.index', [
-            'creator_id' => $creatorId,
-            'note' => 'Dashboard créateur à implémenter',
-        ]);
+        // Force refresh si demandé
+        $forceRefresh = $request->has('refresh');
+
+        // Récupérer les statistiques du créateur
+        $stats = $this->analyticsService->getCreatorStats($creatorId, $startDate, $endDate, $forceRefresh);
+
+        return view('creator.analytics.index', compact('stats', 'period'));
     }
 
     /**
      * Statistiques de ventes du créateur
-     * 
-     * TODO Phase 4 : Implémenter
      */
     public function sales(Request $request)
     {
         $creatorId = Auth::id();
         
-        // TODO : Implémenter les statistiques de ventes pour le créateur
-        // - Filtrer les commandes contenant ses produits
-        // - Calculer le CA
-        // - Top produits
-        
-        return view('creator.analytics.sales', [
-            'creator_id' => $creatorId,
-            'note' => 'Statistiques ventes créateur à implémenter',
-        ]);
+        // Gestion de la période
+        $period = $request->get('period', '30days');
+        [$startDate, $endDate] = $this->parsePeriod($period, $request);
+
+        // Force refresh si demandé
+        $forceRefresh = $request->has('refresh');
+
+        // Récupérer les statistiques de ventes
+        $stats = $this->analyticsService->getCreatorStats($creatorId, $startDate, $endDate, $forceRefresh);
+
+        return view('creator.analytics.sales', compact('stats', 'period'));
+    }
+
+    /**
+     * Parser la période depuis la requête
+     * 
+     * @param string $period
+     * @param Request $request
+     * @return array [Carbon $startDate, Carbon $endDate]
+     */
+    protected function parsePeriod(string $period, Request $request): array
+    {
+        $endDate = now()->endOfDay();
+
+        switch ($period) {
+            case '7days':
+                $startDate = now()->subDays(7)->startOfDay();
+                break;
+            case '30days':
+                $startDate = now()->subDays(30)->startOfDay();
+                break;
+            case 'this_month':
+                $startDate = now()->startOfMonth()->startOfDay();
+                break;
+            case 'custom':
+                $startDate = Carbon::parse($request->get('start_date'))->startOfDay();
+                $endDate = Carbon::parse($request->get('end_date'))->endOfDay();
+                break;
+            default:
+                $startDate = now()->subDays(30)->startOfDay();
+        }
+
+        return [$startDate, $endDate];
     }
 }
 
