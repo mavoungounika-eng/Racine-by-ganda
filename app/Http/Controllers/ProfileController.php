@@ -258,6 +258,19 @@ class ProfileController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // ✅ FINAL HARDENING - Révoquer trusted device lors du changement de mot de passe
+        $twoFactorService = app(\App\Services\TwoFactorService::class);
+        $twoFactorService->revokeTrustedDevice($user);
+        
+        // Supprimer le cookie trusted_device
+        cookie()->queue(cookie()->forget('trusted_device'));
+        
+        // Logger l'événement de sécurité
+        \Log::channel('security')->info('Password changed, trusted device revoked', [
+            'user_id' => $user->id,
+            'ip' => $request->ip(),
+        ]);
+
         return redirect()->route('profile.index')
             ->with('success', 'Mot de passe modifié avec succès !');
     }

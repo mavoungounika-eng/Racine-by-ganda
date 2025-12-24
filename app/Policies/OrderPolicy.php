@@ -51,8 +51,18 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        // ✅ Seuls les clients actifs peuvent créer des commandes
-        return $user->isClient() && $user->status === 'active';
+        // Les clients actifs peuvent créer des commandes en ligne
+        if ($user->isClient() && $user->status === 'active') {
+            return true;
+        }
+        
+        // Les admins et staff peuvent créer des commandes via le POS (boutique physique)
+        $roleSlug = $user->getRoleSlug();
+        if (in_array($roleSlug, ['admin', 'super_admin', 'staff'])) {
+            return true;
+        }
+        
+        return false;
     }
 
     /**

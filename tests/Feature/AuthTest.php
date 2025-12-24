@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\CreatorProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -48,17 +50,17 @@ class AuthTest extends TestCase
     #[Test]
     public function user_is_redirected_based_on_role_after_login(): void
     {
-        $admin = User::factory()->create([
-            'role' => 'admin',
+        $staff = User::factory()->create([
+            'role' => 'staff',
             'password' => Hash::make('password123'),
         ]);
 
         $response = $this->post(route('login.post'), [
-            'email' => $admin->email,
+            'email' => $staff->email,
             'password' => 'password123',
         ]);
 
-        $response->assertRedirect(route('admin.dashboard'));
+        $response->assertRedirect(route('staff.dashboard'));
     }
 
     #[Test]
@@ -83,6 +85,12 @@ class AuthTest extends TestCase
         $creator = User::factory()->create([
             'role' => 'createur',
             'password' => Hash::make('password123'),
+        ]);
+
+        // Créer un profil actif pour la redirection
+        CreatorProfile::factory()->create([
+            'user_id' => $creator->id,
+            'status' => 'active',
         ]);
 
         $response = $this->post(route('login.post'), [

@@ -63,8 +63,8 @@ trait HandlesTwoFactor
         return match($role) {
             'super_admin' => redirect()->route('admin.dashboard'),
             'admin' => redirect()->route('admin.dashboard'),
-            'staff' => redirect()->route('dashboard.staff'),
-            'createur', 'creator' => redirect()->route('dashboard.createur'),
+            'staff' => redirect()->route('staff.dashboard'),
+            'createur', 'creator' => redirect()->route('creator.dashboard'),
             'client' => redirect()->route('account.dashboard'),
             default => redirect()->route('frontend.home'),
         };

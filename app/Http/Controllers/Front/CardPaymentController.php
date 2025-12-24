@@ -9,7 +9,9 @@ use App\Services\Payments\CardPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Stripe\Exception\SignatureVerificationException;
 use Symfony\Component\HttpFoundation\Response;
+use UnexpectedValueException;
 
 /**
  * Contrôleur pour les paiements par carte bancaire via Stripe
@@ -120,31 +122,76 @@ class CardPaymentController extends Controller
      * @param CardPaymentService $cardPaymentService
      * @return Response
      */
+    /**
+     * Webhook Stripe pour les notifications de paiement
+     * 
+     * RBG-P0-010 : Signature obligatoire en production
+     *
+     * @param Request $request
+     * @param CardPaymentService $cardPaymentService
+     * @return Response
+     */
     public function webhook(Request $request, CardPaymentService $cardPaymentService): Response
     {
         // Récupérer le payload brut (important pour la vérification de signature)
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
+        $ip = $request->ip();
+        $route = $request->fullUrl();
+        $userAgent = $request->userAgent();
 
         try {
             $result = $cardPaymentService->handleWebhook($payload, $signature);
             
             if ($result === null) {
-                return response()->json(['error' => 'Webhook processing failed'], 400);
+                \Log::warning('Stripe webhook: Processing failed', [
+                    'ip' => $ip,
+                    'route' => $route,
+                    'user_agent' => $userAgent,
+                    'reason' => 'processing_failed',
+                ]);
+                return response()->json(['message' => 'Webhook processing failed'], 400);
             }
             
+            \Log::info('Stripe webhook: Successfully processed', [
+                'ip' => $ip,
+                'route' => $route,
+                'user_agent' => $userAgent,
+                'payment_id' => $result->id ?? null,
+            ]);
+            
             return response()->json(['status' => 'success'], 200);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            \Illuminate\Support\Facades\Log::error('Stripe webhook signature verification failed', [
+        } catch (SignatureVerificationException $e) {
+            // RBG-P0-010 : Signature invalide ou manquante → 401
+            \Log::error('Stripe webhook: Signature verification failed', [
+                'ip' => $ip,
+                'route' => $route,
+                'user_agent' => $userAgent,
+                'reason' => 'invalid_signature',
                 'error' => $e->getMessage(),
             ]);
-            return response()->json(['error' => 'Invalid signature'], 401);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Stripe webhook error', [
+            return response()->json(['message' => 'Invalid signature'], 401);
+        } catch (UnexpectedValueException $e) {
+            // Payload invalide → 400
+            \Log::error('Stripe webhook: Invalid payload', [
+                'ip' => $ip,
+                'route' => $route,
+                'user_agent' => $userAgent,
+                'reason' => 'invalid_payload',
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['error' => 'Webhook error: ' . $e->getMessage()], 400);
+            return response()->json(['message' => 'Invalid payload'], 400);
+        } catch (\Throwable $e) {
+            // Fallback pour toutes les autres exceptions → 500
+            \Log::error('Stripe webhook: Webhook processing failed', [
+                'ip' => $ip,
+                'route' => $route,
+                'user_agent' => $userAgent,
+                'reason' => 'unexpected_error',
+                'error' => $e->getMessage(),
+                'exception_class' => get_class($e),
+            ]);
+            return response()->json(['message' => 'Webhook processing failed'], 500);
         }
     }
 }

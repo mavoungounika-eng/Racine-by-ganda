@@ -79,6 +79,18 @@ class CreatorProductController extends Controller
     {
         $this->authorize('create', Product::class);
 
+        $user = Auth::user();
+        
+        // PHASE 7: Vérifier si peut ajouter un produit
+        $capabilityService = app(\App\Services\CreatorCapabilityService::class);
+        if (!$capabilityService->canAddProduct($user)) {
+            $maxProducts = $user->capability('max_products');
+            $currentCount = $user->creatorProfile?->products()->count() ?? 0;
+            
+            return redirect()->route('creator.products.index')
+                ->with('error', "Limite de produits atteinte ({$currentCount}/{$maxProducts}). Passez au plan Officiel pour des produits illimités.");
+        }
+
         $categories = Category::whereNull('parent_id')
             ->where('is_active', true)
             ->with(['children' => function ($query) {
@@ -100,9 +112,19 @@ class CreatorProductController extends Controller
     {
         $this->authorize('create', Product::class);
 
-        $validated = $request->validated();
-
         $user = Auth::user();
+        
+        // PHASE 7: Vérifier si peut ajouter un produit
+        $capabilityService = app(\App\Services\CreatorCapabilityService::class);
+        if (!$capabilityService->canAddProduct($user)) {
+            $maxProducts = $user->capability('max_products');
+            $currentCount = $user->creatorProfile?->products()->count() ?? 0;
+            
+            return redirect()->route('creator.products.index')
+                ->with('error', "Limite de produits atteinte ({$currentCount}/{$maxProducts}). Passez au plan Officiel pour des produits illimités.");
+        }
+
+        $validated = $request->validated();
         
         // Génération du slug
         $slug = Str::slug($validated['title']);

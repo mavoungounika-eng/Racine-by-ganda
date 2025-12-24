@@ -42,14 +42,9 @@ class CreatorAuthController extends Controller
             // Le rôle créateur a l'ID 4 dans la table roles
             $isCreator = false;
             
-            // Vérification directe par role_id (plus rapide, pas de requête SQL)
-            if ($user->role_id == 4) {
-                $isCreator = true;
-            } 
-            // Fallback : vérifier le champ role (attribut direct, pas de requête)
-            elseif (in_array($user->role ?? '', ['createur', 'creator'])) {
-                $isCreator = true;
-            }
+            // ✅ Module 8 - Utiliser getRoleSlug() pour cohérence
+            $roleSlug = $user->getRoleSlug();
+            $isCreator = in_array($roleSlug, ['createur', 'creator']);
             
             if (!$isCreator) {
                 Auth::logout();

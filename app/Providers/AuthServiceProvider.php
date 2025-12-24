@@ -199,6 +199,30 @@ class AuthServiceProvider extends ServiceProvider
             return in_array($role, ['super_admin', 'admin']);
         });
 
+        // =============================================
+        // GATES PAYMENTS HUB (Sprint 2)
+        // =============================================
+        
+        Gate::define('payments.view', function (User $user) {
+            $roleSlug = $user->getRoleSlug();
+            return in_array($roleSlug, ['super_admin', 'admin', 'staff']);
+        });
+
+        Gate::define('payments.config', function (User $user) {
+            $roleSlug = $user->getRoleSlug();
+            return in_array($roleSlug, ['super_admin', 'admin']);
+        });
+
+        Gate::define('payments.reprocess', function (User $user) {
+            $roleSlug = $user->getRoleSlug();
+            return in_array($roleSlug, ['super_admin', 'admin', 'staff']);
+        });
+
+        Gate::define('payments.refund', function (User $user) {
+            $roleSlug = $user->getRoleSlug();
+            return in_array($roleSlug, ['super_admin', 'admin']);
+        });
+
         // Super Admin - toutes permissions
         Gate::before(function (User $user, string $ability) {
             if ($user->getRoleSlug() === 'super_admin') {

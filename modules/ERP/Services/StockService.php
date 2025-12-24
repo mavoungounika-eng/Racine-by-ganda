@@ -50,7 +50,10 @@ class StockService
 
         DB::transaction(function () use ($order) {
             foreach ($order->items as $item) {
-                $product = $item->product;
+                // ✅ CORRECTION 1 & 6 : Lock produit avant décrément pour éviter race condition
+                $product = Product::where('id', $item->product_id)
+                    ->lockForUpdate()
+                    ->first();
 
                 if (!$product) {
                     Log::warning("Product not found for OrderItem #{$item->id}");
@@ -63,7 +66,7 @@ class StockService
                     // On continue quand même (backorder) mais on log
                 }
 
-                // Décrémenter le stock
+                // Décrémenter le stock (produit déjà verrouillé)
                 $product->decrement('stock', $item->quantity);
 
                 // Créer le mouvement de stock
@@ -128,5 +131,82 @@ class StockService
         });
 
         Log::info("Stock restored for Order #{$order->id}");
+    }
+
+    /**
+     * ✅ CORRECTION 5 : Rollback stock pour paiement échoué
+     * 
+     * Réintègre le stock qui a été décrémenté à la création de la commande
+     * lorsque le paiement échoue (card/mobile_money).
+     * 
+     * PROTECTION DOUBLE ROLLBACK : Vérifie si un mouvement de rollback existe déjà
+     * pour cette commande avant de réintégrer (idempotence).
+     * 
+     * @param Order $order Commande dont le paiement a échoué
+     * @return void
+     */
+    public function rollbackFromOrder(Order $order): void
+    {
+        // Vérifier que la commande a des items
+        if ($order->items->isEmpty()) {
+            Log::warning("Order #{$order->id} has no items, skipping stock rollback.");
+            return;
+        }
+
+        // PROTECTION DOUBLE ROLLBACK : Vérifier si le stock a déjà été réintégré pour cette commande
+        $existingRollback = ErpStockMovement::where('reference_type', Order::class)
+            ->where('reference_id', $order->id)
+            ->where('type', 'in')
+            ->where('reason', 'Échec paiement')
+            ->first();
+
+        if ($existingRollback) {
+            Log::info("Stock already rolled back for Order #{$order->id}, skipping to avoid double rollback.");
+            return;
+        }
+
+        // Vérifier qu'un décrément existe (sinon pas de rollback nécessaire)
+        $existingDecrement = ErpStockMovement::where('reference_type', Order::class)
+            ->where('reference_id', $order->id)
+            ->where('type', 'out')
+            ->first();
+
+        if (!$existingDecrement) {
+            Log::info("No stock decrement found for Order #{$order->id}, skipping rollback.");
+            return;
+        }
+
+        DB::transaction(function () use ($order) {
+            foreach ($order->items as $item) {
+                // ✅ CORRECTION 5 : Lock produit avant rollback pour éviter race condition
+                $product = Product::where('id', $item->product_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$product) {
+                    Log::warning("Product not found for OrderItem #{$item->id}");
+                    continue;
+                }
+
+                // Réintégrer le stock (produit déjà verrouillé)
+                $product->increment('stock', $item->quantity);
+
+                // Créer le mouvement de stock (rollback)
+                ErpStockMovement::create([
+                    'stockable_type' => Product::class,
+                    'stockable_id' => $product->id,
+                    'type' => 'in',
+                    'quantity' => $item->quantity,
+                    'reason' => 'Échec paiement',
+                    'reference_type' => Order::class,
+                    'reference_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'from_location' => 'Client',
+                    'to_location' => 'Entrepôt Principal',
+                ]);
+            }
+        });
+
+        Log::info("Stock rolled back for Order #{$order->id} (payment failed)");
     }
 }

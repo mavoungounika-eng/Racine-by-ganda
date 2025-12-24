@@ -256,18 +256,28 @@ class ErpReportController extends Controller
 
         $movements = $query->orderBy('created_at', 'desc')->paginate(50);
 
+        // ✅ OPTIMISATION : Une seule requête agrégée pour by_reason, puis calcul séparé pour totaux
+        $dateFrom = Carbon::now()->subDays(30);
+        
+        // Calculer les totaux (2 requêtes optimisées)
+        $totalIn = ErpStockMovement::where('type', 'in')
+            ->where('created_at', '>=', $dateFrom)
+            ->sum('quantity');
+        $totalOut = ErpStockMovement::where('type', 'out')
+            ->where('created_at', '>=', $dateFrom)
+            ->sum('quantity');
+        
+        // Grouper par raison (1 requête)
+        $byReason = ErpStockMovement::where('created_at', '>=', $dateFrom)
+            ->select('reason', DB::raw('COUNT(*) as count'), DB::raw('SUM(quantity) as total_qty'))
+            ->groupBy('reason')
+            ->get()
+            ->keyBy('reason');
+        
         $stats = [
-            'total_in' => ErpStockMovement::where('type', 'in')
-                ->where('created_at', '>=', Carbon::now()->subDays(30))
-                ->sum('quantity'),
-            'total_out' => ErpStockMovement::where('type', 'out')
-                ->where('created_at', '>=', Carbon::now()->subDays(30))
-                ->sum('quantity'),
-            'by_reason' => ErpStockMovement::where('created_at', '>=', Carbon::now()->subDays(30))
-                ->select('reason', DB::raw('COUNT(*) as count'), DB::raw('SUM(quantity) as total_qty'))
-                ->groupBy('reason')
-                ->get()
-                ->keyBy('reason'),
+            'total_in' => $totalIn,
+            'total_out' => $totalOut,
+            'by_reason' => $byReason,
         ];
 
         if ($format === 'json') {

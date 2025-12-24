@@ -332,6 +332,12 @@
                 <i class="fas fa-receipt"></i>
                 <span>Commandes</span>
             </a>
+            @can('payments.view')
+            <a href="{{ route('admin.payments.index') }}" class="admin-nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                <i class="fas fa-credit-card"></i>
+                <span>Paiements</span>
+            </a>
+            @endcan
             <a href="{{ route('admin.finances.index') }}" class="admin-nav-link {{ request()->routeIs('admin.finances.*') ? 'active' : '' }}">
                 <i class="fas fa-coins"></i>
                 <span>Finances</span>
@@ -366,6 +372,10 @@
             </a>
 
             <div class="admin-nav-section-title">Outils</div>
+            <a href="{{ route('admin.pos.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+                <i class="fas fa-cash-register"></i>
+                <span>Point de Vente (POS)</span>
+            </a>
             <a href="{{ route('messages.index') }}" class="admin-nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}">
                 <i class="fas fa-comments"></i>
                 <span>Messagerie</span>

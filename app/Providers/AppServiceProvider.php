@@ -12,6 +12,9 @@ use App\Observers\CreatorProfileObserver;
 use App\Observers\CreatorDocumentObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,6 +44,18 @@ class AppServiceProvider extends ServiceProvider
         
         // Enregistrer CreatorScoringService comme singleton
         $this->app->singleton(\App\Services\CreatorScoringService::class);
+        
+        // Enregistrer CreatorCapabilityService comme singleton
+        $this->app->singleton(\App\Services\CreatorCapabilityService::class);
+        
+        // Enregistrer SubscriptionAnalyticsService comme singleton
+        $this->app->singleton(\App\Services\SubscriptionAnalyticsService::class);
+        
+        // V2.2 : Enregistrer CreatorAddonService comme singleton
+        $this->app->singleton(\App\Services\CreatorAddonService::class);
+        
+        // V2.3 : Enregistrer CreatorBundleService comme singleton
+        $this->app->singleton(\App\Services\CreatorBundleService::class);
     }
 
     /**
@@ -54,32 +69,30 @@ class AppServiceProvider extends ServiceProvider
         CreatorProfile::observe(CreatorProfileObserver::class);
         CreatorDocument::observe(CreatorDocumentObserver::class);
 
-        // Gates pour les permissions par rôle
-        Gate::define('access-super-admin', function ($user) {
-            return $user->hasRole('super_admin');
+        // Définir le rate limiter 'api' pour les webhooks
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        Gate::define('access-admin', function ($user) {
-            return in_array($user->role, ['super_admin', 'admin']);
+        // Définir le rate limiter 'webhooks' pour les endpoints webhooks (anti-abus)
+        RateLimiter::for('webhooks', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
         });
 
-        Gate::define('access-staff', function ($user) {
-            return in_array($user->role, ['super_admin', 'admin', 'staff']);
-        });
-
-        Gate::define('access-createur', function ($user) {
-            return $user->hasRole('createur');
-        });
-
-        Gate::define('access-client', function ($user) {
-            return $user->hasRole('client');
-        });
-
-        // Gate access-crm (access-erp est défini dans AuthServiceProvider)
-        Gate::define('access-crm', function ($user) {
-            return in_array($user->role, ['super_admin', 'admin', 'staff']);
-        });
-
-        // Note: access-erp est défini dans AuthServiceProvider pour éviter les doublons
+        // ⚠️ DOUBLONS SUPPRIMÉS : Ces Gates sont déjà définis dans AuthServiceProvider
+        // avec une logique plus complète utilisant getRoleSlug().
+        // 
+        // Les Gates suivants sont définis dans AuthServiceProvider :
+        // - access-super-admin
+        // - access-admin
+        // - access-staff
+        // - access-createur
+        // - access-client
+        // - access-crm
+        // - access-erp
+        // - manage-erp
+        // - manage-crm
+        //
+        // Ne pas redéfinir ici pour éviter les conflits et incohérences.
     }
 }

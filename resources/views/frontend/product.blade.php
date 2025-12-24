@@ -572,24 +572,7 @@
         <div class="product-container">
             <!-- Gallery -->
             <div class="product-gallery">
-                <div class="main-image">
-                    <img src="{{ $product->image ?? 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=1000&fit=crop' }}" alt="{{ $product->name ?? 'Produit' }}" id="mainImage">
-                    <button class="zoom-btn"><i class="fas fa-search-plus"></i></button>
-                </div>
-                <div class="thumbnail-gallery">
-                    <div class="thumbnail active">
-                        <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=200&h=250&fit=crop" alt="Vue 1">
-                    </div>
-                    <div class="thumbnail">
-                        <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=200&h=250&fit=crop" alt="Vue 2">
-                    </div>
-                    <div class="thumbnail">
-                        <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=200&h=250&fit=crop" alt="Vue 3">
-                    </div>
-                    <div class="thumbnail">
-                        <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=200&h=250&fit=crop" alt="Vue 4">
-                    </div>
-                </div>
+                @include('frontend.partials.product-carousel')
             </div>
             
             <!-- Details -->

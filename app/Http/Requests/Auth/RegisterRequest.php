@@ -23,7 +23,16 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(12)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(),
+            ],
             'account_type' => ['required', 'in:client,creator'],
             'terms' => ['required', 'accepted'],
         ];
@@ -41,7 +50,7 @@ class RegisterRequest extends FormRequest
             'email.unique' => 'Cette adresse email est déjà utilisée.',
             'password.required' => 'Le mot de passe est requis.',
             'password.confirmed' => 'Les mots de passe ne correspondent pas.',
-            'password.min' => 'Le mot de passe doit contenir au moins :min caractères.',
+            'password.min' => 'Le mot de passe doit contenir au moins 12 caractères avec lettres majuscules, minuscules, chiffres et symboles.',
             'account_type.required' => 'Veuillez choisir un type de compte.',
             'account_type.in' => 'Le type de compte sélectionné est invalide.',
             'terms.required' => 'Vous devez accepter les conditions d\'utilisation.',

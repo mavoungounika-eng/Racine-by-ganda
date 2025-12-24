@@ -93,6 +93,20 @@ class ConversationService
                 ]);
             }
 
+            // [V1.5 Enhancement] Si la commande ne concerne qu'un seul créateur, l'ajouter à la conversation
+            // Cela permet au vendeur de répondre directement aux questions sur la commande
+            $creatorIds = $order->items->map(fn($item) => $item->product->user_id)->unique();
+            if ($creatorIds->count() === 1 && $creatorIds->first()) {
+                $creatorId = $creatorIds->first();
+                // Vérifier qu'on ne l'a pas déjà ajouté (si c'est l'admin ou le client, peu probable mais possible en test)
+                if ($creatorId !== $initiatorId && !$teamMembers->contains($creatorId)) {
+                    $conversation->participants()->create([
+                        'user_id' => $creatorId,
+                        'role' => ConversationParticipant::ROLE_RECIPIENT,
+                    ]);
+                }
+            }
+
             Log::info('Order thread created', [
                 'conversation_id' => $conversation->id,
                 'order_id' => $order->id,
@@ -129,9 +143,9 @@ class ConversationService
             ]);
 
             // Ajouter le créateur du produit (si existe)
-            if ($product->creator_id) {
+            if ($product->user_id) {
                 $conversation->participants()->create([
-                    'user_id' => $product->creator_id,
+                    'user_id' => $product->user_id,
                     'role' => ConversationParticipant::ROLE_RECIPIENT,
                 ]);
             }

@@ -9,6 +9,7 @@ use Modules\ERP\Models\ErpStockMovement;
 use Modules\ERP\Http\Requests\StoreStockAdjustmentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -56,12 +57,24 @@ class ErpStockController extends Controller
 
         $products = $query->orderBy('stock', 'asc')->paginate(20);
 
-        $stats = [
-            'total' => Product::count(),
-            'low' => Product::where('stock', '<', 5)->where('stock', '>', 0)->count(),
-            'out' => Product::where('stock', '<=', 0)->count(),
-            'ok' => Product::where('stock', '>=', 5)->count(),
-        ];
+        // ✅ OPTIMISATION : Une seule requête agrégée au lieu de 4 requêtes séparées
+        $stats = Cache::remember('erp_stocks_stats', 300, function () {
+            $result = DB::selectOne("
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN stock < 5 AND stock > 0 THEN 1 ELSE 0 END) as low,
+                    SUM(CASE WHEN stock <= 0 THEN 1 ELSE 0 END) as out,
+                    SUM(CASE WHEN stock >= 5 THEN 1 ELSE 0 END) as ok
+                FROM products
+            ");
+            
+            return [
+                'total' => (int) ($result->total ?? 0),
+                'low' => (int) ($result->low ?? 0),
+                'out' => (int) ($result->out ?? 0),
+                'ok' => (int) ($result->ok ?? 0),
+            ];
+        });
 
         return view('erp::stocks.index', compact('products', 'stats'));
     }

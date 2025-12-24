@@ -126,6 +126,9 @@ class ErpPurchaseController extends Controller
             $purchase->update(['status' => $request->status]);
 
             if ($request->status === 'received') {
+                // ✅ OPTIMISATION : Charger les relations en une fois pour éviter N+1
+                $purchase->load(['items.purchasable']);
+                
                 // Incrémenter les stocks
                 foreach ($purchase->items as $item) {
                     if ($item->purchasable_type === ErpRawMaterial::class) {

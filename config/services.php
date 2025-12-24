@@ -32,7 +32,18 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
-        'currency' => env('STRIPE_CURRENCY', 'XOF'),
+        'currency' => env('STRIPE_CURRENCY', 'XAF'), // XAF = Franc CFA (CEMAC)
+    ],
+
+    'monetbil' => [
+        'service_key' => env('MONETBIL_SERVICE_KEY'),
+        'service_secret' => env('MONETBIL_SERVICE_SECRET'),
+        'widget_version' => env('MONETBIL_WIDGET_VERSION', 'v2.1'),
+        'country' => env('MONETBIL_COUNTRY', 'CG'),
+        'currency' => env('MONETBIL_CURRENCY', 'XAF'),
+        'notify_url' => env('MONETBIL_NOTIFY_URL'),
+        'return_url' => env('MONETBIL_RETURN_URL'),
+        'allowed_ips' => env('MONETBIL_ALLOWED_IPS'),
     ],
 
     'slack' => [
@@ -46,6 +57,18 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI', config('app.url') . '/auth/google/callback'),
+    ],
+
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID'),
+        'client_secret' => env('APPLE_CLIENT_SECRET'),
+        'redirect' => env('APPLE_REDIRECT_URI', config('app.url') . '/auth/apple/callback'),
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI', config('app.url') . '/auth/facebook/callback'),
     ],
 
     /*

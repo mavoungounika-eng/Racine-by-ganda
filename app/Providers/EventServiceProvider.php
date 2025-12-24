@@ -38,6 +38,10 @@ class EventServiceProvider extends ServiceProvider
         PaymentFailed::class => [
             [LogFunnelEvent::class, 'handlePaymentFailed'],
         ],
+        // ✅ Phase 2 : Limiter les sessions actives
+        \Illuminate\Auth\Events\Login::class => [
+            \App\Listeners\LogSuccessfulLogin::class,
+        ],
     ];
 
     /**

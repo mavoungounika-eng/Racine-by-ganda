@@ -21,6 +21,9 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * 
+     * Workaround SQLite (RBG-P0-002) : SQLite ne supporte pas information_schema.statistics.
+     * Utilisation de try-catch pour gérer les erreurs "index already exists" de manière cross-DB.
      */
     public function up(): void
     {
@@ -29,68 +32,89 @@ return new class extends Migration
             Schema::table('orders', function (Blueprint $table) {
                 // Index sur payment_method pour améliorer les requêtes de filtrage
                 // Utilisé notamment dans CleanupAbandonedOrders et les statistiques
-                if (!$this->hasIndex('orders', 'orders_payment_method_index')) {
+                // Workaround SQLite (RBG-P0-002) : try-catch au lieu de hasIndex()
+                try {
                     $table->index('payment_method', 'orders_payment_method_index');
+                } catch (\Exception $e) {
+                    // Index existe déjà, ignorer l'erreur
+                    // SQLite : "index orders_payment_method_index already exists"
+                    // MySQL : "Duplicate key name 'orders_payment_method_index'"
+                    if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                        !str_contains($e->getMessage(), 'already exists')) {
+                        throw $e;
+                    }
                 }
             });
         }
 
         Schema::table('payments', function (Blueprint $table) {
             // Index sur provider pour améliorer les requêtes de filtrage par fournisseur
-            if (!$this->hasIndex('payments', 'payments_provider_index')) {
+            // Workaround SQLite (RBG-P0-002) : try-catch au lieu de hasIndex()
+            try {
                 $table->index('provider', 'payments_provider_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
 
             // Index sur channel pour améliorer les requêtes de filtrage par canal
             // Utilisé notamment dans MobileMoneyPaymentController
-            if (!$this->hasIndex('payments', 'payments_channel_index')) {
+            // Workaround SQLite (RBG-P0-002) : try-catch au lieu de hasIndex()
+            try {
                 $table->index('channel', 'payments_channel_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
         });
     }
 
     /**
      * Reverse the migrations.
+     * 
+     * Workaround SQLite (RBG-P0-002) : try-catch pour gérer les erreurs "index does not exist".
      */
     public function down(): void
     {
         // Protéger la suppression de l'index : vérifier que la table et la colonne existent
         if (Schema::hasTable('orders') && Schema::hasColumn('orders', 'payment_method')) {
             Schema::table('orders', function (Blueprint $table) {
-                if ($this->hasIndex('orders', 'orders_payment_method_index')) {
+                // Workaround SQLite (RBG-P0-002) : try-catch au lieu de hasIndex()
+                try {
                     $table->dropIndex('orders_payment_method_index');
+                } catch (\Exception $e) {
+                    // Index n'existe pas, ignorer l'erreur
+                    if (!str_contains($e->getMessage(), 'does not exist') && 
+                        !str_contains($e->getMessage(), 'Unknown key')) {
+                        throw $e;
+                    }
                 }
             });
         }
 
         Schema::table('payments', function (Blueprint $table) {
-            if ($this->hasIndex('payments', 'payments_provider_index')) {
+            // Workaround SQLite (RBG-P0-002) : try-catch au lieu de hasIndex()
+            try {
                 $table->dropIndex('payments_provider_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
             }
 
-            if ($this->hasIndex('payments', 'payments_channel_index')) {
+            try {
                 $table->dropIndex('payments_channel_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
             }
         });
-    }
-
-    /**
-     * Vérifier si un index existe déjà
-     */
-    protected function hasIndex(string $table, string $indexName): bool
-    {
-        $connection = Schema::getConnection();
-        $databaseName = $connection->getDatabaseName();
-        
-        $result = $connection->select(
-            "SELECT COUNT(*) as count 
-             FROM information_schema.statistics 
-             WHERE table_schema = ? 
-             AND table_name = ? 
-             AND index_name = ?",
-            [$databaseName, $table, $indexName]
-        );
-
-        return $result[0]->count > 0;
     }
 };

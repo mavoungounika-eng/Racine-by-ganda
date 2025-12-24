@@ -39,7 +39,15 @@ foreach ($accounts as $account) {
     
     if (!$user) {
         echo "  ❌ Compte non trouvé\n";
-        $results[$email] = ['exists' => false, 'login' => false];
+        $results[$email] = [
+            'exists' => false, 
+            'password' => false,
+            'role' => false,
+            'status' => false,
+            'email_verified' => false,
+            'two_factor' => false,
+            'login' => false
+        ];
         continue;
     }
     
@@ -96,17 +104,22 @@ $total = count($accounts);
 $success = 0;
 
 foreach ($results as $email => $result) {
-    if ($result['exists'] && $result['password'] && $result['status'] && $result['email_verified'] && $result['two_factor'] && $result['login']) {
+    if (isset($result['exists']) && $result['exists'] && 
+        isset($result['password']) && $result['password'] && 
+        isset($result['status']) && $result['status'] && 
+        isset($result['email_verified']) && $result['email_verified'] && 
+        isset($result['two_factor']) && $result['two_factor'] && 
+        isset($result['login']) && $result['login']) {
         $success++;
         echo "✅ {$email} - OK\n";
     } else {
         echo "❌ {$email} - PROBLÈME\n";
-        if (!$result['exists']) echo "   - Compte non trouvé\n";
-        if (!$result['password']) echo "   - Mot de passe incorrect\n";
-        if (!$result['status']) echo "   - Statut incorrect\n";
-        if (!$result['email_verified']) echo "   - Email non vérifié\n";
-        if (!$result['two_factor']) echo "   - 2FA activée\n";
-        if (!$result['login']) echo "   - Connexion échouée\n";
+        if (!isset($result['exists']) || !$result['exists']) echo "   - Compte non trouvé\n";
+        if (isset($result['password']) && !$result['password']) echo "   - Mot de passe incorrect\n";
+        if (isset($result['status']) && !$result['status']) echo "   - Statut incorrect\n";
+        if (isset($result['email_verified']) && !$result['email_verified']) echo "   - Email non vérifié\n";
+        if (isset($result['two_factor']) && !$result['two_factor']) echo "   - 2FA activée\n";
+        if (isset($result['login']) && !$result['login']) echo "   - Connexion échouée\n";
     }
 }
 

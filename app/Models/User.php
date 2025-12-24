@@ -6,14 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
         'email',
+        'email_verified_at',
+        'google_id', // PHASE 1.1 : Liaison OAuth Google
         'professional_email',
         'professional_email_verified',
         'professional_email_verified_at',
@@ -253,6 +256,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the products created by this user (for creators).
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'user_id');
+    }
+
+
+    /**
      * Get the user's loyalty points.
      */
     public function loyaltyPoints()
@@ -307,5 +319,151 @@ class User extends Authenticatable
             'professional_email_verified' => true,
             'professional_email_verified_at' => now(),
         ]);
+    }
+
+    /**
+     * ============================================
+     * ABONNEMENT CRÉATEUR - CAPABILITIES
+     * ============================================
+     */
+
+    /**
+     * Get the active subscription for this creator.
+     * 
+     * @return \App\Models\CreatorSubscription|null
+     */
+    public function activeSubscription()
+    {
+        if (!$this->isCreator()) {
+            return null;
+        }
+
+        return app(\App\Services\CreatorCapabilityService::class)
+            ->getActiveSubscription($this);
+    }
+
+    /**
+     * Check if the creator has a specific capability.
+     * 
+     * @param string $capabilityKey
+     * @return bool
+     */
+    public function hasCapability(string $capabilityKey): bool
+    {
+        if (!$this->isCreator()) {
+            return false;
+        }
+
+        return app(\App\Services\CreatorCapabilityService::class)
+            ->can($this, $capabilityKey);
+    }
+
+    /**
+     * Get the value of a specific capability.
+     * 
+     * @param string $capabilityKey
+     * @return mixed
+     */
+    public function capability(string $capabilityKey)
+    {
+        if (!$this->isCreator()) {
+            return null;
+        }
+
+        return app(\App\Services\CreatorCapabilityService::class)
+            ->value($this, $capabilityKey);
+    }
+
+    /**
+     * Get all capabilities for this creator.
+     * 
+     * @return array
+     */
+    public function capabilities(): array
+    {
+        if (!$this->isCreator()) {
+            return [];
+        }
+
+        return app(\App\Services\CreatorCapabilityService::class)
+            ->capabilities($this);
+    }
+
+    /**
+     * Get the active plan for this creator (with fallback to FREE).
+     * 
+     * @return \App\Models\CreatorPlan
+     */
+    public function activePlan()
+    {
+        if (!$this->isCreator()) {
+            return null;
+        }
+
+        return app(\App\Services\CreatorCapabilityService::class)
+            ->getActivePlan($this);
+    }
+
+    /**
+     * Get the dashboard layout for this creator.
+     * 
+     * @return string
+     */
+    public function getDashboardLayout(): string
+    {
+        if (!$this->isCreator()) {
+            return 'basic';
+        }
+
+        return app(\App\Services\CreatorCapabilityService::class)
+            ->getDashboardLayout($this);
+    }
+
+    /**
+     * ============================================
+     * SOCIAL AUTH V2 - OAUTH ACCOUNTS
+     * ============================================
+     */
+
+    /**
+     * Get the OAuth accounts for this user.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function oauthAccounts()
+    {
+        return $this->hasMany(OauthAccount::class);
+    }
+
+    /**
+     * Get the primary OAuth account for this user.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function primaryOauthAccount()
+    {
+        return $this->hasOne(OauthAccount::class)->where('is_primary', true);
+    }
+
+    /**
+     * Get OAuth account by provider.
+     * 
+     * @param string $provider
+     * @return OauthAccount|null
+     */
+    public function getOauthAccount(string $provider): ?OauthAccount
+    {
+        return $this->oauthAccounts()->where('provider', $provider)->first();
+    }
+
+    /**
+     * Check if user has OAuth account for provider.
+     * 
+     * @param string $provider
+     * @return bool
+     */
+    public function hasOAuthAccount(string $provider): bool
+    {
+        return $this->oauthAccounts()->where('provider', $provider)->exists();
     }
 }

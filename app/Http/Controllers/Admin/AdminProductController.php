@@ -112,6 +112,7 @@ class AdminProductController extends AdminController
     public function edit(Product $product): View
     {
         $this->authorize('update', $product);
+        $product->load('images'); // Eager load images for gallery
         $categories = Category::where('is_active', true)->orderBy('name')->get();
         return view('admin.products.edit', compact('product', 'categories'));
     }

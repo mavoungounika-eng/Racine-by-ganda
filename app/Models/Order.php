@@ -80,12 +80,27 @@ class Order extends Model
     /**
      * Generate a unique QR token for the order
      */
-    protected static function generateUniqueQrToken(): string
+    public static function generateUniqueQrToken(): string
     {
         do {
             $token = Str::uuid()->toString();
         } while (static::where('qr_token', $token)->exists());
 
         return $token;
+    }
+
+    /**
+     * ✅ CORRECTION 7 : Vérifier si la commande est dans un état terminal (immuable)
+     * 
+     * Les états terminaux ne peuvent plus être modifiés :
+     * - paid : Paiement confirmé (obsolète, utiliser payment_status='paid')
+     * - cancelled : Commande annulée
+     * - completed : Commande livrée
+     * 
+     * @return bool True si la commande est dans un état terminal
+     */
+    public function isTerminal(): bool
+    {
+        return in_array($this->status, ['paid', 'cancelled', 'completed'], true);
     }
 }

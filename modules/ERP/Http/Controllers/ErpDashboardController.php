@@ -40,9 +40,9 @@ class ErpDashboardController extends Controller
      */
     public function index()
     {
-        // Cache des stats (configurable)
-        $cacheKey = 'erp_dashboard_stats_' . now()->format('Y-m-d-H-i');
-        $ttl = config('erp.cache.dashboard_stats_ttl', 300);
+        // ✅ Cache des stats (configurable) - TTL optimisé : 15-30 minutes
+        $cacheKey = 'erp.dashboard.stats';
+        $ttl = config('erp.cache.dashboard_stats_ttl', 900); // 15 minutes par défaut
         $stats = Cache::remember($cacheKey, $ttl, function () {
             // Optimisation: Une seule requête pour toutes les stats du dashboard
             $month = now()->month;
@@ -103,9 +103,9 @@ class ErpDashboardController extends Controller
             return $stats;
         });
 
-        // 3. Top 5 Matières premières (les plus achetées en quantité) - Cache configurable
-        $topMaterialsTtl = config('erp.cache.top_materials_ttl', 600);
-        $top_materials = Cache::remember('erp_top_materials', $topMaterialsTtl, function () {
+        // ✅ Top 5 Matières premières (les plus achetées en quantité) - Cache configurable
+        $topMaterialsTtl = config('erp.cache.top_materials_ttl', 1800); // 30 minutes par défaut
+        $top_materials = Cache::remember('erp.dashboard.top_materials', $topMaterialsTtl, function () {
             return ErpPurchaseItem::select('purchasable_id', DB::raw('sum(quantity) as total_qty'))
                 ->where('purchasable_type', ErpRawMaterial::class)
                 ->groupBy('purchasable_id')
@@ -115,19 +115,19 @@ class ErpDashboardController extends Controller
                 ->get();
         });
 
-        // Produits en stock faible - Cache configurable (données critiques)
-        $lowStockTtl = config('erp.cache.low_stock_ttl', 120);
+        // ✅ Produits en stock faible - Cache configurable (données critiques, TTL plus court)
+        $lowStockTtl = config('erp.cache.low_stock_ttl', 300); // 5 minutes par défaut (données critiques)
         $lowStockThreshold = config('erp.stock.critical_threshold', 10);
-        $low_stock_products = Cache::remember('erp_low_stock_products', $lowStockTtl, function () use ($lowStockThreshold) {
+        $low_stock_products = Cache::remember('erp.dashboard.low_stock_products', $lowStockTtl, function () use ($lowStockThreshold) {
             return Product::where('stock', '<', $lowStockThreshold)
                 ->orderBy('stock', 'asc')
                 ->take(10)
                 ->get();
         });
 
-        // Achats récents - Cache configurable
-        $recentPurchasesTtl = config('erp.cache.recent_purchases_ttl', 300);
-        $recent_purchases = Cache::remember('erp_recent_purchases', $recentPurchasesTtl, function () {
+        // ✅ Achats récents - Cache configurable
+        $recentPurchasesTtl = config('erp.cache.recent_purchases_ttl', 900); // 15 minutes par défaut
+        $recent_purchases = Cache::remember('erp.dashboard.recent_purchases', $recentPurchasesTtl, function () {
             return ErpPurchase::with('supplier')
                 ->orderBy('purchase_date', 'desc')
                 ->take(5)

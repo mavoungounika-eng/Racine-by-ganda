@@ -8,120 +8,256 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * 
+     * Workaround SQLite (RBG-P0-002) : SQLite ne supporte pas SHOW INDEX (MySQL only).
+     * Utilisation de try-catch pour gérer les erreurs "index already exists" de manière cross-DB.
      */
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
             // Index pour user_id (filtrage fréquent)
-            if (!$this->hasIndex('orders', 'orders_user_id_index')) {
+            // Workaround SQLite (RBG-P0-002) : try-catch au lieu de hasIndex()
+            try {
                 $table->index('user_id', 'orders_user_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index pour status (filtrage fréquent)
-            if (!$this->hasIndex('orders', 'orders_status_index')) {
+            try {
                 $table->index('status', 'orders_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index pour payment_status
-            if (!$this->hasIndex('orders', 'orders_payment_status_index')) {
+            try {
                 $table->index('payment_status', 'orders_payment_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index composite pour requêtes fréquentes
-            if (!$this->hasIndex('orders', 'orders_user_status_index')) {
+            try {
                 $table->index(['user_id', 'status'], 'orders_user_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
         });
 
         Schema::table('products', function (Blueprint $table) {
             // Index pour category_id
-            if (!$this->hasIndex('products', 'products_category_id_index')) {
+            try {
                 $table->index('category_id', 'products_category_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index pour is_active (filtrage fréquent)
-            if (!$this->hasIndex('products', 'products_is_active_index')) {
+            try {
                 $table->index('is_active', 'products_is_active_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index composite pour recherche
-            if (!$this->hasIndex('products', 'products_category_active_index')) {
+            try {
                 $table->index(['category_id', 'is_active'], 'products_category_active_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
         });
 
         Schema::table('payments', function (Blueprint $table) {
             // Index pour order_id
-            if (!$this->hasIndex('payments', 'payments_order_id_index')) {
+            try {
                 $table->index('order_id', 'payments_order_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index pour status
-            if (!$this->hasIndex('payments', 'payments_status_index')) {
+            try {
                 $table->index('status', 'payments_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index composite pour statistiques
-            if (!$this->hasIndex('payments', 'payments_status_created_index')) {
+            try {
                 $table->index(['status', 'created_at'], 'payments_status_created_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
         });
 
         Schema::table('order_items', function (Blueprint $table) {
             // Index pour product_id
-            if (!$this->hasIndex('order_items', 'order_items_product_id_index')) {
+            try {
                 $table->index('product_id', 'order_items_product_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
             
             // Index pour order_id
-            if (!$this->hasIndex('order_items', 'order_items_order_id_index')) {
+            try {
                 $table->index('order_id', 'order_items_order_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'Duplicate key name') && 
+                    !str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
             }
         });
     }
 
     /**
      * Reverse the migrations.
+     * 
+     * Workaround SQLite (RBG-P0-002) : try-catch pour gérer les erreurs "index does not exist".
      */
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropIndex('orders_user_id_index');
-            $table->dropIndex('orders_status_index');
-            $table->dropIndex('orders_payment_status_index');
-            $table->dropIndex('orders_user_status_index');
+            try {
+                $table->dropIndex('orders_user_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('orders_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('orders_payment_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('orders_user_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
         });
 
         Schema::table('products', function (Blueprint $table) {
-            $table->dropIndex('products_category_id_index');
-            $table->dropIndex('products_is_active_index');
-            $table->dropIndex('products_category_active_index');
+            try {
+                $table->dropIndex('products_category_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('products_is_active_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('products_category_active_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
         });
 
         Schema::table('payments', function (Blueprint $table) {
-            $table->dropIndex('payments_order_id_index');
-            $table->dropIndex('payments_status_index');
-            $table->dropIndex('payments_status_created_index');
+            try {
+                $table->dropIndex('payments_order_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('payments_status_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('payments_status_created_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
         });
 
         Schema::table('order_items', function (Blueprint $table) {
-            $table->dropIndex('order_items_product_id_index');
-            $table->dropIndex('order_items_order_id_index');
+            try {
+                $table->dropIndex('order_items_product_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
+            try {
+                $table->dropIndex('order_items_order_id_index');
+            } catch (\Exception $e) {
+                if (!str_contains($e->getMessage(), 'does not exist') && 
+                    !str_contains($e->getMessage(), 'Unknown key')) {
+                    throw $e;
+                }
+            }
         });
-    }
-
-    /**
-     * Vérifier si un index existe déjà
-     */
-    private function hasIndex(string $table, string $indexName): bool
-    {
-        try {
-            $connection = Schema::getConnection();
-            $indexes = $connection->select("SHOW INDEX FROM `{$table}` WHERE Key_name = ?", [$indexName]);
-            return count($indexes) > 0;
-        } catch (\Exception $e) {
-            return false;
-        }
     }
 };
 

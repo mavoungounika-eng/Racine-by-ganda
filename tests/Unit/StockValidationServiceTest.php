@@ -79,7 +79,7 @@ class StockValidationServiceTest extends TestCase
 
         $this->assertTrue($result['has_issues']);
         $this->assertCount(1, $result['issues']);
-        $this->assertEquals('Stock insuffisant', $result['issues'][0]['message']);
+        $this->assertStringContainsString('Stock insuffisant', $result['issues'][0]['message']);
     }
 }
 

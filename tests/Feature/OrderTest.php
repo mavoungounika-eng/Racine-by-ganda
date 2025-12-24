@@ -89,7 +89,7 @@ class OrderTest extends TestCase
             'city' => 'Brazzaville',
             'country' => 'Congo',
             'shipping_method' => 'home_delivery',
-            'payment_method' => 'card',
+            'payment_method' => 'cash_on_delivery', // Utiliser COD pour décrément immédiat
         ]);
 
         $this->product->refresh();
@@ -106,10 +106,13 @@ class OrderTest extends TestCase
 
         $response = $this->post(route('checkout.place'), [
             'payment_method' => 'card',
-            'customer_name' => $this->user->name,
-            'customer_email' => $this->user->email,
-            'customer_phone' => '123456789',
-            'customer_address' => '123 Test Street',
+            'full_name' => $this->user->name,
+            'email' => $this->user->email,
+            'phone' => '123456789',
+            'address_line1' => '123 Test Street',
+            'city' => 'Brazzaville',
+            'country' => 'Congo',
+            'shipping_method' => 'home_delivery',
         ]);
 
         $response->assertSessionHas('error');

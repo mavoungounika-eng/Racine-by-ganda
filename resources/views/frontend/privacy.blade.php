@@ -220,53 +220,7 @@
                 </p>
             </div>
             
-            <div class="legal-section">
-                <h2><i class="fas fa-database"></i> Données collectées</h2>
-                <p>Nous collectons les données suivantes :</p>
-                
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Type de données</th>
-                            <th>Finalité</th>
-                            <th>Base légale</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Nom, prénom, email</td>
-                            <td>Gestion du compte client</td>
-                            <td>Exécution du contrat</td>
-                        </tr>
-                        <tr>
-                            <td>Adresse postale</td>
-                            <td>Livraison des commandes</td>
-                            <td>Exécution du contrat</td>
-                        </tr>
-                        <tr>
-                            <td>Téléphone</td>
-                            <td>Contact pour la livraison</td>
-                            <td>Exécution du contrat</td>
-                        </tr>
-                        <tr>
-                            <td>Historique d'achats</td>
-                            <td>Suivi des commandes, SAV</td>
-                            <td>Exécution du contrat</td>
-                        </tr>
-                        <tr>
-                            <td>Données de navigation</td>
-                            <td>Amélioration du site</td>
-                            <td>Intérêt légitime</td>
-                        </tr>
-                        <tr>
-                            <td>Email (newsletter)</td>
-                            <td>Communication marketing</td>
-                            <td>Consentement</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
+
             <div class="legal-section">
                 <h2><i class="fas fa-clock"></i> Durée de conservation</h2>
                 <ul>
@@ -277,51 +231,8 @@
                 </ul>
             </div>
             
-            <div class="legal-section">
-                <h2><i class="fas fa-user-shield"></i> Vos droits</h2>
-                <p>Conformément au RGPD, vous disposez des droits suivants :</p>
-                
-                <div class="rights-grid">
-                    <div class="right-card">
-                        <h4><i class="fas fa-eye"></i> Droit d'accès</h4>
-                        <p>Obtenir une copie de vos données personnelles</p>
-                    </div>
-                    <div class="right-card">
-                        <h4><i class="fas fa-edit"></i> Droit de rectification</h4>
-                        <p>Corriger vos données inexactes ou incomplètes</p>
-                    </div>
-                    <div class="right-card">
-                        <h4><i class="fas fa-trash"></i> Droit à l'effacement</h4>
-                        <p>Demander la suppression de vos données</p>
-                    </div>
-                    <div class="right-card">
-                        <h4><i class="fas fa-ban"></i> Droit d'opposition</h4>
-                        <p>Vous opposer au traitement de vos données</p>
-                    </div>
-                    <div class="right-card">
-                        <h4><i class="fas fa-download"></i> Droit à la portabilité</h4>
-                        <p>Récupérer vos données dans un format structuré</p>
-                    </div>
-                    <div class="right-card">
-                        <h4><i class="fas fa-pause"></i> Droit à la limitation</h4>
-                        <p>Limiter le traitement dans certains cas</p>
-                    </div>
-                </div>
-                
-                <p>Pour exercer ces droits, contactez-nous à : <strong>dpo@racine-ganda.com</strong></p>
-            </div>
-            
-            <div class="legal-section">
-                <h2><i class="fas fa-cookie"></i> Cookies</h2>
-                <p>Notre site utilise des cookies pour :</p>
-                <ul>
-                    <li><strong>Cookies essentiels :</strong> Fonctionnement du site, panier d'achat, authentification</li>
-                    <li><strong>Cookies analytiques :</strong> Mesure d'audience (Google Analytics) - avec votre consentement</li>
-                    <li><strong>Cookies marketing :</strong> Publicités personnalisées - avec votre consentement</li>
-                </ul>
-                <p>Vous pouvez gérer vos préférences cookies à tout moment via le bandeau dédié ou dans les paramètres de votre navigateur.</p>
-            </div>
-            
+
+
             <div class="legal-section">
                 <h2><i class="fas fa-share-alt"></i> Partage des données</h2>
                 <p>Vos données peuvent être partagées avec :</p>

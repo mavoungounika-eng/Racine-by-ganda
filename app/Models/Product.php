@@ -198,5 +198,29 @@ class Product extends Model
     {
         return $this->erpDetails?->barcode;
     }
+
+    /**
+     * Get all images for this product (ordered)
+     */
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('order');
+    }
+
+    /**
+     * Get the main image for this product
+     */
+    public function mainImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_main', true);
+    }
+
+    /**
+     * Get the first image (fallback if no main image)
+     */
+    public function getFirstImageAttribute(): ?ProductImage
+    {
+        return $this->mainImage ?? $this->images->first();
+    }
 }
 

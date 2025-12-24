@@ -412,6 +412,16 @@
             <p class="hero-description">
                 {{ $heroData['description'] ?? 'Découvrez les artisans et créateurs passionnés derrière chaque pièce unique. Leur savoir-faire ancestral rencontre une vision contemporaine.' }}
             </p>
+            
+            {{-- CTA Marketplace --}}
+            <div class="mt-4">
+                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg" 
+                   style="background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%); color: white; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem; font-weight: 600;">
+                    <i class="fas fa-shopping-bag"></i>
+                    Voir tous les produits au Marketplace
+                    <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.85rem;">{{ $totalProducts }} produits</span>
+                </a>
+            </div>
         </div>
     </div>
 </section>
@@ -421,20 +431,20 @@
     <div class="container">
         <div class="stats-grid">
             <div class="stat-item">
-                <h3>50+</h3>
+                <h3>{{ $creators->total() }}</h3>
                 <span>Créateurs partenaires</span>
             </div>
             <div class="stat-item">
-                <h3>15</h3>
-                <span>Pays représentés</span>
-            </div>
-            <div class="stat-item">
-                <h3>1000+</h3>
-                <span>Créations uniques</span>
+                <h3>{{ $totalProducts }}</h3>
+                <span>Produits au Marketplace</span>
             </div>
             <div class="stat-item">
                 <h3>100%</h3>
                 <span>Fait main</span>
+            </div>
+            <div class="stat-item">
+                <h3>15+</h3>
+                <span>Pays représentés</span>
             </div>
         </div>
     </div>

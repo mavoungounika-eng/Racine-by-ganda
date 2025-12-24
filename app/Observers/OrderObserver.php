@@ -8,47 +8,54 @@ use App\Mail\OrderConfirmationMail;
 use App\Mail\OrderStatusUpdateMail;
 use App\Services\DashboardCacheService;
 use App\Services\NotificationService;
+use App\Services\StockReservationService;
 use Illuminate\Support\Facades\Mail;
 
 class OrderObserver
 {
     protected NotificationService $notificationService;
     protected DashboardCacheService $cacheService;
+    protected StockReservationService $stockReservationService;
 
-    public function __construct(NotificationService $notificationService, DashboardCacheService $cacheService)
-    {
+    public function __construct(
+        NotificationService $notificationService,
+        DashboardCacheService $cacheService,
+        StockReservationService $stockReservationService
+    ) {
         $this->notificationService = $notificationService;
         $this->cacheService = $cacheService;
+        $this->stockReservationService = $stockReservationService;
     }
 
     /**
      * Handle the Order "created" event.
      * 
-     * LOGIQUE DÉCRÉMENT STOCK :
-     * - Pour cash_on_delivery : Décrémente le stock immédiatement à la création de la commande
-     *   (car le paiement se fera à la livraison, donc payment_status restera 'pending')
-     * - Pour card/mobile_money : Le stock sera décrémenté dans handlePaymentStatusChange()
-     *   quand payment_status passera à 'paid' (via webhook ou callback)
+     * ✅ CORRECTION 5 (Option B) : LOGIQUE DÉCRÉMENT STOCK UNIFIÉE
+     * - Pour TOUS les types de paiement : Décrémente le stock immédiatement à la création
+     * - Si paiement échoue : Rollback stock via webhook/callback
+     * - Si paiement réussit : Stock déjà décrémenté (pas de double décrément grâce à protection)
      */
     public function created(Order $order): void
     {
-        // DÉCRÉMENTER LE STOCK IMMÉDIATEMENT POUR CASH ON DELIVERY
-        // Car le paiement se fera à la livraison, donc payment_status restera 'pending'
-        // et le stock ne serait jamais décrémenté dans handlePaymentStatusChange()
-        if ($order->payment_method === 'cash_on_delivery') {
-            try {
-                $stockService = app(\Modules\ERP\Services\StockService::class);
-                $stockService->decrementFromOrder($order);
-                \Log::info("Stock decremented immediately for cash on delivery Order #{$order->id}");
-            } catch (\Throwable $e) {
-                \Log::error('Stock decrement failed for cash on delivery order', [
-                    'order_id' => $order->id,
-                    'user_id' => $order->user_id,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                // On continue même si décrément échoue (notification, email, etc.)
+        // ✅ CORRECTION 5 : DÉCRÉMENTER LE STOCK IMMÉDIATEMENT POUR TOUS LES TYPES DE PAIEMENT
+        // Stratégie : Décrément immédiat + rollback si paiement échoue
+        try {
+            // S'assurer que les items sont chargés avant décrément
+            if (!$order->relationLoaded('items')) {
+                $order->load('items');
             }
+            $stockService = app(\Modules\ERP\Services\StockService::class);
+            $stockService->decrementFromOrder($order);
+            \Log::info("Stock decremented immediately for Order #{$order->id} (payment_method: {$order->payment_method})");
+        } catch (\Throwable $e) {
+            \Log::error('Stock decrement failed for order', [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'payment_method' => $order->payment_method,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            // On continue même si décrément échoue (notification, email, etc.)
         }
 
         // Envoyer email de confirmation
@@ -116,10 +123,24 @@ class OrderObserver
         $oldStatus = $order->getOriginal('status');
         $newStatus = $order->status;
 
+        // ✅ CORRECTION 7 : Ignorer si Order est déjà dans un état terminal
+        // (protection contre modification d'état terminal)
+        if ($order->isTerminal() && $oldStatus !== $newStatus) {
+            \Log::warning('OrderObserver: Attempt to change status of terminal order', [
+                'order_id' => $order->id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+            ]);
+            return;
+        }
+
         // Réintégrer le stock si la commande est annulée APRÈS paiement
         if ($order->status === 'cancelled' && $order->payment_status === 'paid') {
             $stockService = app(\Modules\ERP\Services\StockService::class);
             $stockService->restockFromOrder($order);
+            
+            // ✅ Libérer la réservation stock
+            $this->releaseStockReservation($order);
         }
 
         // Envoyer email de mise à jour de statut
@@ -169,34 +190,33 @@ class OrderObserver
     /**
      * Gérer le changement de statut de paiement
      * 
-     * LOGIQUE DÉCRÉMENT STOCK :
-     * - Pour card/mobile_money : Décrémente le stock quand payment_status passe à 'paid'
-     *   (via webhook Stripe ou callback Mobile Money)
-     * - Pour cash_on_delivery : Le stock a déjà été décrémenté dans created()
-     *   (protection double décrément via StockService)
+     * ✅ CORRECTION 5 (Option B) : LOGIQUE STOCK UNIFIÉE
+     * - Le stock a déjà été décrémenté à la création (created())
+     * - Si paiement échoue : Rollback géré par webhook/callback
+     * - Si paiement réussit : Aucune action stock nécessaire (déjà décrémenté)
      */
     protected function handlePaymentStatusChange(Order $order): void
     {
         if (!$order->user_id) return;
 
+        // ✅ CORRECTION 7 : Ignorer si Order est dans un état terminal
+        if ($order->isTerminal()) {
+            \Log::info('OrderObserver: Order in terminal state, skipping payment status change', [
+                'order_id' => $order->id,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+            ]);
+            return;
+        }
+
         if ($order->payment_status === 'paid') {
-            // Décrémenter le stock pour les paiements card/mobile_money
-            // Pour cash_on_delivery, le stock a déjà été décrémenté dans created()
+            // ✅ CORRECTION 5 : Le stock a déjà été décrémenté à la création
             // StockService vérifie automatiquement si un mouvement existe déjà (protection double décrément)
-            try {
-                $stockService = app(\Modules\ERP\Services\StockService::class);
-                $stockService->decrementFromOrder($order);
-            } catch (\Throwable $e) {
-                \Log::error('Stock decrement failed for order', [
-                    'order_id' => $order->id,
-                    'user_id' => $order->user_id,
-                    'payment_method' => $order->payment_method,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                // TODO: Notifier l'admin ou mettre un flag sur la commande pour investigation
-                // Pour l'instant, on continue le processus (points fidélité, notification) même si décrément échoue
-            }
+            // ✅ CONFIRMER LA RÉSERVATION (décrémenter stock réel)
+            $this->confirmStockReservation($order);
+
+            // ✅ SPRINT 5-6: Dispatch événement pour comptabilité
+            event(new \Modules\Accounting\Events\PaymentRecorded($order));
 
             // Attribuer des points de fidélité
             try {
@@ -222,10 +242,61 @@ class OrderObserver
         } elseif ($order->payment_status === 'failed') {
             $this->notificationService->danger(
                 $order->user_id,
-                'Échec du paiement',
-                "Le paiement de votre commande #{$order->id} a échoué. Veuillez réessayer."
             );
         }
     }
-}
 
+    /**
+     * Confirmer la réservation stock (paiement confirmé)
+     */
+    protected function confirmStockReservation(Order $order): void
+    {
+        try {
+            $items = $order->items->map(function ($item) {
+                return [
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                ];
+            })->toArray();
+
+            $this->stockReservationService->confirm($items);
+            
+            \Log::info('Stock reservation confirmed', [
+                'order_id' => $order->id,
+                'items_count' => count($items),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to confirm stock reservation', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Libérer la réservation stock (annulation)
+     */
+    protected function releaseStockReservation(Order $order): void
+    {
+        try {
+            $items = $order->items->map(function ($item) {
+                return [
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                ];
+            })->toArray();
+
+            $this->stockReservationService->release($items);
+            
+            \Log::info('Stock reservation released', [
+                'order_id' => $order->id,
+                'items_count' => count($items),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to release stock reservation', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+}

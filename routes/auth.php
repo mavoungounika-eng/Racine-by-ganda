@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\AuthHubController;
 use App\Http\Controllers\Auth\PublicAuthController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\SocialAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,11 +69,27 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth');
 
 // ============================================
-// CONNEXION GOOGLE (Social Login)
+// CONNEXION GOOGLE (Social Login) - Module v1
 // ============================================
-Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
+// PHASE 2.1 : Route avec paramètre role optionnel (client|creator)
+Route::get('/auth/google/redirect/{role?}', [GoogleAuthController::class, 'redirect'])
+    ->where('role', 'client|creator')
     ->name('auth.google.redirect');
 
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
     ->name('auth.google.callback');
+
+// ============================================
+// CONNEXION SOCIALE MULTI-PROVIDERS (Social Auth v2)
+// ============================================
+// Routes génériques pour Google, Apple, Facebook
+// Module Social Auth v2 - Indépendant du module Google Auth v1
+Route::get('/auth/{provider}/redirect/{role?}', [SocialAuthController::class, 'redirect'])
+    ->where('provider', 'google|apple|facebook')
+    ->where('role', 'client|creator')
+    ->name('auth.social.redirect');
+
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])
+    ->where('provider', 'google|apple|facebook')
+    ->name('auth.social.callback');
 

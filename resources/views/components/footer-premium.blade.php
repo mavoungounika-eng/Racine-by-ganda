@@ -54,7 +54,6 @@
                         <li><a href="{{ route('frontend.albums') }}"><i class="fas fa-chevron-right"></i> Albums</a></li>
                         <li><a href="{{ route('frontend.events') }}"><i class="fas fa-chevron-right"></i> Événements</a></li>
                         <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> Amira Ganda</a></li>
-                        <li><a href="{{ route('frontend.brand-guidelines') }}"><i class="fas fa-chevron-right"></i> Charte Graphique</a></li>
                     </ul>
                 </div>
                 

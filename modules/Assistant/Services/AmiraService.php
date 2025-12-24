@@ -5,6 +5,11 @@ namespace Modules\Assistant\Services;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\CreatorProfile;
+use App\Models\CreatorSubscription;
+use Modules\ERP\Models\ErpRawMaterial;
+use Modules\CRM\Models\CrmInteraction;
+use Modules\CRM\Models\CrmContact;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +27,8 @@ class AmiraService
         '/help' => 'showHelp',
         '/stats' => 'showStats',
         '/stocks' => 'showStocks',
+        '/erp' => 'showErpStatus',
+        '/crm' => 'showRecentInteractions',
         '/commandes' => 'showOrders',
         '/faq' => 'showFaq',
         '/contact' => 'showContact',
@@ -291,12 +298,32 @@ class AmiraService
     }
 
     /**
-     * Gestion des questions produits
+     * Gestion des questions produits (Boutique)
      */
     protected function handleProductsQuery(): string
     {
         try {
             $count = Product::where('is_active', true)->count();
+            
+            // Si l'utilisateur est un créateur, montrer ses propres produits
+            if ($this->isCreator()) {
+                $creatorProfile = CreatorProfile::where('user_id', $this->userId)->first();
+                if ($creatorProfile) {
+                    $myCount = Product::where('creator_profile_id', $creatorProfile->id)->count();
+                    $lowStock = Product::where('creator_profile_id', $creatorProfile->id)
+                        ->where('stock', '<=', 5)
+                        ->count();
+                    
+                    $response = "👗 **Votre Boutique Créateur**\n\n";
+                    $response .= "Vous avez **{$myCount}** produits en ligne.\n";
+                    if ($lowStock > 0) {
+                        $response .= "⚠️ **{$lowStock}** produits ont un stock faible.\n";
+                    }
+                    $response .= "\n➡️ [Gérer mes produits](/creator/products)";
+                    return $response;
+                }
+            }
+
             $newProducts = Product::where('is_active', true)
                 ->where('stock', '>', 0)
                 ->orderBy('created_at', 'desc')
@@ -318,6 +345,109 @@ class AmiraService
             return $response;
         } catch (\Exception $e) {
             return "👗 Découvrez nos créations uniques dans la **Boutique** !\n\nChaque pièce raconte une histoire africaine.\n\n➡️ [Voir la collection](/boutique)";
+        }
+    }
+
+    /**
+     * Gestion des questions ERP (Atelier / Matières premières)
+     */
+    protected function handleErpQuery(): string
+    {
+        if (!$this->isTeamMember() && !$this->isCreator()) {
+            return "Désolée, ces informations sont réservées aux créateurs et à l'équipe RACINE. 🛡️";
+        }
+
+        try {
+            $rawMaterials = ErpRawMaterial::orderBy('current_stock', 'asc')->take(5)->get();
+            
+            if ($rawMaterials->isEmpty()) {
+                return "📦 **Atelier** : Aucune matière première enregistrée pour le moment.";
+            }
+
+            $response = "🧵 **État de l'Atelier**\n\n";
+            $response .= "Voici vos stocks de matières premières prioritaires :\n\n";
+            
+            foreach ($rawMaterials as $material) {
+                $status = $material->current_stock <= $material->min_stock_alert ? '🚨' : '✅';
+                $response .= "• {$status} **{$material->name}** : {$material->current_stock} {$material->unit}\n";
+            }
+            
+            $response .= "\n➡️ [Accéder à l'ERP](/admin/erp)";
+            return $response;
+        } catch (\Exception $e) {
+            return "❌ Impossible de récupérer les données de l'Atelier actuellement.";
+        }
+    }
+
+    /**
+     * Gestion des questions CRM (Interactions clients)
+     */
+    protected function handleCrmQuery(): string
+    {
+        if (!$this->isTeamMember()) {
+            return "Ces informations confidentielles sont réservées aux administrateurs. 🛡️";
+        }
+
+        try {
+            $interactions = CrmInteraction::with('contact')
+                ->orderBy('occurred_at', 'desc')
+                ->take(3)
+                ->get();
+            
+            if ($interactions->isEmpty()) {
+                return "👥 **CRM** : Aucune interaction client récente.";
+            }
+
+            $response = "👥 **Dernières interactions CRM**\n\n";
+            foreach ($interactions as $interaction) {
+                $date = $interaction->occurred_at->format('d/m H:i');
+                $contact = $interaction->contact->full_name ?? 'Client inconnu';
+                $response .= "• [{$date}] **{$contact}** : {$interaction->subject}\n";
+            }
+            
+            $response .= "\n➡️ [Ouvrir le CRM](/admin/crm)";
+            return $response;
+        } catch (\Exception $e) {
+            return "❌ Erreur lors de l'accès aux données CRM.";
+        }
+    }
+
+    /**
+     * Gestion des questions sur les abonnements (Plan créateur)
+     */
+    protected function handleSubscriptionQuery(): string
+    {
+        if (!$this->isCreator()) {
+            return "Cette question concerne les plans créateurs. Souhaitez-vous en devenir un ? ✨\n\n➡️ [Devenir Créateur](/creator/register)";
+        }
+
+        try {
+            $creatorProfile = CreatorProfile::where('user_id', $this->userId)->first();
+            if (!$creatorProfile) return "Profil créateur introuvable.";
+
+            $subscription = CreatorSubscription::with('plan')
+                ->where('creator_profile_id', $creatorProfile->id)
+                ->first();
+            
+            if (!$subscription) {
+                return "✨ **Votre Plan**\n\nVous n'avez pas encore de plan actif. Choisissez-en un pour commencer à vendre !\n\n➡️ [Voir les abonnements](/creator/subscriptions)";
+            }
+
+            $planName = $subscription->plan->name ?? 'Standard';
+            $date = $subscription->current_period_end ? $subscription->current_period_end->format('d/m/Y') : 'N/A';
+            
+            $response = "💎 **Votre Plan : " . ucfirst($planName) . "**\n\n";
+            $response .= "• État : **" . ucfirst($subscription->status) . "**\n";
+            $response .= "• Prochain renouvellement : **{$date}**\n";
+            
+            if ($subscription->status === 'active') {
+                $response .= "\n✅ Toutes vos fonctionnalités sont débloquées !";
+            }
+            
+            $response .= "\n\n➡️ [Gérer mon abonnement](/creator/subscriptions)";
+            return $response;
+        } catch (\Exception $e) {
+            return "❌ Impossible de vérifier votre abonnement actuellement.";
         }
     }
 
@@ -370,7 +500,7 @@ class AmiraService
     }
 
     /**
-     * Détection d'intention améliorée
+     * Détection d'intention améliorée avec limites de mots
      */
     protected function detectIntent(string $message): ?string
     {
@@ -379,7 +509,9 @@ class AmiraService
 
         foreach ($intents as $intent => $keywords) {
             foreach ($keywords as $keyword) {
-                if (str_contains($message, $keyword)) {
+                // Utiliser des limites de mots pour éviter les correspondances partielles (ex: 'l' dans 'client')
+                $pattern = '/\b' . preg_quote(strtolower($keyword), '/') . '\b/i';
+                if (preg_match($pattern, $message)) {
                     return $intent;
                 }
             }
@@ -393,7 +525,8 @@ class AmiraService
         $localIntents = [
             'greeting', 'farewell', 'thanks', 'shipping', 'return', 
             'payment', 'contact', 'help', 'about', 'size', 'custom', 
-            'complaint', 'order_status', 'products', 'price'
+            'complaint', 'order_status', 'products', 'price',
+            'erp_query', 'crm_query', 'subscription_query'
         ];
         return in_array($intent, $localIntents);
     }
@@ -416,6 +549,9 @@ class AmiraService
             'order_status' => $this->handleOrderStatus(),
             'products', 'stock' => $this->handleProductsQuery(),
             'price' => $this->handlePriceQuery($message),
+            'erp_query' => $this->handleErpQuery(),
+            'crm_query' => $this->handleCrmQuery(),
+            'subscription_query' => $this->handleSubscriptionQuery(),
             default => $this->generateSmartResponse($message, $intent),
         };
     }
@@ -629,6 +765,16 @@ class AmiraService
         }
     }
 
+    protected function showErpStatus(): string
+    {
+        return $this->handleErpQuery();
+    }
+
+    protected function showRecentInteractions(): string
+    {
+        return $this->handleCrmQuery();
+    }
+
     // === UTILITAIRES ===
 
     protected function buildSystemPrompt(array $context): string
@@ -649,6 +795,11 @@ class AmiraService
     protected function isTeamMember(): bool
     {
         return in_array($this->userRole, ['super_admin', 'admin', 'staff']);
+    }
+
+    protected function isCreator(): bool
+    {
+        return in_array($this->userRole, ['createur', 'creator']);
     }
 
     protected function successResponse(string $message): array

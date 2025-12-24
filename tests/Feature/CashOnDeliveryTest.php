@@ -64,7 +64,8 @@ class CashOnDeliveryTest extends TestCase
 
         // Vérifier la redirection vers la page de succès
         $response->assertRedirect();
-        $this->assertStringContainsString('checkout.success', $response->getTargetUrl());
+        $targetUrl = $response->getTargetUrl();
+        $this->assertStringContainsString('checkout/success', $targetUrl, 'Should redirect to checkout.success');
 
         // Vérifier qu'une commande a été créée
         $order = Order::where('user_id', $this->user->id)
@@ -150,8 +151,7 @@ class CashOnDeliveryTest extends TestCase
     #[Test]
     public function it_logs_funnel_events_for_cash_on_delivery(): void
     {
-        Event::fake([OrderPlaced::class]);
-
+        // Ne pas fake les events pour que les listeners s'exécutent et créent le FunnelEvent
         // Se connecter AVANT d'ajouter au panier (le panier est lié à Auth::id())
         $this->actingAs($this->user);
 
@@ -171,12 +171,7 @@ class CashOnDeliveryTest extends TestCase
             'payment_method' => 'cash_on_delivery',
         ]);
 
-        // Vérifier que l'événement OrderPlaced a été émis
-        Event::assertDispatched(OrderPlaced::class, function ($event) {
-            return $event->order->payment_method === 'cash_on_delivery';
-        });
-
-        // Vérifier qu'un événement funnel a été enregistré
+        // Vérifier qu'un événement funnel a été enregistré (le listener LogFunnelEvent doit l'avoir créé)
         $funnelEvent = FunnelEvent::where('event_type', 'order_placed')
             ->where('user_id', $this->user->id)
             ->first();

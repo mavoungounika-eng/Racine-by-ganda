@@ -21,21 +21,27 @@ class TwoFactorVerifiedMiddleware
         
         $user = auth()->user();
         
-        // Vérifier si 2FA requis pour ce rôle
-        if (in_array($user->role, ['admin', 'super_admin', 'moderateur'])) {
+        // Charger la relation roleRelation si nécessaire
+        if (!$user->relationLoaded('roleRelation')) {
+            $user->load('roleRelation');
+        }
+        
+        // Vérifier si 2FA requis pour ce rôle (utiliser getRoleSlug() pour cohérence)
+        $roleSlug = $user->getRoleSlug();
+        if (in_array($roleSlug, ['admin', 'super_admin', 'moderator', 'moderateur'])) {
             $twoFactorService = app(\App\Services\TwoFactorService::class);
             
-            if ($twoFactorService->isEnabled($user->id)) {
+            if ($twoFactorService->isEnabled($user)) {
                 // 2FA activé, vérifier si session vérifiée
                 if (!session('2fa_verified')) {
                     return redirect()->route('erp.2fa.verify');
                 }
             } else {
                 // 2FA non activé mais requis pour admin/super_admin
-                if (in_array($user->role, ['admin', 'super_admin'])) {
+                if (in_array($roleSlug, ['admin', 'super_admin'])) {
                     if (!session('2fa_setup_required')) {
                         session(['2fa_setup_required' => true]);
-                        return redirect()->route('erp.account.2fa.setup');
+                        return redirect()->route('2fa.setup');
                     }
                 }
             }

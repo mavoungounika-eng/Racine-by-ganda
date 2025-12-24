@@ -77,7 +77,11 @@ class CheckoutController extends Controller
         $addresses = Address::where('user_id', $user->id)->get();
         $defaultAddress = $addresses->where('is_default', true)->first() ?? $addresses->first();
 
-        return view('checkout.index', compact('items', 'subtotal', 'shipping_default', 'addresses', 'defaultAddress', 'user'));
+        // ✅ Module 8 - Protection double soumission : Générer token unique
+        $checkoutToken = \Illuminate\Support\Str::random(32);
+        session(['checkout_token' => $checkoutToken]);
+
+        return view('checkout.index', compact('items', 'subtotal', 'shipping_default', 'addresses', 'defaultAddress', 'user', 'checkoutToken'));
     }
 
     /**
@@ -107,6 +111,23 @@ class CheckoutController extends Controller
             'request_url' => $request->fullUrl(),
         ]);
 
+        // ✅ Module 8 - Protection double soumission : Vérifier token unique
+        $submittedToken = $request->input('_checkout_token');
+        $sessionToken = session('checkout_token');
+
+        if (!$sessionToken || $submittedToken !== $sessionToken) {
+            \Log::warning('Checkout: Double submission attempt blocked', [
+                'user_id' => $request->user()->id ?? null,
+                'ip' => $request->ip(),
+                'user_agent' => substr($request->userAgent() ?? '', 0, 100),
+                'has_session_token' => !empty($sessionToken),
+                'tokens_match' => $submittedToken === $sessionToken,
+            ]);
+            return back()
+                ->with('error', 'Ce formulaire a déjà été soumis. Si votre commande a été créée, vérifiez vos commandes.')
+                ->withInput();
+        }
+
         $user = $request->user();
         $data = $request->validated();
 
@@ -123,12 +144,47 @@ class CheckoutController extends Controller
         \Log::info('Checkout: Cart loaded', [
             'items_count' => $items->count(),
             'cart_total' => $cartService->total(),
+            'user_id' => $user->id,
         ]);
         
         if ($items->isEmpty()) {
             \Log::warning('Checkout: Cart is empty');
             return redirect()->route('cart.index')
                 ->with('error', 'Votre panier est vide.');
+        }
+
+        // ✅ VÉRIFICATION CRITIQUE : Ownership du panier
+        // S'assurer que le panier appartient bien à l'utilisateur connecté
+        // Protection contre manipulation de session ou injection
+        if ($cartService instanceof DatabaseCartService) {
+            $cart = $cartService->getCart();
+            if ($cart && $cart->user_id !== $user->id) {
+                \Log::error('Checkout: Cart ownership violation', [
+                    'user_id' => $user->id,
+                    'cart_user_id' => $cart->user_id,
+                    'cart_id' => $cart->id,
+                    'ip' => $request->ip(),
+                    'user_agent' => substr($request->userAgent() ?? '', 0, 100),
+                ]);
+                abort(403, 'Accès refusé : ce panier ne vous appartient pas.');
+            }
+            
+            // Vérification supplémentaire : s'assurer que tous les items du panier appartiennent à l'utilisateur
+            foreach ($items as $item) {
+                if ($item->cart_id && $item->cart) {
+                    if ($item->cart->user_id !== $user->id) {
+                        \Log::error('Checkout: Cart item ownership violation', [
+                            'user_id' => $user->id,
+                            'cart_user_id' => $item->cart->user_id,
+                            'cart_id' => $item->cart_id,
+                            'item_id' => $item->id,
+                            'ip' => $request->ip(),
+                            'user_agent' => substr($request->userAgent() ?? '', 0, 100),
+                        ]);
+                        abort(403, 'Accès refusé : un article de votre panier ne vous appartient pas.');
+                    }
+                }
+            }
         }
 
         try {
@@ -138,8 +194,9 @@ class CheckoutController extends Controller
                 'items_count' => $items->count(),
             ]);
 
-            // Déléguer la création de commande au service
-            $order = $this->orderService->createOrderFromCart($data, $items, $user->id);
+            // Déléguer la création de commande au service avec token pour idempotence
+            $checkoutToken = $request->input('_checkout_token');
+            $order = $this->orderService->createOrderFromCart($data, $items, $user->id, $checkoutToken);
 
             \Log::info('Checkout: Order created', [
                 'order_id' => $order->id ?? 'NO ID',
@@ -155,7 +212,7 @@ class CheckoutController extends Controller
                     'payment_method' => $data['payment_method'] ?? 'unknown',
                     'order' => $order ? 'exists but no id' : 'null',
                 ]);
-                return back()
+                return redirect()->route('checkout.index')
                     ->with('error', 'Une erreur est survenue lors de la création de la commande. Veuillez réessayer.')
                     ->withInput();
             }
@@ -163,6 +220,9 @@ class CheckoutController extends Controller
             // Vider le panier après création réussie
             $cartService->clear();
             \Log::info('Checkout: Cart cleared');
+
+            // ✅ Module 8 - Protection double soumission : Supprimer token après utilisation
+            session()->forget('checkout_token');
 
             \Log::info('Checkout: Calling redirectToPayment', [
                 'order_id' => $order->id,
@@ -189,7 +249,9 @@ class CheckoutController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            return back()->with('error', $e->getUserMessage())->withInput();
+            return redirect()->route('checkout.index')
+                ->with('error', $e->getUserMessage())
+                ->withInput();
         } catch (\Throwable $e) {
             \Log::error('Checkout: Unexpected exception', [
                 'user_id' => $user->id ?? null,
@@ -199,7 +261,7 @@ class CheckoutController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()
+            return redirect()->route('checkout.index')
                 ->with('error', 'Une erreur est survenue lors de la création de la commande. Veuillez réessayer ou nous contacter.')
                 ->withInput();
         }
@@ -236,7 +298,7 @@ class CheckoutController extends Controller
                     ]);
                     
                     $redirect = redirect()
-                        ->route('checkout.success', $order)
+                        ->route('checkout.success', ['order' => $order->id])
                         ->with('success', 'Votre commande est enregistrée. Vous paierez à la livraison.');
                     
                     \Log::info('Checkout: cash_on_delivery redirect created', [
@@ -254,11 +316,13 @@ class CheckoutController extends Controller
                         ->route('checkout.card.pay', ['order_id' => $order->id]);
 
                 case 'mobile_money':
-                    \Log::info('Checkout: Redirecting to mobile money form', [
+                case 'monetbil':
+                    \Log::info('Checkout: Redirecting to Monetbil payment', [
                         'order_id' => $order->id,
+                        'payment_method' => $paymentMethod,
                     ]);
                     return redirect()
-                        ->route('checkout.mobile-money.form', ['order' => $order->id]);
+                        ->route('payment.monetbil.start', ['order' => $order->id]);
 
                 default:
                     \Log::warning('Checkout: Unknown payment method, defaulting to success', [
@@ -266,7 +330,7 @@ class CheckoutController extends Controller
                         'order_id' => $order->id ?? null,
                     ]);
                     return redirect()
-                        ->route('checkout.success', $order)
+                        ->route('checkout.success', ['order' => $order->id])
                         ->with('success', 'Commande enregistrée.');
             }
         } catch (\Throwable $e) {
@@ -285,7 +349,7 @@ class CheckoutController extends Controller
                     'order_id' => $order->id,
                 ]);
                 return redirect()
-                    ->route('checkout.success', $order)
+                    ->route('checkout.success', ['order' => $order->id])
                     ->with('success', 'Votre commande a été enregistrée.');
             }
             
@@ -293,7 +357,7 @@ class CheckoutController extends Controller
             \Log::error('Checkout: Fallback redirect also failed, returning to checkout', [
                 'order' => $order ? 'exists but no id' : 'null',
             ]);
-            return back()
+            return redirect()->route('checkout.index')
                 ->with('error', 'Une erreur est survenue lors de la redirection. Votre commande a peut-être été créée. Vérifiez vos commandes.')
                 ->withInput();
         }

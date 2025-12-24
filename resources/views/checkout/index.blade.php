@@ -78,6 +78,10 @@
 
     <form action="{{ route('checkout.place') }}" method="POST">
         @csrf
+        {{-- ✅ Module 8 - Protection double soumission : Token unique --}}
+        @if(isset($checkoutToken))
+            <input type="hidden" name="_checkout_token" value="{{ $checkoutToken }}">
+        @endif
 
         <div class="row">
             {{-- Colonne gauche : Informations client et adresse --}}

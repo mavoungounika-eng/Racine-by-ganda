@@ -143,6 +143,47 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'auth' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/auth.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_AUTH_DAYS', 90), // Conserver 90 jours pour audit de sécurité
+            'replace_placeholders' => true,
+        ],
+
+        // ✅ Module 8 : Canaux dédiés pour observabilité
+        'webhooks' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/webhooks.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_WEBHOOKS_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'payments' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/payments.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_PAYMENTS_DAYS', 90), // Conserver 90 jours pour audit financier
+            'replace_placeholders' => true,
+        ],
+
+        'queue' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/queue.log'),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => env('LOG_QUEUE_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'errors' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/errors.log'),
+            'level' => 'error', // Uniquement errors et critical
+            'days' => env('LOG_ERRORS_DAYS', 90), // Conserver 90 jours pour diagnostic
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

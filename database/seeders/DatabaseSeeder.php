@@ -22,6 +22,14 @@ class DatabaseSeeder extends Seeder
             RolesTableSeeder::class,
             CmsPagesSeeder::class,
             CmsSectionsSeeder::class,
+            PaymentProviderSeeder::class,
+            PaymentRoutingRuleSeeder::class,
+            // Seeders pour le système d'abonnement créateur
+            CreatorPlanSeeder::class,
+            PlanCapabilitySeeder::class,
+            // V2 : Seeders pour add-ons et bundles
+            CreatorAddonSeeder::class,
+            CreatorBundleSeeder::class,
         ]);
 
         /**

@@ -1,0 +1,920 @@
+/* ============================================
+   PAYMENT PREFERENCES - GLASSMORPHISM DESIGN
+   ============================================ */
+
+:root {
+    /* Couleurs principales */
+    --color-primary: #FF6B35;
+    --color-primary-dark: #E85A2A;
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --color-danger: #EF4444;
+    --color-info: #3B82F6;
+
+    /* Couleurs de fond */
+    --bg-base: #F9FAFB;
+    --bg-card: rgba(255, 255, 255, 0.7);
+    --bg-card-hover: rgba(255, 255, 255, 0.85);
+
+    /* Bordures et ombres */
+    --border-color: rgba(255, 255, 255, 0.18);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+
+    /* Transitions */
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease;
+}
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+
+.payment-preferences-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.payment-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.payment-subtitle {
+    font-size: 1rem;
+    color: #6B7280;
+    margin: 0;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    transition: var(--transition-fast);
+}
+
+.back-link:hover {
+    color: var(--color-primary-dark);
+    transform: translateX(-4px);
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.status-badge--success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.status-badge--warning {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.status-badge--disabled {
+    background: #E5E7EB;
+    color: #6B7280;
+}
+
+.status-badge--sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* ============================================
+   PAYMENT CARDS - GLASSMORPHISM
+   ============================================ */
+
+.payment-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition-base);
+}
+
+.payment-card:hover {
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+/* Card Variants */
+.payment-card--success {
+    border-left: 4px solid var(--color-success);
+}
+
+.payment-card--warning {
+    border-left: 4px solid var(--color-warning);
+}
+
+.payment-card--info {
+    border-left: 4px solid var(--color-info);
+}
+
+.payment-card--info-light {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.05) 100%);
+}
+
+.payment-card--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.payment-card--danger {
+    border-left: 4px solid var(--color-danger);
+}
+
+/* ============================================
+   CARD HEADER
+   ============================================ */
+
+.payment-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-card-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    transition: var(--transition-base);
+}
+
+.payment-card:hover .payment-card-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.payment-card-icon--success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.payment-card-icon--warning {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.payment-card-icon--orange {
+    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    color: white;
+}
+
+.payment-card-icon--gray {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+}
+
+.payment-card-icon--blue {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+}
+
+.payment-card-icon--green {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.payment-card-icon--purple {
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+}
+
+.payment-card-icon--red {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+}
+
+.payment-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-card-subtitle {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin: 0;
+}
+
+.payment-card-description {
+    color: #4B5563;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.badge-principal {
+    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-secondary {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   ALERTS
+   ============================================ */
+
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.alert i:first-child {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #065F46;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #991B1B;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #92400E;
+}
+
+.alert-warning-light {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(232, 90, 42, 0.08) 100%);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    color: #92400E;
+}
+
+.alert-info-light {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #1E40AF;
+}
+
+.alert-danger-light {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #991B1B;
+}
+
+.alert-dismissible {
+    padding-right: 3rem;
+}
+
+.alert-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.5;
+    transition: var(--transition-fast);
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn-payment {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-base);
+    text-decoration: none;
+}
+
+.btn-payment--primary {
+    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.btn-payment--primary:hover {
+    background: linear-gradient(135deg, #E85A2A 0%, #D94F1F 100%);
+    box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-payment--secondary {
+    background: rgba(107, 114, 128, 0.1);
+    color: #374151;
+    border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.btn-payment--secondary:hover {
+    background: rgba(107, 114, 128, 0.15);
+    border-color: rgba(107, 114, 128, 0.3);
+}
+
+.btn-payment--danger {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-payment--danger:hover {
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(107, 114, 128, 0.1);
+    border: 1px solid rgba(107, 114, 128, 0.2);
+    color: #6B7280;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-icon:hover {
+    background: rgba(107, 114, 128, 0.15);
+    color: #374151;
+}
+
+.payment-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition-fast);
+}
+
+.payment-link:hover {
+    color: var(--color-primary-dark);
+    gap: 0.75rem;
+}
+
+/* ============================================
+   CARD ACTIONS
+   ============================================ */
+
+.payment-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: var(--transition-fast);
+    background: white;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.form-control.is-invalid {
+    border-color: var(--color-danger);
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-danger);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* ============================================
+   INFO GRID
+   ============================================ */
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.info-item i {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+/* ============================================
+   RADIO CARDS
+   ============================================ */
+
+.radio-group {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.radio-card {
+    position: relative;
+    padding: 1.25rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition-base);
+    background: white;
+}
+
+.radio-card:hover {
+    border-color: var(--color-primary);
+    background: rgba(255, 107, 53, 0.02);
+}
+
+.radio-card--active {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(232, 90, 42, 0.05) 100%);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.radio-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.radio-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.radio-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+    color: #1F2937;
+}
+
+.radio-card-header i {
+    color: var(--color-primary);
+}
+
+.radio-card-description {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin: 0;
+}
+
+/* ============================================
+   THRESHOLD SLIDER
+   ============================================ */
+
+.threshold-display {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.threshold-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.slider-container {
+    margin-bottom: 1.5rem;
+}
+
+.threshold-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #10B981 0%, #F59E0B 50%, #EF4444 100%);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.threshold-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--color-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: var(--transition-fast);
+}
+
+.threshold-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.threshold-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--color-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: var(--transition-fast);
+}
+
+.threshold-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #6B7280;
+}
+
+/* ============================================
+   TOGGLE SWITCHES
+   ============================================ */
+
+.toggle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.toggle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.toggle-label {
+    font-weight: 600;
+    color: #1F2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.toggle-description {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin: 0;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #D1D5DB;
+    transition: var(--transition-base);
+    border-radius: 9999px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: var(--transition-base);
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked+.toggle-slider {
+    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+}
+
+.toggle-switch input:checked+.toggle-slider:before {
+    transform: translateX(24px);
+}
+
+/* ============================================
+   TRANSACTION LIST
+   ============================================ */
+
+.transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(249, 250, 251, 0.5);
+    border-radius: 0.75rem;
+    transition: var(--transition-fast);
+}
+
+.transaction-item:hover {
+    background: rgba(249, 250, 251, 0.8);
+}
+
+.transaction-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 185, 129, 0.1);
+    flex-shrink: 0;
+}
+
+.transaction-details {
+    flex-grow: 1;
+}
+
+.transaction-title {
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 0.25rem;
+}
+
+.transaction-subtitle {
+    font-size: 0.875rem;
+    color: #6B7280;
+}
+
+.transaction-amount {
+    font-weight: 700;
+    color: var(--color-success);
+    font-size: 1.125rem;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9CA3AF;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.flex-grow-1 {
+    flex-grow: 1;
+}
+
+.text-muted {
+    color: #6B7280 !important;
+}
+
+.text-success {
+    color: var(--color-success) !important;
+}
+
+.text-orange-500 {
+    color: var(--color-primary) !important;
+}
+
+.mt-3 {
+    margin-top: 1.5rem !important;
+}
+
+.mt-4 {
+    margin-top: 2rem !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* ============================================
+   FEATURE LIST (Modal)
+   ============================================ */
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .payment-preferences-container {
+        padding: 1rem;
+    }
+
+    .payment-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .payment-title {
+        font-size: 1.5rem;
+    }
+
+    .payment-card {
+        padding: 1.5rem;
+    }
+
+    .payment-card-header {
+        flex-direction: column;
+    }
+
+    .payment-card-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .payment-card-actions .btn-payment {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .threshold-value {
+        font-size: 2rem;
+    }
+}

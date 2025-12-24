@@ -244,7 +244,7 @@ PROMPT,
     'commands' => [
         'enabled' => true,
         'public' => ['/aide', '/help', '/clear', '/reset', '/faq', '/contact', '/livraison'],
-        'team_only' => ['/stats', '/stocks', '/commandes', '/contacts', '/analytics'],
+        'team_only' => ['/stats', '/stocks', '/commandes', '/contacts', '/analytics', '/erp', '/crm'],
     ],
 
     /*
@@ -253,6 +253,9 @@ PROMPT,
     |--------------------------------------------------------------------------
     */
     'intents' => [
+        'erp_query' => ['atelier', 'matière', 'tissu', 'wax', 'bobine', 'production', 'stock atelier', 'matière première', 'matières premières', 'fournisseur', 'réappro'],
+        'crm_query' => ['interaction', 'interactions', 'client', 'crm', 'contact client', 'dernier client', 'historique client', 'échanges client'],
+        'subscription_query' => ['mon plan', 'mon abonnement', 'expire', 'quand finit', 'mon forfait', 'suspendu', 'basique', 'premium', 'avancé', 'abonnements', 'mensuel'],
         'greeting' => ['bonjour', 'salut', 'hello', 'coucou', 'hey', 'bonsoir', 'hi', 'yo', 'bjr'],
         'farewell' => ['au revoir', 'bye', 'à bientôt', 'adieu', 'ciao', 'salut', 'bonne journée', 'bonne soirée'],
         'thanks' => ['merci', 'thanks', 'super', 'parfait', 'génial', 'excellent', 'top', 'cool', 'nickel'],

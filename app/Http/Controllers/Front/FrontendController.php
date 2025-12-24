@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\CreatorProfile;
+use App\Models\CreatorPlan;
 use App\Services\CmsContentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -150,6 +151,16 @@ class FrontendController extends Controller
     }
 
     /**
+     * Display the account client/creator FAQ page
+     * 
+     * Page d'aide expliquant le système de compte unique
+     */
+    public function accountClientCreator(): View
+    {
+        return view('frontend.account-client-creator');
+    }
+
+    /**
      * Display the help page
      */
     public function help(): View
@@ -229,7 +240,7 @@ class FrontendController extends Controller
     }
 
     /**
-     * Display the creators list page
+     * Display the creators list page - Présentation stylistes
      */
     public function creators(Request $request): View
     {
@@ -247,39 +258,106 @@ class FrontendController extends Controller
 
         $creators = $query->latest()->paginate(12);
 
+        // Total produits marketplace
+        $totalProducts = Product::whereHas('creator')->where('is_active', true)->count();
+
         // Charger le contenu CMS pour la page créateurs
         $cmsPage = $this->cmsService->getPage('createurs');
 
-        return view('frontend.creators', compact('creators', 'cmsPage'));
+        return view('frontend.creators', compact('creators', 'totalProducts', 'cmsPage'));
     }
 
     /**
-     * Display the marketplace page (all creators and marketplace products)
+     * Display the marketplace page - All creators' products
+     * 
+     * Grille de TOUS les produits des créateurs avec filtres
      */
     public function marketplace(Request $request): View
     {
-        // Charger les créateurs actifs et vérifiés avec nombre de produits marketplace
-        $creators = CreatorProfile::where('is_active', true)
-            ->where('is_verified', true)
-            ->withCount(['products' => function ($q) {
-                $q->where('product_type', 'marketplace')->where('is_active', true);
-            }])
-            ->with('user')
-            ->latest()
-            ->paginate(12);
+        // Charger TOUS les produits créateurs avec filtres
+        $query = Product::where('is_active', true)
+            ->whereHas('creator') // Uniquement produits avec créateur
+            ->with(['category', 'creator.creatorProfile', 'images', 'mainImage']);
 
-        // Produits marketplace en vedette
-        $featuredProducts = Product::where('is_active', true)
-            ->where('product_type', 'marketplace')
-            ->with(['category', 'creator.creatorProfile'])
-            ->latest()
-            ->take(12)
+        // Filtre par créateur
+        if ($request->filled('creator')) {
+            $query->where('user_id', $request->creator);
+        }
+
+        // Filtre catégorie
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        // Recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtre prix
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $request->price_min);
+        }
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $request->price_max);
+        }
+
+        // Tri
+        $sort = $request->get('sort', 'recent');
+        switch ($sort) {
+            case 'popular':
+                $query->orderBy('views', 'desc');
+                break;
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            default:
+                $query->latest();
+        }
+
+        $products = $query->paginate(24);
+
+        // Charger créateurs pour filtre
+        $creators = \App\Models\User::query()
+            ->whereHas('roleRelation', function ($q) {
+                $q->whereIn('slug', ['creator', 'createur']);
+            })
+            ->whereHas('creatorProfile', function ($q) {
+                $q->where('is_active', true)->where('is_verified', true);
+            })
+            ->with('creatorProfile')
+            ->has('products')
             ->get();
+
+        // Charger catégories pour filtre
+        $categories = Category::where('is_active', true)
+            ->withCount(['products' => function ($q) {
+                $q->whereHas('creator');
+            }])
+            ->having('products_count', '>', 0)
+            ->get();
+
+        $creatorsCount = $creators->count();
+        $totalProducts = Product::whereHas('creator')->where('is_active', true)->count();
 
         // Charger le contenu CMS pour la page marketplace
         $cmsPage = $this->cmsService->getPage('marketplace');
 
-        return view('frontend.marketplace', compact('creators', 'featuredProducts', 'cmsPage'));
+        return view('frontend.marketplace', compact(
+            'products',
+            'creators',
+            'categories',
+            'creatorsCount',
+            'totalProducts',
+            'cmsPage'
+        ));
     }
 
     /**
@@ -349,16 +427,6 @@ class FrontendController extends Controller
         return view('frontend.ceo', compact('cmsPage'));
     }
 
-    /**
-     * Display the brand guidelines page
-     */
-    public function brandGuidelines(): View
-    {
-        // Charger le contenu CMS pour la page charte graphique
-        $cmsPage = $this->cmsService->getPage('charte-graphique');
-
-        return view('frontend.brand-guidelines', compact('cmsPage'));
-    }
 
     /**
      * Construire la requête de produits avec tous les filtres
@@ -493,5 +561,20 @@ class FrontendController extends Controller
         }
 
         return 'shop.products.' . md5(json_encode($filters));
+    }
+
+    /**
+     * Display the "Devenir Créateur" page with subscription plans
+     * 
+     * UX & Copywriting page for creator subscription
+     */
+    public function becomeCreator(): View
+    {
+        $plans = CreatorPlan::active()
+            ->orderBy('price')
+            ->with('capabilities')
+            ->get();
+
+        return view('frontend.become-creator', compact('plans'));
     }
 }

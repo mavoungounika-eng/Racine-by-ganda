@@ -6,6 +6,7 @@ use App\Exceptions\OrderException;
 use App\Exceptions\StockException;
 use App\Models\Product;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Service de validation du stock
@@ -54,10 +55,16 @@ class StockValidationService
         }
 
         // Verrouiller les produits pour éviter les race conditions
-        $lockedProducts = Product::whereIn('id', $productsToLock)
-            ->lockForUpdate()
-            ->get()
-            ->keyBy('id');
+        // RBG-P0-002 : lockForUpdate() nécessite une transaction active
+        // En SQLite, lockForUpdate() est ignoré mais ne lève pas d'erreur si dans une transaction
+        $query = Product::whereIn('id', $productsToLock);
+        
+        // lockForUpdate() nécessite une transaction active
+        if (DB::transactionLevel() > 0) {
+            $query->lockForUpdate();
+        }
+        
+        $lockedProducts = $query->get()->keyBy('id');
 
         // Vérifier chaque produit
         foreach ($items as $item) {

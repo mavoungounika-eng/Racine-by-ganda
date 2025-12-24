@@ -317,6 +317,12 @@
                 <i class="fas fa-shopping-cart"></i>
                 <span>Commandes</span>
             </a>
+            @can('payments.view')
+            <a href="{{ route('admin.payments.index') }}" class="admin-nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                <i class="fas fa-credit-card"></i>
+                <span>Payments Hub</span>
+            </a>
+            @endcan
             <a href="{{ route('admin.stock-alerts.index') }}" class="admin-nav-link {{ request()->routeIs('admin.stock-alerts.*') ? 'active' : '' }}">
                 <i class="fas fa-exclamation-triangle"></i>
                 <span>Alertes stock</span>
@@ -333,16 +339,16 @@
             </a>
 
             <div class="admin-nav-section-title">Boutique</div>
-            <a href="{{ route('admin.pos.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
-                <i class="fas fa-cash-register"></i>
-                <span>Point de Vente (POS)</span>
-            </a>
             <a href="{{ route('admin.orders.scan') }}" class="admin-nav-link {{ request()->routeIs('admin.orders.scan') ? 'active' : '' }}">
                 <i class="fas fa-qrcode"></i>
                 <span>Scanner QR</span>
             </a>
 
             <div class="admin-nav-section-title">Outils</div>
+            <a href="{{ route('admin.pos.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+                <i class="fas fa-cash-register"></i>
+                <span>Point de Vente (POS)</span>
+            </a>
             <a href="{{ route('frontend.home') }}" class="admin-nav-link">
                 <i class="fas fa-home"></i>
                 <span>Voir le site</span>

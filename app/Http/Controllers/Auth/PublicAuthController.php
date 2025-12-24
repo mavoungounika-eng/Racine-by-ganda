@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Auth\Traits\HandlesAuthRedirect;
+use App\Http\Controllers\Auth\Traits\HandlesAuthContext;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
@@ -12,24 +13,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PublicAuthController extends Controller
 {
-    use HandlesAuthRedirect;
+    use HandlesAuthRedirect, HandlesAuthContext;
     /**
      * Show the login form.
      */
     public function showLoginForm(Request $request): View
     {
-        $style = $request->query('style', 'neutral');
+        // Utiliser la vue premium avec design existant
+        $loginContext = $this->resolveContext($request, 'login');
         
-        return match($style) {
-            'female' => view('auth.login-female'),
-            'male' => view('auth.login-male'),
-            default => view('auth.login-neutral'),
-        };
+        return view('auth.login-neutral', [
+            'loginContext' => $loginContext,
+        ]);
     }
+
 
     /**
      * Handle login request.
@@ -68,47 +72,12 @@ class PublicAuthController extends Controller
     public function showRegisterForm(Request $request): View
     {
         // Résoudre le contexte d'inscription (boutique, equipe ou null)
-        $registerContext = $this->resolveRegisterContext($request);
+        $registerContext = $this->resolveContext($request, 'register');
         
-        return view('auth.register', [
+        // Utiliser la vue unifiée avec message rassurant
+        return view('auth.register-unified', [
             'registerContext' => $registerContext,
         ]);
-    }
-
-    /**
-     * Résout le contexte d'inscription depuis la requête et la session
-     * 
-     * Priorité :
-     * 1. Paramètre query `context` si présent et valide
-     * 2. Session `register_context` si présente et valide
-     * 3. null (contexte neutre)
-     * 
-     * @param Request $request
-     * @return string|null Retourne 'boutique', 'equipe' ou null
-     */
-    protected function resolveRegisterContext(Request $request): ?string
-    {
-        // Priorité 1: Paramètre query si présent et valide
-        $queryContext = $request->query('context');
-        
-        if ($queryContext && in_array($queryContext, ['boutique', 'equipe'], true)) {
-            // Stocker en session pour persistance
-            session(['register_context' => $queryContext]);
-            return $queryContext;
-        }
-
-        // Priorité 2: Session si présente et valide
-        $sessionContext = session('register_context');
-        
-        if ($sessionContext && in_array($sessionContext, ['boutique', 'equipe'], true)) {
-            return $sessionContext;
-        }
-
-        // Nettoyer la session si contexte invalide
-        session()->forget('register_context');
-
-        // Priorité 3: Contexte neutre
-        return null;
     }
 
     /**
@@ -164,6 +133,67 @@ class PublicAuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Afficher le formulaire "Mot de passe oublié"
+     */
+    public function showForgotForm(): View
+    {
+        return view('auth.passwords.forgot');
+    }
+
+    /**
+     * Envoyer le lien de réinitialisation par email
+     */
+    public function sendResetLink(Request $request): RedirectResponse
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with(['status' => __($status)])
+            : back()->withErrors(['email' => __($status)]);
+    }
+
+    /**
+     * Afficher le formulaire de réinitialisation
+     */
+    public function showResetForm(string $token): View
+    {
+        return view('auth.passwords.reset', ['token' => $token]);
+    }
+
+    /**
+     * Réinitialiser le mot de passe
+     */
+    public function reset(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:12|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('status', __($status))
+            : back()->withErrors(['email' => [__($status)]]);
     }
 
     /**

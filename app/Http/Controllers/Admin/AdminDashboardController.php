@@ -31,31 +31,35 @@ class AdminDashboardController extends Controller
         // STATISTIQUES CLÉS
         // ============================================
         
-        $stats = [
-            // Ventes du mois
-            'monthly_sales' => $this->getMonthlySales(),
-            'monthly_sales_evolution' => $this->getMonthlySalesEvolution(),
-            
-            // Commandes
-            'monthly_orders' => $this->getMonthlyOrdersCount(),
-            'pending_orders' => $this->getPendingOrdersCount(),
-            
-            // Clients
-            'new_clients_month' => $this->getNewClientsThisMonth(),
-            'total_clients' => User::whereHas('roleRelation', function($q) {
-                $q->where('slug', 'client');
-            })->count(),
-            
-            // Produits
-            'total_products' => Product::count(),
-            'low_stock_products' => Product::where('stock', '<', 10)->count(),
-            
-            // Créateurs
-            'total_creators' => CreatorProfile::where('is_active', true)->count(),
-            'verified_creators' => CreatorProfile::where('is_active', true)
-                ->where('is_verified', true)
-                ->count(),
-        ];
+        // ✅ OPTIMISATION : Cache pour toutes les stats (une seule requête agrégée)
+        $statsCacheKey = 'admin.dashboard.stats';
+        $stats = Cache::remember($statsCacheKey, 600, function () {
+            return [
+                // Ventes du mois
+                'monthly_sales' => $this->getMonthlySales(),
+                'monthly_sales_evolution' => $this->getMonthlySalesEvolution(),
+                
+                // Commandes
+                'monthly_orders' => $this->getMonthlyOrdersCount(),
+                'pending_orders' => $this->getPendingOrdersCount(),
+                
+                // Clients
+                'new_clients_month' => $this->getNewClientsThisMonth(),
+                'total_clients' => User::whereHas('roleRelation', function($q) {
+                    $q->where('slug', 'client');
+                })->count(),
+                
+                // Produits
+                'total_products' => Product::count(),
+                'low_stock_products' => Product::where('stock', '<', 10)->count(),
+                
+                // Créateurs
+                'total_creators' => CreatorProfile::where('is_active', true)->count(),
+                'verified_creators' => CreatorProfile::where('is_active', true)
+                    ->where('is_verified', true)
+                    ->count(),
+            ];
+        });
 
         // ============================================
         // DONNÉES POUR GRAPHIQUES CHART.JS
@@ -120,7 +124,7 @@ class AdminDashboardController extends Controller
      */
     private function getMonthlySales(): float
     {
-        $cacheKey = 'admin_dashboard_monthly_sales_' . now()->format('Y-m');
+        $cacheKey = 'admin.dashboard.monthly_sales_' . now()->format('Y-m');
         
         return Cache::remember($cacheKey, 900, function () {
             return Payment::where('status', 'paid')
@@ -132,15 +136,19 @@ class AdminDashboardController extends Controller
 
     /**
      * Calculer l'évolution des ventes par rapport au mois précédent.
+     * ✅ OPTIMISATION : Cache pour previousMonth
      */
     private function getMonthlySalesEvolution(): float
     {
         $currentMonth = $this->getMonthlySales();
         
-        $previousMonth = Payment::where('status', 'paid')
-            ->whereMonth('created_at', now()->subMonth()->month)
-            ->whereYear('created_at', now()->subMonth()->year)
-            ->sum('amount');
+        $previousMonthCacheKey = 'admin.dashboard.monthly_sales_' . now()->subMonth()->format('Y-m');
+        $previousMonth = Cache::remember($previousMonthCacheKey, 900, function () {
+            return Payment::where('status', 'paid')
+                ->whereMonth('created_at', now()->subMonth()->month)
+                ->whereYear('created_at', now()->subMonth()->year)
+                ->sum('amount');
+        });
 
         if ($previousMonth == 0) {
             return $currentMonth > 0 ? 100 : 0;
@@ -151,6 +159,7 @@ class AdminDashboardController extends Controller
 
     /**
      * Compter les commandes du mois.
+     * ✅ OPTIMISATION : Utilisé dans cache stats globales
      */
     private function getMonthlyOrdersCount(): int
     {
@@ -161,6 +170,7 @@ class AdminDashboardController extends Controller
 
     /**
      * Compter les commandes en attente.
+     * ✅ OPTIMISATION : Utilisé dans cache stats globales
      */
     private function getPendingOrdersCount(): int
     {
@@ -169,6 +179,7 @@ class AdminDashboardController extends Controller
 
     /**
      * Compter les nouveaux clients ce mois.
+     * ✅ OPTIMISATION : Utilisé dans cache stats globales
      */
     private function getNewClientsThisMonth(): int
     {
@@ -182,26 +193,45 @@ class AdminDashboardController extends Controller
 
     /**
      * Obtenir les ventes par mois (12 derniers mois).
+     * ✅ OPTIMISATION : Une seule requête agrégée au lieu de 12 requêtes
      * Cache: 15 minutes
      */
     private function getSalesByMonth(): array
     {
-        $cacheKey = 'admin_dashboard_sales_by_month';
+        $cacheKey = 'admin.dashboard.sales_by_month';
         
         return Cache::remember($cacheKey, 900, function () {
+            // Calculer la date de début (12 mois en arrière)
+            $startDate = now()->subMonths(11)->startOfMonth();
+            
+            // ✅ Une seule requête agrégée pour tous les mois
+            $monthlySales = Payment::where('status', 'paid')
+                ->where('created_at', '>=', $startDate)
+                ->selectRaw('
+                    DATE_FORMAT(created_at, "%b %Y") as month_label,
+                    MONTH(created_at) as month,
+                    YEAR(created_at) as year,
+                    SUM(amount) as total
+                ')
+                ->groupBy('year', 'month', 'month_label')
+                ->orderBy('year')
+                ->orderBy('month')
+                ->get()
+                ->keyBy(function ($item) {
+                    return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+                });
+            
+            // Générer les labels et données pour les 12 derniers mois
             $months = [];
             $sales = [];
-
+            
             for ($i = 11; $i >= 0; $i--) {
                 $date = now()->subMonths($i);
+                $monthKey = $date->format('Y-m');
                 $months[] = $date->format('M Y');
                 
-                $monthlySale = Payment::where('status', 'paid')
-                    ->whereMonth('created_at', $date->month)
-                    ->whereYear('created_at', $date->year)
-                    ->sum('amount');
-                
-                $sales[] = round($monthlySale, 2);
+                $monthlySale = $monthlySales->get($monthKey);
+                $sales[] = round($monthlySale->total ?? 0, 2);
             }
 
             return [
@@ -213,27 +243,51 @@ class AdminDashboardController extends Controller
 
     /**
      * Obtenir le nombre de commandes par mois (12 derniers mois).
+     * ✅ OPTIMISATION : Une seule requête agrégée au lieu de 12 requêtes
+     * Cache: 15 minutes
      */
     private function getOrdersByMonth(): array
     {
-        $months = [];
-        $orders = [];
-
-        for ($i = 11; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $months[] = $date->format('M Y');
+        $cacheKey = 'admin.dashboard.orders_by_month';
+        
+        return Cache::remember($cacheKey, 900, function () {
+            // Calculer la date de début (12 mois en arrière)
+            $startDate = now()->subMonths(11)->startOfMonth();
             
-            $monthlyOrders = Order::whereMonth('created_at', $date->month)
-                ->whereYear('created_at', $date->year)
-                ->count();
+            // ✅ Une seule requête agrégée pour tous les mois
+            $monthlyOrders = Order::where('created_at', '>=', $startDate)
+                ->selectRaw('
+                    DATE_FORMAT(created_at, "%b %Y") as month_label,
+                    MONTH(created_at) as month,
+                    YEAR(created_at) as year,
+                    COUNT(*) as total
+                ')
+                ->groupBy('year', 'month', 'month_label')
+                ->orderBy('year')
+                ->orderBy('month')
+                ->get()
+                ->keyBy(function ($item) {
+                    return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+                });
             
-            $orders[] = $monthlyOrders;
-        }
+            // Générer les labels et données pour les 12 derniers mois
+            $months = [];
+            $orders = [];
 
-        return [
-            'labels' => $months,
-            'data' => $orders,
-        ];
+            for ($i = 11; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $monthKey = $date->format('Y-m');
+                $months[] = $date->format('M Y');
+                
+                $monthlyOrder = $monthlyOrders->get($monthKey);
+                $orders[] = (int) ($monthlyOrder->total ?? 0);
+            }
+
+            return [
+                'labels' => $months,
+                'data' => $orders,
+            ];
+        });
     }
 
     /**
@@ -242,7 +296,7 @@ class AdminDashboardController extends Controller
      */
     private function getTopProducts(): array
     {
-        $cacheKey = 'admin_dashboard_top_products';
+        $cacheKey = 'admin.dashboard.top_products';
         
         return Cache::remember($cacheKey, 900, function () {
             $topProducts = OrderItem::select('product_id', DB::raw('SUM(quantity) as total_sold'))
@@ -273,7 +327,7 @@ class AdminDashboardController extends Controller
      */
     private function getOrdersByStatus(): array
     {
-        $cacheKey = 'admin_dashboard_orders_by_status';
+        $cacheKey = 'admin.dashboard.orders_by_status';
         
         return Cache::remember($cacheKey, 600, function () {
             $statuses = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
@@ -303,29 +357,53 @@ class AdminDashboardController extends Controller
 
     /**
      * Obtenir le nombre de nouveaux clients par mois (12 derniers mois).
+     * ✅ OPTIMISATION : Une seule requête agrégée au lieu de 12 requêtes
+     * Cache: 15 minutes
      */
     private function getNewClientsByMonth(): array
     {
-        $months = [];
-        $clients = [];
-
-        for ($i = 11; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $months[] = $date->format('M Y');
+        $cacheKey = 'admin.dashboard.new_clients_by_month';
+        
+        return Cache::remember($cacheKey, 900, function () {
+            // Calculer la date de début (12 mois en arrière)
+            $startDate = now()->subMonths(11)->startOfMonth();
             
-            $newClients = User::whereHas('roleRelation', function($q) {
+            // ✅ Une seule requête agrégée pour tous les mois
+            $monthlyClients = User::whereHas('roleRelation', function($q) {
                     $q->where('slug', 'client');
                 })
-                ->whereMonth('created_at', $date->month)
-                ->whereYear('created_at', $date->year)
-                ->count();
+                ->where('created_at', '>=', $startDate)
+                ->selectRaw('
+                    DATE_FORMAT(created_at, "%b %Y") as month_label,
+                    MONTH(created_at) as month,
+                    YEAR(created_at) as year,
+                    COUNT(*) as total
+                ')
+                ->groupBy('year', 'month', 'month_label')
+                ->orderBy('year')
+                ->orderBy('month')
+                ->get()
+                ->keyBy(function ($item) {
+                    return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+                });
             
-            $clients[] = $newClients;
-        }
+            // Générer les labels et données pour les 12 derniers mois
+            $months = [];
+            $clients = [];
 
-        return [
-            'labels' => $months,
-            'data' => $clients,
-        ];
+            for ($i = 11; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $monthKey = $date->format('Y-m');
+                $months[] = $date->format('M Y');
+                
+                $monthlyClient = $monthlyClients->get($monthKey);
+                $clients[] = (int) ($monthlyClient->total ?? 0);
+            }
+
+            return [
+                'labels' => $months,
+                'data' => $clients,
+            ];
+        });
     }
 }

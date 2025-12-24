@@ -72,7 +72,9 @@ class NotificationService
      */
     public function order(User|int $user, string $title, string $message, ?int $orderId = null): Notification
     {
-        $actionUrl = $orderId ? route('orders.show', $orderId) : null;
+        // Utiliser checkout.success comme route publique pour les notifications de commande
+        // Si l'utilisateur est connecté, on peut utiliser profile.orders.show
+        $actionUrl = $orderId ? route('checkout.success', ['order' => $orderId]) : null;
         return $this->create($user, $title, $message, 'order', '📦', $actionUrl, 'Voir la commande', ['order_id' => $orderId]);
     }
 

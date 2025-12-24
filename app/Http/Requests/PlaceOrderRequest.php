@@ -34,8 +34,18 @@ class PlaceOrderRequest extends FormRequest
             'city'            => 'required|string|max:255',
             'country'         => 'required|string|max:255',
             'shipping_method' => 'required|in:home_delivery,showroom_pickup',
-            'payment_method'  => 'required|in:mobile_money,card,cash_on_delivery',
+            'payment_method'  => 'required|in:mobile_money,monetbil,card,cash_on_delivery',
         ];
+    }
+
+    /**
+     * Get the URL to redirect to on a validation error.
+     *
+     * @return string
+     */
+    protected function getRedirectUrl(): string
+    {
+        return route('checkout.index');
     }
 }
 

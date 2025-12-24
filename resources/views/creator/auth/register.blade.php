@@ -314,6 +314,48 @@
                 <p class="register-subtitle">Rejoignez RACINE BY GANDA et vendez vos créations sur notre plateforme. Votre compte sera validé par notre équipe.</p>
             </div>
             
+            {{-- MESSAGE INFORMATIF --}}
+            <div style="background: rgba(212, 165, 116, 0.15); border: 1px solid rgba(212, 165, 116, 0.3); border-left: 4px solid #D4A574; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem;">
+                <div style="display: flex; align-items: start; gap: 0.75rem;">
+                    <i class="fas fa-info-circle" style="color: #D4A574; font-size: 1rem; margin-top: 0.1rem;"></i>
+                    <div>
+                        <strong style="color: #D4A574; display: block; margin-bottom: 0.25rem;">Un seul compte suffit.</strong>
+                        <p style="margin: 0; font-size: 0.85rem; line-height: 1.5;">
+                            Vous pouvez acheter et vendre avec le même compte, sans jamais perdre vos données.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            {{-- CONNEXION SOCIALE --}}
+            <div class="social-login" style="margin-bottom: 1.5rem;">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">Ou s'inscrire avec</span>
+                </div>
+                
+                <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'creator']) }}" 
+                   class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 0.75rem;">
+                    <i class="fab fa-google"></i>
+                    <span>S'inscrire avec Google</span>
+                </a>
+                
+                <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'creator']) }}" 
+                   class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.3); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 0.75rem;">
+                    <i class="fab fa-apple"></i>
+                    <span>S'inscrire avec Apple</span>
+                </a>
+                
+                <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'creator']) }}" 
+                   class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(24, 119, 242, 0.4); background: rgba(24, 119, 242, 0.2); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 1rem;">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>S'inscrire avec Facebook</span>
+                </a>
+                
+                <div style="text-align: center; margin: 1.5rem 0 1rem 0;">
+                    <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">Ou remplir le formulaire</span>
+                </div>
+            </div>
+            
             @if($errors->any())
                 <div style="background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: #ff6b6b; font-size: 0.875rem;">
                     <strong>Erreurs :</strong>

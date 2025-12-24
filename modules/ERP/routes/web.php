@@ -20,7 +20,7 @@ use Modules\ERP\Http\Controllers\ErpReportController;
 $rateLimitMax = config('erp.rate_limit.max_attempts', 60);
 $rateLimitDecay = config('erp.rate_limit.decay_minutes', 1);
 
-Route::prefix('erp')->name('erp.')->middleware(['auth', 'can:access-erp', "throttle:{$rateLimitMax},{$rateLimitDecay}"])->group(function () {
+Route::prefix('erp')->name('erp.')->middleware(['auth', 'can:access-erp', '2fa', "throttle:{$rateLimitMax},{$rateLimitDecay}"])->group(function () {
     
     // Dashboard ERP
     Route::get('/', [ErpDashboardController::class, 'index'])->name('dashboard');

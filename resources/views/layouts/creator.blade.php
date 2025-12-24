@@ -14,6 +14,7 @@
     
     {{-- RACINE Design System --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/creator-design-system.css') }}">
     
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -386,8 +387,16 @@
                 <span>Tableau de bord</span>
             </a>
             
-            {{-- Section Créations --}}
-            <div class="creator-sidebar-section">Créations</div>
+            {{-- Section Mon Profil (NOUVEAU) --}}
+            <div class="creator-sidebar-section">Mon Profil</div>
+            <a href="{{ route('creator.profile.show') }}" 
+               class="creator-sidebar-link {{ request()->routeIs('creator.profile.*') ? 'active' : '' }}">
+                <i class="fas fa-user-circle"></i>
+                <span>Mon Profil</span>
+            </a>
+            
+            {{-- Section Mes Produits --}}
+            <div class="creator-sidebar-section">Mes Produits</div>
             <a href="{{ route('creator.products.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.products.*') && !request()->routeIs('creator.products.create') ? 'active' : '' }}">
                 <i class="fas fa-box"></i>
@@ -399,17 +408,41 @@
                 <span>Nouveau produit</span>
             </a>
             
-            {{-- Section Ventes --}}
-            <div class="creator-sidebar-section">Ventes</div>
+            {{-- Section Gestion Commandes --}}
+            <div class="creator-sidebar-section">Gestion Commandes</div>
             <a href="{{ route('creator.orders.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.orders.*') ? 'active' : '' }}">
                 <i class="fas fa-shopping-bag"></i>
                 <span>Commandes</span>
             </a>
+            <a href="{{ route('creator.messages.index') }}" 
+               class="creator-sidebar-link {{ request()->routeIs('creator.messages.*') ? 'active' : '' }}">
+                <i class="fas fa-comment-alt"></i>
+                <span>Messages Clients</span>
+                @php
+                    // Calcul temporaire si le service n'est pas injecté globalement
+                    $msgService = app(\App\Services\ConversationService::class);
+                    $unreadMsg = $msgService->getUnreadConversationsCount(Auth::id());
+                @endphp
+                @if($unreadMsg > 0)
+                    <span class="creator-notification-badge" style="margin-left: auto;">{{ $unreadMsg }}</span>
+                @endif
+            </a>
+
+            {{-- Section Finances --}}
+            <div class="creator-sidebar-section">Finances</div>
             <a href="{{ route('creator.finances.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.finances.*') ? 'active' : '' }}">
-                <i class="fas fa-wallet"></i>
-                <span>Finances</span>
+                <i class="fas fa-coins"></i>
+                <span>Revenus & Ventes</span>
+            </a>
+            
+            {{-- Section Données --}}
+            <div class="creator-sidebar-section">Données +</div>
+            <a href="{{ route('creator.analytics.index') }}" 
+               class="creator-sidebar-link {{ request()->routeIs('creator.analytics.*') ? 'active' : '' }}">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
             </a>
             <a href="{{ route('creator.stats.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.stats.*') ? 'active' : '' }}">
@@ -417,12 +450,17 @@
                 <span>Statistiques</span>
             </a>
             
-            {{-- Section Compte --}}
-            <div class="creator-sidebar-section">Compte</div>
-            <a href="{{ route('profile.edit') }}" 
-               class="creator-sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                <i class="fas fa-user-circle"></i>
-                <span>Mon profil</span>
+            {{-- Section Paramètres (NOUVEAU) --}}
+            <div class="creator-sidebar-section">Paramètres</div>
+            <a href="{{ route('creator.settings.payment') }}" 
+               class="creator-sidebar-link {{ request()->routeIs('creator.settings.payment') ? 'active' : '' }}">
+                <i class="fas fa-credit-card"></i>
+                <span>Paiements & Stripe</span>
+            </a>
+            <a href="{{ route('creator.subscription.plans') }}" 
+               class="creator-sidebar-link {{ request()->routeIs('creator.subscription.*') ? 'active' : '' }}">
+                <i class="fas fa-crown"></i>
+                <span>Abonnement</span>
             </a>
             <a href="{{ route('creator.notifications.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.notifications.*') ? 'active' : '' }}">

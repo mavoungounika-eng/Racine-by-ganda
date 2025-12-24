@@ -239,7 +239,8 @@ class TwoFactorController extends Controller
         }
         
         try {
-            $roleSlug = $user->roleRelation?->slug ?? 'client';
+            // ✅ Module 8 - Utiliser getRoleSlug() pour cohérence
+            $roleSlug = $user->getRoleSlug() ?? 'client';
             
             $crmContact = CrmContact::updateOrCreate(
                 ['email' => $user->email],
@@ -277,7 +278,8 @@ class TwoFactorController extends Controller
      */
     protected function redirectByRole(User $user)
     {
-        $roleSlug = $user->roleRelation?->slug ?? 'client';
+        // ✅ Module 8 - Utiliser getRoleSlug() pour cohérence
+        $roleSlug = $user->getRoleSlug() ?? 'client';
         
         return match($roleSlug) {
             'super_admin' => redirect()->route('admin.dashboard'),

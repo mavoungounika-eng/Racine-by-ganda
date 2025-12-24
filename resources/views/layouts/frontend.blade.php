@@ -92,8 +92,8 @@
                             Boutique <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 4px;"></i>
                         </button>
                         <div class="nav-dropdown-menu">
-                            <a href="{{ route('frontend.shop') }}"><i class="fas fa-store"></i> Boutique RACINE BY GANDA</a>
-                            <a href="{{ route('frontend.creators') }}"><i class="fas fa-palette"></i> Boutique Créateurs</a>
+                            <a href="{{ route('frontend.shop') }}"><i class="fas fa-store"></i> RACINE BY GANDA</a>
+                            <a href="{{ route('frontend.marketplace') }}"><i class="fas fa-shopping-bag"></i> Marketplace</a>
                         </div>
                     </div>
                     
@@ -101,7 +101,7 @@
                     
                     {{-- Panier --}}
                     <a href="{{ route('cart.index') }}" class="nav-link-racine d-flex align-items-center position-relative" style="gap: 0.5rem;" aria-label="Voir le panier">
-                        <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                        <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                         <span>Panier</span>
                         @if(isset($cartCount) && $cartCount > 0)
                           <span class="badge badge-danger" 
@@ -148,8 +148,12 @@
                     {{-- Boutique section --}}
                     <div class="py-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                         <p class="text-white mb-2" style="font-weight: 600; font-size: 0.9rem;">Boutique</p>
-                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Boutique RACINE BY GANDA</a>
-                        <a href="{{ route('frontend.creators') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Boutique Créateurs</a>
+                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
+                            <i class="fas fa-store" style="margin-right: 0.5rem;"></i> RACINE BY GANDA
+                        </a>
+                        <a href="{{ route('frontend.marketplace') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
+                            <i class="fas fa-shopping-bag" style="margin-right: 0.5rem;"></i> Marketplace
+                        </a>
                     </div>
                     
                     <a href="{{ route('frontend.showroom') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Showroom</a>
@@ -312,7 +316,6 @@
                             <li><a href="{{ route('frontend.albums') }}"><i class="fas fa-chevron-right"></i> Albums</a></li>
                             <li><a href="{{ route('frontend.events') }}"><i class="fas fa-chevron-right"></i> Événements</a></li>
                             <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> Amira Ganda</a></li>
-                            <li><a href="{{ route('frontend.brand-guidelines') }}"><i class="fas fa-chevron-right"></i> Charte Graphique</a></li>
                         </ul>
                     </div>
                     

@@ -253,6 +253,9 @@
             </div>
         </form>
     </div>
+
+    {{-- Galerie d'Images --}}
+    @include('admin.products.partials.gallery')
 </div>
 @endsection
 

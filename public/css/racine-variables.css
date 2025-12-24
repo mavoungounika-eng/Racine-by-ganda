@@ -26,6 +26,12 @@
     --racine-cream: #FFF8F0;
     --racine-beige: #F5E6D3;
 
+    /* Couleurs supplémentaires pour l'espace créateur */
+    --racine-brown: #8B7355;
+    --racine-beige-light: #F8F6F3;
+    --racine-border: #E5DDD3;
+    --racine-gold: #D4A574;
+
     /* ===== COULEURS BOOTSTRAP OVERRIDE ===== */
     --primary: #ED5F1E;
     --primary-rgb: 237, 95, 30;

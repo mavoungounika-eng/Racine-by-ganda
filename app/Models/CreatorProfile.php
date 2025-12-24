@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class CreatorProfile extends Model
@@ -20,9 +21,11 @@ class CreatorProfile extends Model
     protected $fillable = [
         'user_id',
         'brand_name',
+        'creator_title',
         'slug',
         'bio',
         'logo_path',
+        'avatar_path',
         'banner_path',
         'photo', // Legacy
         'banner', // Legacy
@@ -31,6 +34,7 @@ class CreatorProfile extends Model
         'instagram', // Legacy
         'instagram_url',
         'tiktok_url',
+        'facebook_url',
         'facebook', // Legacy
         'type',
         'legal_status',
@@ -159,6 +163,30 @@ class CreatorProfile extends Model
     public function validationSteps(): HasMany
     {
         return $this->hasMany(CreatorValidationStep::class);
+    }
+
+    /**
+     * Get the Stripe account for the creator.
+     */
+    public function stripeAccount(): HasOne
+    {
+        return $this->hasOne(CreatorStripeAccount::class, 'creator_profile_id');
+    }
+
+    /**
+     * Get the subscriptions for the creator.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(CreatorSubscription::class, 'creator_profile_id');
+    }
+
+    /**
+     * Get the payment preferences for the creator.
+     */
+    public function paymentPreference(): HasOne
+    {
+        return $this->hasOne(PaymentPreference::class, 'creator_profile_id');
     }
 
     /**

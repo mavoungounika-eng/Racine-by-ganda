@@ -108,11 +108,19 @@ class OrderController extends Controller
      */
     public function placeOrder(Request $request)
     {
-        // ✅ Gestion erreur 405 : Si accès en GET, rediriger vers checkout
-        if ($request->isMethod('get')) {
-            return redirect()->route('checkout')
-                ->with('error', 'Veuillez remplir le formulaire de commande pour continuer.');
-        }
+        // ✅ FINAL HARDENING - Blocage définitif du chemin legacy
+        // Cette méthode est OBSOLÈTE et ne doit JAMAIS être utilisée
+        // Même si aucune route n'y pointe, bloquer explicitement pour éviter toute utilisation future
+        \Log::channel('security')->warning('Legacy checkout blocked: OrderController::placeOrder() called', [
+            'ip' => $request->ip(),
+            'user_agent' => substr($request->userAgent() ?? '', 0, 100),
+            'user_id' => Auth::id(),
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+        ]);
+        
+        // 410 Gone = Ressource définitivement supprimée, utiliser CheckoutController à la place
+        abort(410, 'Cette méthode est obsolète. Veuillez utiliser le tunnel de checkout officiel.');
 
         // ✅ Protection anti-double soumission : Vérifier token unique
         $submittedToken = $request->input('_checkout_token');

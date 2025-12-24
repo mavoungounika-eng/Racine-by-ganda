@@ -72,14 +72,26 @@ class CreatorDashboardController extends Controller
         ->take(5)
         ->get();
 
-        return view('creator.dashboard', compact(
+        // PHASE 6: Dashboard dynamique selon capability
+        $dashboardLayout = $user->getDashboardLayout(); // basic, advanced, premium
+        
+        // Sélectionner la vue selon le layout
+        $viewName = "creator.dashboard.{$dashboardLayout}";
+        
+        // Si la vue spécifique n'existe pas, fallback vers basic
+        if (!view()->exists($viewName)) {
+            $viewName = 'creator.dashboard.basic';
+        }
+
+        return view($viewName, compact(
             'stats',
             'recentProducts',
             'topProducts',
             'salesData',
             'creatorProfile',
             'recentOrders',
-            'user'
+            'user',
+            'dashboardLayout'
         ));
     }
 

@@ -36,4 +36,18 @@ class Payment extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    /**
+     * ✅ CORRECTION 7 : Vérifier si le paiement est dans un état terminal (immuable)
+     * 
+     * Les états terminaux ne peuvent plus être modifiés :
+     * - paid : Paiement confirmé
+     * - cancelled : Paiement annulé
+     * 
+     * @return bool True si le paiement est dans un état terminal
+     */
+    public function isTerminal(): bool
+    {
+        return in_array($this->status, ['paid', 'cancelled'], true);
+    }
 }

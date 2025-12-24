@@ -17,7 +17,8 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            overflow: hidden;
+            overflow-y: auto;
+            padding: 2rem 0;
         }
         
         /* GRADIENT MESH */
@@ -374,6 +375,21 @@
                 <p class="login-subtitle">{{ $subtitle }}</p>
             </div>
             
+            {{-- MESSAGE RASSURANT (IMPORTANT) --}}
+            @if($context === 'boutique')
+            <div style="background: rgba(212, 165, 116, 0.15); border: 1px solid rgba(212, 165, 116, 0.3); border-left: 4px solid #D4A574; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem;">
+                <div style="display: flex; align-items: start; gap: 0.75rem;">
+                    <i class="fas fa-info-circle" style="color: #D4A574; font-size: 1rem; margin-top: 0.1rem;"></i>
+                    <div>
+                        <strong style="color: #D4A574; display: block; margin-bottom: 0.25rem;">Un seul compte suffit.</strong>
+                        <p style="margin: 0; font-size: 0.85rem; line-height: 1.5;">
+                            Vous pouvez acheter et vendre avec le même compte, sans jamais perdre vos données.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
             @if(session('error'))
                 <div style="background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: #ff6b6b; font-size: 0.875rem;">
                     {{ session('error') }}
@@ -437,10 +453,20 @@
             
             @if($context === 'boutique')
             <div class="social-login" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
-                <a href="{{ route('auth.google.redirect', ['context' => 'boutique']) }}" 
-                   class="btn-social-google">
+                <a href="{{ url('/auth/google/redirect') }}" 
+                   class="btn-social-google" style="margin-bottom: 0.75rem;">
                     <i class="fab fa-google"></i>
                     <span>Continuer avec Google</span>
+                </a>
+                <a href="{{ url('/auth/apple/redirect') }}" 
+                   class="btn-social-google" style="margin-bottom: 0.75rem; background: rgba(0, 0, 0, 0.3); border-color: rgba(255, 255, 255, 0.2);">
+                    <i class="fab fa-apple"></i>
+                    <span>Continuer avec Apple</span>
+                </a>
+                <a href="{{ url('/auth/facebook/redirect') }}" 
+                   class="btn-social-google" style="background: rgba(24, 119, 242, 0.2); border-color: rgba(24, 119, 242, 0.4);">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Continuer avec Facebook</span>
                 </a>
             </div>
             @endif

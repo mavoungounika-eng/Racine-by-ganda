@@ -213,13 +213,19 @@
                     <option value="">-- Sélectionner une catégorie --</option>
                     
                     @foreach($categories as $parent)
-                        <optgroup label="{{ $parent->name }}">
-                            @foreach($parent->children as $child)
-                                <option value="{{ $child->id }}" {{ old('category_id', $product->category_id) == $child->id ? 'selected' : '' }}>
-                                    {{ $child->name }}
-                                </option>
-                            @endforeach
-                        </optgroup>
+                        @if($parent->children->count() > 0)
+                            <optgroup label="{{ $parent->name }}">
+                                @foreach($parent->children as $child)
+                                    <option value="{{ $child->id }}" {{ old('category_id', $product->category_id) == $child->id ? 'selected' : '' }}>
+                                        {{ $child->name }}
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @else
+                            <option value="{{ $parent->id }}" {{ old('category_id', $product->category_id) == $parent->id ? 'selected' : '' }}>
+                                {{ $parent->name }}
+                            </option>
+                        @endif
                     @endforeach
                 </select>
                 <p class="form-help">Choisissez la catégorie la plus précise pour votre produit</p>

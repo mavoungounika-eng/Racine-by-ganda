@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Auth\Traits\HandlesAuthRedirect;
+use App\Http\Controllers\Auth\Traits\HandlesAuthContext;
 use App\Models\User;
+use App\Services\AuthLogger;
+use App\Services\LoginAttemptService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +35,12 @@ use Illuminate\View\View;
  */
 class LoginController extends Controller
 {
-    use HandlesAuthRedirect;
+    use HandlesAuthRedirect, HandlesAuthContext;
+
+    public function __construct(
+        private AuthLogger $authLogger,
+        private LoginAttemptService $attemptService
+    ) {}
 
     /**
      * Afficher le formulaire de connexion
@@ -51,49 +59,15 @@ class LoginController extends Controller
         }
 
         // Résoudre le contexte de connexion (boutique, equipe ou null)
-        $loginContext = $this->resolveLoginContext($request);
+        $loginContext = $this->resolveContext($request, 'login');
 
-        // Passer le contexte à la vue pour adapter l'UI
+        // Utiliser la vue premium avec design existant
         return view('auth.login-neutral', [
             'loginContext' => $loginContext,
         ]);
     }
 
-    /**
-     * Résout le contexte de connexion depuis la requête et la session
-     * 
-     * Priorité :
-     * 1. Paramètre query `context` si présent et valide
-     * 2. Session `login_context` si présente et valide
-     * 3. null (contexte neutre)
-     * 
-     * @param Request $request
-     * @return string|null Retourne 'boutique', 'equipe' ou null
-     */
-    protected function resolveLoginContext(Request $request): ?string
-    {
-        // Priorité 1: Paramètre query si présent et valide
-        $queryContext = $request->query('context');
-        
-        if ($queryContext && in_array($queryContext, ['boutique', 'equipe'], true)) {
-            // Stocker en session pour persistance
-            session(['login_context' => $queryContext]);
-            return $queryContext;
-        }
 
-        // Priorité 2: Session si présente et valide
-        $sessionContext = session('login_context');
-        
-        if ($sessionContext && in_array($sessionContext, ['boutique', 'equipe'], true)) {
-            return $sessionContext;
-        }
-
-        // Nettoyer la session si contexte invalide
-        session()->forget('login_context');
-
-        // Priorité 3: Contexte neutre
-        return null;
-    }
 
     /**
      * Traiter la connexion
@@ -111,11 +85,29 @@ class LoginController extends Controller
             'remember' => ['nullable', 'boolean'],
         ]);
 
+        $email = $request->input('email');
+
+        // ✅ Vérifier si le compte est bloqué
+        if ($this->attemptService->isLocked($email)) {
+            $minutes = $this->attemptService->getRemainingMinutes($email);
+            $this->authLogger->logAccountLocked($email, $this->attemptService->getAttempts($email));
+            
+            throw ValidationException::withMessages([
+                'email' => "Trop de tentatives de connexion. Votre compte est temporairement bloqué. Réessayez dans {$minutes} minute(s).",
+            ]);
+        }
+
         // Tentative de connexion via le guard 'web'
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             $user = Auth::user();
+
+            // ✅ Effacer les tentatives échouées après connexion réussie
+            $this->attemptService->clearAttempts($email);
+
+            // ✅ Log connexion réussie
+            $this->authLogger->logLoginAttempt($user->email, true);
 
             // Charger la relation roleRelation pour éviter les erreurs
             $user->load('roleRelation');
@@ -128,15 +120,52 @@ class LoginController extends Controller
                 ])->onlyInput('email');
             }
 
-            // Récupérer le contexte de connexion (optionnel, pour usage futur)
-            $context = session('login_context');
+            // ✅ VÉRIFICATION 2FA pour admin/super_admin (CRITIQUE)
+            $twoFactorService = app(\App\Services\TwoFactorService::class);
+            $roleSlug = $user->getRoleSlug();
             
+            if (in_array($roleSlug, ['admin', 'super_admin'])) {
+                // Vérifier si 2FA est activé
+                if ($twoFactorService->isEnabled($user)) {
+                    // En développement local, bypasser la 2FA (pour faciliter les tests)
+                    if (app()->environment('local')) {
+                        \Illuminate\Support\Facades\Session::put('2fa_verified', true);
+                    } else {
+                        // En production : 2FA OBLIGATOIRE
+                        // Vérifier si appareil de confiance
+                        $trustedToken = $request->cookie('trusted_device');
+                        if (!$trustedToken || !$twoFactorService->isTrustedDevice($user, $trustedToken)) {
+                            // Déconnecter et rediriger vers challenge
+                            Auth::logout();
+                            \Illuminate\Support\Facades\Session::put('2fa_user_id', $user->id);
+                            \Illuminate\Support\Facades\Session::put('2fa_remember', $request->boolean('remember'));
+                            
+                            return redirect()->route('2fa.challenge');
+                        }
+                        // Appareil de confiance valide
+                        \Illuminate\Support\Facades\Session::put('2fa_verified', true);
+                    }
+                } else {
+                    // Si 2FA obligatoire mais pas configuré
+                    if ($twoFactorService->isRequired($user)) {
+                        return redirect()->route('2fa.setup')
+                            ->with('warning', 'La double authentification est obligatoire pour les administrateurs.');
+                    }
+                }
+            }
+
             // Nettoyer le contexte de la session après utilisation
-            session()->forget('login_context');
+            $this->clearContext('login');
 
             // Redirection selon le rôle (le contexte peut être utilisé plus tard pour adapter la redirection)
             return redirect()->intended($this->getRedirectPath($user));
         }
+
+        // ✅ Enregistrer la tentative échouée
+        $this->attemptService->recordFailedAttempt($email);
+
+        // ✅ Log tentative échouée
+        $this->authLogger->logLoginAttempt($request->input('email'), false);
 
         // Échec de connexion
         throw ValidationException::withMessages([
@@ -149,6 +178,22 @@ class LoginController extends Controller
      */
     public function logout(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        
+        // ✅ Log déconnexion
+        if ($user) {
+            $this->authLogger->logLogout($user);
+        }
+        
+        // ✅ FINAL HARDENING - Révoquer trusted device lors du logout
+        if ($user) {
+            $twoFactorService = app(\App\Services\TwoFactorService::class);
+            $twoFactorService->revokeTrustedDevice($user);
+            
+            // Supprimer le cookie trusted_device
+            cookie()->queue(cookie()->forget('trusted_device'));
+        }
+        
         Auth::logout();
 
         $request->session()->invalidate();

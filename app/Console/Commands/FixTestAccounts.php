@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Models\CreatorProfile;
+use App\Models\Role;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,6 +17,9 @@ class FixTestAccounts extends Command
     {
         $this->info('=== CORRECTION DES COMPTES DE TEST ===');
         $this->newLine();
+
+        // S'assurer que les rôles existent avant de créer les comptes
+        $this->ensureRolesExist();
 
         $accounts = [
             ['email' => 'superadmin@racine.cm', 'password' => 'password', 'role_id' => 1, 'role' => 'super_admin', 'is_admin' => true],
@@ -38,10 +42,12 @@ class FixTestAccounts extends Command
             $creatorStatus = $accountData['creator_status'] ?? null;
             unset($accountData['creator_status']);
 
-            $user = User::where('email', $email)->first();
+            // Rechercher le compte même s'il est soft-deleted
+            $user = User::withTrashed()->where('email', $email)->first();
 
             if (!$user) {
                 $this->error("❌ {$email} - Compte non trouvé, création...");
+                $role = Role::find($accountData['role_id']);
                 $user = User::create([
                     'name' => $this->getNameFromEmail($email),
                     'email' => $email,
@@ -54,22 +60,42 @@ class FixTestAccounts extends Command
                     'email_verified_at' => now(),
                     'two_factor_required' => false,
                 ]);
+                // Associer la relation roleRelation
+                if ($role) {
+                    $user->roleRelation()->associate($role);
+                    $user->save();
+                }
                 $this->info("✅ {$email} - Compte créé");
             } else {
+                // Restaurer le compte s'il est soft-deleted
+                if ($user->trashed()) {
+                    $user->restore();
+                    $this->line("   └─ Compte restauré (était supprimé)");
+                }
+                
+                // Récupérer le rôle pour l'association
+                $role = Role::find($accountData['role_id']);
+                
                 // Corriger le compte existant
                 $user->password = Hash::make($accountData['password']);
                 $user->role_id = $accountData['role_id'];
                 $user->role = $accountData['role'];
                 $user->is_admin = $accountData['is_admin'] ?? false;
                 $user->staff_role = $accountData['staff_role'] ?? null;
-                $user->status = 'active';
+                $user->status = 'active'; // Force la réactivation
                 $user->email_verified_at = now();
                 $user->two_factor_required = false;
                 $user->two_factor_secret = null;
                 $user->two_factor_recovery_codes = null;
                 $user->two_factor_confirmed_at = null;
+                
+                // Associer la relation roleRelation
+                if ($role) {
+                    $user->roleRelation()->associate($role);
+                }
+                
                 $user->save();
-                $this->info("✅ {$email} - Compte corrigé");
+                $this->info("✅ {$email} - Compte corrigé et réactivé");
             }
 
             // Gérer le profil créateur si nécessaire
@@ -113,6 +139,59 @@ class FixTestAccounts extends Command
         $parts = explode('@', $email);
         $name = str_replace(['.', '_'], ' ', $parts[0]);
         return ucwords($name);
+    }
+
+    private function ensureRolesExist(): void
+    {
+        $this->info('Vérification des rôles...');
+
+        $roles = [
+            [
+                'id' => 1,
+                'name' => 'Super Administrateur',
+                'slug' => 'super_admin',
+                'description' => 'Accès complet à toutes les fonctionnalités du système. Peut gérer les autres administrateurs.',
+                'is_active' => true,
+            ],
+            [
+                'id' => 2,
+                'name' => 'Administrateur',
+                'slug' => 'admin',
+                'description' => 'Accès administrateur standard. Peut gérer les utilisateurs et le contenu.',
+                'is_active' => true,
+            ],
+            [
+                'id' => 3,
+                'name' => 'Staff',
+                'slug' => 'staff',
+                'description' => 'Membre de l\'équipe avec accès aux outils internes.',
+                'is_active' => true,
+            ],
+            [
+                'id' => 4,
+                'name' => 'Créateur',
+                'slug' => 'createur',
+                'description' => 'Créateur/Designer partenaire. Peut gérer ses produits et sa boutique.',
+                'is_active' => true,
+            ],
+            [
+                'id' => 5,
+                'name' => 'Client',
+                'slug' => 'client',
+                'description' => 'Client standard avec accès aux commandes et au profil.',
+                'is_active' => true,
+            ],
+        ];
+
+        foreach ($roles as $role) {
+            $existingRole = Role::find($role['id']);
+            if (!$existingRole) {
+                Role::create($role);
+                $this->line("   ✅ Rôle créé: {$role['name']} ({$role['slug']})");
+            }
+        }
+
+        $this->newLine();
     }
 }
 
