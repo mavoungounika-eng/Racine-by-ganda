@@ -159,27 +159,45 @@ class CreatorDashboardController extends Controller
 
     /**
      * Obtenir les données pour le graphique des ventes.
+     * ✅ OPTIMISATION: Une seule requête agrégée au lieu de 12 requêtes
      */
     private function getSalesChartData(int $userId): array
     {
+        // Calculer la date de début (12 mois en arrière)
+        $startDate = now()->subMonths(11)->startOfMonth();
+        
+        // ✅ Une seule requête agrégée pour tous les mois
+        $salesByMonth = OrderItem::select(
+                DB::raw('YEAR(orders.created_at) as year'),
+                DB::raw('MONTH(orders.created_at) as month'),
+                DB::raw('SUM(order_items.price * order_items.quantity) as total')
+            )
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('products.user_id', $userId)
+            ->where('orders.status', 'paid')
+            ->where('orders.created_at', '>=', $startDate)
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            });
+
+        // Construire le tableau avec tous les mois (remplir les mois manquants)
         $months = [];
         $sales = [];
 
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $months[] = $date->format('M Y');
+            $key = $date->format('Y-m');
             
-            $monthlySale = OrderItem::whereHas('product', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->whereHas('order', function ($query) use ($date) {
-                $query->where('status', 'paid')
-                    ->whereMonth('created_at', $date->month)
-                    ->whereYear('created_at', $date->year);
-            })
-            ->sum(DB::raw('price * quantity'));
-            
-            $sales[] = round($monthlySale, 2);
+            // Récupérer la valeur ou 0 si le mois n'a pas de ventes
+            $sales[] = isset($salesByMonth[$key]) 
+                ? round($salesByMonth[$key]->total, 2) 
+                : 0;
         }
 
         return [
