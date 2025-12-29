@@ -1,0 +1,111 @@
+name: Coverage
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: testing
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP with Xdebug
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql, sqlite3, bcmath, gd, zip, xdebug
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env.testing
+          php artisan key:generate --env=testing
+
+      - name: Configure database
+        run: |
+          cat >> .env.testing << EOF
+          DB_CONNECTION=mysql
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_DATABASE=testing
+          DB_USERNAME=root
+          DB_PASSWORD=password
+          EOF
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if php artisan db:show --env=testing 2>/dev/null; then
+              echo "MySQL is ready!"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing --force
+
+      - name: Generate coverage report
+        run: php artisan test --env=testing --coverage --coverage-html=coverage-report --coverage-clover=coverage.xml
+
+      - name: Upload coverage HTML
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage-report/
+          retention-days: 30
+
+      - name: Upload coverage XML
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          retention-days: 30
+
+      - name: Comment PR with coverage summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('coverage.xml')) {
+              const xml = fs.readFileSync('coverage.xml', 'utf8');
+              const match = xml.match(/lines-covered="(\d+)" lines-valid="(\d+)"/);
+              if (match) {
+                const covered = parseInt(match[1]);
+                const total = parseInt(match[2]);
+                const percentage = ((covered / total) * 100).toFixed(2);
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `## 📊 Code Coverage Report\n\n**Coverage**: ${percentage}%\n**Lines Covered**: ${covered} / ${total}\n\n_ℹ️ This is informational only and does not block the PR._\n\n[View detailed report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+                });
+              }
+            }

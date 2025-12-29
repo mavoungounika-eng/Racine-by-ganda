@@ -1,0 +1,89 @@
+name: Performance Regression
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  n-plus-one-regression:
+    name: N+1 Query Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: testing
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql, sqlite3, bcmath, gd, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env.testing
+          php artisan key:generate --env=testing
+
+      - name: Configure database
+        run: |
+          cat >> .env.testing << EOF
+          DB_CONNECTION=mysql
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_DATABASE=testing
+          DB_USERNAME=root
+          DB_PASSWORD=password
+          EOF
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if php artisan db:show --env=testing 2>/dev/null; then
+              echo "MySQL is ready!"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing --force
+
+      - name: Run N+1 regression tests
+        run: php artisan test --env=testing --filter=NPlusOneRegressionTest --stop-on-failure
+
+      - name: Upload QueryLogger logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: query-logs
+          path: storage/logs/
+          retention-days: 7
