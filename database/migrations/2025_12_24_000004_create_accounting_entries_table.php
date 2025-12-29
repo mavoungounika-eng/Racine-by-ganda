@@ -62,8 +62,10 @@ return new class extends Migration
         });
         
         // Contrainte: débit = crédit si posted
-        DB::statement('ALTER TABLE accounting_entries ADD CONSTRAINT chk_balanced 
-            CHECK (is_posted = 0 OR total_debit = total_credit)');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE accounting_entries ADD CONSTRAINT chk_balanced 
+                CHECK (is_posted = 0 OR total_debit = total_credit)');
+        }
     }
 
     /**

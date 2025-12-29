@@ -167,9 +167,12 @@ class CreatorDashboardController extends Controller
         $startDate = now()->subMonths(11)->startOfMonth();
         
         // ✅ Une seule requête agrégée pour tous les mois
+        $yearFunc = DB::getDriverName() === 'sqlite' ? 'strftime("%Y", orders.created_at)' : 'YEAR(orders.created_at)';
+        $monthFunc = DB::getDriverName() === 'sqlite' ? 'strftime("%m", orders.created_at)' : 'MONTH(orders.created_at)';
+
         $salesByMonth = OrderItem::select(
-                DB::raw('YEAR(orders.created_at) as year'),
-                DB::raw('MONTH(orders.created_at) as month'),
+                DB::raw("$yearFunc as year"),
+                DB::raw("$monthFunc as month"),
                 DB::raw('SUM(order_items.price * order_items.quantity) as total')
             )
             ->join('orders', 'order_items.order_id', '=', 'orders.id')

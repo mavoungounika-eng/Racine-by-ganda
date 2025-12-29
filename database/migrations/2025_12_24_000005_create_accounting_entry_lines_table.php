@@ -51,8 +51,10 @@ return new class extends Migration
         });
         
         // Contrainte: débit OU crédit (pas les deux)
-        DB::statement('ALTER TABLE accounting_entry_lines ADD CONSTRAINT chk_debit_or_credit 
-            CHECK ((debit > 0 AND credit = 0) OR (credit > 0 AND debit = 0))');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE accounting_entry_lines ADD CONSTRAINT chk_debit_or_credit 
+                CHECK ((debit > 0 AND credit = 0) OR (credit > 0 AND debit = 0))');
+        }
     }
 
     /**

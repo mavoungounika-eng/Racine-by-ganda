@@ -72,7 +72,7 @@ class AuthAccountDisabledTest extends TestCase
     {
         $creator = User::factory()->create([
             'active' => true,
-            'role' => 'creator',
+            'role' => 'createur',
         ]);
 
         $creator->creatorProfile()->create([

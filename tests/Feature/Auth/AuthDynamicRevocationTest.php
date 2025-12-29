@@ -69,7 +69,7 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_creator_suspended_loses_access(): void
     {
         $creator = User::factory()->create([
-            'role' => 'creator',
+            'role' => 'createur',
         ]);
 
         // Créer le profil créateur actif
