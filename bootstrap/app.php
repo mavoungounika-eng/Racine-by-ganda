@@ -51,6 +51,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Fusion automatique panier session → DB à la connexion
         $middleware->append(\App\Http\Middleware\MergeCartOnLogin::class);
 
+        // Enregistrement des métriques de performance (debug uniquement)
+        $middleware->append(\App\Http\Middleware\RecordPerformanceMetrics::class);
+
         // Rate limiting global
         $middleware->throttleApi();
     })
