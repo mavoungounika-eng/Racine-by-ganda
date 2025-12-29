@@ -47,6 +47,21 @@ class ErpDashboardController extends Controller
             // Optimisation: Une seule requête pour toutes les stats du dashboard
             $month = now()->month;
             $year = now()->year;
+            $today = now()->toDateString();
+            
+            // SQLite compatibility: Use different date functions based on driver
+            $driver = DB::getDriverName();
+            if ($driver === 'sqlite') {
+                $monthFunc = "CAST(strftime('%m', purchase_date) AS INTEGER)";
+                $yearFunc = "CAST(strftime('%Y', purchase_date) AS INTEGER)";
+                $dateFunc = "DATE(created_at)";
+                $todayValue = "'$today'";
+            } else {
+                $monthFunc = "MONTH(purchase_date)";
+                $yearFunc = "YEAR(purchase_date)";
+                $dateFunc = "DATE(created_at)";
+                $todayValue = "CURDATE()";
+            }
             
             $result = DB::selectOne("
                 SELECT 
@@ -57,12 +72,12 @@ class ErpDashboardController extends Controller
                     (SELECT COUNT(*) FROM erp_suppliers WHERE is_active = 1) as suppliers_active,
                     (SELECT COUNT(*) FROM erp_raw_materials) as materials_total,
                     (SELECT COALESCE(SUM(price * stock), 0) FROM products WHERE stock > 0) as stock_value_global,
-                    (SELECT COUNT(*) FROM erp_purchases WHERE MONTH(purchase_date) = ? AND YEAR(purchase_date) = ?) as purchases_month_count,
-                    (SELECT COALESCE(SUM(total_amount), 0) FROM erp_purchases WHERE MONTH(purchase_date) = ? AND YEAR(purchase_date) = ?) as purchases_month_sum,
-                    (SELECT COALESCE(SUM(quantity), 0) FROM erp_stock_movements WHERE DATE(created_at) = CURDATE() AND type = 'in') as flow_today_in,
-                    (SELECT COALESCE(SUM(quantity), 0) FROM erp_stock_movements WHERE DATE(created_at) = CURDATE() AND type = 'out') as flow_today_out,
+                    (SELECT COUNT(*) FROM erp_purchases WHERE $monthFunc = ? AND $yearFunc = ?) as purchases_month_count,
+                    (SELECT COALESCE(SUM(total_amount), 0) FROM erp_purchases WHERE $monthFunc = ? AND $yearFunc = ?) as purchases_month_sum,
+                    (SELECT COALESCE(SUM(quantity), 0) FROM erp_stock_movements WHERE $dateFunc = $todayValue AND type = 'in') as flow_today_in,
+                    (SELECT COALESCE(SUM(quantity), 0) FROM erp_stock_movements WHERE $dateFunc = $todayValue AND type = 'out') as flow_today_out,
                     (SELECT COUNT(*) FROM erp_purchases WHERE status = 'ordered') as purchases_pending,
-                    (SELECT COUNT(*) FROM erp_purchases WHERE status = 'received' AND MONTH(purchase_date) = ? AND YEAR(purchase_date) = ?) as purchases_received
+                    (SELECT COUNT(*) FROM erp_purchases WHERE status = 'received' AND $monthFunc = ? AND $yearFunc = ?) as purchases_received
             ", [$month, $year, $month, $year, $month, $year]);
 
             // Convertir l'objet stdClass en tableau
