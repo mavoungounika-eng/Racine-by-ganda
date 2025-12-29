@@ -1,8 +1,12 @@
 name: Performance Regression
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, security/**]
   pull_request:
     branches: [main, develop]
 
@@ -20,11 +24,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout code
