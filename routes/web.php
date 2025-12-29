@@ -537,6 +537,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('stock-alerts/{alert}/dismiss', [\App\Http\Controllers\Admin\AdminStockAlertController::class, 'dismiss'])->name('stock-alerts.dismiss');
         Route::post('stock-alerts/resolve-all', [\App\Http\Controllers\Admin\AdminStockAlertController::class, 'resolveAll'])->name('stock-alerts.resolve-all');
 
+        // Dashboard Performance (Phase 2.2 J3)
+        Route::prefix('performance')->name('performance.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\PerformanceController::class, 'index'])->name('index');
+            Route::get('/routes', [\App\Http\Controllers\Admin\PerformanceController::class, 'routes'])->name('routes');
+            Route::get('/alerts', [\App\Http\Controllers\Admin\PerformanceController::class, 'alerts'])->name('alerts');
+        });
+
         // Gestion CMS - Routes migrées vers modules/CMS/routes/web.php
         // Utiliser les routes cms.admin.* du module CMS
     });
