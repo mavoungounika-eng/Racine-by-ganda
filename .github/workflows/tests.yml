@@ -6,9 +6,14 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, security/**]
+    branches:
+      - main
+      - develop
+      - security/**
   pull_request:
-    branches: [main, develop]
+    branches:
+      - main
+      - develop
 
 jobs:
   tests:
@@ -27,38 +32,58 @@ jobs:
         env:
           MYSQL_DATABASE: testing
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
+          MYSQL_ALLOW_EMPTY_PASSWORD: "false"
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: >-
+          --health-cmd="mysqladmin ping -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
+      # ----------------------------------------------------
+      # Checkout
+      # ----------------------------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ----------------------------------------------------
+      # PHP Setup
+      # ----------------------------------------------------
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, pdo, pdo_mysql, sqlite3, bcmath, gd, zip
+          extensions: mbstring, pdo, pdo_mysql, bcmath, gd, zip
           coverage: none
           tools: composer:v2
 
+      # ----------------------------------------------------
+      # Composer Cache
+      # ----------------------------------------------------
       - name: Get Composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
+            ${{ runner.os }}-composer-${{ matrix.php }}-
             ${{ runner.os }}-composer-
 
+      # ----------------------------------------------------
+      # Dependencies
+      # ----------------------------------------------------
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
+      # ----------------------------------------------------
+      # Laravel Environment
+      # ----------------------------------------------------
       - name: Prepare environment
         run: |
           cp .env.example .env.testing
@@ -66,41 +91,53 @@ jobs:
 
       - name: Configure database
         run: |
-          cat >> .env.testing << EOF
-          DB_CONNECTION=mysql
-          DB_HOST=127.0.0.1
-          DB_PORT=3306
-          DB_DATABASE=testing
-          DB_USERNAME=root
-          DB_PASSWORD=password
-          EOF
+          echo "DB_CONNECTION=mysql" >> .env.testing
+          echo "DB_HOST=127.0.0.1" >> .env.testing
+          echo "DB_PORT=3306" >> .env.testing
+          echo "DB_DATABASE=testing" >> .env.testing
+          echo "DB_USERNAME=root" >> .env.testing
+          echo "DB_PASSWORD=password" >> .env.testing
 
+      # ----------------------------------------------------
+      # MySQL Wait
+      # ----------------------------------------------------
       - name: Wait for MySQL
         run: |
-          echo "Waiting for MySQL to be ready..."
+          echo "Waiting for MySQL..."
           for i in {1..30}; do
-            if php artisan db:show --env=testing 2>/dev/null; then
-              echo "MySQL is ready!"
-              break
+            if mysqladmin ping -h127.0.0.1 -ppassword --silent; then
+              echo "MySQL is ready"
+              exit 0
             fi
-            echo "Attempt $i/30: MySQL not ready yet..."
+            echo "Attempt $i/30..."
             sleep 2
           done
+          echo "MySQL did not become ready in time"
+          exit 1
 
+      # ----------------------------------------------------
+      # Database
+      # ----------------------------------------------------
       - name: Run migrations
         run: php artisan migrate --env=testing --force
 
-      - name: Execute tests (PR mode - stop on failure)
+      # ----------------------------------------------------
+      # Tests
+      # ----------------------------------------------------
+      - name: Execute tests (PR mode)
         if: github.event_name == 'pull_request'
         run: php artisan test --env=testing --stop-on-failure
 
-      - name: Execute tests (Main mode - parallel)
+      - name: Execute tests (Push mode)
         if: github.event_name == 'push'
         run: php artisan test --env=testing --parallel
 
+      # ----------------------------------------------------
+      # Artifacts (Failure Only)
+      # ----------------------------------------------------
       - name: Upload logs on failure
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-logs-php-${{ matrix.php }}
           path: |
