@@ -32,7 +32,6 @@ jobs:
         env:
           MYSQL_DATABASE: testing
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_ALLOW_EMPTY_PASSWORD: "false"
         ports:
           - 3306:3306
         options: >-
@@ -42,15 +41,9 @@ jobs:
           --health-retries=5
 
     steps:
-      # ----------------------------------------------------
-      # Checkout
-      # ----------------------------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ----------------------------------------------------
-      # PHP Setup
-      # ----------------------------------------------------
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -59,31 +52,21 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      # ----------------------------------------------------
-      # Composer Cache
-      # ----------------------------------------------------
       - name: Get Composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-${{ matrix.php }}-
-            ${{ runner.os }}-composer-
 
-      # ----------------------------------------------------
-      # Dependencies
-      # ----------------------------------------------------
       - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+        run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      # ----------------------------------------------------
-      # Laravel Environment
-      # ----------------------------------------------------
       - name: Prepare environment
         run: |
           cp .env.example .env.testing
@@ -98,49 +81,28 @@ jobs:
           echo "DB_USERNAME=root" >> .env.testing
           echo "DB_PASSWORD=password" >> .env.testing
 
-      # ----------------------------------------------------
-      # MySQL Wait
-      # ----------------------------------------------------
       - name: Wait for MySQL
         run: |
           echo "Waiting for MySQL..."
           for i in {1..30}; do
             if mysqladmin ping -h127.0.0.1 -ppassword --silent; then
               echo "MySQL is ready"
-              exit 0
+              break
             fi
-            echo "Attempt $i/30..."
+            echo "Waiting ($i/30)..."
             sleep 2
           done
-          echo "MySQL did not become ready in time"
-          exit 1
 
-      # ----------------------------------------------------
-      # Database
-      # ----------------------------------------------------
       - name: Run migrations
         run: php artisan migrate --env=testing --force
 
-      # ----------------------------------------------------
-      # Tests
-      # ----------------------------------------------------
-      - name: Execute tests (PR mode)
-        if: github.event_name == 'pull_request'
-        run: php artisan test --env=testing --stop-on-failure
+      - name: Run tests
+        run: php artisan test --env=testing
 
-      - name: Execute tests (Push mode)
-        if: github.event_name == 'push'
-        run: php artisan test --env=testing --parallel
-
-      # ----------------------------------------------------
-      # Artifacts (Failure Only)
-      # ----------------------------------------------------
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs-php-${{ matrix.php }}
-          path: |
-            storage/logs/
-            tests/**/*.log
+          name: laravel-logs-php-${{ matrix.php }}
+          path: storage/logs/
           retention-days: 7
