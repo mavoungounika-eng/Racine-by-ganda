@@ -1,0 +1,254 @@
+/* =============================================
+   🎨 RACINE BY GANDA - NAVIGATION CSS
+   Extrait du layout frontend pour optimisation
+   ============================================= */
+
+/* ===== NAV LINKS & DROPDOWNS RACINE ===== */
+.nav-link-racine {
+    color: white !important;
+    text-decoration: none !important;
+    transition: all 0.3s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.nav-link-racine:hover {
+    color: #ED5F1E !important;
+}
+
+.nav-dropdown {
+    position: relative;
+}
+.nav-dropdown-toggle {
+    display: flex;
+    align-items: center;
+}
+.nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: linear-gradient(135deg, #1c1412 0%, #2a1a18 100%);
+    border: 1px solid rgba(237, 95, 30, 0.3);
+    border-radius: 12px;
+    min-width: 220px;
+    padding: 0.5rem 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    z-index: 1100;
+}
+.nav-dropdown-menu-right {
+    left: auto;
+    right: 0;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown.active .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(5px);
+}
+.nav-dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+}
+.nav-dropdown-menu a:hover {
+    background: rgba(237, 95, 30, 0.15);
+    color: #ED5F1E;
+    padding-left: 1.5rem;
+}
+.nav-dropdown-menu a i {
+    width: 18px;
+    text-align: center;
+    color: #ED5F1E;
+}
+.nav-dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 0;
+}
+
+.nav-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    width: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+.nav-icon-btn:hover {
+    background: rgba(237, 95, 30, 0.2);
+    border-color: #ED5F1E;
+    color: #ED5F1E;
+    transform: scale(1.05);
+}
+.nav-icon-btn-primary {
+    background: #ED5F1E;
+    border-color: #ED5F1E;
+    box-shadow: 0 6px 20px rgba(237, 95, 30, 0.4);
+}
+.nav-icon-btn-primary:hover {
+    background: #ff7033;
+    color: white;
+    box-shadow: 0 8px 25px rgba(237, 95, 30, 0.5);
+}
+
+/* ===== NAVBAR PREMIUM RACINE ===== */
+.navbar-gradient {
+    background: linear-gradient(135deg, rgba(28, 20, 18, 0.98) 0%, rgba(38, 25, 21, 0.95) 100%);
+    backdrop-filter: blur(10px);
+}
+
+.navbar-racine {
+    background: linear-gradient(135deg, rgba(22, 13, 12, 0.98) 0%, rgba(42, 26, 24, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-normal);
+    border-bottom: 2px solid rgba(237, 95, 30, 0.2);
+}
+
+.navbar-racine.scrolled {
+    background: linear-gradient(135deg, rgba(22, 13, 12, 1) 0%, rgba(42, 26, 24, 1) 100%);
+    padding: 0.5rem 0;
+}
+
+.navbar-racine .logo {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--racine-orange) 0%, var(--racine-yellow) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.navbar-racine .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
+.navbar-racine .nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-family: var(--font-accent);
+    transition: var(--transition-fast);
+    position: relative;
+}
+
+.navbar-racine .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--racine-yellow);
+    transition: var(--transition-fast);
+}
+
+.navbar-racine .nav-links a:hover::after {
+    width: 100%;
+}
+
+.navbar-racine .nav-links a:hover {
+    color: var(--racine-yellow);
+}
+
+.cart-icon {
+    position: relative;
+    color: white;
+    font-size: 1.25rem;
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.cart-icon:hover {
+    color: var(--racine-yellow);
+}
+
+.cart-icon .badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--racine-orange);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ===== DROPDOWN MENUS ===== */
+.dropdown-menu {
+    animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item:hover {
+    background: rgba(237, 95, 30, 0.2) !important;
+    color: #FFB800 !important;
+}
+
+.dropdown-toggle::after {
+    margin-left: 0.5rem;
+}
+
+/* ===== LOGO NAVBAR ===== */
+.logo-navbar-wrapper {
+    position: relative;
+}
+
+.logo-navbar-container {
+    position: relative;
+}
+
+.logo-navbar-img {
+    transition: opacity 0.3s;
+}
+
+.logo-navbar-wrapper:hover .logo-navbar-img {
+    opacity: 0.3;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .navbar-racine .nav-links {
+        display: none;
+    }
+}
+

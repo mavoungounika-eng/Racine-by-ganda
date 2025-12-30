@@ -1,0 +1,542 @@
+/* ============================================
+   DESIGN SYSTEM - RACINE BY GANDA
+   Charte Graphique Officielle
+   ============================================ */
+
+:root {
+    /* ============================================
+       PALETTE OFFICIELLE RACINE BY GANDA
+       ============================================ */
+
+    /* Couleurs principales */
+    --racine-black: #160D0C;
+    /* Noir racine - Élégance, modernité, force */
+    --racine-orange: #ED5F1E;
+    /* Orange racine - Énergie, créativité, chaleur */
+    --racine-yellow: #FFB800;
+    /* Jaune racine - Lumière, optimisme */
+    --racine-white: #FFFFFF;
+    /* Blanc - Lisibilité et contraste */
+
+    /* Dérivés pour variations */
+    --racine-black-soft: #1f1412;
+    --racine-black-lighter: #2a1f1d;
+    --racine-orange-soft: #f27a3f;
+    --racine-orange-dark: #c74d18;
+    --racine-yellow-soft: #ffc933;
+
+    /* Couleurs de fond */
+    --racine-bg: #160D0C;
+    --racine-bg-soft: #1f1412;
+    --racine-text: #FFFFFF;
+    --racine-text-muted: rgba(255, 255, 255, 0.7);
+
+    /* ============================================
+       TYPOGRAPHIES
+       ============================================ */
+
+    /* Titres / Logo : Aleppo (fallback: Playfair Display) */
+    --font-display: "Playfair Display", "Aleppo", Georgia, serif;
+
+    /* Texte principal : Coco Gothic (fallback: Inter) */
+    --font-sans: "Inter", "Coco Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+    /* Texte accentué : Aileron (fallback: Inter) */
+    --font-accent: "Inter", "Aileron", sans-serif;
+
+    /* ============================================
+       ESPACEMENTS
+       ============================================ */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    --spacing-2xl: 4rem;
+
+    /* ============================================
+       BORDURES & OMBRES
+       ============================================ */
+    --radius-sm: 0.5rem;
+    --radius-md: 1rem;
+    --radius-lg: 1.25rem;
+    --radius-xl: 1.5rem;
+    --radius-full: 999px;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.35);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================
+   STYLES GLOBAUX
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--racine-black);
+    color: var(--racine-white);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   TYPOGRAPHIE
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.heading-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    color: var(--racine-white);
+}
+
+h1 {
+    font-size: 3rem;
+}
+
+h2 {
+    font-size: 2.5rem;
+}
+
+h3 {
+    font-size: 2rem;
+}
+
+h4 {
+    font-size: 1.5rem;
+}
+
+h5 {
+    font-size: 1.25rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+.text-accent {
+    font-family: var(--font-accent);
+    font-weight: 600;
+}
+
+/* ============================================
+   BOUTONS
+   ============================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-family: var(--font-accent);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+/* Bouton Principal - Orange */
+.btn-primary {
+    background-color: var(--racine-orange);
+    color: var(--racine-black);
+    box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);
+}
+
+.btn-primary:hover {
+    background-color: var(--racine-yellow);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 184, 0, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Bouton Secondaire - Outline */
+.btn-secondary {
+    background-color: transparent;
+    color: var(--racine-white);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background-color: var(--racine-white);
+    color: var(--racine-black);
+    border-color: var(--racine-white);
+}
+
+/* Bouton Outline Orange */
+.btn-outline-orange {
+    background-color: transparent;
+    color: var(--racine-orange);
+    border: 2px solid var(--racine-orange);
+}
+
+.btn-outline-orange:hover {
+    background-color: var(--racine-orange);
+    color: var(--racine-black);
+}
+
+/* Tailles de boutons */
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card {
+    background-color: var(--racine-black-soft);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.card-orange {
+    background-color: var(--racine-orange);
+    color: var(--racine-black);
+    border-color: var(--racine-orange-dark);
+}
+
+.card-white {
+    background-color: var(--racine-white);
+    color: var(--racine-black);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.badge-racine,
+.badge-orange {
+    background-color: var(--racine-orange);
+    color: var(--racine-black);
+}
+
+.badge-yellow {
+    background-color: var(--racine-yellow);
+    color: var(--racine-black);
+}
+
+.badge-white {
+    background-color: var(--racine-white);
+    color: var(--racine-black);
+}
+
+.badge-outline {
+    background-color: transparent;
+    color: var(--racine-white);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+
+.section {
+    padding: var(--spacing-2xl) 0;
+}
+
+.section-dark {
+    background-color: var(--racine-black);
+    color: var(--racine-white);
+}
+
+.section-orange {
+    background-color: var(--racine-orange);
+    color: var(--racine-black);
+}
+
+.section-soft {
+    background-color: var(--racine-black-soft);
+    color: var(--racine-white);
+}
+
+/* ============================================
+   LIENS
+   ============================================ */
+
+a {
+    color: var(--racine-orange);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--racine-yellow);
+}
+
+/* ============================================
+   FORMULAIRES
+   ============================================ */
+
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--racine-white);
+    font-size: 0.9rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--racine-black-soft);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-md);
+    color: var(--racine-white);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--racine-orange);
+    box-shadow: 0 0 0 3px rgba(237, 95, 30, 0.2);
+}
+
+.form-input::placeholder {
+    color: var(--racine-text-muted);
+}
+
+.form-error {
+    display: block;
+    margin-top: 0.25rem;
+    color: #ff6b6b;
+    font-size: 0.85rem;
+}
+
+/* ============================================
+   ALERTES
+   ============================================ */
+
+.alert {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.alert-error,
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.alert-warning {
+    background-color: rgba(255, 184, 0, 0.1);
+    border-color: var(--racine-yellow);
+    color: var(--racine-yellow);
+}
+
+.alert-info {
+    background-color: rgba(237, 95, 30, 0.1);
+    border-color: var(--racine-orange);
+    color: var(--racine-orange);
+}
+
+/* ============================================
+   UTILITAIRES
+   ============================================ */
+
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: var(--racine-text-muted);
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(to right,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+    margin: var(--spacing-lg) 0;
+}
+
+.divider-orange {
+    background: linear-gradient(to right,
+            transparent,
+            var(--racine-orange),
+            transparent);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.8s ease-out;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.8s ease-out;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.25rem;
+    }
+
+    h2 {
+        font-size: 1.875rem;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    .section {
+        padding: var(--spacing-xl) 0;
+    }
+
+    .btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   MOTIFS AFRICAINS (optionnel)
+   ============================================ */
+
+.pattern-african {
+    background-image:
+        repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(237, 95, 30, 0.03) 10px,
+            rgba(237, 95, 30, 0.03) 20px);
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    body {
+        background-color: white;
+        color: black;
+    }
+
+    .btn,
+    .badge {
+        border: 1px solid black;
+    }
+}

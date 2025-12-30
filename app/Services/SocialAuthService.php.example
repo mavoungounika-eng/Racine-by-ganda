@@ -1,0 +1,404 @@
+<?php
+
+namespace App\Services;
+
+use App\Exceptions\OAuthException;
+use App\Models\OauthAccount;
+use App\Models\User;
+use App\Models\Role;
+use App\Models\CreatorProfile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Contracts\User as ProviderUser;
+
+/**
+ * Service centralisé pour la gestion de l'authentification sociale multi-providers
+ * 
+ * Gère :
+ * - La création/connexion d'utilisateurs via OAuth
+ * - La liaison des comptes OAuth aux utilisateurs
+ * - La gestion des conflits de rôle
+ * - La protection contre l'account takeover
+ */
+class SocialAuthService
+{
+    /**
+     * Gère le callback OAuth et retourne l'utilisateur connecté
+     * 
+     * @param string $provider Provider OAuth (google|apple|facebook)
+     * @param ProviderUser $providerUser Utilisateur retourné par Socialite
+     * @param string $requestedRole Rôle demandé (client|createur)
+     * @param string $context Contexte (boutique)
+     * @return User
+     * @throws OAuthException
+     */
+    public function handleCallback(
+        string $provider,
+        ProviderUser $providerUser,
+        string $requestedRole,
+        string $context
+    ): User {
+        // Extraire les données du provider
+        $providerUserId = $providerUser->getId();
+        $providerEmail = $providerUser->getEmail();
+        $providerName = $providerUser->getName();
+        
+        // Vérifier que l'email est disponible (sauf pour Apple qui peut masquer l'email)
+        if (!$providerEmail && $provider !== 'apple') {
+            throw new OAuthException(
+                "Impossible de récupérer votre adresse email depuis {$provider}."
+            );
+        }
+
+        // Chercher un OauthAccount existant avec ce provider_user_id
+        $oauthAccount = OauthAccount::where('provider', $provider)
+            ->where('provider_user_id', $providerUserId)
+            ->first();
+
+        if ($oauthAccount) {
+            // Compte OAuth existant → récupérer l'utilisateur
+            return $this->handleExistingOAuthAccount(
+                $oauthAccount,
+                $providerUser,
+                $requestedRole,
+                $context
+            );
+        }
+
+        // Aucun compte OAuth → chercher par email (si disponible)
+        if ($providerEmail) {
+            $user = User::where('email', $providerEmail)->first();
+            
+            if ($user) {
+                // Utilisateur existant par email → lier le compte OAuth
+                return $this->linkOAuthToExistingUser(
+                    $user,
+                    $provider,
+                    $providerUser,
+                    $requestedRole,
+                    $context
+                );
+            }
+        }
+
+        // Nouvel utilisateur → créer User + OauthAccount
+        return $this->createNewUserWithOAuth(
+            $provider,
+            $providerUser,
+            $requestedRole,
+            $context
+        );
+    }
+
+    /**
+     * Gère un compte OAuth existant
+     * 
+     * @param OauthAccount $oauthAccount
+     * @param ProviderUser $providerUser
+     * @param string $requestedRole
+     * @param string $context
+     * @return User
+     * @throws OAuthException
+     */
+    protected function handleExistingOAuthAccount(
+        OauthAccount $oauthAccount,
+        ProviderUser $providerUser,
+        string $requestedRole,
+        string $context
+    ): User {
+        $user = $oauthAccount->user;
+        $user->load('roleRelation');
+
+        // Vérifier la cohérence de l'email (si disponible)
+        $providerEmail = $providerUser->getEmail();
+        if ($providerEmail && $user->email !== $providerEmail) {
+            \Log::warning('OAuth email mismatch', [
+                'user_id' => $user->id,
+                'provider' => $oauthAccount->provider,
+                'user_email' => $user->email,
+                'provider_email' => $providerEmail,
+            ]);
+            
+            // Pour Apple, l'email peut changer (private relay)
+            if ($oauthAccount->provider !== 'apple') {
+                throw new OAuthException(
+                    'Ce compte est déjà associé à un autre email. Contactez le support.'
+                );
+            }
+        }
+
+        // Vérifier le rôle
+        $this->validateRole($user, $requestedRole);
+
+        // Vérifier le statut (refus des comptes staff/admin)
+        $this->validateUserStatus($user);
+
+        // Mettre à jour les métadonnées du compte OAuth
+        $oauthAccount->update([
+            'provider_email' => $providerEmail ?? $oauthAccount->provider_email,
+            'provider_name' => $providerUser->getName() ?? $oauthAccount->provider_name,
+            'metadata' => $this->extractMetadata($providerUser),
+        ]);
+
+        return $user;
+    }
+
+    /**
+     * Lie un compte OAuth à un utilisateur existant
+     * 
+     * @param User $user
+     * @param string $provider
+     * @param ProviderUser $providerUser
+     * @param string $requestedRole
+     * @param string $context
+     * @return User
+     * @throws OAuthException
+     */
+    protected function linkOAuthToExistingUser(
+        User $user,
+        string $provider,
+        ProviderUser $providerUser,
+        string $requestedRole,
+        string $context
+    ): User {
+        $user->load('roleRelation');
+
+        // Vérifier qu'un compte OAuth du même provider n'existe pas déjà
+        $existingOAuth = OauthAccount::where('user_id', $user->id)
+            ->where('provider', $provider)
+            ->first();
+
+        if ($existingOAuth) {
+            // Compte OAuth existe déjà → vérifier la cohérence
+            if ($existingOAuth->provider_user_id !== $providerUser->getId()) {
+                throw new OAuthException(
+                    "Cet email est déjà associé à un autre compte {$provider}. " .
+                    "Veuillez utiliser votre email et mot de passe pour vous connecter."
+                );
+            }
+            
+            // Même provider_user_id → mettre à jour et retourner
+            $existingOAuth->update([
+                'provider_email' => $providerUser->getEmail() ?? $existingOAuth->provider_email,
+                'provider_name' => $providerUser->getName() ?? $existingOAuth->provider_name,
+                'metadata' => $this->extractMetadata($providerUser),
+            ]);
+            
+            return $user;
+        }
+
+        // Vérifier le rôle
+        $this->validateRole($user, $requestedRole);
+
+        // Vérifier le statut
+        $this->validateUserStatus($user);
+
+        // Créer le compte OAuth
+        $isPrimary = !$user->oauthAccounts()->where('is_primary', true)->exists();
+        
+        OauthAccount::create([
+            'user_id' => $user->id,
+            'provider' => $provider,
+            'provider_user_id' => $providerUser->getId(),
+            'provider_email' => $providerUser->getEmail(),
+            'provider_name' => $providerUser->getName(),
+            'is_primary' => $isPrimary,
+            'metadata' => $this->extractMetadata($providerUser),
+        ]);
+
+        return $user;
+    }
+
+    /**
+     * Crée un nouvel utilisateur avec son compte OAuth
+     * 
+     * @param string $provider
+     * @param ProviderUser $providerUser
+     * @param string $requestedRole
+     * @param string $context
+     * @return User
+     * @throws OAuthException
+     */
+    protected function createNewUserWithOAuth(
+        string $provider,
+        ProviderUser $providerUser,
+        string $requestedRole,
+        string $context
+    ): User {
+        // Pour Apple, si l'email est masqué, utiliser provider_user_id comme identifiant
+        $email = $providerUser->getEmail();
+        if (!$email && $provider === 'apple') {
+            // Générer un email temporaire basé sur provider_user_id
+            $email = 'apple_' . Str::slug($providerUser->getId()) . '@oauth.temp';
+        }
+
+        if (!$email) {
+            throw new OAuthException(
+                "Impossible de créer un compte sans email. Veuillez utiliser un autre moyen de connexion."
+            );
+        }
+
+        // Créer ou récupérer le rôle
+        $roleName = $requestedRole === 'createur' ? 'Créateur' : 'Client';
+        $roleDescription = $requestedRole === 'createur'
+            ? 'Créateur avec accès à la marketplace et au dashboard créateur.'
+            : 'Client standard avec accès aux commandes et au profil.';
+
+        $role = Role::firstOrCreate(
+            ['slug' => $requestedRole],
+            [
+                'name' => $roleName,
+                'description' => $roleDescription,
+                'is_active' => true,
+            ]
+        );
+
+        // Générer un nom depuis les infos du provider
+        $name = $providerUser->getName();
+        if (!$name) {
+            // Extraire le nom depuis l'email si pas de nom
+            $name = explode('@', $email)[0];
+            $name = ucfirst(str_replace(['.', '_', '-'], ' ', $name));
+        }
+
+        // Transaction atomique : User + OauthAccount + CreatorProfile (si créateur)
+        try {
+            return DB::transaction(function () use (
+                $name,
+                $email,
+                $provider,
+                $providerUser,
+                $role,
+                $requestedRole
+            ) {
+                // Créer l'utilisateur
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => Hash::make(Str::random(32)), // Mot de passe généré
+                    'role_id' => $role->id,
+                    'email_verified_at' => now(), // Email vérifié via OAuth
+                ]);
+
+                // Créer le compte OAuth (marqué comme primary)
+                OauthAccount::create([
+                    'user_id' => $user->id,
+                    'provider' => $provider,
+                    'provider_user_id' => $providerUser->getId(),
+                    'provider_email' => $providerUser->getEmail(),
+                    'provider_name' => $providerUser->getName(),
+                    'is_primary' => true,
+                    'metadata' => $this->extractMetadata($providerUser),
+                ]);
+
+                // Si rôle créateur, créer le profil créateur avec statut pending
+                if ($requestedRole === 'createur') {
+                    CreatorProfile::create([
+                        'user_id' => $user->id,
+                        'brand_name' => $name,
+                        'status' => 'pending',
+                        'is_active' => false,
+                        'is_verified' => false,
+                    ]);
+                }
+
+                return $user;
+            });
+        } catch (\Exception $e) {
+            \Log::error('OAuth user creation failed', [
+                'provider' => $provider,
+                'email' => $email,
+                'error' => $e->getMessage(),
+            ]);
+            
+            throw new OAuthException(
+                'Erreur lors de la création de votre compte. Veuillez réessayer.'
+            );
+        }
+    }
+
+    /**
+     * Valide que le rôle de l'utilisateur correspond au rôle demandé
+     * 
+     * @param User $user
+     * @param string $requestedRole
+     * @throws OAuthException
+     */
+    protected function validateRole(User $user, string $requestedRole): void
+    {
+        $currentRoleSlug = $user->getRoleSlug();
+        
+        // Normaliser les rôles pour comparaison
+        $currentRoleNormalized = $currentRoleSlug === 'createur' ? 'creator' : ($currentRoleSlug === 'creator' ? 'creator' : 'client');
+        $requestedRoleNormalized = $requestedRole === 'createur' ? 'creator' : 'client';
+        
+        if ($currentRoleNormalized !== $requestedRoleNormalized) {
+            // Conflit de rôle → refus avec message explicite
+            $currentRoleLabel = in_array($currentRoleSlug, ['createur', 'creator']) ? 'créateur' : 'client';
+            $requestedRoleLabel = $requestedRole === 'createur' ? 'créateur' : 'client';
+            
+            $exception = new OAuthException(
+                "Un compte existe déjà avec cet email avec le rôle {$currentRoleLabel}. " .
+                "Vous avez tenté de vous connecter en tant que {$requestedRoleLabel}."
+            );
+            
+            $exception->setConversionOffer([
+                'email' => $user->email,
+                'from_role' => $currentRoleSlug,
+                'to_role' => $requestedRole,
+            ]);
+            
+            throw $exception;
+        }
+    }
+
+    /**
+     * Valide que l'utilisateur n'est pas staff/admin (refus OAuth pour ces comptes)
+     * 
+     * @param User $user
+     * @throws OAuthException
+     */
+    protected function validateUserStatus(User $user): void
+    {
+        $roleSlug = $user->getRoleSlug();
+        
+        if (in_array($roleSlug, ['staff', 'admin', 'super_admin'], true)) {
+            throw new OAuthException(
+                'La connexion sociale n\'est pas autorisée pour les comptes équipe. ' .
+                'Veuillez utiliser votre email et mot de passe.'
+            );
+        }
+    }
+
+    /**
+     * Extrait les métadonnées du provider (avatar, locale, etc.)
+     * 
+     * @param ProviderUser $providerUser
+     * @return array
+     */
+    protected function extractMetadata(ProviderUser $providerUser): array
+    {
+        $metadata = [];
+        
+        // Avatar
+        if (method_exists($providerUser, 'getAvatar') && $providerUser->getAvatar()) {
+            $metadata['avatar'] = $providerUser->getAvatar();
+        }
+        
+        // Autres données disponibles via getRaw()
+        $raw = $providerUser->getRaw();
+        if (is_array($raw)) {
+            // Filtrer les données sensibles
+            $allowedKeys = ['locale', 'picture', 'verified_email'];
+            foreach ($allowedKeys as $key) {
+                if (isset($raw[$key])) {
+                    $metadata[$key] = $raw[$key];
+                }
+            }
+        }
+        
+        return $metadata;
+    }
+}
+

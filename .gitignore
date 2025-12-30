@@ -1,0 +1,41 @@
+# Laravel / PHP
+/vendor/
+/bootstrap/cache/
+/storage/*.key
+/storage/app/*
+/storage/framework/*
+/storage/logs/*
+!.env.example
+
+# Environment files
+.env
+.env.backup
+.env.local
+.env.*.local
+
+# Node / Front
+/node_modules/
+/public/hot
+/public/storage
+/public/build
+/public/mix-manifest.json
+
+# IDE / OS
+.vscode/
+.idea/
+*.log
+*.cache
+.DS_Store
+Thumbs.db
+
+# NPM/Yarn
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Other
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Legacy frontend (excluded from Laravel backend)
+Racine by GANDA/
