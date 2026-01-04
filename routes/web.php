@@ -406,6 +406,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('{id}/execute', [\App\Http\Controllers\Admin\ActionController::class, 'execute'])->name('execute');
         });
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::post('dashboard/refresh', [AdminDashboardController::class, 'refresh'])->name('dashboard.refresh');
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
         // Gestion des utilisateurs

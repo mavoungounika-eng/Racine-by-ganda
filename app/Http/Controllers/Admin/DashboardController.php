@@ -7,7 +7,7 @@ use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class AdminDashboardController extends Controller
+class DashboardController extends Controller
 {
     public function __construct(
         private DashboardService $dashboardService
