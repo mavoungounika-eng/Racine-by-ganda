@@ -3,6 +3,7 @@ name: Coverage
 permissions:
   contents: read
   actions: read
+  pull-requests: write
 
 on:
   push:
@@ -24,7 +25,11 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout code
@@ -60,12 +65,14 @@ jobs:
       - name: Wait for MySQL
         run: |
           for i in {1..30}; do
-            if php artisan db:show --env=testing 2>/dev/null; then
+            if php artisan db:show --env=testing >/dev/null 2>&1; then
               echo "MySQL is ready!"
-              break
+              exit 0
             fi
             sleep 2
           done
+          echo "MySQL did not become ready in time"
+          exit 1
 
       - name: Run migrations
         run: php artisan migrate --env=testing --force
@@ -74,14 +81,14 @@ jobs:
         run: php artisan test --env=testing --coverage --coverage-html=coverage-report --coverage-clover=coverage.xml
 
       - name: Upload coverage HTML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage-report/
           retention-days: 30
 
       - name: Upload coverage XML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
           path: coverage.xml
@@ -93,19 +100,32 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            if (fs.existsSync('coverage.xml')) {
-              const xml = fs.readFileSync('coverage.xml', 'utf8');
-              const match = xml.match(/lines-covered="(\d+)" lines-valid="(\d+)"/);
-              if (match) {
-                const covered = parseInt(match[1]);
-                const total = parseInt(match[2]);
-                const percentage = ((covered / total) * 100).toFixed(2);
-                
-                github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: `## 📊 Code Coverage Report\n\n**Coverage**: ${percentage}%\n**Lines Covered**: ${covered} / ${total}\n\n_ℹ️ This is informational only and does not block the PR._\n\n[View detailed report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
-                });
-              }
+
+            if (!fs.existsSync('coverage.xml')) {
+              return;
             }
+
+            const xml = fs.readFileSync('coverage.xml', 'utf8');
+            const match = xml.match(/lines-covered="(\d+)" lines-valid="(\d+)"/);
+
+            if (!match) {
+              return;
+            }
+
+            const covered = parseInt(match[1], 10);
+            const total = parseInt(match[2], 10);
+            const percentage = ((covered / total) * 100).toFixed(2);
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📊 Code Coverage Report
+
+**Coverage**: ${percentage}%
+**Lines Covered**: ${covered} / ${total}
+
+ℹ️ Rapport informatif — ne bloque pas la PR.
+
+[Voir le run CI](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            });
