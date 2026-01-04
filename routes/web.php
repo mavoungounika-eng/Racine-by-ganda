@@ -27,6 +27,11 @@ use App\Http\Controllers\Creator\CreatorSettingsController;
 use App\Http\Controllers\Creator\CreatorMessageController;
 
 Route::prefix('createur')->name('creator.')->group(function () {
+    // ✅ C4: CGV Créateur (route publique)
+    Route::get('cgv', function () {
+        return view('creator.cgv');
+    })->name('cgv');
+    
     // Routes publiques (guest)
     Route::middleware('guest')->group(function () {
         Route::get('login', [CreatorAuthController::class, 'showLoginForm'])->name('login');
@@ -382,6 +387,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('creator/{id}', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'creator'])->name('creator');
             Route::get('overview', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'overview'])->name('overview');
         });
+
+        // Phase 7.5: IA Décisionnelle - Gouvernance (NOUVEAU)
+        Route::prefix('ai')->name('ai.')->group(function () {
+            Route::get('/creator/{id}', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'creator'])->name('creator');
+            Route::get('/overview', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'overview'])->name('overview');
+        });
+
 
         // Phase 8: Automatisation Contrôlée & Actions Assistées
         Route::prefix('actions')->name('actions.')->group(function () {

@@ -188,16 +188,22 @@
                 </tr>
                 <tr>
                     <td class="text-left font-semibold text-[#2C1810]">Nombre de produits</td>
-                    <td>10</td>
-                    <td>50</td>
-                    <td class="plan-highlight"><strong>Illimité</strong></td>
+                    @foreach($plans as $plan)
+                        @php
+                            $capability = $plan->capabilities->where('capability_key', 'max_products')->first();
+                            $maxProducts = $capability?->value['int'] ?? 0;
+                        @endphp
+                        <td class="{{ $plan->code === 'premium' ? 'plan-highlight' : '' }}">
+                            @if($maxProducts === -1)
+                                <strong>Illimité</strong>
+                            @else
+                                {{ $maxProducts }}
+                            @endif
+                        </td>
+                    @endforeach
                 </tr>
-                <tr>
-                    <td class="text-left font-semibold text-[#2C1810]">Photos par produit</td>
-                    <td>5</td>
-                    <td>10</td>
-                    <td class="plan-highlight"><strong>15</strong></td>
-                </tr>
+                {{-- Photos par produit: capability non définie dans seeder, retirer de l'affichage --}}
+                {{-- Cette ligne sera réactivée quand la capability sera ajoutée au seeder --}}
                 <tr>
                     <td class="text-left font-semibold text-[#2C1810]">Variantes produits</td>
                     <td><i class="fas fa-check text-green-600"></i></td>
@@ -220,15 +226,35 @@
                 </tr>
                 <tr>
                     <td class="text-left font-semibold text-[#2C1810]">Analytics avancées</td>
-                    <td><i class="fas fa-times text-red-400"></i></td>
-                    <td><i class="fas fa-check text-green-600"></i></td>
-                    <td class="plan-highlight"><i class="fas fa-check text-green-600"></i></td>
+                    @foreach($plans as $plan)
+                        @php
+                            $capability = $plan->capabilities->where('capability_key', 'can_view_analytics')->first();
+                            $hasAnalytics = $capability?->value['bool'] ?? false;
+                        @endphp
+                        <td class="{{ $plan->code === 'premium' ? 'plan-highlight' : '' }}">
+                            @if($hasAnalytics)
+                                <i class="fas fa-check text-green-600"></i>
+                            @else
+                                <i class="fas fa-times text-red-400"></i>
+                            @endif
+                        </td>
+                    @endforeach
                 </tr>
                 <tr>
                     <td class="text-left font-semibold text-[#2C1810]">Rapports exportables</td>
-                    <td><i class="fas fa-times text-red-400"></i></td>
-                    <td><i class="fas fa-times text-red-400"></i></td>
-                    <td class="plan-highlight"><i class="fas fa-check text-green-600"></i></td>
+                    @foreach($plans as $plan)
+                        @php
+                            $capability = $plan->capabilities->where('capability_key', 'can_export_data')->first();
+                            $canExport = $capability?->value['bool'] ?? false;
+                        @endphp
+                        <td class="{{ $plan->code === 'premium' ? 'plan-highlight' : '' }}">
+                            @if($canExport)
+                                <i class="fas fa-check text-green-600"></i>
+                            @else
+                                <i class="fas fa-times text-red-400"></i>
+                            @endif
+                        </td>
+                    @endforeach
                 </tr>
 
                 {{-- Support & Services --}}

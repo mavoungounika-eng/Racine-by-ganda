@@ -223,6 +223,23 @@ class AuthServiceProvider extends ServiceProvider
             return in_array($roleSlug, ['super_admin', 'admin']);
         });
 
+        // =============================================
+        // GOUVERNANCE - Configuration Système
+        // =============================================
+        
+        Gate::define('access-system-config', function (User $user) {
+            return $user->getRoleSlug() === 'super_admin';
+        });
+
+        // =============================================
+        // GOUVERNANCE - Outils Staff
+        // =============================================
+        
+        Gate::define('access-staff-tools', function (User $user) {
+            $roleSlug = $user->getRoleSlug();
+            return in_array($roleSlug, ['super_admin', 'admin', 'staff']);
+        });
+
         // Super Admin - toutes permissions
         Gate::before(function (User $user, string $ability) {
             if ($user->getRoleSlug() === 'super_admin') {

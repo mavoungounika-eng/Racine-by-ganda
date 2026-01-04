@@ -39,7 +39,8 @@ class LoginController extends Controller
 
     public function __construct(
         private AuthLogger $authLogger,
-        private LoginAttemptService $attemptService
+        private LoginAttemptService $attemptService,
+        private \App\Services\SessionSecurityService $sessionSecurity
     ) {}
 
     /**
@@ -86,14 +87,28 @@ class LoginController extends Controller
         ]);
 
         $email = $request->input('email');
+        
+        // PHASE 2 SÉCURITÉ : Vérifier CAPTCHA si >= 3 tentatives échouées
+        $attempts = $this->attemptService->getAttempts($email);
+        if ($attempts >= 3) {
+            $request->validate([
+                'g-recaptcha-response' => 'required|captcha',
+            ], [
+                'g-recaptcha-response.required' => 'Veuillez compléter le CAPTCHA.',
+                'g-recaptcha-response.captcha' => 'La vérification CAPTCHA a échoué.',
+            ]);
+            
+            $this->authLogger->logCaptchaTriggered($email, $attempts);
+        }
 
         // ✅ Vérifier si le compte est bloqué
         if ($this->attemptService->isLocked($email)) {
             $minutes = $this->attemptService->getRemainingMinutes($email);
             $this->authLogger->logAccountLocked($email, $this->attemptService->getAttempts($email));
             
+            // PHASE 1 SÉCURITÉ : Message générique pour empêcher énumération
             throw ValidationException::withMessages([
-                'email' => "Trop de tentatives de connexion. Votre compte est temporairement bloqué. Réessayez dans {$minutes} minute(s).",
+                'email' => "Identifiants incorrects. Veuillez réessayer dans {$minutes} minute(s).",
             ]);
         }
 
@@ -115,8 +130,9 @@ class LoginController extends Controller
             // Vérifier le statut de l'utilisateur
             if (isset($user->status) && $user->status !== 'active') {
                 Auth::logout();
+                // PHASE 1 SÉCURITÉ : Message générique
                 return back()->withErrors([
-                    'email' => 'Votre compte est désactivé. Contactez l\'administrateur.',
+                    'email' => 'Identifiants incorrects. Veuillez réessayer.',
                 ])->onlyInput('email');
             }
 
@@ -154,6 +170,14 @@ class LoginController extends Controller
                 }
             }
 
+            // PHASE 2 SÉCURITÉ : Initialiser tracking session
+            $this->sessionSecurity->initializeSessionTracking($user);
+            
+            // PHASE 2 SÉCURITÉ : Détecter anomalies (mode passif)
+            if ($this->sessionSecurity->isHighValueTarget($user)) {
+                $this->sessionSecurity->detectAnomalies($user);
+            }
+
             // Nettoyer le contexte de la session après utilisation
             $this->clearContext('login');
 
@@ -166,10 +190,34 @@ class LoginController extends Controller
 
         // ✅ Log tentative échouée
         $this->authLogger->logLoginAttempt($request->input('email'), false);
+        
+        // PHASE 2 SÉCURITÉ : Alerter si 3 échecs sur compte admin
+        $attempts = $this->attemptService->getAttempts($email);
+        if ($attempts >= 3) {
+            // Vérifier si c'est un compte admin
+            $targetUser = \App\Models\User::where('email', $email)->first();
+            if ($targetUser && $targetUser->isTeamMember()) {
+                // Envoyer alerte aux super admins
+                $superAdmins = \App\Models\User::where('role', 'super_admin')->get();
+                foreach ($superAdmins as $admin) {
+                    $admin->notify(new \App\Notifications\SuspiciousLoginAttempt(
+                        $email,
+                        $request->ip(),
+                        $attempts,
+                        $request->userAgent()
+                    ));
+                }
+                
+                $this->authLogger->logSecurityAlertSent($email, 'suspicious_login_attempts', [
+                    'attempts' => $attempts,
+                ]);
+            }
+        }
 
         // Échec de connexion
+        // PHASE 1 SÉCURITÉ : Message générique unifié
         throw ValidationException::withMessages([
-            'email' => __('Les identifiants fournis sont incorrects.'),
+            'email' => 'Identifiants incorrects. Veuillez réessayer.',
         ]);
     }
 

@@ -559,6 +559,20 @@
                     </div>
                 </div>
                 
+                {{-- ✅ C4: CGV CRÉATEUR (nouveau) --}}
+                <div class="form-check">
+                    <input 
+                        type="checkbox" 
+                        class="form-check-input" 
+                        id="cgv_creator" 
+                        name="cgv_creator" 
+                        required
+                    >
+                    <label class="form-check-label" for="cgv_creator">
+                        J'accepte les <a href="{{ route('creator.cgv') }}" target="_blank" style="color: #D4A574; text-decoration: underline;">Conditions Générales de Vente Créateur</a> de RACINE BY GANDA. <span class="required">*</span>
+                    </label>
+                </div>
+                
                 <div class="form-check">
                     <input 
                         type="checkbox" 

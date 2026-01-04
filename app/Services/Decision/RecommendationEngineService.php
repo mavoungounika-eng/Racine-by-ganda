@@ -14,7 +14,7 @@ use App\Services\Risk\CreatorRiskAssessmentService;
  * RÈGLE D'OR : OBSERVE, COMPREND, RECOMMANDE
  * Zéro déclenchement automatique
  */
-class RecommendationEngineService
+class RecommendationEngineService extends BaseDecisionService
 {
     protected CreatorRiskAssessmentService $riskService;
     protected FinancialAlertService $alertService;
@@ -30,6 +30,14 @@ class RecommendationEngineService
         // Services créés à la demande pour éviter dépendances circulaires
         $this->decisionScoreService = app(CreatorDecisionScoreService::class);
         $this->churnPredictionService = app(ChurnPredictionService::class);
+    }
+
+    /**
+     * Nom du module pour la gouvernance
+     */
+    protected function getModuleName(): string
+    {
+        return 'recommendation_engine';
     }
 
     /**

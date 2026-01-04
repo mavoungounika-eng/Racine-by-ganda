@@ -266,6 +266,16 @@
                 </span>
             </a>
             
+            {{-- 
+            ============================================
+            ESPACE ÉQUIPE - MASQUÉ POUR SÉCURITÉ
+            ============================================
+            L'accès équipe est désormais disponible uniquement via /admin/login
+            Cette carte est masquée pour réduire la surface d'attaque publique.
+            Ne pas supprimer ce code, il peut être réactivé si nécessaire.
+            ============================================
+            --}}
+            {{-- 
             <a href="{{ route('login', ['context' => 'equipe']) }}" class="portal-card team">
                 <div class="card-icon">
                     <i class="fas fa-briefcase"></i>
@@ -281,6 +291,7 @@
                     Accéder au portail <i class="fas fa-arrow-right"></i>
                 </span>
             </a>
+            --}}
         </div>
         
         <div class="footer-links">

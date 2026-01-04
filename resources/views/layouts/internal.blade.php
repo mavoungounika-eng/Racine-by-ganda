@@ -861,7 +861,7 @@
             </a>
             
             {{-- Analytics BI --}}
-            <div class="sidebar-section">Business Intelligence</div>
+            <div class="sidebar-section">Reporting Décisionnel</div>
             <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <span class="icon">📊</span> Analytics
                 <span class="badge-count" style="background: linear-gradient(135deg, #22C55E 0%, #15803D 100%);">LIVE</span>

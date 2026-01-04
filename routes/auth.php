@@ -21,7 +21,11 @@ use App\Http\Controllers\Auth\SocialAuthController;
 // ============================================
 // HUB D'AUTHENTIFICATION
 // ============================================
-Route::get('/auth', [AuthHubController::class, 'index'])->name('auth.hub');
+// PHASE 1 SÉCURITÉ : Le hub redirige maintenant vers /login directement
+// La carte "Espace Équipe" a été masquée pour réduire la surface d'attaque
+Route::get('/auth', function () {
+    return redirect()->route('login');
+})->name('auth.hub');
 
 // ============================================
 // CONNEXION UNIFIÉE
@@ -59,6 +63,17 @@ Route::middleware('guest')->group(function () {
     
     Route::get('/password/reset/{token}', [PublicAuthController::class, 'showResetForm'])->name('password.reset');
     Route::post('/password/reset', [PublicAuthController::class, 'reset'])->name('password.update');
+});
+
+// ============================================
+// CONNEXION ADMIN/ÉQUIPE (PHASE 1 SÉCURITÉ)
+// ============================================
+// Route dédiée pour l'espace équipe, non exposée publiquement
+Route::prefix('admin')->name('admin.')->middleware('guest')->group(function () {
+    Route::get('/login', [App\Http\Controllers\Auth\AdminLoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Auth\AdminLoginController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('login.post');
 });
 
 // ============================================

@@ -432,6 +432,8 @@ class AnalyticsService
             ->toArray();
 
         // Évolution journalière (timeline)
+        // Note: On ne peut pas utiliser de sous-requête corrélée avec GROUP BY à cause de ONLY_FULL_GROUP_BY
+        // On calcule d'abord les dates et le nombre de commandes
         $dailyData = Order::whereHas('items.product', function ($q) use ($creatorId) {
                 $q->where('user_id', $creatorId);
             })
@@ -439,10 +441,7 @@ class AnalyticsService
             ->whereBetween('created_at', [$startDate, $endDate])
             ->select(
                 DB::raw('DATE(created_at) as date'),
-                DB::raw('COUNT(DISTINCT orders.id) as orders_count'),
-                DB::raw('(SELECT SUM(oi.price * oi.quantity) FROM order_items oi 
-                         INNER JOIN products p ON oi.product_id = p.id 
-                         WHERE oi.order_id = orders.id AND p.user_id = ' . $creatorId . ') as revenue')
+                DB::raw('COUNT(DISTINCT orders.id) as orders_count')
             )
             ->groupBy('date')
             ->orderBy('date')

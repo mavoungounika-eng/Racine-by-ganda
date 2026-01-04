@@ -43,9 +43,22 @@ class SubscriptionController extends Controller
     {
         $user = Auth::user();
         $currentPlan = $user->activePlan();
-        $plans = CreatorPlan::active()->orderBy('price')->get();
+        $currentSubscription = $user->creatorProfile?->subscriptions()
+            ->whereIn('status', ['active', 'trialing'])
+            ->where(function ($query) {
+                $query->whereNull('ends_at')
+                      ->orWhere('ends_at', '>', now());
+            })
+            ->with('plan')
+            ->first();
+        
+        // Charger les plans avec leurs capabilities pour affichage dynamique
+        $plans = CreatorPlan::active()
+            ->with('capabilities')
+            ->orderBy('price')
+            ->get();
 
-        return view('creator.subscription.upgrade', compact('plans', 'currentPlan'));
+        return view('creator.subscriptions.plans', compact('plans', 'currentPlan', 'currentSubscription'));
     }
 
     /**

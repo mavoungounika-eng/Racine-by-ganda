@@ -438,7 +438,7 @@
             </a>
             
             {{-- Section Données --}}
-            <div class="creator-sidebar-section">Données +</div>
+            <div class="creator-sidebar-section">Performance</div>
             <a href="{{ route('creator.analytics.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.analytics.*') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar"></i>

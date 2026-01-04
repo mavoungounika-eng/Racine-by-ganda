@@ -14,8 +14,16 @@ use Carbon\Carbon;
  * RÈGLE D'OR : OBSERVE, COMPREND, RECOMMANDE
  * Aucun ML opaque, règles métier justifiables
  */
-class ChurnPredictionService
+class ChurnPredictionService extends BaseDecisionService
 {
+    /**
+     * Nom du module pour la gouvernance
+     */
+    protected function getModuleName(): string
+    {
+        return 'churn_prediction';
+    }
+
     /**
      * Prédire le risque de churn d'un créateur
      * 
@@ -23,6 +31,38 @@ class ChurnPredictionService
      * @return array
      */
     public function predictChurn(CreatorProfile $creator): array
+    {
+        // Vérifier le cache (24h)
+        $cacheKey = "churn_prediction_{$creator->id}";
+        $cached = $this->getCachedResult($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        // Calcul avec logging automatique
+        $result = $this->executeCalculation(
+            'predict_churn',
+            ['creator_id' => $creator->id],
+            function($input) use ($creator) {
+                return $this->performChurnCalculation($creator);
+            }
+        );
+
+        // Cache 24h
+        if ($result !== null) {
+            $this->cacheResult($cacheKey, $result, 86400);
+        }
+
+        return $result ?? [];
+    }
+
+    /**
+     * Effectue le calcul de churn (logique existante)
+     * 
+     * @param CreatorProfile $creator
+     * @return array
+     */
+    private function performChurnCalculation(CreatorProfile $creator): array
     {
         $riskScore = 0;
         $maxRiskScore = 100;
