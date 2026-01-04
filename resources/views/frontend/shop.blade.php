@@ -1055,9 +1055,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Afficher notification de succès
                     if (typeof showNotification === 'function') {
                         showNotification(data.message || 'Produit ajouté au panier !', 'success');
-                    } else {
-                        // Fallback : notification simple
-                        console.log('✅ ' + (data.message || 'Produit ajouté au panier !'));
                     }
                 } else {
                     // Afficher erreur

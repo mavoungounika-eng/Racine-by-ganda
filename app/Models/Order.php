@@ -30,12 +30,18 @@ class Order extends Model
         'customer_address',
         'qr_token',
         'order_number',
+        'expected_delivery_date',
+        'prepared_at',
+        'shipped_at',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
+        'expected_delivery_date' => 'datetime',
+        'prepared_at' => 'datetime',
+        'shipped_at' => 'datetime',
     ];
 
     protected static function booted(): void

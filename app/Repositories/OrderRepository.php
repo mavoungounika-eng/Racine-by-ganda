@@ -112,11 +112,11 @@ class OrderRepository
             ->whereNull('products.user_id') // Produits marque
             ->whereDate('orders.created_at', today())
             ->select(
-                'products.name',
+                'products.title as name',
                 DB::raw('COUNT(order_items.id) as sales_count'),
                 DB::raw('SUM(order_items.price * order_items.quantity) as revenue')
             )
-            ->groupBy('products.id', 'products.name')
+            ->groupBy('products.id', 'products.title')
             ->orderByDesc('sales_count')
             ->limit($limit)
             ->get()
@@ -134,11 +134,11 @@ class OrderRepository
             ->whereNotNull('products.user_id') // Produits créateurs
             ->whereDate('orders.created_at', today())
             ->select(
-                'products.name',
+                'products.title as name',
                 DB::raw('COUNT(order_items.id) as sales_count'),
                 DB::raw('SUM(order_items.price * order_items.quantity) as revenue')
             )
-            ->groupBy('products.id', 'products.name')
+            ->groupBy('products.id', 'products.title')
             ->orderByDesc('sales_count')
             ->limit($limit)
             ->get()

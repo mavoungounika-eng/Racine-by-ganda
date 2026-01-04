@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Cache;
 class DashboardService
 {
     public function __construct(
-        private GlobalStateWidget $globalState
+        private GlobalStateWidget $globalState,
+        private \App\Repositories\OrderRepository $orderRepository
     ) {}
 
     /**
@@ -113,65 +114,68 @@ class DashboardService
     }
 
     /**
-     * Données alertes (implémentation simplifiée)
+     * Données alertes
      */
     private function getAlertsData(): array
     {
         return [
-            'late_orders' => 0,
-            'critical_stock' => 0,
-            'failed_payments' => 0,
-            'at_risk_creators' => 0,
-            'low_conversion' => false,
+            'late_orders' => $this->orderRepository->getLateOrdersCount(),
+            'critical_stock' => \App\Models\Product::where('stock', '<', 5)->count(), // Pas encore dans repo
+            'failed_payments' => 0, // TODO: Implémenter Logique Paiement
+            'at_risk_creators' => 0, // TODO: Implémenter Logique Risque Créateur
+            'low_conversion' => $this->orderRepository->getConversionRateByDate(now()) < 1.0,
         ];
     }
 
     /**
-     * Données commerciales (implémentation simplifiée)
+     * Données commerciales
      */
     private function getCommercialData(): array
     {
         return [
-            'top_products_brand' => [],
-            'top_products_marketplace' => [],
+            'top_products_brand' => $this->orderRepository->getTopProductsBrand(5),
+            'top_products_marketplace' => $this->orderRepository->getTopProductsMarketplace(5),
             'low_rotation' => [],
-            'abandoned_carts' => ['count' => 0, 'value' => 0],
+            'abandoned_carts' => [
+                'count' => $this->orderRepository->getAbandonedCartsCount(), 
+                'value' => $this->orderRepository->getAbandonedCartsValue()
+            ],
         ];
     }
 
     /**
-     * Données marketplace (implémentation simplifiée)
+     * Données marketplace
      */
     private function getMarketplaceData(): array
     {
         return [
-            'revenue' => 0,
-            'orders_count' => 0,
-            'active_creators' => 0,
+            'revenue' => $this->orderRepository->getMarketplaceRevenue(now()),
+            'orders_count' => $this->orderRepository->getMarketplaceOrdersCount(now()),
+            'active_creators' => \App\Models\User::where('role', 'createur')->count(), // Simplifié
             'at_risk_creators' => 0,
         ];
     }
 
     /**
-     * Données opérations (implémentation simplifiée)
+     * Données opérations
      */
     private function getOperationsData(): array
     {
         return [
-            'to_prepare' => 0,
-            'ready_not_shipped' => 0,
-            'returns' => 0,
-            'incidents' => 0,
+            'to_prepare' => $this->orderRepository->getOrdersToPrepareCount(),
+            'ready_not_shipped' => $this->orderRepository->getReadyNotShippedCount(),
+            'returns' => 0, // TODO
+            'incidents' => 0, // TODO
         ];
     }
 
     /**
-     * Données tendances (implémentation simplifiée)
+     * Données tendances
      */
     private function getTrendsData(): array
     {
         return [
-            'revenue_7d' => [],
+            'revenue_7d' => $this->orderRepository->getRevenueTrend(7),
             'orders_7d' => [],
             'conversion_7d' => [],
         ];

@@ -11,6 +11,9 @@ class AdminSettingsController extends Controller
 {
     public function index(): View
     {
+        // 🔒 SÉCURITÉ CRITIQUE : Seul Super Admin peut accéder aux paramètres système
+        $this->authorize('access-system-config');
+        
         $settings = [
             'site_name' => Cache::get('settings.site_name', config('app.name')),
             'site_email' => Cache::get('settings.site_email', config('mail.from.address')),
@@ -44,6 +47,9 @@ class AdminSettingsController extends Controller
 
     public function update(Request $request)
     {
+        // 🔒 SÉCURITÉ CRITIQUE : Seul Super Admin peut modifier les paramètres système
+        $this->authorize('access-system-config');
+        
         $validated = $request->validate([
             // Informations générales
             'site_name' => 'nullable|string|max:255',
