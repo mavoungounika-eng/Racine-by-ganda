@@ -14,7 +14,7 @@ use App\Services\Risk\CreatorRiskAssessmentService;
  * RÈGLE D'OR : OBSERVE, COMPREND, RECOMMANDE
  * Aucune écriture DB, aucun déclenchement automatique
  */
-class CreatorDecisionScoreService
+class CreatorDecisionScoreService extends BaseDecisionService
 {
     protected AdvancedKpiService $kpiService;
     protected CreatorRiskAssessmentService $riskService;
@@ -28,6 +28,14 @@ class CreatorDecisionScoreService
     }
 
     /**
+     * Nom du module pour la gouvernance
+     */
+    protected function getModuleName(): string
+    {
+        return 'creator_scoring';
+    }
+
+    /**
      * Calculer le score décisionnel global d'un créateur
      * 
      * @param CreatorProfile $creator
@@ -35,6 +43,47 @@ class CreatorDecisionScoreService
      */
     public function calculateDecisionScore(CreatorProfile $creator): array
     {
+        // Vérifier le cache (1h)
+        $cacheKey = "decision_score_{$creator->id}";
+        $cached = $this->getCachedResult($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        // Calcul avec logging automatique
+        $result = $this->executeCalculation(
+            'calculate_decision_score',
+            ['creator_id' => $creator->id],
+            function($input) use ($creator) {
+                return $this->performScoreCalculation($creator);
+            }
+        );
+
+        // Cache 1h
+        if ($result !== null) {
+            $this->cacheResult($cacheKey, $result, 3600);
+        }
+
+        return $result ?? [];
+    }
+
+    /**
+     * Effectue le calcul du score (logique existante)
+     * 
+     * @param CreatorProfile $creator
+     * @return array
+     */
+    private function performScoreCalculation(CreatorProfile $creator): array
+    {
+        // Récupérer les pondérations depuis la config
+        $weights = config('ai_decisional.weights.creator_scoring', [
+            'financial_health' => 0.30,
+            'operational_health' => 0.25,
+            'engagement_level' => 0.20,
+            'growth_potential' => 0.15,
+            'risk_factor' => 0.10,
+        ]);
+
         // Composantes du score (pondérées)
         $financialHealth = $this->calculateFinancialHealth($creator); // 30%
         $operationalHealth = $this->calculateOperationalHealth($creator); // 25%
@@ -42,13 +91,13 @@ class CreatorDecisionScoreService
         $growthPotential = $this->calculateGrowthPotential($creator); // 15%
         $riskFactor = $this->calculateRiskFactor($creator); // 10% (inverse)
 
-        // Score global pondéré
+        // Score global pondéré (utilise les poids configurables)
         $globalScore = (
-            ($financialHealth * 0.30) +
-            ($operationalHealth * 0.25) +
-            ($engagementLevel * 0.20) +
-            ($growthPotential * 0.15) +
-            ((100 - $riskFactor) * 0.10)
+            ($financialHealth * $weights['financial_health']) +
+            ($operationalHealth * $weights['operational_health']) +
+            ($engagementLevel * $weights['engagement_level']) +
+            ($growthPotential * $weights['growth_potential']) +
+            ((100 - $riskFactor) * $weights['risk_factor'])
         );
 
         $globalScore = max(0, min(100, round($globalScore, 2)));

@@ -437,8 +437,10 @@
     {{-- TOAST NOTIFICATIONS --}}
     @include('components.toast')
     
-    {{-- CHATBOT AMIRA --}}
-    @include('assistant::chat')
+    {{-- CHATBOT AMIRA (VUE.JS) --}}
+    <div id="amira-app">
+        <amira-widget></amira-widget>
+    </div>
     
     {{-- SCROLL TO TOP BUTTON --}}
     @include('components.scroll-to-top')

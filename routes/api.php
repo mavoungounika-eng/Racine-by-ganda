@@ -26,6 +26,10 @@ Route::middleware(['api', 'throttle:webhooks'])->group(function () {
 // Throttle: utilise le rate limiter 'webhooks' (60 requêtes par minute par IP)
 Route::middleware(['api', 'throttle:webhooks'])->group(function () {
     Route::post('/webhooks/stripe/billing', [\App\Http\Controllers\Webhooks\StripeBillingWebhookController::class])->name('api.webhooks.stripe.billing');
+    
+    // ✅ C6: Stripe Subscriptions Créateur (nouveau - sécurisé)
+    Route::post('/webhooks/stripe/creator-subscriptions', [\App\Http\Controllers\Webhooks\StripeWebhookController::class, 'handle'])
+        ->name('api.webhooks.stripe.creator-subscriptions');
 });
 
 

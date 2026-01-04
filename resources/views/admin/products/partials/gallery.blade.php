@@ -114,8 +114,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
-                                    // Afficher notification succès
-                                    console.log('Ordre mis à jour');
+                                    // Ordre mis à jour avec succès
                                 }
                             });
                         }

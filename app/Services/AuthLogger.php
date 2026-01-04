@@ -19,10 +19,13 @@ class AuthLogger
 {
     /**
      * Log une tentative de connexion
+     * PHASE 2 : Événement typé pour meilleure traçabilité
      */
     public function logLoginAttempt(string $email, bool $success, ?string $ip = null): void
     {
-        Log::channel('auth')->info('Login attempt', [
+        $eventType = $success ? 'LOGIN_SUCCESS' : 'LOGIN_FAILED';
+        
+        Log::channel('auth')->info($eventType, [
             'email' => $email,
             'success' => $success,
             'ip' => $ip ?? request()->ip(),
@@ -105,14 +108,45 @@ class AuthLogger
 
     /**
      * Log un blocage de compte
+     * PHASE 2 : Événement typé ACCOUNT_LOCKED
      */
     public function logAccountLocked(string $email, int $attempts): void
     {
-        Log::channel('auth')->warning('Account locked', [
+        Log::channel('auth')->warning('ACCOUNT_LOCKED', [
             'email' => $email,
             'failed_attempts' => $attempts,
             'ip' => request()->ip(),
             'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+    
+    /**
+     * Log un déclenchement de CAPTCHA
+     * PHASE 2 : Nouveau type d'événement
+     */
+    public function logCaptchaTriggered(string $email, int $attempts): void
+    {
+        Log::channel('auth')->info('CAPTCHA_TRIGGERED', [
+            'email' => $email,
+            'failed_attempts' => $attempts,
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+    
+    /**
+     * Log une alerte de sécurité envoyée
+     * PHASE 2 : Nouveau type d'événement
+     */
+    public function logSecurityAlertSent(string $email, string $alertType, array $context = []): void
+    {
+        Log::channel('auth')->warning('SECURITY_ALERT_SENT', [
+            'email' => $email,
+            'alert_type' => $alertType,
+            'ip' => request()->ip(),
+            'timestamp' => now()->toIso8601String(),
+            ...$context
         ]);
     }
 
