@@ -14,10 +14,10 @@ class CreatorProfile extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * @property-read CreatorSubscription|null $subscription Abonnement actif
+     * @property-read \Illuminate\Database\Eloquent\Collection<CreatorSubscription> $subscriptions Historique abonnements
      */
+
     protected $fillable = [
         'user_id',
         'brand_name',
@@ -27,15 +27,15 @@ class CreatorProfile extends Model
         'logo_path',
         'avatar_path',
         'banner_path',
-        'photo', // Legacy
-        'banner', // Legacy
+        'photo',
+        'banner',
         'location',
         'website',
-        'instagram', // Legacy
+        'instagram',
         'instagram_url',
         'tiktok_url',
         'facebook_url',
-        'facebook', // Legacy
+        'facebook',
         'type',
         'legal_status',
         'registration_number',
@@ -51,15 +51,10 @@ class CreatorProfile extends Model
         'last_score_calculated_at',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'is_verified' => 'boolean',
         'is_active' => 'boolean',
-        'payout_details' => 'array', // JSON
+        'payout_details' => 'array',
         'quality_score' => 'decimal:2',
         'completeness_score' => 'decimal:2',
         'performance_score' => 'decimal:2',
@@ -67,114 +62,86 @@ class CreatorProfile extends Model
         'last_score_calculated_at' => 'datetime',
     ];
 
-    /**
-     * Boot the model.
-     */
     protected static function boot()
     {
         parent::boot();
 
-        // Auto-génération du slug lors de la création
         static::creating(function ($creatorProfile) {
             if (empty($creatorProfile->slug)) {
                 $slug = Str::slug($creatorProfile->brand_name);
                 $count = static::where('slug', 'like', "{$slug}%")->count();
-                
-                $creatorProfile->slug = $count > 0 
-                    ? "{$slug}-" . ($count + 1) 
+
+                $creatorProfile->slug = $count > 0
+                    ? "{$slug}-" . ($count + 1)
                     : $slug;
             }
         });
 
-        // Mise à jour du slug si le brand_name change
         static::updating(function ($creatorProfile) {
             if ($creatorProfile->isDirty('brand_name') && empty($creatorProfile->slug)) {
                 $slug = Str::slug($creatorProfile->brand_name);
                 $count = static::where('slug', 'like', "{$slug}%")
                     ->where('id', '!=', $creatorProfile->id)
                     ->count();
-                
-                $creatorProfile->slug = $count > 0 
-                    ? "{$slug}-" . ($count + 1) 
+
+                $creatorProfile->slug = $count > 0
+                    ? "{$slug}-" . ($count + 1)
                     : $slug;
             }
         });
     }
 
-    /**
-     * Get the user that owns the creator profile.
-     */
+    /* =========================
+     | RELATIONS
+     ========================= */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the products for the creator.
-     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'user_id', 'user_id');
     }
 
-    /**
-     * Get the collections for the creator.
-     */
     public function collections(): HasMany
     {
         return $this->hasMany(Collection::class, 'user_id', 'user_id');
     }
 
-    /**
-     * Get the documents for the creator.
-     */
     public function documents(): HasMany
     {
         return $this->hasMany(CreatorDocument::class);
     }
 
-    /**
-     * Get the validation checklist for the creator.
-     */
     public function validationChecklist(): HasMany
     {
         return $this->hasMany(CreatorValidationChecklist::class);
     }
 
-    /**
-     * Get the activity logs for the creator.
-     */
     public function activityLogs(): HasMany
     {
         return $this->hasMany(CreatorActivityLog::class);
     }
 
-    /**
-     * Get the admin notes for the creator.
-     */
     public function adminNotes(): HasMany
     {
         return $this->hasMany(CreatorAdminNote::class);
     }
 
-    /**
-     * Get the validation steps for the creator.
-     */
     public function validationSteps(): HasMany
     {
         return $this->hasMany(CreatorValidationStep::class);
     }
 
-    /**
-     * Get the Stripe account for the creator.
-     */
     public function stripeAccount(): HasOne
     {
         return $this->hasOne(CreatorStripeAccount::class, 'creator_profile_id');
     }
 
     /**
-     * Get the subscriptions for the creator.
+     * Historique des abonnements (HasMany)
      */
     public function subscriptions(): HasMany
     {
@@ -182,92 +149,81 @@ class CreatorProfile extends Model
     }
 
     /**
-     * Get the payment preferences for the creator.
+     * ✅ ABONNEMENT ACTIF (HasOne)
+     * Contrat utilisé par :
+     * - CreatorDashboardController
+     * - CreatorCapabilityService
+     * - Tests N+1
      */
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(CreatorSubscription::class, 'creator_profile_id')
+            ->whereIn('status', ['active', 'trialing'])
+            ->where(function ($query) {
+                $query->whereNull('ends_at')
+                      ->orWhere('ends_at', '>', now());
+            })
+            ->latest('created_at');
+    }
+
     public function paymentPreference(): HasOne
     {
         return $this->hasOne(PaymentPreference::class, 'creator_profile_id');
     }
 
-    /**
-     * Scope a query to only include active creator profiles.
-     */
+    /* =========================
+     | SCOPES & HELPERS
+     ========================= */
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->where('status', 'active');
     }
 
-    /**
-     * Scope a query to only include pending creator profiles.
-     */
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope a query to only include suspended creator profiles.
-     */
     public function scopeSuspended($query)
     {
         return $query->where('status', 'suspended');
     }
 
-    /**
-     * Check if the profile is pending.
-     */
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    /**
-     * Check if the profile is active.
-     */
-    public function isActiveStatus(): bool
-    {
-        return $this->status === 'active';
-    }
-
-    /**
-     * Check if the profile is suspended.
-     */
-    public function isSuspended(): bool
-    {
-        return $this->status === 'suspended';
-    }
-
-    /**
-     * Scope a query to only include verified creator profiles.
-     */
     public function scopeVerified($query)
     {
         return $query->where('is_verified', true);
     }
 
-    /**
-     * Get the URL for the creator's photo.
-     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isActiveStatus(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->photo 
-            ? asset('storage/creators/photos/' . $this->photo) 
+        return $this->photo
+            ? asset('storage/creators/photos/' . $this->photo)
             : null;
     }
 
-    /**
-     * Get the URL for the creator's banner.
-     */
     public function getBannerUrlAttribute(): ?string
     {
-        return $this->banner 
-            ? asset('storage/creators/banners/' . $this->banner) 
+        return $this->banner
+            ? asset('storage/creators/banners/' . $this->banner)
             : null;
     }
 
-    /**
-     * Get the full URL to the creator's public profile.
-     */
     public function getProfileUrlAttribute(): string
     {
         return route('frontend.creator.profile', $this->slug);

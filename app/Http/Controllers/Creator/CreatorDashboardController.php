@@ -28,7 +28,20 @@ class CreatorDashboardController extends Controller
     public function index(): View
     {
         $user = Auth::user();
-        $user->load('creatorProfile.validationChecklist');
+        
+        // ✅ OPTIMISATION N+1: Eager load subscription avec plan et capabilities
+        // Évite 50+ requêtes dans getDashboardLayout() et CreatorCapabilityService
+        $user->load([
+            'creatorProfile.validationChecklist',
+            'creatorProfile.subscription' => function ($query) {
+                $query->whereIn('status', ['active', 'trialing'])
+                      ->where(function ($q) {
+                          $q->whereNull('ends_at')
+                            ->orWhere('ends_at', '>', now());
+                      })
+                      ->with(['plan.capabilities']);
+            }
+        ]);
         
         $creatorProfile = $user->creatorProfile;
         
