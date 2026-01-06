@@ -3,18 +3,39 @@
 namespace Modules\Accounting\Listeners;
 
 use Modules\Accounting\Events\CreatorPayoutProcessed;
-use Modules\Accounting\Services\LedgerService;
+use Modules\Accounting\Models\AccountingEntry;
 use Modules\Accounting\Models\Journal;
+use Modules\Accounting\Services\LedgerService;
 use Modules\Accounting\Exceptions\LedgerException;
+use App\Services\Financial\AccountingIdempotenceService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Listener pour créer les écritures comptables suite à un payout créateur.
+ * 
+ * GARANTIES D'IDEMPOTENCE:
+ * 1. Vérification existence écriture AVANT création
+ * 2. Retour silencieux si déjà existante
+ * 3. Contrainte UNIQUE DB comme filet de sécurité
+ * 4. Logging métier des collisions
+ */
 class CreatorPayoutListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
     protected LedgerService $ledgerService;
+
+    /**
+     * Nombre de tentatives maximum
+     */
+    public int $tries = 3;
+
+    /**
+     * Backoff entre tentatives (secondes)
+     */
+    public array $backoff = [10, 30, 60];
 
     /**
      * Create the event listener.
@@ -31,32 +52,55 @@ class CreatorPayoutListener implements ShouldQueue
     {
         $payout = $event->payout;
 
-        // Vérifier que le payout est confirmé
+        // GUARD 1: Vérifier que le payout est confirmé
         if ($payout->status !== 'paid') {
-            Log::info('CreatorPayoutListener: Payout not confirmed, skipping accounting entry', [
+            Log::info('CreatorPayoutListener: Payout not confirmed, skipping', [
                 'payout_id' => $payout->id,
                 'status' => $payout->status,
             ]);
             return;
         }
 
+        // GUARD 2: IDEMPOTENCE - Vérifier si écriture existe déjà
+        $existingEntry = AccountingEntry::where('reference_type', 'creator_payout')
+            ->where('reference_id', $payout->id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($existingEntry) {
+            // Collision détectée - enregistrer et retourner silencieusement
+            AccountingIdempotenceService::recordCollision(
+                referenceType: 'creator_payout',
+                referenceId: $payout->id,
+                listener: self::class,
+                existingEntryId: $existingEntry->id
+            );
+
+            Log::info('CreatorPayoutListener: Entry already exists (idempotence guard)', [
+                'payout_id' => $payout->id,
+                'existing_entry_id' => $existingEntry->id,
+                'existing_entry_number' => $existingEntry->entry_number,
+            ]);
+
+            return; // Retour silencieux - pas d'erreur, pas de retry
+        }
+
         try {
             $this->createPayoutEntry($payout);
 
-            Log::info('CreatorPayoutListener: Accounting entry created successfully', [
+            Log::info('CreatorPayoutListener: Accounting entry created', [
                 'payout_id' => $payout->id,
                 'creator_id' => $payout->creator_id,
                 'amount' => $payout->amount,
             ]);
+
         } catch (LedgerException $e) {
-            Log::error('CreatorPayoutListener: Failed to create accounting entry', [
+            Log::error('CreatorPayoutListener: Failed to create entry', [
                 'payout_id' => $payout->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
             
-            // Re-throw pour retry (ShouldQueue)
-            throw $e;
+            throw $e; // Re-throw pour retry
         }
     }
 

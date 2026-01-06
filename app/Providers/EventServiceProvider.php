@@ -38,6 +38,18 @@ class EventServiceProvider extends ServiceProvider
         PaymentFailed::class => [
             [LogFunnelEvent::class, 'handlePaymentFailed'],
         ],
+        // ==========================================
+        // POS Events (Audit-Ready Architecture)
+        // ==========================================
+        \App\Events\PosSessionClosed::class => [
+            \App\Listeners\PosSessionClosedListener::class,
+        ],
+        \App\Events\PosCardPaymentConfirmed::class => [
+            \App\Listeners\PosCardPaymentConfirmedListener::class,
+        ],
+        \App\Events\PosMobilePaymentConfirmed::class => [
+            \App\Listeners\PosMobilePaymentConfirmedListener::class,
+        ],
         // ✅ Phase 2 : Limiter les sessions actives
         \Illuminate\Auth\Events\Login::class => [
             \App\Listeners\LogSuccessfulLogin::class,

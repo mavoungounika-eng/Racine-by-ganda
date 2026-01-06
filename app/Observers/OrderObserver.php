@@ -215,8 +215,18 @@ class OrderObserver
             // ✅ CONFIRMER LA RÉSERVATION (décrémenter stock réel)
             $this->confirmStockReservation($order);
 
-            // ✅ SPRINT 5-6: Dispatch événement pour comptabilité
-            event(new \Modules\Accounting\Events\PaymentRecorded($order));
+            // ✅ POS AUDIT-READY: Skip PaymentRecorded for POS orders
+            // POS orders have user_id = null and create their own Intents via listeners
+            $isPosOrder = is_null($order->user_id) && \App\Models\PosSale::where('order_id', $order->id)->exists();
+            
+            if (!$isPosOrder) {
+                // ✅ SPRINT 5-6: Dispatch événement pour comptabilité (non-POS only)
+                event(new \Modules\Accounting\Events\PaymentRecorded($order));
+            } else {
+                \Log::info('OrderObserver: Skipping PaymentRecorded for POS order (handled by POS listeners)', [
+                    'order_id' => $order->id,
+                ]);
+            }
 
             // Attribuer des points de fidélité
             try {

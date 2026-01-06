@@ -12,10 +12,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-class LedgerService
+/**
+ * LedgerService - Point unique de création d'écritures comptables
+ * 
+ * ARCHITECTURE RULE:
+ * Cette classe est FINAL et représente le SEUL point autorisé pour créer
+ * des AccountingEntry. Toute création directe via AccountingEntry::create()
+ * est bloquée par le guard du modèle.
+ * 
+ * @see AccountingEntry::booted() pour le guard de création
+ */
+final class LedgerService
 {
     /**
      * Créer une écriture comptable
+     * 
+     * Cette méthode est le SEUL point d'entrée autorisé pour créer une écriture.
      */
     public function createEntry(array $data): AccountingEntry
     {
@@ -29,7 +41,8 @@ class LedgerService
             
             $entryNumber = $this->generateEntryNumber($journal, $data['entry_date']);
             
-            return AccountingEntry::create([
+            // Autoriser temporairement la création via le container
+            return $this->authorizedCreate([
                 'entry_number' => $entryNumber,
                 'journal_id' => $data['journal_id'],
                 'fiscal_year_id' => $data['fiscal_year_id'],
@@ -41,6 +54,22 @@ class LedgerService
                 'created_by' => Auth::id() ?? 1,
             ]);
         });
+    }
+
+    /**
+     * Création autorisée d'AccountingEntry
+     * 
+     * Cette méthode pose le flag 'ledger.creating.allowed' dans le container
+     * pour autoriser le guard du modèle à laisser passer la création.
+     */
+    private function authorizedCreate(array $attributes): AccountingEntry
+    {
+        try {
+            app()->instance('ledger.creating.allowed', true);
+            return AccountingEntry::create($attributes);
+        } finally {
+            app()->forgetInstance('ledger.creating.allowed');
+        }
     }
 
     /**
@@ -253,15 +282,16 @@ class LedgerService
 
     private function recalculateTotals(AccountingEntry $entry): void
     {
-        $totals = $entry->lines()
-            ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
-            ->first();
+        // Use separate sum() calls to avoid MySQL strict mode GROUP BY issues
+        $totalDebit = $entry->lines()->sum('debit');
+        $totalCredit = $entry->lines()->sum('credit');
         
         $entry->update([
-            'total_debit' => $totals->total_debit ?? 0,
-            'total_credit' => $totals->total_credit ?? 0,
+            'total_debit' => $totalDebit ?? 0,
+            'total_credit' => $totalCredit ?? 0,
         ]);
     }
+
 
     private function getCurrentFiscalYear(): FiscalYear
     {
