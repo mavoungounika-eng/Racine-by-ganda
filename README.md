@@ -1,142 +1,87 @@
 # RACINE BY GANDA
 
-[![Tests](https://github.com/YOUR_USERNAME/racine-backend/actions/workflows/tests.yml/badge.svg)](https://github.com/YOUR_USERNAME/racine-backend/actions/workflows/tests.yml)
-[![PHP Version](https://img.shields.io/badge/PHP-8.1%20%7C%208.2-777BB4?logo=php&logoColor=white)](https://www.php.net/)
-[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+Marketplace e-commerce Congo avec gestion créateurs, boutiques physiques (POS), et backend ERP.
 
-E-commerce platform with creator marketplace, ERP, CRM, and financial management.
+## Stack Technique
 
-## 🚀 Quick Start
+- **Framework** : Laravel 12.0 (PHP 8.2+)
+- **Frontend** : Blade templates (Server-Side Rendering)
+- **Base de données** : MySQL
+- **Paiements** : Stripe + Mobile Money (Monetbil)
+- **Authentification** : OAuth (Google Socialite), 2FA (Google Authenticator), RBAC
+- **File d'attente** : Laravel Queues
+- **Tests** : PHPUnit (133 tests)
+
+## Installation Locale
 
 ```bash
-# Clone repository
-git clone https://github.com/YOUR_USERNAME/racine-backend.git
-cd racine-backend
-
-# Install dependencies
+# Dépendances
 composer install
+npm install
 
-# Setup environment
+# Configuration
 cp .env.example .env
 php artisan key:generate
 
-# Run migrations
+# Base de données
 php artisan migrate --seed
 
-# Start development server
+# Assets & serveur
+npm run dev
 php artisan serve
 ```
 
-## 🧪 Testing
+## Architecture
 
-### Local Testing
+**RACINE BY GANDA** est un monolithe Laravel structuré en modules :
+- **Auth/RBAC** : Authentification multi-rôles (Client, Créateur, Staff, Admin)
+- **ERP** : Gestion stock, production, mouvements
+- **CMS** : Pages publiques dynamiques
+- **CRM** : Messagerie client-créateur
+- **POS** : Point de vente physique
+- **Accounting** : Comptabilité & finances
+- **Analytics** : Dashboards & BI
+
+Voir [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) pour détails.
+
+## Documentation
+
+- **Architecture** : [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- **Déploiement** : [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
+- **Sécurité/RBAC** : [docs/security/](./docs/security/)
+- **Paiements** : [docs/payments/](./docs/payments/)
+- **Guides** : [docs/guides/](./docs/guides/)
+
+## Commandes Essentielles
 
 ```bash
-# Run all tests
+# Tests
 php artisan test
 
-# Run with profiling
-php artisan test --profile
+# Queue workers
+php artisan queue:work
 
-# Stop on first failure
-php artisan test --stop-on-failure
+# POS (Point de Vente)
+# Accessible via /admin/pos après login admin
 
-# Run in parallel
-php artisan test --parallel
+# Scripts utilitaires
+php create-admin.php          # Créer compte admin
+php disable-2fa.php           # Désactiver 2FA utilisateur
+php test_accounts_login.php   # Tester comptes test
 ```
 
-### Cross-Platform Test Scripts
+## État du Projet
 
-```bash
-# Linux/macOS/Git Bash
-./scripts/run-tests.sh --parallel --profile
+**STATUT : PRODUCTION-READY**
 
-# Windows PowerShell
-.\scripts\run-tests.ps1 -Parallel -Profile
-```
+- ✅ Backend DONE (RBAC verrouillé, Auth complet, Paiements opérationnels)
+- ✅ Tests CI (133 tests couvrant core features)
+- ❄️ **FEATURE FREEZE** actif - Voir [FEATURE_FREEZE.md](./FEATURE_FREEZE.md)
 
-## 📊 Quality Gates
+## Production
 
-Our CI/CD pipeline enforces the following quality standards:
+Pour déploiement production, consulter [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
-| Gate | Threshold | Status |
-|:---|:---|:---:|
-| **Test Suite** | 100% pass (MySQL) | ✅ Enforced |
-| **N+1 Queries** | Regression tests | ✅ Enforced |
-| **Code Coverage** | Informational only | ℹ️ Tracked |
-| **Performance** | Query count limits | ✅ Enforced |
+## Licence
 
-### Performance Regression Tests
-
-Critical pages are protected against N+1 query regressions:
-
-- **Creator Dashboard**: ≤ 40 queries
-- **Admin Orders**: ≤ 20 queries
-- **ERP Stock**: ≤ 20 queries
-
-## 🏗️ Architecture
-
-### Modules
-- **ERP**: Stock management, suppliers, purchases, production
-- **CRM**: Customer relationship management
-- **Finance**: OHADA-compliant accounting, ledger, reports
-- **Payments**: Multi-provider (Stripe, Monetbil), webhooks
-- **Subscriptions**: Creator plans, billing
-
-### Key Features
-- Multi-vendor marketplace
-- Real-time inventory tracking
-- OHADA financial reporting
-- Multi-payment gateway support
-- Role-based access control (RBAC)
-- Two-factor authentication (2FA)
-
-## 📚 Documentation
-
-- [Test Strategy](docs/PHASE_3_TEST_STRATEGY.md)
-- [Test Execution Profile](docs/TEST_EXECUTION_PROFILE.md)
-- [Performance Audit](docs/PERFORMANCE_N_PLUS_ONE_AUDIT.md)
-- [CI Runbook](docs/CI_RUNBOOK.md) *(coming soon)*
-
-## 🔧 Development
-
-### Requirements
-- PHP 8.1 or 8.2
-- MySQL 8.0
-- Composer 2.x
-- Node.js 18+ (for frontend assets)
-
-### Database
-- **Production**: MySQL 8.0
-- **Testing**: MySQL 8.0 (CI), SQLite (local quick tests)
-
-### CI/CD
-Tests run automatically on:
-- Push to `main`, `develop`, `security/**`
-- Pull requests to `main`, `develop`
-
-**Execution Modes**:
-- **PR**: Stop on first failure (fast feedback)
-- **Main**: Parallel execution (comprehensive)
-
-## 📈 Performance
-
-- **Test Suite**: ~120s (local), ~5min (CI parallel)
-- **N+1 Protection**: Active on critical paths
-- **Query Monitoring**: Performance dashboard available
-
-## 🤝 Contributing
-
-1. Create feature branch from `develop`
-2. Write tests for new features
-3. Ensure CI passes (all tests green)
-4. Submit PR with clear description
-
-## 📝 License
-
-Proprietary - RACINE BY GANDA
-
----
-
-**Status**: Production-ready with industrial-grade test coverage
+Propriétaire - RACINE BY GANDA © 2026

@@ -30,18 +30,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Enregistrer les middlewares personnalisés
         $middleware->alias([
+            // PHASE 3: Unified Authentication & Authorization
+            'ensure' => \App\Http\Middleware\EnsureAuthenticated::class,
+            
             // Middlewares de sécurité critiques (réactivés pour production)
-            'role' => \App\Http\Middleware\CheckRole::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
             '2fa' => \App\Http\Middleware\TwoFactorMiddleware::class,
             
-            // Middlewares actifs
-            'creator' => \App\Http\Middleware\CreatorMiddleware::class,
-            'role.creator' => \App\Http\Middleware\EnsureCreatorRole::class,
+            // Middlewares actifs (business logic)
             'creator.active' => \App\Http\Middleware\EnsureCreatorActive::class,
             'capability' => \App\Http\Middleware\EnsureCapability::class,
-            'admin' => \App\Http\Middleware\AdminOnly::class,
-            'staff' => \App\Http\Middleware\StaffMiddleware::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
             'legacy.webhook.deprecation' => \App\Http\Middleware\LegacyWebhookDeprecationHeaders::class,
             'legacy.webhook.guard' => \App\Http\Middleware\LegacyWebhookGuard::class,
@@ -55,6 +53,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Fusion automatique panier session → DB à la connexion
         $middleware->append(\App\Http\Middleware\MergeCartOnLogin::class);
+
+        // CRITICAL SECURITY: Validate session context on every request
+        // MUST be after authentication to ensure user is loaded
+        // Skip ONLY during unit tests to allow test-specific session manipulation
+        if (!app()->runningUnitTests()) {
+            $middleware->append(\App\Http\Middleware\ValidateSessionContext::class);
+        }
 
         // Enregistrement des métriques de performance (debug uniquement)
         $middleware->append(\App\Http\Middleware\RecordPerformanceMetrics::class);

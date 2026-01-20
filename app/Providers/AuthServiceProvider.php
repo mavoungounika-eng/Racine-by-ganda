@@ -35,122 +35,76 @@ class AuthServiceProvider extends ServiceProvider
         // Enregistrer les policies
         $this->registerPolicies();
 
-        // Gates personnalisés pour permissions granulaires
+        // =============================================
+        // GATES RBAC - PERMISSIONS ONLY
+        // =============================================
+        // RÈGLE : 1 gate = 1 permission
+        // AUCUNE logique rôle autorisée
+        // =============================================
         
         // Products
-        Gate::define('view-products', function (User $user) {
-            return true; // Tous peuvent voir
-        });
-
-        Gate::define('create-products', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('edit-products', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('delete-products', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
+        Gate::define('view-products', fn(User $u) => $u->hasPermission('view-products'));
+        Gate::define('create-products', fn(User $u) => $u->hasPermission('create-products'));
+        Gate::define('edit-products', fn(User $u) => $u->hasPermission('edit-products'));
+        Gate::define('delete-products', fn(User $u) => $u->hasPermission('delete-products'));
 
         // Orders
-        Gate::define('view-orders', function (User $user) {
-            return true; // Tous peuvent voir leurs commandes
-        });
-
-        Gate::define('view-all-orders', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('edit-orders', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('delete-orders', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
+        Gate::define('view-orders', fn(User $u) => $u->hasPermission('view-orders'));
+        Gate::define('view-all-orders', fn(User $u) => $u->hasPermission('view-all-orders'));
+        Gate::define('edit-orders', fn(User $u) => $u->hasPermission('edit-orders'));
+        Gate::define('delete-orders', fn(User $u) => $u->hasPermission('delete-orders'));
 
         // Users
-        Gate::define('view-users', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('create-users', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
-
-        Gate::define('edit-users', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
-
-        Gate::define('delete-users', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
+        Gate::define('view-users', fn(User $u) => $u->hasPermission('view-users'));
+        Gate::define('create-users', fn(User $u) => $u->hasPermission('create-users'));
+        Gate::define('edit-users', fn(User $u) => $u->hasPermission('edit-users'));
+        Gate::define('delete-users', fn(User $u) => $u->hasPermission('delete-users'));
 
         // Categories
-        Gate::define('view-categories', function (User $user) {
-            return true; // Tous peuvent voir
-        });
-
-        Gate::define('create-categories', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('edit-categories', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('delete-categories', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
+        Gate::define('view-categories', fn(User $u) => $u->hasPermission('view-categories'));
+        Gate::define('create-categories', fn(User $u) => $u->hasPermission('create-categories'));
+        Gate::define('edit-categories', fn(User $u) => $u->hasPermission('edit-categories'));
+        Gate::define('delete-categories', fn(User $u) => $u->hasPermission('delete-categories'));
 
         // Dashboard & Analytics
-        Gate::define('view-dashboard', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
-        });
-
-        Gate::define('view-analytics', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
+        Gate::define('view-dashboard', fn(User $u) => $u->hasPermission('view-all-orders'));
+        Gate::define('view-analytics', fn(User $u) => $u->hasPermission('view-sales-analytics'));
+        Gate::define('view-sales-analytics', fn(User $u) => $u->hasPermission('view-sales-analytics'));
+        Gate::define('view-stock-analytics', fn(User $u) => $u->hasPermission('view-stock-analytics'));
 
         // Settings
-        Gate::define('manage-settings', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['admin', 'super_admin']);
-        });
+        Gate::define('manage-settings', fn(User $u) => $u->hasPermission('manage-settings'));
+
+        // Stock
+        Gate::define('view-stock', fn(User $u) => $u->hasPermission('view-stock'));
+        Gate::define('edit-stock', fn(User $u) => $u->hasPermission('edit-stock'));
+
+        // Payments
+        Gate::define('process-payments', fn(User $u) => $u->hasPermission('process-payments'));
+        Gate::define('payments.view', fn(User $u) => $u->hasPermission('view-orders'));
+        Gate::define('payments.config', fn(User $u) => $u->hasPermission('manage-settings'));
+        Gate::define('payments.reprocess', fn(User $u) => $u->hasPermission('process-payments'));
+        Gate::define('payments.refund', fn(User $u) => $u->hasPermission('process-payments'));
+
+        // System
+        Gate::define('access-system-config', fn(User $u) => $u->hasPermission('access-system-config'));
 
         // =============================================
-        // GATES DASHBOARDS PAR RÔLE (Phase 2)
+        // GATES NAVIGATION (MAPPING PERMISSIONS)
         // =============================================
-        
+        Gate::define('access-admin', fn(User $u) => $u->hasPermission('view-users'));
+        Gate::define('access-staff', fn(User $u) => $u->hasPermission('view-all-orders'));
+        Gate::define('access-staff-tools', fn(User $u) => $u->hasPermission('view-all-orders'));
+        Gate::define('access-erp', fn(User $u) => $u->hasPermission('view-stock'));
+        Gate::define('manage-erp', fn(User $u) => $u->hasPermission('edit-stock'));
+        Gate::define('access-crm', fn(User $u) => $u->hasPermission('view-users'));
+        Gate::define('manage-crm', fn(User $u) => $u->hasPermission('edit-users'));
+
+        // =============================================
+        // GATES HORS RBAC STAFF (NE PAS MODIFIER)
+        // =============================================
         Gate::define('access-super-admin', function (User $user) {
             return $user->getRoleSlug() === 'super_admin';
-        });
-
-        Gate::define('access-admin', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin']);
-        });
-
-        Gate::define('access-staff', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin', 'staff']);
         });
 
         Gate::define('access-createur', function (User $user) {
@@ -164,83 +118,8 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         // =============================================
-        // GATES ERP (Phase 7)
+        // SUPER ADMIN BYPASS (CRITIQUE)
         // =============================================
-        
-        Gate::define('access-erp', function (User $user) {
-            // Charger la relation si elle n'est pas déjà chargée
-            if (!$user->relationLoaded('roleRelation')) {
-                $user->load('roleRelation');
-            }
-            $role = $user->getRoleSlug();
-            return in_array($role, ['super_admin', 'admin', 'staff']);
-        });
-
-        Gate::define('manage-erp', function (User $user) {
-            // Charger la relation si elle n'est pas déjà chargée
-            if (!$user->relationLoaded('roleRelation')) {
-                $user->load('roleRelation');
-            }
-            $role = $user->getRoleSlug();
-            return in_array($role, ['super_admin', 'admin']);
-        });
-
-        // =============================================
-        // GATES CRM (Phase 7)
-        // =============================================
-        
-        Gate::define('access-crm', function (User $user) {
-            $role = $user->getRoleSlug();
-            return in_array($role, ['super_admin', 'admin', 'staff']);
-        });
-
-        Gate::define('manage-crm', function (User $user) {
-            $role = $user->getRoleSlug();
-            return in_array($role, ['super_admin', 'admin']);
-        });
-
-        // =============================================
-        // GATES PAYMENTS HUB (Sprint 2)
-        // =============================================
-        
-        Gate::define('payments.view', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin', 'staff']);
-        });
-
-        Gate::define('payments.config', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin']);
-        });
-
-        Gate::define('payments.reprocess', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin', 'staff']);
-        });
-
-        Gate::define('payments.refund', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin']);
-        });
-
-        // =============================================
-        // GOUVERNANCE - Configuration Système
-        // =============================================
-        
-        Gate::define('access-system-config', function (User $user) {
-            return $user->getRoleSlug() === 'super_admin';
-        });
-
-        // =============================================
-        // GOUVERNANCE - Outils Staff
-        // =============================================
-        
-        Gate::define('access-staff-tools', function (User $user) {
-            $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin', 'staff']);
-        });
-
-        // Super Admin - toutes permissions
         Gate::before(function (User $user, string $ability) {
             if ($user->getRoleSlug() === 'super_admin') {
                 return true; // Super Admin a tous les droits

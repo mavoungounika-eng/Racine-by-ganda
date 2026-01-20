@@ -332,63 +332,26 @@
     <div class="noise"></div>
     
     <div class="container">
-        <a href="{{ route('auth.hub') }}" class="login-back-link">
-            <i class="fas fa-arrow-left"></i>
-            <span>Retour au choix d'espace</span>
-        </a>
+        {{-- Boutons de navigation --}}
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <a href="javascript:history.back()" class="login-back-link" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; transition: all 0.3s;">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+            <a href="{{ route('frontend.home') }}" class="login-back-link" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(212, 165, 116, 0.1); border: 1px solid rgba(212, 165, 116, 0.2); border-radius: 12px; transition: all 0.3s;">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+        </div>
         
-        <div class="login-card {{ $loginContext ?? '' }}">
-            @php
-                // Résoudre le contexte (boutique, equipe ou neutral)
-                $context = $loginContext ?? 'neutral';
-                
-                // Définir les textes selon le contexte
-                $title = 'Connexion à votre compte';
-                $subtitle = 'Accédez à votre espace personnel RACINE BY GANDA.';
-                $badge = null;
-                $icon = null;
-                
-                if ($context === 'boutique') {
-                    $title = 'Connexion – Espace Boutique';
-                    $subtitle = 'Clients et créateurs, accédez à vos commandes, favoris et suivis.';
-                    $badge = 'Boutique';
-                    $icon = 'fa-shopping-bag';
-                } elseif ($context === 'equipe') {
-                    $title = 'Connexion – Espace Équipe';
-                    $subtitle = 'Membres de l\'équipe, connectez-vous à votre espace de gestion.';
-                    $badge = 'Équipe';
-                    $icon = 'fa-briefcase';
-                }
-            @endphp
-            
+        <div class="login-card">
+            {{-- UNIFICATION LOGIN - Phase 3 : Wording neutre, aucun contexte --}}
             <div class="login-header">
-                @if($badge)
-                    <span class="login-badge">
-                        @if($icon)
-                            <i class="fas {{ $icon }}"></i>
-                        @endif
-                        {{ $badge }}
-                    </span>
-                @endif
-                
-                <h1 class="login-title">{{ $title }}</h1>
-                <p class="login-subtitle">{{ $subtitle }}</p>
+                <h1 class="login-title">Connexion à votre compte</h1>
+                <p class="login-subtitle">Accédez à votre espace personnel RACINE BY GANDA.</p>
             </div>
             
-            {{-- MESSAGE RASSURANT (IMPORTANT) --}}
-            @if($context === 'boutique')
-            <div style="background: rgba(212, 165, 116, 0.15); border: 1px solid rgba(212, 165, 116, 0.3); border-left: 4px solid #D4A574; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem;">
-                <div style="display: flex; align-items: start; gap: 0.75rem;">
-                    <i class="fas fa-info-circle" style="color: #D4A574; font-size: 1rem; margin-top: 0.1rem;"></i>
-                    <div>
-                        <strong style="color: #D4A574; display: block; margin-bottom: 0.25rem;">Un seul compte suffit.</strong>
-                        <p style="margin: 0; font-size: 0.85rem; line-height: 1.5;">
-                            Vous pouvez acheter et vendre avec le même compte, sans jamais perdre vos données.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            @endif
+
             
             @if(session('error'))
                 <div style="background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: #ff6b6b; font-size: 0.875rem;">
@@ -451,7 +414,7 @@
                 </button>
             </form>
             
-            @if($context === 'boutique')
+            {{-- CONNEXION SOCIALE (GOOGLE/APPLE/FACEBOOK) --}}
             <div class="social-login" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
                 <a href="{{ url('/auth/google/redirect') }}" 
                    class="btn-social-google" style="margin-bottom: 0.75rem;">
@@ -469,23 +432,12 @@
                     <span>Continuer avec Facebook</span>
                 </a>
             </div>
-            @endif
             
             <div class="login-footer">
-                <p>Pas encore de compte ? <a href="{{ route('register', ['context' => $context !== 'neutral' ? $context : 'boutique']) }}">Créer un compte</a></p>
+                <p>Pas encore de compte ? <a href="{{ route('register') }}">Créer un compte</a></p>
             </div>
-            
-            @if($context === 'boutique')
-            <div class="creator-link-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
-                <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem; margin-bottom: 0.75rem;">
-                    Vous êtes créateur, styliste ou artisan partenaire ?
-                </p>
-                <a href="{{ route('creator.login') }}" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 999px; border: 1px solid rgba(212, 165, 116, 0.3); background: rgba(212, 165, 116, 0.1); color: #D4A574; font-weight: 500; font-size: 0.9rem; text-decoration: none; transition: all 0.3s;">
-                    <i class="fas fa-palette"></i>
-                    Accéder à l'espace créateur
-                </a>
-            </div>
-            @endif
+
+
         </div>
     </div>
 </body>

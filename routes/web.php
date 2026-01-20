@@ -6,9 +6,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Front\FrontendController;
-use App\Http\Controllers\Auth\AuthHubController;
 use App\Http\Controllers\Auth\PublicAuthController;
-use App\Http\Controllers\Auth\ErpAuthController;
 use App\Http\Controllers\AppearanceController;
 
 // ============================================
@@ -34,8 +32,18 @@ Route::prefix('createur')->name('creator.')->group(function () {
     
     // Routes publiques (guest)
     Route::middleware('guest')->group(function () {
-        Route::get('login', [CreatorAuthController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [CreatorAuthController::class, 'login'])->name('login.post');
+        // ====================================
+        // UNIFICATION LOGIN - Phase 2
+        // ====================================
+        // Les créateurs utilisent maintenant le login unifié /login
+        // Ces routes redirigent vers /login pour compatibilité
+        Route::get('login', function () {
+            return redirect()->route('login');
+        })->name('login');
+        
+        Route::post('login', function () {
+            return redirect()->route('login.post');
+        })->name('login.post');
         
         Route::get('register', [CreatorAuthController::class, 'showRegisterForm'])->name('register');
         Route::post('register', [CreatorAuthController::class, 'register'])->name('register.post');
@@ -58,7 +66,8 @@ Route::prefix('createur')->name('creator.')->group(function () {
     });
 
     // Routes protégées (créateur actif)
-    Route::middleware(['auth', 'role.creator', 'creator.active'])->group(function () {
+    // PHASE 3: Migration vers EnsureAuthenticated
+    Route::middleware(['ensure:creator,createur', 'creator.active'])->group(function () {
         Route::get('dashboard', [CreatorDashboardController::class, 'index'])->name('dashboard');
         
         // Produits
@@ -202,41 +211,19 @@ Route::middleware('auth')->prefix('2fa')->name('2fa.')->group(function () {
 });
 
 // ============================================
-// ROUTES ERP (Désactivées temporairement - utiliser /login)
-// ============================================
-// Les routes ERP sont désactivées. Utiliser /login pour tous les utilisateurs.
-// Route::prefix('erp')->name('erp.')->group(function () {
-//     Route::middleware('guest')->group(function () {
-//         Route::get('/login', [ErpAuthController::class, 'showLoginForm'])->name('login');
-//         Route::post('/login', [ErpAuthController::class, 'login'])->name('login.post');
-//     });
-//     Route::post('/logout', [ErpAuthController::class, 'logout'])->name('logout')->middleware('auth');
-// });
-
-// ============================================
 // DASHBOARDS PAR RÔLE
 // ============================================
 Route::middleware('auth')->group(function () {
     // Dashboard Client - Route principale (utiliser celle-ci uniquement)
     Route::get('/compte', [\App\Http\Controllers\Account\ClientAccountController::class, 'index'])
         ->name('account.dashboard');
-    
-    // Redirection depuis l'ancienne route du module Frontend vers la route principale
-    Route::get('/dashboard/client', function() {
-        return redirect()->route('account.dashboard');
-    })->name('dashboard.client.redirect');
-    
-    // Dashboard Créateur (route legacy - redirige vers la nouvelle route)
-    // ⚠️ Route obsolète : /atelier-creator mélangeait "atelier" (marque) et "creator" (marketplace)
-    // Utiliser /createur/dashboard à la place
-    Route::get('/atelier-creator', function() {
-        return redirect()->route('creator.dashboard');
-    })->name('creator.dashboard.legacy')->middleware('role.creator');
-    
-    // Dashboard Staff (temporaire - à implémenter)
+
+
+    // Dashboard Staff (alias vers dashboard équipe unique)
+    // PHASE 3: Migration vers EnsureAuthenticated
     Route::get('/staff/dashboard', function() {
-        return view('admin.dashboard'); // Utiliser le dashboard admin pour l'instant
-    })->name('staff.dashboard')->middleware('staff');
+        return view('admin.dashboard');
+    })->name('staff.dashboard')->middleware('ensure:staff,admin,super_admin');
     
     // Routes Profil (Phase 7) - Unifiées pour tous les rôles
     Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
@@ -370,12 +357,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('{creator}/plan', [\App\Http\Controllers\Admin\CreatorSubscriptionController::class, 'updatePlan'])->name('update-plan');
         Route::get('{creator}/audit', [\App\Http\Controllers\Admin\CreatorSubscriptionController::class, 'audit'])->name('audit');
     });
-    // Routes de login admin (désactivées - utiliser /login)
-    // Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
-    // Route::post('login', [AdminAuthController::class, 'login'])->name('login.post');
 
-    // Routes protégées par le middleware "admin" + "2fa" (sécurité production)
-    Route::middleware(['admin', '2fa'])->group(function () {
+    // Routes protégées par le middleware "ensure:admin,super_admin" + "2fa" (sécurité production)
+    // PHASE 3: Migration vers EnsureAuthenticated middleware
+    Route::middleware(['ensure:admin,super_admin', '2fa'])->group(function () {
         // Phase 6: Dashboard Financier & BI
         Route::prefix('financial')->name('financial.')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Admin\FinancialDashboardController::class, 'index'])->name('dashboard');

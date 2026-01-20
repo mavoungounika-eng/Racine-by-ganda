@@ -12,6 +12,44 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes;
 
+    /**
+     * CRITICAL SECURITY: Auto-increment auth_version on security changes
+     * 
+     * This Observer ensures all active sessions are invalidated when:
+     * - role_id changes (escalation/downgrade)
+     * - status changes (suspension/activation)
+     * 
+     * Uses 'saved' event with DB update to avoid infinite loop.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($user) {
+            // Check if role or status was changed (using getChanges instead of isDirty)
+            $changes = $user->getChanges();
+            
+            if (array_key_exists('role_id', $changes) || array_key_exists('status', $changes)) {
+                // Use raw DB update to avoid triggering events
+                \DB::table('users')
+                    ->where('id', $user->id)
+                    ->increment('auth_version');
+
+                \Log::info('[AUDIT] auth_version incremented', [
+                    'user_id' => $user->id,
+                    'new_version' => $user->auth_version + 1,
+                    'changed_fields' => $changes,
+                    'old_role_id' => $user->getOriginal('role_id'),
+                    'new_role_id' => $user->role_id,
+                    'old_status' => $user->getOriginal('status'),
+                    'new_status' => $user->status,
+                    'changed_by' => \Auth::id(),
+                ]);
+            }
+        });
+    }
+
+
     protected $fillable = [
         'name',
         'email',
@@ -229,6 +267,31 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isClient(): bool
     {
         return $this->getRoleSlug() === 'client';
+    }
+
+    /**
+     * Vérifier si l'utilisateur a une permission
+     * 
+     * @param string $permission Slug de la permission (ex: 'view-stock-analytics')
+     * @return bool
+     */
+    public function hasPermission(string $permission): bool
+    {
+        // Super admin bypass
+        if ($this->getRoleSlug() === 'super_admin') {
+            return true;
+        }
+
+        // Charger relation si nécessaire
+        if (!$this->relationLoaded('roleRelation')) {
+            $this->load('roleRelation.permissions');
+        }
+
+        // Vérifier si le rôle a la permission
+        return $this->roleRelation
+            ?->permissions
+            ?->pluck('slug')
+            ?->contains($permission) ?? false;
     }
 
     /**

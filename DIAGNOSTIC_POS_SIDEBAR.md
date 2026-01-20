@@ -184,3 +184,5 @@ Le POS est maintenant dans la section **"Outils"** du sidebar, pas dans "Boutiqu
 
 
 
+
+

@@ -128,7 +128,7 @@
                     </div>
                     
                     {{-- Bouton Connexion --}}
-                    <a href="{{ route('auth.hub') }}" class="nav-icon-btn nav-icon-btn-primary" title="Connexion" aria-label="Se connecter ou créer un compte">
+                    <a href="{{ route('login') }}" class="nav-icon-btn nav-icon-btn-primary" title="Connexion" aria-label="Se connecter ou créer un compte">
                         <i class="fas fa-user" aria-hidden="true"></i>
                     </a>
                     
@@ -170,7 +170,7 @@
                         <span style="font-size: 1.25rem;">🛒</span> Panier
                     </a>
                     
-                    <a href="{{ route('auth.hub') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none;">
+                    <a href="{{ route('login') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none;">
                         <span style="font-size: 1.25rem;">👤</span> Connexion
                     </a>
                 </div>

@@ -300,33 +300,18 @@ class GoogleAuthController extends Controller
         // Régénérer la session
         $request->session()->regenerate();
 
-        // PHASE 3.2 : Onboarding post-Google créateur (redirection obligatoire)
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['createur', 'creator'])) {
-            // Vérifier si le profil créateur existe et son statut
-            $creatorProfile = $user->creatorProfile;
-            
-            if (!$creatorProfile) {
-                // Pas de profil créateur → rediriger vers l'inscription créateur
-                return redirect()->route('creator.register')
-                    ->with('info', 'Veuillez compléter votre profil créateur.');
-            }
-            
-            if ($creatorProfile->isPending()) {
-                // Profil en attente de validation → rediriger vers la page pending
-                return redirect()->route('creator.pending')
-                    ->with('status', 'Votre compte créateur est en attente de validation par l\'équipe RACINE.');
-            }
-            
-            if ($creatorProfile->isSuspended()) {
-                // Profil suspendu → rediriger vers la page suspended
-                return redirect()->route('creator.suspended')
-                    ->with('error', 'Votre compte créateur a été suspendu. Veuillez contacter le support.');
-            }
-        }
+        // PHASE 2: Utiliser UserContextResolver et PostLoginDecisionEngine
+        $contextResolver = app(\App\Services\Auth\UserContextResolver::class);
+        $decisionEngine = app(\App\Services\Auth\PostLoginDecisionEngine::class);
 
-        // Rediriger selon le rôle via le trait HandlesAuthRedirect
-        return redirect($this->getRedirectPath($user));
+        // Résoudre le contexte utilisateur
+        $context = $contextResolver->resolve($user);
+        $contextResolver->storeInSession($context);
+
+        // Déterminer la redirection via PostLoginDecisionEngine
+        $redirectUrl = $decisionEngine->determineRedirect($context);
+
+        return redirect($redirectUrl);
     }
 }
 

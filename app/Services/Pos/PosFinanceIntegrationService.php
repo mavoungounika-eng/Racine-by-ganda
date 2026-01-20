@@ -40,6 +40,10 @@ class PosFinanceIntegrationService
      */
     public function createCashSettlementIntent(PosSession $session): FinancialIntent
     {
+        // 🔒 BOOTSTRAP CHECK - Fail fast si environnement comptable non prêt
+        app(\App\Services\Financial\AccountingBootstrapService::class)
+            ->assertReadyForPosSettlement();
+
         // Calculer le total cash de la session
         $cashSales = $session->sales()
             ->where('payment_method', 'cash')
@@ -216,16 +220,35 @@ class PosFinanceIntegrationService
     {
         $session = PosSession::findOrFail($intent->reference_id);
         
-        return $ledger->createSaleEntry(
-            order: (object) [
-                'id' => "SESSION-{$session->id}",
-            ],
-            journalCode: 'VTE',
-            debitAccount: '5700', // Caisse
-            creditAccount: '7011', // Ventes marchandises
-            totalTTC: (float) $intent->amount,
-            vatRate: 18.0
-        );
+        // Récupérer journal et exercice fiscal
+        $journal = \Modules\Accounting\Models\Journal::where('code', 'VTE')->firstOrFail();
+        $fiscalYear = \Modules\Accounting\Models\FiscalYear::where('is_closed', false)->orderBy('start_date', 'desc')->firstOrFail();
+        
+        // Calculer HT et TVA
+        $totalTTC = (float) $intent->amount;
+        $totalHT = $totalTTC / 1.18;
+        $totalTVA = $totalTTC - $totalHT;
+        
+        // Créer l'écriture
+        $entry = $ledger->createEntry([
+            'journal_id' => $journal->id,
+            'fiscal_year_id' => $fiscalYear->id,
+            'entry_date' => $session->closed_at->format('Y-m-d'),
+            'description' => "Clôture caisse session #{$session->id} - {$session->machine_id}",
+            'reference_type' => 'pos_session',
+            'reference_id' => $session->id,
+        ]);
+        
+        // Ajouter les lignes
+        $ledger->addLine($entry, '5700', $totalTTC, 0, "Encaissement cash session #{$session->id}");
+        $ledger->addLine($entry, '7011', 0, $totalHT, "Ventes cash session #{$session->id}");
+        $ledger->addLine($entry, '4431', 0, $totalTVA, "TVA sur ventes cash session #{$session->id}");
+        
+        // Valider et poster
+        $ledger->validateBalance($entry);
+        $ledger->postEntry($entry);
+        
+        return $entry;
     }
 
     /**

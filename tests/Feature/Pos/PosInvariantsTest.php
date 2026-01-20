@@ -41,6 +41,10 @@ class PosInvariantsTest extends TestCase
     {
         parent::setUp();
 
+        // Seed accounting data (required for bootstrap check)
+        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        $this->artisan('db:seed', ['--class' => 'AccountingBootstrapSeeder']);
+
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
 
@@ -52,9 +56,6 @@ class PosInvariantsTest extends TestCase
         $this->machineId = Str::uuid()->toString();
         $this->sessionService = app(PosSessionService::class);
         $this->saleService = app(PosSaleService::class);
-        
-        // Seed accounting data for FinancialIntent tests
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
     }
 
     /**

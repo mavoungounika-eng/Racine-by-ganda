@@ -33,6 +33,7 @@ class UserFactory extends Factory
             'phone' => fake()->optional()->phoneNumber(),
             'status' => 'active',
             'is_admin' => false,
+            'auth_version' => 1, // Default auth_version
         ];
     }
 

@@ -142,25 +142,47 @@ class PosSessionService
     /**
      * Clôturer la session
      * 
+     * CORRECTION 1: Verrou transactionnel anti-double-clôture
+     * - lockForUpdate() empêche concurrence
+     * - Vérification status AVANT modification
+     * - Protection niveau DB (pas seulement applicatif)
+     * 
      * @param PosSession $session
      * @param float $closingCash Montant cash compté
      * @param int $userId ID de l'utilisateur
      * @param string|null $notes Notes optionnelles
      * @return PosSession
+     * @throws \DomainException Si session déjà fermée
      */
     public function closeSession(PosSession $session, float $closingCash, int $userId, ?string $notes = null): PosSession
     {
         return DB::transaction(function () use ($session, $closingCash, $userId, $notes) {
-            // Assurer que expected_cash est calculé
-            if (is_null($session->expected_cash)) {
-                $session->update(['expected_cash' => $session->calculateExpectedCash()]);
+            // 🔒 VERROU TRANSACTIONNEL - Empêche double clôture
+            $session = PosSession::where('id', $session->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // ✅ Vérification status AVANT toute modification
+            if ($session->status !== PosSession::STATUS_OPEN) {
+                throw new \DomainException("Session already closed or closing (status: {$session->status})");
             }
+
+            // Calculer expected_cash si nécessaire
+            $expectedCash = $session->expected_cash ?? $session->calculateExpectedCash();
 
             // Créer le mouvement de clôture
             PosCashMovement::createClosing($session, $closingCash, $userId);
 
-            // Fermer la session
-            $session->close($closingCash, $userId, $notes);
+            // Fermer la session (atomic update)
+            $session->update([
+                'status' => PosSession::STATUS_CLOSED,
+                'closing_cash' => $closingCash,
+                'expected_cash' => $expectedCash,
+                'cash_difference' => $closingCash - $expectedCash,
+                'closed_at' => now(),
+                'closed_by' => $userId,
+                'notes' => $notes,
+            ]);
 
             // Confirmer tous les paiements cash pending de cette session
             $this->confirmAllCashPayments($session, $userId);
@@ -170,7 +192,7 @@ class PosSessionService
                 'machine_id' => $session->machine_id,
                 'closed_by' => $userId,
                 'closing_cash' => $closingCash,
-                'expected_cash' => $session->expected_cash,
+                'expected_cash' => $expectedCash,
                 'cash_difference' => $session->cash_difference,
             ]);
 

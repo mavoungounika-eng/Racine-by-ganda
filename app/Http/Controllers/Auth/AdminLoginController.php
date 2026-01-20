@@ -41,15 +41,30 @@ class AdminLoginController extends Controller
     
     /**
      * Traiter la connexion admin
-     * Délègue au LoginController standard pour éviter duplication
+     * Utilise AuthOrchestratorService directement
      */
     public function login(Request $request): RedirectResponse
     {
-        // Ajouter le contexte équipe à la requête
-        $request->merge(['context' => 'equipe']);
-        
-        // Déléguer au LoginController standard
-        $loginController = app(LoginController::class);
-        return $loginController->login($request);
+        $credentials = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $remember = $request->boolean('remember');
+
+        // Déléguer à AuthOrchestratorService
+        $orchestrator = app(\App\Services\Auth\AuthOrchestratorService::class);
+        $result = $orchestrator->authenticate($request, $credentials, $remember);
+
+        // Gérer le résultat
+        if ($result->isFailed()) {
+            return back()->withErrors($result->errors)->onlyInput('email');
+        }
+
+        if ($result->requires2FA()) {
+            return redirect($result->redirectUrl);
+        }
+
+        return redirect()->intended($result->redirectUrl);
     }
 }

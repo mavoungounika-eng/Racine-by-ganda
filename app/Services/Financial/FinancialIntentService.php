@@ -103,6 +103,11 @@ class FinancialIntentService
     /**
      * Commiter un intent - Créer l'écriture comptable
      * 
+     * CORRECTION 2: Redis mutex anti-double-worker
+     * - Cache::lock() empêche double traitement
+     * - Refresh + re-check après lock acquisition
+     * - Protection multi-worker niveau Redis
+     * 
      * POINT D'IRRÉVERSIBILITÉ: Après cette méthode, l'intent est COMMITTED
      * et l'écriture comptable est créée.
      * 
@@ -110,60 +115,73 @@ class FinancialIntentService
      * @param callable $entryCreator Fonction de création d'écriture
      * @return AccountingEntry L'écriture créée
      * @throws LedgerException Si l'intent n'est pas dans un état valide
+     * @throws \RuntimeException Si impossible d'acquérir le lock
      */
     public function commitIntent(FinancialIntent $intent, callable $entryCreator): AccountingEntry
     {
-        // Guard: Vérifier état
-        if ($intent->isCommitted()) {
-            Log::info('FinancialIntentService: Intent already committed (idempotent)', [
-                'intent_id' => $intent->id,
-                'accounting_entry_id' => $intent->accounting_entry_id,
-            ]);
-            
-            AccountingIdempotenceService::recordCollision(
-                $intent->reference_type,
-                $intent->reference_id,
-                self::class,
-                $intent->accounting_entry_id
-            );
-            
-            return $intent->accountingEntry;
-        }
+        // 🔒 REDIS MUTEX - Empêche double worker
+        $lockKey = 'financial-intent-commit-' . $intent->id;
 
-        if (!$intent->canProcess()) {
-            throw new LedgerException("Intent #{$intent->id} ne peut pas être traité (status: {$intent->status})");
-        }
-
-        return DB::transaction(function () use ($intent, $entryCreator) {
-            // Verrouiller l'intent pour concurrence
-            $intent = FinancialIntent::lockForUpdate()->find($intent->id);
+        return \Illuminate\Support\Facades\Cache::lock($lockKey, 30)->block(5, function () use ($intent, $entryCreator) {
             
-            // Re-vérifier après lock
+            // ✅ REFRESH après acquisition lock (état peut avoir changé)
+            $intent->refresh();
+
+            // Guard: Vérifier état après lock
             if ($intent->isCommitted()) {
+                Log::info('FinancialIntentService: Intent already committed (idempotent)', [
+                    'intent_id' => $intent->id,
+                    'accounting_entry_id' => $intent->accounting_entry_id,
+                ]);
+                
+                AccountingIdempotenceService::recordCollision(
+                    $intent->reference_type,
+                    $intent->reference_id,
+                    self::class,
+                    $intent->accounting_entry_id
+                );
+                
                 return $intent->accountingEntry;
             }
 
-            // Marquer en traitement
-            $intent->markAsProcessing();
-
-            try {
-                // Créer l'écriture via le callback
-                $entry = $entryCreator($intent, $this->ledgerService);
-
-                // Marquer comme commis
-                $intent->markAsCommitted($entry);
-
-                Log::info('FinancialIntentService: Intent committed', [
-                    'intent_id' => $intent->id,
-                    'accounting_entry_id' => $entry->id,
-                ]);
-
-                return $entry;
-
-            } catch (\Exception $e) {
-                $intent->markAsFailed($e->getMessage());
-                throw $e;
+            if (!$intent->canProcess()) {
+                throw new LedgerException("Intent #{$intent->id} ne peut pas être traité (status: {$intent->status})");
             }
+
+            return DB::transaction(function () use ($intent, $entryCreator) {
+                // Verrouiller l'intent pour concurrence DB
+                $intent = FinancialIntent::lockForUpdate()->find($intent->id);
+                
+                // Re-vérifier après lock DB
+                if ($intent->isCommitted()) {
+                    return $intent->accountingEntry;
+                }
+
+                // Marquer en traitement
+                $intent->markAsProcessing();
+
+                try {
+                    // Créer l'écriture via le callback
+                    $entry = $entryCreator($intent, $this->ledgerService);
+
+                    // Marquer comme commis
+                    $intent->markAsCommitted($entry);
+
+                    Log::channel('accounting')->info('Intent committed', [
+                        'intent_id' => $intent->id,
+                        'intent_type' => $intent->intent_type,
+                        'reference_type' => $intent->reference_type,
+                        'reference_id' => $intent->reference_id,
+                        'entry_id' => $entry->id,
+                    ]);
+
+                    return $entry;
+
+                } catch (\Exception $e) {
+                    $intent->markAsFailed($e->getMessage());
+                    throw $e;
+                }
+            });
         });
     }
 

@@ -317,6 +317,18 @@
     <div class="noise"></div>
     
     <div class="container">
+        {{-- Boutons de navigation --}}
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <a href="javascript:history.back()" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); text-decoration: none;">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+            <a href="{{ route('frontend.home') }}" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(212, 165, 116, 0.1); border: 1px solid rgba(212, 165, 116, 0.2); border-radius: 12px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); text-decoration: none;">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+        </div>
+        
         <div class="register-header">
             <h1 class="register-title">Créer un compte</h1>
             <p class="register-subtitle">Rejoignez l'univers RACINE BY GANDA</p>
@@ -446,7 +458,7 @@
                     </p>
                     <p style="margin-top: 0.5rem;">
                         Déjà un compte ? 
-                        <a href="{{ route('creator.login') }}">Se connecter</a>
+                        <a href="{{ route('login') }}">Se connecter</a>
                     </p>
                 </div>
             </div>
@@ -550,4 +562,6 @@
     </div>
 </body>
 </html>
+
+
 
