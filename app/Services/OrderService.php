@@ -136,10 +136,18 @@ class OrderService
             $orderNumber = $orderNumberService->generateOrderNumber();
             $qrToken = Order::generateUniqueQrToken();
             
+            // Déterminer le creator_id (Propriétaire des produits)
+            // On prend le user_id du premier produit car validateCartIntegrity garantit l'unicité du propriétaire
+            $firstProduct = $lockedProducts->first();
+            $creatorId = ($firstProduct && $firstProduct->product_type === 'creator') 
+                ? $firstProduct->user_id 
+                : null;
+
             // Créer la commande sans déclencher les observers (pour créer les items d'abord)
-            $order = Order::withoutEvents(function () use ($formData, $userId, $amounts, $orderNumber, $qrToken) {
+            $order = Order::withoutEvents(function () use ($formData, $userId, $amounts, $orderNumber, $qrToken, $creatorId) {
                 return Order::create([
                     'user_id' => $userId,
+                    'creator_id' => $creatorId,
                     'customer_name' => $formData['full_name'],
                     'customer_email' => $formData['email'],
                     'customer_phone' => $formData['phone'],
@@ -155,35 +163,18 @@ class OrderService
                 ]);
             });
 
+            // 🧪 TEST ROLLBACK FORCÉ (Étape A4)
+            if (config('app.env') === 'testing' && request()->header('X-Force-Rollback')) {
+                Log::warning('OrderService: Forcing transactional rollback for verification (Step A4)');
+                throw new \Exception('FORCED_ROLLBACK_TEST');
+            }
+
             // Créer les items de commande
             $this->createOrderItems($order, $cartItems, $lockedProducts);
             
-            // ✅ RÉSERVER LE STOCK (anti-survente)
-            // Préparer les items pour réservation
-            $itemsToReserve = $cartItems->map(function ($item) {
-                return [
-                    'product_id' => is_object($item) ? $item->product_id : $item['product_id'],
-                    'quantity' => is_object($item) ? $item->quantity : $item['quantity'],
-                ];
-            })->toArray();
-            
-            try {
-                $this->stockReservationService->reserve($itemsToReserve);
-                Log::info('Stock reserved for order', [
-                    'order_id' => $order->id,
-                    'items_count' => count($itemsToReserve),
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to reserve stock', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage(),
-                ]);
-                throw new StockException(
-                    'Échec réservation stock',
-                    500,
-                    'Impossible de réserver le stock. Veuillez réessayer.'
-                );
-            }
+            // ✅ RBG-P0-01 : DÉCRÉMENT ATOMIQUE
+            // Le décrément est maintenant géré uniquement par StockService via l'Observer (ci-dessous)
+            // pour éviter le double décrément (Reservation + Stock decrement).
             
             // Charger les items et déclencher manuellement l'Observer created() avec les items disponibles
             $order->load('items');

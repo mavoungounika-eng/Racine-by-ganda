@@ -56,6 +56,7 @@ return new class extends Migration
                 'committed',   // Écriture créée, IRRÉVERSIBLE
                 'reversed',    // Contre-passation effectuée
                 'failed',      // Échec définitif
+                'skipped',     // Ignoré (ex: SaaS Pur)
             ])->default('pending');
             
             // Lien vers l'écriture comptable (quand committed)

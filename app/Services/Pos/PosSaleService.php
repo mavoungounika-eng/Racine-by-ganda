@@ -56,12 +56,21 @@ class PosSaleService
             $orderItems = [];
             
             foreach ($items as $item) {
-                $product = Product::findOrFail($item['product_id']);
+                // ✅ HARDENING : Lock produit avant validation de stock pour éviter race condition
+                $product = Product::where('id', $item['product_id'])
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
                 $quantity = $item['quantity'];
                 $price = $item['price'] ?? $product->price;
                 $subtotal = $price * $quantity;
                 
-                // Vérifier stock
+                // Vérifier que le produit appartient à RACINE (Modèle SaaS Pur)
+                if (!$product->isBrand()) {
+                    throw new \Exception("Seuls les produits de la marque RACINE peuvent être vendus via le POS. Le produit {$product->title} appartient à un créateur.");
+                }
+
+                // Vérifier stock (Verrouillé)
                 if ($product->stock < $quantity) {
                     throw new \Exception("Stock insuffisant pour {$product->title}");
                 }

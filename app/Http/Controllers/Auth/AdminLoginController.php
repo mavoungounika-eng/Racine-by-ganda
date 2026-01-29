@@ -16,6 +16,7 @@ use Illuminate\View\View;
  */
 class AdminLoginController extends Controller
 {
+    use \App\Http\Controllers\Auth\Traits\HandlesAuthRedirect;
     /**
      * Afficher le formulaire de connexion admin
      * PHASE 3 : Vue dédiée admin-login.blade.php
@@ -28,7 +29,7 @@ class AdminLoginController extends Controller
             $user->load('roleRelation');
             
             if ($user->isTeamMember()) {
-                return redirect()->route('admin.dashboard');
+                return redirect($this->getRedirectPath($user));
             }
             
             // Si connecté mais pas membre équipe, déconnecter

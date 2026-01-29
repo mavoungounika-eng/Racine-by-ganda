@@ -340,19 +340,19 @@
                     <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">Ou s'inscrire avec</span>
                 </div>
                 
-                <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'creator']) }}" 
+                <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'createur']) }}" 
                    class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 0.75rem;">
                     <i class="fab fa-google"></i>
                     <span>S'inscrire avec Google</span>
                 </a>
                 
-                <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'creator']) }}" 
+                <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'createur']) }}" 
                    class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.3); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 0.75rem;">
                     <i class="fab fa-apple"></i>
                     <span>S'inscrire avec Apple</span>
                 </a>
                 
-                <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'creator']) }}" 
+                <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'createur']) }}" 
                    class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(24, 119, 242, 0.4); background: rgba(24, 119, 242, 0.2); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 1rem;">
                     <i class="fab fa-facebook-f"></i>
                     <span>S'inscrire avec Facebook</span>

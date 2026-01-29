@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\User;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Str;
@@ -83,7 +84,7 @@ class TwoFactorService
         $user->two_factor_confirmed_at = now();
         
         // Rendre obligatoire pour admin et super_admin
-        if (in_array($user->getRoleSlug(), ['admin', 'super_admin'])) {
+        if (in_array($user->getRoleSlug(), [Role::ADMIN, Role::SUPER_ADMIN])) {
             $user->two_factor_required = true;
         }
         
@@ -191,7 +192,7 @@ class TwoFactorService
         }
         
         // Obligatoire pour admin et super_admin
-        return $user->two_factor_required || in_array($user->getRoleSlug(), ['admin', 'super_admin']);
+        return $user->two_factor_required || in_array($user->getRoleSlug(), [Role::ADMIN, Role::SUPER_ADMIN]);
     }
     
     /**

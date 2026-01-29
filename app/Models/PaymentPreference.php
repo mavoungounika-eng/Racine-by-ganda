@@ -18,15 +18,13 @@ class PaymentPreference extends Model
     protected $fillable = [
         'creator_profile_id',
         
-        // Mobile Money
-        'mobile_money_operator',
-        'mobile_money_number',
-        'mobile_money_verified',
-        'mobile_money_verified_at',
-        
-        // Payout Settings
-        'payout_schedule',
-        'minimum_payout_threshold',
+        // SaaS Pur - Passerelles Directes (Stripe / MoMo)
+        'stripe_secret_key',
+        'stripe_publishable_key',
+        'momo_provider',
+        'momo_api_key',
+        'payment_connection_status',
+        'last_connection_test_at',
         
         // Notifications
         'notify_email',
@@ -48,9 +46,10 @@ class PaymentPreference extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'mobile_money_verified' => 'boolean',
-        'mobile_money_verified_at' => 'datetime',
-        'minimum_payout_threshold' => 'integer',
+        'stripe_secret_key' => 'encrypted',
+        'stripe_publishable_key' => 'encrypted',
+        'momo_api_key' => 'encrypted',
+        'last_connection_test_at' => 'datetime',
         'notify_email' => 'boolean',
         'notify_sms' => 'boolean',
         'notify_push' => 'boolean',
@@ -67,96 +66,33 @@ class PaymentPreference extends Model
     }
 
     /**
-     * Check if Mobile Money is configured.
+     * Check if the creator has a connected payment gateway.
+     * CRITICAL for SaaS Pur: No connection = No active shop.
      */
-    public function hasMobileMoneyConfigured(): bool
+    public function isConnected(): bool
     {
-        return !empty($this->mobile_money_operator) && !empty($this->mobile_money_number);
+        return $this->payment_connection_status === 'connected';
     }
 
     /**
-     * Check if Mobile Money is verified.
+     * Get the Stripe public key if available.
      */
-    public function isMobileMoneyVerified(): bool
+    public function getStripePublicKey(): ?string
     {
-        return $this->mobile_money_verified && $this->hasMobileMoneyConfigured();
+        return $this->stripe_publishable_key;
     }
 
     /**
-     * Get the formatted Mobile Money number.
+     * Get the MoMo provider name.
      */
-    public function getFormattedMobileMoneyNumberAttribute(): ?string
+    public function getMoMoProviderNameAttribute(): ?string
     {
-        if (!$this->mobile_money_number) {
-            return null;
-        }
-
-        // Format: +XXX XXX XXX XXX
-        $number = preg_replace('/\D/', '', $this->mobile_money_number);
-        
-        if (strlen($number) === 10) {
-            return sprintf(
-                '+242 %s %s %s %s',
-                substr($number, 0, 2),
-                substr($number, 2, 3),
-                substr($number, 5, 3),
-                substr($number, 8, 2)
-            );
-        }
-
-        return $this->mobile_money_number;
-    }
-
-    /**
-     * Get the operator display name.
-     */
-    public function getMobileMoneyOperatorNameAttribute(): ?string
-    {
-        return match($this->mobile_money_operator) {
+        return match($this->momo_provider) {
             'orange' => 'Orange Money',
             'mtn' => 'MTN MoMo',
             'wave' => 'Wave',
-            default => null,
+            'monetbil' => 'Monetbil',
+            default => $this->momo_provider,
         };
-    }
-
-    /**
-     * Get the payout schedule display name.
-     */
-    public function getPayoutScheduleNameAttribute(): string
-    {
-        return match($this->payout_schedule) {
-            'automatic' => 'Automatique (tous les 7 jours)',
-            'monthly' => 'Mensuel (le 1er du mois)',
-            'manual' => 'Manuel (sur demande)',
-            default => 'Non défini',
-        };
-    }
-
-    /**
-     * Get the formatted minimum payout threshold.
-     */
-    public function getFormattedMinimumPayoutThresholdAttribute(): string
-    {
-        return number_format($this->minimum_payout_threshold, 0, ',', ' ') . ' FCFA';
-    }
-
-    /**
-     * Scope to get preferences with Mobile Money configured.
-     */
-    public function scopeWithMobileMoney($query)
-    {
-        return $query->whereNotNull('mobile_money_operator')
-                    ->whereNotNull('mobile_money_number');
-    }
-
-    /**
-     * Scope to get preferences with verified Mobile Money.
-     */
-    public function scopeWithVerifiedMobileMoney($query)
-    {
-        return $query->where('mobile_money_verified', true)
-                    ->whereNotNull('mobile_money_operator')
-                    ->whereNotNull('mobile_money_number');
     }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "racine-pos",
+  "version": "1.0.0",
+  "description": "POS Desktop App - Racine by GANDA",
+  "main": "main.js",
+  "homepage": "http://localhost:8000",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "RACINE BY GANDA",
+  "license": "MIT"
+}

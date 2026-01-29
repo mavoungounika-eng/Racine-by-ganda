@@ -24,7 +24,7 @@ class CreatorPayoutAccountingTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->creator = User::factory()->create(['role' => 'creator']);
+        $this->creator = User::factory()->create(['role' => 'createur']);
         $this->actingAs($this->user);
 
         // Seed accounting data
@@ -177,7 +177,7 @@ class CreatorPayoutAccountingTest extends TestCase
     /** @test */
     public function it_tracks_multiple_creators_separately()
     {
-        $creator2 = User::factory()->create(['role' => 'creator']);
+        $creator2 = User::factory()->create(['role' => 'createur']);
 
         // Vente créateur 1
         Order::factory()->create([

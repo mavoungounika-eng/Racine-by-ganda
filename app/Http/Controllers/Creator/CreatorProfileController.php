@@ -28,7 +28,7 @@ class CreatorProfileController extends Controller
         $profile = $user->creatorProfile;
         $completion = $this->completionService->calculateCompletionScore($profile);
         
-        return view('creator.profile.index', compact('user', 'profile', 'completion'));
+        return view('creator.profile.show', compact('user', 'profile', 'completion'));
     }
 
     /**

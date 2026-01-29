@@ -141,7 +141,7 @@ class ProfileController extends Controller
         
         // Pour les créateurs, charger le profil créateur
         $creatorProfile = null;
-        if ($user->isCreator()) {
+        if ($user->hasRole('createur')) {
             $creatorProfile = $user->creatorProfile;
         }
         
@@ -208,7 +208,7 @@ class ProfileController extends Controller
         $user->update($updateData);
 
         // Mise à jour du profil créateur si applicable
-        if ($user->isCreator() && $user->creatorProfile) {
+        if ($user->hasRole('createur') && $user->creatorProfile) {
             $creatorRules = [
                 'brand_name' => 'required|string|max:255',
                 'bio' => 'nullable|string|max:5000',

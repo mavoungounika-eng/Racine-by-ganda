@@ -219,7 +219,7 @@ class GoogleAuthTest extends TestCase
         $googleUser = $this->mockGoogleUser('creator@example.com', 'google_creator', 'Creator User');
         
         // Redirection avec rôle creator
-        $this->get(route('auth.google.redirect', ['role' => 'creator']));
+        $this->get(route('auth.google.redirect', ['role' => 'createur']));
         
         // Callback
         $callbackResponse = $this->get(route('auth.google.callback', [
@@ -279,7 +279,7 @@ class GoogleAuthTest extends TestCase
         $googleUser = $this->mockGoogleUser('conflict@example.com', 'google_conflict', 'Conflict User');
         
         // Redirection avec rôle creator
-        $this->get(route('auth.google.redirect', ['role' => 'creator']));
+        $this->get(route('auth.google.redirect', ['role' => 'createur']));
         
         // Callback - doit refuser
         $callbackResponse = $this->get(route('auth.google.callback', [
@@ -348,7 +348,7 @@ class GoogleAuthTest extends TestCase
         $googleUser = $this->mockGoogleUser('creator@example.com', 'google_creator', 'Creator User');
         
         // Redirection avec rôle creator
-        $this->get(route('auth.google.redirect', ['role' => 'creator']));
+        $this->get(route('auth.google.redirect', ['role' => 'createur']));
         
         // Callback
         $callbackResponse = $this->get(route('auth.google.callback', [
@@ -395,7 +395,7 @@ class GoogleAuthTest extends TestCase
         $googleUser = $this->mockGoogleUser('pending@example.com', 'google_pending', 'Creator User');
         
         // Redirection
-        $this->get(route('auth.google.redirect', ['role' => 'creator']));
+        $this->get(route('auth.google.redirect', ['role' => 'createur']));
         
         // Callback
         $callbackResponse = $this->get(route('auth.google.callback', [

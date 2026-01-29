@@ -30,7 +30,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['code' => '4422', 'label' => 'État - TVA déductible', 'type' => 'asset', 'balance' => 'debit', 'vat' => false, 'parent' => '442'],
             
             ['code' => '467', 'label' => 'Créanciers divers', 'type' => 'liability', 'balance' => 'credit', 'vat' => false, 'parent' => null],
-            ['code' => '4671', 'label' => 'Créateurs marketplace', 'type' => 'liability', 'balance' => 'credit', 'vat' => false, 'parent' => '467'],
+            // ['code' => '4671', 'label' => 'Créateurs marketplace', 'type' => 'liability', 'balance' => 'credit', 'vat' => false, 'parent' => '467'], // DÉSACTIVÉ (SAAS PUR)
             
             // CLASSE 5 - COMPTES DE TRÉSORERIE
             ['code' => '511', 'label' => 'Valeurs à encaisser', 'type' => 'asset', 'balance' => 'debit', 'vat' => false, 'parent' => null],
@@ -64,8 +64,8 @@ class ChartOfAccountsSeeder extends Seeder
             // CLASSE 7 - COMPTES DE PRODUITS
             ['code' => '701', 'label' => 'Ventes de produits', 'type' => 'revenue', 'balance' => 'credit', 'vat' => true, 'parent' => null],
             ['code' => '7011', 'label' => 'Ventes boutique RACINE', 'type' => 'revenue', 'balance' => 'credit', 'vat' => true, 'parent' => '701'],
-            ['code' => '7012', 'label' => 'Ventes marketplace créateurs', 'type' => 'revenue', 'balance' => 'credit', 'vat' => true, 'parent' => '701'],
-            ['code' => '7013', 'label' => 'Commissions marketplace', 'type' => 'revenue', 'balance' => 'credit', 'vat' => false, 'parent' => '701'],
+            // ['code' => '7012', 'label' => 'Ventes marketplace créateurs', 'type' => 'revenue', 'balance' => 'credit', 'vat' => true, 'parent' => '701'], // DÉSACTIVÉ
+            // ['code' => '7013', 'label' => 'Commissions marketplace', 'type' => 'revenue', 'balance' => 'credit', 'vat' => false, 'parent' => '701'], // DÉSACTIVÉ
         ];
 
         foreach ($accounts as $account) {

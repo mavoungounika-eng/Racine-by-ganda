@@ -31,8 +31,8 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'role_id' => null,
             'phone' => fake()->optional()->phoneNumber(),
-            'status' => 'active',
             'is_admin' => false,
+            'status' => 'active',
             'auth_version' => 1, // Default auth_version
         ];
     }

@@ -117,7 +117,7 @@ class FinancialIntentService
      * @throws LedgerException Si l'intent n'est pas dans un état valide
      * @throws \RuntimeException Si impossible d'acquérir le lock
      */
-    public function commitIntent(FinancialIntent $intent, callable $entryCreator): AccountingEntry
+    public function commitIntent(FinancialIntent $intent, callable $entryCreator): ?AccountingEntry
     {
         // 🔒 REDIS MUTEX - Empêche double worker
         $lockKey = 'financial-intent-commit-' . $intent->id;
@@ -145,6 +145,10 @@ class FinancialIntentService
             }
 
             if (!$intent->canProcess()) {
+                // Si déjà skipped, on retourne null
+                if ($intent->status === FinancialIntent::STATUS_SKIPPED) {
+                    return null;
+                }
                 throw new LedgerException("Intent #{$intent->id} ne peut pas être traité (status: {$intent->status})");
             }
 
@@ -163,6 +167,14 @@ class FinancialIntentService
                 try {
                     // Créer l'écriture via le callback
                     $entry = $entryCreator($intent, $this->ledgerService);
+
+                    if ($entry === null) {
+                        $intent->markAsSkipped('SaaS Pur: Internal transaction skipped');
+                        Log::channel('accounting')->info('Intent skipped (SaaS Pur)', [
+                            'intent_id' => $intent->id,
+                        ]);
+                        return null;
+                    }
 
                     // Marquer comme commis
                     $intent->markAsCommitted($entry);

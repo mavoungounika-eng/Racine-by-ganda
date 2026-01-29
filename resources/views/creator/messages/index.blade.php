@@ -63,10 +63,10 @@
         <h2 class="text-2xl font-bold text-[#2C1810]">Boîte de réception</h2>
         
         <div class="flex gap-2">
-            <a href="{{ route('creator.messages.index') }}" class="px-4 py-2 rounded-lg {{ request('filter') != 'unread' ? 'bg-[#2C1810] text-white' : 'bg-white text-[#2C1810] border border-[#E5DDD3]' }}">
+            <a href="{{ route('messages.index') }}" class="px-4 py-2 rounded-lg {{ request('filter') != 'unread' ? 'bg-[#2C1810] text-white' : 'bg-white text-[#2C1810] border border-[#E5DDD3]' }}">
                 Tous
             </a>
-            <a href="{{ route('creator.messages.index', ['filter' => 'unread']) }}" class="px-4 py-2 rounded-lg {{ request('filter') == 'unread' ? 'bg-[#2C1810] text-white' : 'bg-white text-[#2C1810] border border-[#E5DDD3]' }}">
+            <a href="{{ route('messages.index', ['filter' => 'unread']) }}" class="px-4 py-2 rounded-lg {{ request('filter') == 'unread' ? 'bg-[#2C1810] text-white' : 'bg-white text-[#2C1810] border border-[#E5DDD3]' }}">
                 Non lus
             </a>
         </div>
@@ -75,7 +75,7 @@
     @if($conversations->count() > 0)
         <div class="space-y-4">
             @foreach($conversations as $conversation)
-                <a href="{{ route('creator.messages.show', $conversation) }}" class="message-card block p-6 {{ $conversation->getUnreadCountForUser(Auth::id()) > 0 ? 'unread' : '' }}">
+                <a href="{{ route('messages.show', $conversation) }}" class="message-card block p-6 {{ $conversation->getUnreadCountForUser(Auth::id()) > 0 ? 'unread' : '' }}">
                     <div class="flex items-start gap-4">
                         {{-- Avatar --}}
                         @php

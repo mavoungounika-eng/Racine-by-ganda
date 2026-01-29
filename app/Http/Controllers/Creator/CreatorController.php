@@ -13,6 +13,7 @@ use Illuminate\View\View;
 
 class CreatorController extends Controller
 {
+    use \App\Http\Controllers\Auth\Traits\HandlesAuthRedirect;
     /**
      * Afficher le formulaire d'inscription créateur.
      */
@@ -20,9 +21,9 @@ class CreatorController extends Controller
     {
         $user = Auth::user();
         
-        // Si l'utilisateur a déjà un profil créateur, rediriger vers le dashboard
+        // Si l'utilisateur a déjà un profil créateur, rediriger selon le moteur de décision
         if ($user->creatorProfile) {
-            return redirect()->route('creator.dashboard')
+            return redirect($this->getRedirectPath($user))
                 ->with('info', 'Vous avez déjà un profil créateur.');
         }
         
@@ -69,7 +70,7 @@ class CreatorController extends Controller
             $user->save();
         }
 
-        return redirect()->route('creator.dashboard')
+        return redirect($this->getRedirectPath($user))
             ->with('success', 'Votre profil créateur a été créé avec succès !');
     }
 

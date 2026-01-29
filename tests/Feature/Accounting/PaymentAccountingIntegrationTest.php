@@ -131,7 +131,7 @@ class PaymentAccountingIntegrationTest extends TestCase
     /** @test */
     public function it_creates_marketplace_accounting_entry_with_commission()
     {
-        $creator = User::factory()->create(['role' => 'creator']);
+        $creator = User::factory()->create(['role' => 'createur']);
 
         $order = Order::factory()->create([
             'user_id' => $this->user->id,
@@ -143,30 +143,12 @@ class PaymentAccountingIntegrationTest extends TestCase
 
         $order->update(['payment_status' => 'paid']);
 
+        // SaaS Pur: Les ventes créateurs sont comptabilisées via CreatorSaleRecord, pas via le Ledger
         $entry = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->first();
 
-        $this->assertNotNull($entry);
-        $this->assertCount(4, $entry->lines);
-
-        // Ligne 1: Débit Stripe (TTC)
-        $stripeLine = $entry->lines->where('account_code', '5112')->first();
-        $this->assertEquals(118.00, $stripeLine->debit);
-
-        // Ligne 2: Crédit Dette créateur (HT - commission)
-        $creatorLine = $entry->lines->where('account_code', '4671')->first();
-        $this->assertNotNull($creatorLine);
-        $this->assertEquals(85.00, $creatorLine->credit); // 100 HT - 15% commission
-
-        // Ligne 3: Crédit Commission marketplace
-        $commissionLine = $entry->lines->where('account_code', '7013')->first();
-        $this->assertNotNull($commissionLine);
-        $this->assertEquals(15.00, $commissionLine->credit); // 15% de 100 HT
-
-        // Ligne 4: Crédit TVA
-        $vatLine = $entry->lines->where('account_code', '4421')->first();
-        $this->assertEquals(18.00, $vatLine->credit);
+        $this->assertNull($entry, 'SaaS Pur: Aucune entrée comptable ne doit être créée pour une vente créateur.');
     }
 
     /** @test */

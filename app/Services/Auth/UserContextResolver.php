@@ -3,6 +3,7 @@
 namespace App\Services\Auth;
 
 use App\DTOs\Auth\UserContext;
+use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
@@ -107,13 +108,25 @@ class UserContextResolver
     /**
      * Resolve permissions for user
      * 
-     * TODO: Implement proper permission resolution
-     * For now, return empty array
+     * Loads permissions from roleRelation.
      */
     private function resolvePermissions(User $user, string $role): array
     {
-        // Placeholder: implement permission resolution later
-        return [];
+        // Support for super_admin: they technically have all permissions
+        // But for the frozen context, we'll store their explicit permissions 
+        // and handle the bypass in the Gate or hasPermission check.
+        
+        // Ensure roleRelation and permissions are loaded
+        $user->loadMissing('roleRelation.permissions');
+        
+        if (!$user->roleRelation) {
+            return [];
+        }
+
+        return $user->roleRelation->permissions
+            ->pluck('slug')
+            ->unique()
+            ->toArray();
     }
 
     /**
@@ -128,7 +141,7 @@ class UserContextResolver
 
         // Check role-level 2FA requirement
         // Super admins and admins should have 2FA
-        if (in_array($role, ['super_admin', 'admin'], true)) {
+        if (in_array($role, [Role::SUPER_ADMIN, Role::ADMIN], true)) {
             return true;
         }
 

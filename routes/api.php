@@ -32,5 +32,30 @@ Route::middleware(['api', 'throttle:webhooks'])->group(function () {
         ->name('api.webhooks.stripe.creator-subscriptions');
 });
 
+// ==========================================
+// Testing Routes (Idempotency)
+// ==========================================
+if (app()->environment('testing')) {
+    Route::get('/test-idempotency', function () {
+        return response()->json(['success' => true]);
+    })->name('api.test.idempotency.get');
 
+    Route::post('/test-idempotency', function () {
+        return response()->json(['success' => true, 'timestamp' => now()->toDateTimeString()]);
+    })->middleware(\App\Http\Middleware\CheckIdempotency::class)
+     ->name('api.test.idempotency.post');
+}
 
+// ==========================================
+// Admin API Routes — Reports POS
+// ==========================================
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    // POS Reports
+    Route::prefix('pos/reports')->group(function () {
+        Route::get('/daily', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'daily'])->name('api.admin.pos.reports.daily');
+        Route::get('/period', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'period'])->name('api.admin.pos.reports.period');
+        Route::get('/discrepancies', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'discrepancies'])->name('api.admin.pos.reports.discrepancies');
+        Route::get('/export', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'export'])->name('api.admin.pos.reports.export');
+        Route::get('/dashboard', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'dashboard'])->name('api.admin.pos.reports.dashboard');
+    });
+});

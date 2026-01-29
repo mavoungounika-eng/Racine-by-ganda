@@ -20,9 +20,9 @@ class MonetbilService
     protected string $returnUrl;
     protected ?array $allowedIps;
 
-    public function __construct()
+    public function __construct(?array $config = null)
     {
-        $config = config('services.monetbil');
+        $config = $config ?? config('services.monetbil');
         
         $this->serviceKey = $config['service_key'] ?? '';
         $this->serviceSecret = $config['service_secret'] ?? '';
@@ -34,6 +34,16 @@ class MonetbilService
         $this->allowedIps = !empty($config['allowed_ips']) 
             ? explode(',', $config['allowed_ips']) 
             : null;
+    }
+
+    /**
+     * Configurer dynamiquement les clés pour un paiement spécifique (SaaS Pur)
+     */
+    public function setServiceKeys(string $key, string $secret): self
+    {
+        $this->serviceKey = $key;
+        $this->serviceSecret = $secret;
+        return $this;
     }
 
     /**
@@ -122,16 +132,14 @@ class MonetbilService
     /**
      * Vérifier la signature d'une notification Monetbil
      * 
-     * RBG-P0-010 : Signature obligatoire en production
-     * - Si signature absente en production => retourne false
-     * - Si signature invalide => retourne false
-     * - Utilise hash_equals() pour comparaison timing-safe
-     *
      * @param array $params Paramètres de la notification
+     * @param string|null $dynamicSecret Secret spécifique au créateur (SaaS Pur)
      * @return bool True si la signature est valide
      */
-    public function verifySignature(array $params): bool
+    public function verifySignature(array $params, ?string $dynamicSecret = null): bool
     {
+        $secretToUse = $dynamicSecret ?? $this->serviceSecret;
+
         // Si pas de signature, refuser en production
         if (!isset($params['sign'])) {
             $isProduction = app()->environment('production') || config('app.env') === 'production';
@@ -158,7 +166,7 @@ class MonetbilService
 
         // Construire la chaîne à hasher
         $values = array_values($params);
-        $stringToHash = $this->serviceSecret . implode('', $values);
+        $stringToHash = $secretToUse . implode('', $values);
 
         // Calculer le hash MD5
         $calculatedHash = md5($stringToHash);
@@ -169,7 +177,7 @@ class MonetbilService
         if (!$isValid) {
             Log::warning('Monetbil signature verification failed', [
                 'reason' => 'invalid_signature',
-                // Ne jamais logger le secret ou la signature complète
+                'using_dynamic_secret' => !empty($dynamicSecret),
             ]);
         }
 

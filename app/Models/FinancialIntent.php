@@ -76,6 +76,7 @@ class FinancialIntent extends Model
     public const STATUS_COMMITTED = 'committed';
     public const STATUS_REVERSED = 'reversed';
     public const STATUS_FAILED = 'failed';
+    public const STATUS_SKIPPED = 'skipped'; // Pour SaaS Pur
 
     /**
      * Types d'intent
@@ -187,6 +188,18 @@ class FinancialIntent extends Model
         $this->update([
             'status' => self::STATUS_FAILED,
             'last_error' => $error,
+        ]);
+    }
+
+    /**
+     * Marquer comme ignoré (SaaS Pur)
+     */
+    public function markAsSkipped(string $reason): void
+    {
+        $this->update([
+            'status' => self::STATUS_SKIPPED,
+            'metadata' => array_merge($this->metadata ?? [], ['skip_reason' => $reason]),
+            'committed_at' => now(), // On considère que c'est traité
         ]);
     }
 

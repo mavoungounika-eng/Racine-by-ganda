@@ -72,3 +72,4 @@ php artisan tinker
 
 
 
+

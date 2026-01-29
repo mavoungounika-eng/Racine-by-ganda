@@ -72,5 +72,9 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+
+        <!-- Stripe Mock -->
+        <env name="STRIPE_KEY" value="pk_test_mock_key_for_testing_purposes"/>
+        <env name="STRIPE_SECRET" value="sk_test_mock_secret_key_for_testing_purposes_long_enough"/>
     </php>
 </phpunit>

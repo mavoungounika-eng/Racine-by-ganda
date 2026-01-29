@@ -2,11 +2,18 @@
 
 namespace App\Providers;
 
-use App\Models\Category;
+use App\Models\CreatorStripeAccount;
+use App\Models\CreatorSubscription;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Role;
+use App\Models\Category;
+use App\Models\Conversation;
 use App\Policies\CategoryPolicy;
+use App\Policies\ConversationPolicy;
+use App\Policies\CreatorStripeAccountPolicy;
+use App\Policies\CreatorSubscriptionPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\UserPolicy;
@@ -25,6 +32,9 @@ class AuthServiceProvider extends ServiceProvider
         Order::class => OrderPolicy::class,
         User::class => UserPolicy::class,
         Category::class => CategoryPolicy::class,
+        Conversation::class => ConversationPolicy::class,
+        CreatorStripeAccount::class => CreatorStripeAccountPolicy::class,
+        CreatorSubscription::class => CreatorSubscriptionPolicy::class,
     ];
 
     /**
@@ -104,24 +114,34 @@ class AuthServiceProvider extends ServiceProvider
         // GATES HORS RBAC STAFF (NE PAS MODIFIER)
         // =============================================
         Gate::define('access-super-admin', function (User $user) {
-            return $user->getRoleSlug() === 'super_admin';
+            return $user->getRoleSlug() === Role::SUPER_ADMIN;
         });
 
         Gate::define('access-createur', function (User $user) {
             $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin', 'createur', 'creator']);
+            return in_array($roleSlug, [
+                Role::SUPER_ADMIN,
+                Role::ADMIN,
+                Role::CREATEUR,
+            ]);
         });
 
         Gate::define('access-client', function (User $user) {
             $roleSlug = $user->getRoleSlug();
-            return in_array($roleSlug, ['super_admin', 'admin', 'staff', 'createur', 'creator', 'client']);
+            return in_array($roleSlug, [
+                Role::SUPER_ADMIN,
+                Role::ADMIN,
+                Role::STAFF,
+                Role::CREATEUR,
+                Role::CLIENT,
+            ]);
         });
 
         // =============================================
         // SUPER ADMIN BYPASS (CRITIQUE)
         // =============================================
         Gate::before(function (User $user, string $ability) {
-            if ($user->getRoleSlug() === 'super_admin') {
+            if ($user->getRoleSlug() === Role::SUPER_ADMIN) {
                 return true; // Super Admin a tous les droits
             }
         });

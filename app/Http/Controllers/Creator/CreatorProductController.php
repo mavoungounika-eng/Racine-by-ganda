@@ -29,6 +29,8 @@ class CreatorProductController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Product::class);
+
         $user = Auth::user();
         
         $query = Product::where('user_id', $user->id);

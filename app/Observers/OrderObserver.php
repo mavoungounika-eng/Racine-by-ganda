@@ -15,16 +15,12 @@ class OrderObserver
 {
     protected NotificationService $notificationService;
     protected DashboardCacheService $cacheService;
-    protected StockReservationService $stockReservationService;
-
     public function __construct(
         NotificationService $notificationService,
-        DashboardCacheService $cacheService,
-        StockReservationService $stockReservationService
+        DashboardCacheService $cacheService
     ) {
         $this->notificationService = $notificationService;
         $this->cacheService = $cacheService;
-        $this->stockReservationService = $stockReservationService;
     }
 
     /**
@@ -37,26 +33,19 @@ class OrderObserver
      */
     public function created(Order $order): void
     {
-        // ✅ CORRECTION 5 : DÉCRÉMENTER LE STOCK IMMÉDIATEMENT POUR TOUS LES TYPES DE PAIEMENT
-        // Stratégie : Décrément immédiat + rollback si paiement échoue
-        try {
-            // S'assurer que les items sont chargés avant décrément
-            if (!$order->relationLoaded('items')) {
-                $order->load('items');
-            }
-            $stockService = app(\Modules\ERP\Services\StockService::class);
-            $stockService->decrementFromOrder($order);
-            \Log::info("Stock decremented immediately for Order #{$order->id} (payment_method: {$order->payment_method})");
-        } catch (\Throwable $e) {
-            \Log::error('Stock decrement failed for order', [
-                'order_id' => $order->id,
-                'user_id' => $order->user_id,
-                'payment_method' => $order->payment_method,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            // On continue même si décrément échoue (notification, email, etc.)
+        // ✅ RBG-P0-01 : DÉCRÉMENTER LE STOCK IMMÉDIATEMENT POUR TOUTES LES TYPES DE PAIEMENT
+        // On n'enveloppe plus dans un try-catch permissif pour permettre le rollback de la transaction
+        // si le stock est devenu insuffisant entre la validation et la création.
+        
+        // S'assurer que les items sont chargés avant décrément
+        if (!$order->relationLoaded('items')) {
+            $order->load('items');
         }
+        
+        $stockService = app(\Modules\ERP\Services\StockService::class);
+        $stockService->decrementFromOrder($order);
+        
+        \Log::info("Stock decremented immediately for Order #{$order->id} (payment_method: {$order->payment_method})");
 
         // Envoyer email de confirmation
         if ($order->customer_email) {
@@ -139,8 +128,7 @@ class OrderObserver
             $stockService = app(\Modules\ERP\Services\StockService::class);
             $stockService->restockFromOrder($order);
             
-            // ✅ Libérer la réservation stock
-            $this->releaseStockReservation($order);
+            // ✅ RBG-P0-01 : Le stock est réintégré via restockFromOrder au-dessus
         }
 
         // Envoyer email de mise à jour de statut
@@ -212,8 +200,7 @@ class OrderObserver
         if ($order->payment_status === 'paid') {
             // ✅ CORRECTION 5 : Le stock a déjà été décrémenté à la création
             // StockService vérifie automatiquement si un mouvement existe déjà (protection double décrément)
-            // ✅ CONFIRMER LA RÉSERVATION (décrémenter stock réel)
-            $this->confirmStockReservation($order);
+            // ✅ RBG-P0-01 : Le stock a déjà été décrémenté à la création (created())
 
             // ✅ POS AUDIT-READY: Skip PaymentRecorded for POS orders
             // POS orders have user_id = null and create their own Intents via listeners
@@ -256,57 +243,4 @@ class OrderObserver
         }
     }
 
-    /**
-     * Confirmer la réservation stock (paiement confirmé)
-     */
-    protected function confirmStockReservation(Order $order): void
-    {
-        try {
-            $items = $order->items->map(function ($item) {
-                return [
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                ];
-            })->toArray();
-
-            $this->stockReservationService->confirm($items);
-            
-            \Log::info('Stock reservation confirmed', [
-                'order_id' => $order->id,
-                'items_count' => count($items),
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to confirm stock reservation', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Libérer la réservation stock (annulation)
-     */
-    protected function releaseStockReservation(Order $order): void
-    {
-        try {
-            $items = $order->items->map(function ($item) {
-                return [
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                ];
-            })->toArray();
-
-            $this->stockReservationService->release($items);
-            
-            \Log::info('Stock reservation released', [
-                'order_id' => $order->id,
-                'items_count' => count($items),
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to release stock reservation', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
 }

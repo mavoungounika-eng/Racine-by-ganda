@@ -21,10 +21,12 @@ use Symfony\Component\HttpFoundation\Response;
 class MonetbilController extends Controller
 {
     protected MonetbilService $monetbilService;
+    protected \App\Services\SaaSCheckoutService $saasCheckoutService;
 
-    public function __construct(MonetbilService $monetbilService)
+    public function __construct(MonetbilService $monetbilService, \App\Services\SaaSCheckoutService $saasCheckoutService)
     {
         $this->monetbilService = $monetbilService;
+        $this->saasCheckoutService = $saasCheckoutService;
     }
 
     /**
@@ -110,26 +112,15 @@ class MonetbilController extends Controller
                 ]
             );
 
-            // Préparer le payload pour Monetbil
-            $user = $lockedOrder->user;
-            $customerName = $lockedOrder->customer_name ?? ($user ? $user->name : '');
-            $nameParts = explode(' ', $customerName, 2);
-            $firstName = $nameParts[0] ?? '';
-            $lastName = $nameParts[1] ?? '';
+            // ✅ SAAS PUR : Configurer les clés dynamiques (RACINE ou Créateur)
+            $paymentConfig = $this->saasCheckoutService->getPaymentConfig($lockedOrder->creator_id);
             
-            $payload = [
-                'amount' => $lockedOrder->total_amount,
-                'currency' => config('services.monetbil.currency', 'XAF'),
-                'country' => config('services.monetbil.country', 'CG'),
-                'payment_ref' => $paymentRef,
-                'item_ref' => 'ORDER-' . $lockedOrder->id,
-                'user' => $user ? $user->id : null,
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'email' => $lockedOrder->customer_email ?? ($user ? $user->email : ''),
-                'notify_url' => config('services.monetbil.notify_url'),
-                'return_url' => config('services.monetbil.return_url') . '?order=' . $lockedOrder->id,
-            ];
+            if (empty($paymentConfig['momo_api_key'])) {
+                return redirect()->route('checkout.index')->with('error', 'La passerelle du vendeur n\'est pas configurée.');
+            }
+
+            // Injecter les clés dynamiques dans le service
+            $this->monetbilService->setServiceKeys($paymentConfig['momo_provider'], $paymentConfig['momo_api_key']);
 
             // Créer l'URL de paiement
             $paymentUrl = $this->monetbilService->createPaymentUrl($payload);
@@ -219,40 +210,33 @@ class MonetbilController extends Controller
                 return response()->json(['message' => 'Unauthorized IP'], 403);
             }
 
-            // 2. Vérification de la signature
+            // 2. Identification du créateur et vérification de la signature
+            // Lookup order par payment_ref
+            $transactionTemp = PaymentTransaction::where('payment_ref', $params['payment_ref'] ?? '')->first();
+            $order = $transactionTemp ? Order::find($transactionTemp->order_id) : null;
+            
             $isProduction = app()->environment('production') || config('app.env') === 'production';
             $hasSignature = isset($params['sign']);
             
             if ($isProduction && !$hasSignature) {
-                Log::error('Monetbil notification: Missing signature in production', [
-                    'ip' => $ip,
-                    'route' => $route,
-                    'user_agent' => $userAgent,
-                    'reason' => 'missing_signature',
-                ]);
-
                 return response()->json(['message' => 'Missing signature'], 401);
             }
 
-            if (!$this->monetbilService->verifySignature($params)) {
+            // ✅ SAAS PUR : Récupérer le secret dynamique du créateur pour vérifier la signature
+            $dynamicSecret = null;
+            if ($order) {
+                 $paymentConfig = $this->saasCheckoutService->getPaymentConfig($order->creator_id);
+                 $dynamicSecret = $paymentConfig['momo_api_key'] ?? null;
+            }
+
+            if (!$this->monetbilService->verifySignature($params, $dynamicSecret)) {
                 if ($isProduction) {
                     Log::error('Monetbil notification: Invalid signature', [
-                        'ip' => $ip,
-                        'route' => $route,
-                        'user_agent' => $userAgent,
-                        'reason' => 'invalid_signature',
-                        'has_signature' => $hasSignature,
+                        'payment_ref' => $params['payment_ref'] ?? 'unknown',
+                        'using_dynamic_secret' => !empty($dynamicSecret),
                     ]);
-
                     return response()->json(['message' => 'Invalid signature'], 401);
                 }
-                
-                // En développement, continuer avec warning
-                Log::warning('Monetbil notification: Invalid signature in development (continuing)', [
-                    'ip' => $ip,
-                    'route' => $route,
-                    'reason' => 'invalid_signature_dev',
-                ]);
             }
 
             // 3. Récupérer payment_ref (obligatoire)
@@ -548,3 +532,4 @@ class MonetbilController extends Controller
         }
     }
 }
+

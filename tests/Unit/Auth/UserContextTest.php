@@ -96,7 +96,7 @@ class UserContextTest extends TestCase
     public function it_identifies_creators()
     {
         $createur = $this->createContext(role: 'createur');
-        $creator = $this->createContext(role: 'creator');
+        $creator = $this->createContext(role: 'createur');
         $client = $this->createContext(role: 'client');
 
         $this->assertTrue($createur->isCreator());

@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use App\Models\PaymentPreference;
 
 class CreatorSettingsController extends Controller
 {
@@ -72,10 +73,21 @@ class CreatorSettingsController extends Controller
     public function payment(): View
     {
         $user = Auth::user();
-        $profile = $user->creatorProfile()->with('stripeAccount')->first();
+        $profile = $user->creatorProfile;
         $stripeAccount = $profile->stripeAccount;
         
-        return view('creator.settings.payment', compact('user', 'profile', 'stripeAccount'));
+        // Récupérer ou créer les préférences de versement
+        $preferences = PaymentPreference::firstOrCreate(
+            ['creator_profile_id' => $profile->id],
+            [
+                'payout_schedule' => 'automatic',
+                'minimum_payout_threshold' => 5000,
+                'notify_email' => true,
+                'tax_country' => 'CG',
+            ]
+        );
+        
+        return view('creator.settings.payment', compact('user', 'profile', 'stripeAccount', 'preferences'));
     }
 
     /**
@@ -85,12 +97,13 @@ class CreatorSettingsController extends Controller
     {
         $user = Auth::user();
         $profile = $user->creatorProfile;
+        $preferences = PaymentPreference::where('creator_profile_id', $profile->id)->first();
 
         $validated = $request->validate([
             'payout_method' => ['required', 'in:mobile_money,bank_transfer'],
-            'mobile_money_number' => ['required_if:payout_method,mobile_money', 'nullable', 'string'],
+            'mobile_money_number' => ['required_if:payout_method,mobile_money', 'nullable', 'string', 'regex:/^[0-9]{9,14}$/'],
             'mobile_money_provider' => ['required_if:payout_method,mobile_money', 'nullable', 'string', 'in:orange,mtn,moov,wave'],
-            // Champs banque ignorés pour V1.5
+            'minimum_payout_threshold' => ['nullable', 'integer', 'min:5000'],
         ]);
 
         $payoutDetails = $profile->payout_details ?? [];
@@ -100,6 +113,15 @@ class CreatorSettingsController extends Controller
                 'number' => $validated['mobile_money_number'],
                 'provider' => $validated['mobile_money_provider'],
             ];
+            
+            // Synchronisation avec PaymentPreference
+            if ($preferences) {
+                $preferences->update([
+                    'mobile_money_number' => $validated['mobile_money_number'],
+                    'mobile_money_operator' => $validated['mobile_money_provider'],
+                    'minimum_payout_threshold' => $request->get('minimum_payout_threshold', $preferences->minimum_payout_threshold),
+                ]);
+            }
         }
 
         $profile->update([
@@ -108,7 +130,7 @@ class CreatorSettingsController extends Controller
         ]);
 
         return redirect()->route('creator.settings.payment')
-            ->with('success', 'Préférences de paiement mises à jour.');
+            ->with('success', 'Préférences de paiement mises à jour avec succès.');
     }
 
     /**

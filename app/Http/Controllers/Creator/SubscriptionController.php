@@ -33,8 +33,8 @@ class SubscriptionController extends Controller
         $this->capabilityService = $capabilityService;
         $this->analyticsService = $analyticsService;
         $this->checkoutService = $checkoutService;
-        $this->middleware(['auth', 'role.creator']);
     }
+
 
     /**
      * Afficher la page de choix/upgrade de plan.

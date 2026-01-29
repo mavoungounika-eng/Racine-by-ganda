@@ -1,233 +1,285 @@
 @extends('layouts.creator')
 
-@section('title', 'Mes Finances - RACINE BY GANDA')
-@section('page-title', 'Mes Finances')
+@section('title', 'Analytique & Conformité - RACINE BY GANDA')
+@section('page-title', 'Mes Finances (Analytique)')
 
 @push('styles')
 <style>
-    .premium-card {
+    .finance-stat-card {
         background: white;
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(212, 165, 116, 0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .premium-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
-        border-color: rgba(212, 165, 116, 0.2);
-    }
-    
-    .stat-card-premium {
-        background: linear-gradient(135deg, white 0%, #faf8f5 100%);
         border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(212, 165, 116, 0.15);
+        padding: 1.5rem;
+        border: 1px solid #F0EBE5;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+        height: 100%;
         position: relative;
         overflow: hidden;
     }
-    
-    .stat-card-premium::before {
+
+    .finance-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--racine-orange);
+    }
+
+    .finance-stat-card::after {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--stat-color-1), var(--stat-color-2));
-    }
-    
-    .stat-card-premium:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    
-    .premium-select {
-        background: white;
-        border: 2px solid #E5DDD3;
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
-        color: #2C1810;
-        transition: all 0.3s;
-    }
-    
-    .premium-select:focus {
-        outline: none;
-        border-color: #D4A574;
-        box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
-    }
-    
-    .premium-table {
         width: 100%;
+        height: 4px;
+        background: var(--stat-gradient, var(--racine-orange));
     }
-    
-    .premium-table thead {
-        background: linear-gradient(135deg, #F8F6F3 0%, #E5DDD3 100%);
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #8B7355;
+        margin-bottom: 0.5rem;
+        display: block;
     }
-    
-    .premium-table th {
-        padding: 1.25rem 1rem;
-        text-align: left;
+
+    .stat-value {
+        font-family: 'Libre Baskerville', serif;
+        font-weight: 700;
+        color: var(--racine-black);
+        margin-bottom: 0;
+    }
+
+    .stat-currency {
+        font-size: 0.9rem;
+        color: #8B7355;
+        font-weight: 600;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .bg-ca { --stat-gradient: linear-gradient(90deg, #ED5F1E, #FFB800); }
+    .bg-sales { --stat-gradient: linear-gradient(90deg, #160D0C, #4A3B39); }
+    .bg-kyc { --stat-gradient: linear-gradient(90deg, #D4A574, #A67C52); }
+
+    .kyc-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
         font-weight: 700;
         font-size: 0.75rem;
-        color: #8B7355;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        border-bottom: 2px solid #D4A574;
     }
     
-    .premium-table td {
-        padding: 1.5rem 1rem;
-        border-bottom: 1px solid #F8F6F3;
-        color: #2C1810;
-    }
-    
-    .premium-table tbody tr {
-        transition: all 0.2s;
-    }
-    
-    .premium-table tbody tr:hover {
-        background: linear-gradient(90deg, rgba(212, 165, 116, 0.05) 0%, transparent 100%);
-        transform: scale(1.01);
-    }
+    .kyc-verified { background: #DCFCE7; color: #15803D; }
+    .kyc-pending { background: #FEF3C7; color: #D97706; }
+    .kyc-incomplete { background: #FEE2E2; color: #B91C1C; }
 </style>
 @endpush
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    {{-- Filtre période --}}
-    <div class="premium-card mb-8">
-        <form method="GET" class="flex items-center gap-4">
-            <label class="text-sm font-semibold text-[#2C1810]">Période:</label>
-            <select name="period" 
-                    onchange="this.form.submit()"
-                    class="premium-select">
-                <option value="all" {{ $period === 'all' ? 'selected' : '' }}>Toutes les périodes</option>
-                <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Ce mois-ci</option>
-                <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Cette année</option>
-            </select>
-        </form>
-    </div>
+<div class="container-fluid py-4">
+    
+    {{-- Navigation Unifiée --}}
+    @include('creator.partials.settings-nav')
 
-    {{-- Cartes récapitulatives --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {{-- Chiffre d'affaires brut --}}
-        <div class="stat-card-premium" style="--stat-color-1: #ED5F1E; --stat-color-2: #FFB800;">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-2 font-semibold">Chiffre d'affaires brut</p>
-                    <p class="text-4xl font-bold text-[#ED5F1E]" style="font-family: 'Playfair Display', serif;">{{ number_format($grossRevenue, 0, ',', ' ') }}</p>
-                    <p class="text-sm text-[#8B7355] mt-1">FCFA</p>
-                </div>
-                <div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-[#ED5F1E] to-[#FFB800] flex items-center justify-center shadow-lg">
-                    <i class="fas fa-chart-line text-white text-3xl"></i>
-                </div>
-            </div>
-            <p class="text-xs text-[#8B7355]">Total des ventes (période sélectionnée)</p>
-        </div>
-
-        {{-- Commission RACINE --}}
-        <div class="stat-card-premium" style="--stat-color-1: #F59E0B; --stat-color-2: #D97706;">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-2 font-semibold">Commission RACINE (20%)</p>
-                    <p class="text-4xl font-bold text-[#F59E0B]" style="font-family: 'Playfair Display', serif;">{{ number_format($commission, 0, ',', ' ') }}</p>
-                    <p class="text-sm text-[#8B7355] mt-1">FCFA</p>
-                </div>
-                <div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center shadow-lg">
-                    <i class="fas fa-percent text-white text-3xl"></i>
-                </div>
-            </div>
-            <p class="text-xs text-[#8B7355]">Commission de la plateforme</p>
-        </div>
-
-        {{-- Net créateur --}}
-        <div class="stat-card-premium border-2 border-[#22C55E]/30" style="--stat-color-1: #22C55E; --stat-color-2: #16A34A;">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-2 font-semibold">Net créateur</p>
-                    <p class="text-4xl font-bold text-[#22C55E]" style="font-family: 'Playfair Display', serif;">{{ number_format($netRevenue, 0, ',', ' ') }}</p>
-                    <p class="text-sm text-[#8B7355] mt-1">FCFA</p>
-                </div>
-                <div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-[#22C55E] to-[#16A34A] flex items-center justify-center shadow-lg">
-                    <i class="fas fa-wallet text-white text-3xl"></i>
-                </div>
-            </div>
-            <p class="text-xs text-[#8B7355]">Montant après commission</p>
-        </div>
-    </div>
-
-    {{-- Statistiques globales --}}
-    <div class="premium-card mb-8">
-        <h3 class="text-xl font-bold text-[#2C1810] mb-6" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-chart-bar text-[#ED5F1E] mr-2"></i>
-            Statistiques globales (toutes périodes)
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="p-4 bg-gradient-to-br from-[#F8F6F3] to-white rounded-xl border border-[#E5DDD3]">
-                <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-2 font-semibold">CA Brut total</p>
-                <p class="text-3xl font-bold text-[#ED5F1E]" style="font-family: 'Playfair Display', serif;">{{ number_format($allTimeStats['gross'], 0, ',', ' ') }} F</p>
-            </div>
-            <div class="p-4 bg-gradient-to-br from-[#F8F6F3] to-white rounded-xl border border-[#E5DDD3]">
-                <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-2 font-semibold">Commissions totales</p>
-                <p class="text-3xl font-bold text-[#F59E0B]" style="font-family: 'Playfair Display', serif;">{{ number_format($allTimeStats['commission'], 0, ',', ' ') }} F</p>
-            </div>
-            <div class="p-4 bg-gradient-to-br from-[#F8F6F3] to-white rounded-xl border border-[#E5DDD3]">
-                <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-2 font-semibold">Net total</p>
-                <p class="text-3xl font-bold text-[#22C55E]" style="font-family: 'Playfair Display', serif;">{{ number_format($allTimeStats['net'], 0, ',', ' ') }} F</p>
+    {{-- Header d'information SaaS --}}
+    <div class="alert alert-info border-0 shadow-sm rounded-lg mb-4" style="background: #F0F7FF; color: #005691;">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle fa-2x mr-3"></i>
+            <div>
+                <h6 class="font-weight-bold mb-1">Modèle SaaS Pur : Pas de gestion de fonds tiers</h6>
+                <p class="mb-0 small">RACINE ne prélève aucune commission. Ces chiffres représentent votre volume d'affaires direct encaissé via vos propres passerelles (Stripe/MoMo).</p>
             </div>
         </div>
     </div>
 
-    {{-- Historique des commandes payées --}}
-    <div class="premium-card overflow-hidden">
-        <div class="pb-6 mb-6 border-b-2 border-[#E5DDD3]">
-            <h3 class="text-xl font-bold text-[#2C1810]" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-history text-[#ED5F1E] mr-2"></i>
-                Dernières commandes payées
-            </h3>
+    {{-- Cartes de Statistiques Analytiques --}}
+    <div class="row mb-5">
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="finance-stat-card bg-ca">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label">Volume d'Affaire (Brut)</span>
+                        <h2 class="stat-value h1">{{ number_format($metrics['gross_revenue'], 0, ',', ' ') }}</h2>
+                        <span class="stat-currency">FCFA</span>
+                    </div>
+                    <div class="stat-icon" style="background: #FFF7ED; color: #ED5F1E;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="overflow-x-auto">
-            <table class="premium-table">
-                <thead>
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="finance-stat-card bg-sales">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label">Nombre de Ventes</span>
+                        <h2 class="stat-value h1">{{ $metrics['sales_count'] }}</h2>
+                        <span class="stat-currency">Transactions Fulfilled</span>
+                    </div>
+                    <div class="stat-icon" style="background: #F3F4F6; color: #111827;">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="finance-stat-card bg-kyc">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label">Statut Conformité</span>
+                        <div class="mt-2">
+                            <span class="kyc-badge kyc-{{ $kycStatus['status'] }}">
+                                {{ strtoupper($kycStatus['status']) }}
+                            </span>
+                        </div>
+                        <small class="text-muted d-block mt-2">Droit d'usage plateforme</small>
+                    </div>
+                    <div class="stat-icon" style="background: #FFFBEB; color: #D4A574;">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {{-- Section KYC Contractuel --}}
+        <div class="col-lg-5 mb-4">
+            <div class="creator-card h-100 border-0 shadow-lg">
+                <div class="card-header bg-dark py-3 px-4">
+                    <h4 class="h5 font-weight-bold text-white mb-0">
+                        <i class="fas fa-file-contract mr-2"></i> Documents Contractuels (KYC)
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="small text-muted mb-4">Pour maintenir votre boutique active, vous devez soumettre vos documents d'identité et fiscaux.</p>
+                    
+                    <ul class="list-group list-group-flush mb-4">
+                        @foreach(['identity_card' => 'Pièce d\'identité (CNI/Passeport)', 'registration_certificate' => 'RCCM / Certificat', 'tax_id' => 'NIU (Numéro Fiscal)'] as $key => $label)
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <i class="fas fa-file-alt text-muted mr-2"></i> {{ $label }}
+                            </div>
+                            @if(in_array($key, $kycStatus['missing_documents']))
+                                <span class="badge badge-danger">Manquant</span>
+                            @else
+                                <span class="badge badge-success">Soumis</span>
+                            @endif
+                        </li>
+                        @endforeach
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="font-weight-bold mb-3">Soumettre un nouveau document</h6>
+                    <form action="{{ route('creator.finances.kyc-submit') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="form-group">
+                            <select name="document_type" class="form-control" required>
+                                <option value="">Type de document...</option>
+                                <option value="identity_card">Pièce d'Identité</option>
+                                <option value="registration_certificate">RCCM / Enregistrement</option>
+                                <option value="tax_id">NIU / Fiscalité</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-file">
+                                <input type="file" name="file" class="custom-file-input" id="kycFile" required>
+                                <label class="custom-file-label" for="kycFile">Choisir le fichier (PDF, JPG, PNG)</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark btn-block font-weight-bold">
+                            <i class="fas fa-upload mr-2"></i> ENVOYER POUR VÉRIFICATION
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Top Produits (Analytique) --}}
+        <div class="col-lg-7 mb-4">
+            <div class="creator-card h-100 border-0 shadow-lg">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h4 class="h5 font-weight-bold mb-0" style="color: var(--racine-black); font-family: 'Libre Baskerville', serif;">
+                        <i class="fas fa-trophy text-orange mr-2"></i> Top Produits (Volume Ventes)
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr class="text-muted small text-uppercase">
+                                    <th>Produit</th>
+                                    <th class="text-right">Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($metrics['top_products'] as $product)
+                                <tr class="border-bottom">
+                                    <td class="py-3 font-weight-bold">{{ $product->product_name }}</td>
+                                    <td class="py-3 text-right">
+                                        <span class="badge badge-pill badge-light px-3 py-2 font-weight-bold">
+                                            {{ $product->qty }} ventes
+                                        </span>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="2" class="text-center py-4 text-muted mt-4">
+                                        Pas encore de données de vente suffisantes.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Historique Analytique --}}
+    <div class="creator-card border-0 shadow-lg overflow-hidden mt-4">
+        <div class="card-header bg-dark py-3 px-4">
+            <h4 class="h5 font-weight-bold text-white mb-0">
+                <i class="fas fa-history mr-2"></i> Dernières Ventes Fulfilled (Analytique)
+            </h4>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <th>N° Commande</th>
-                        <th>Date</th>
-                        <th>CA Brut</th>
-                        <th>Commission</th>
-                        <th>Net</th>
+                        <th>Commande</th>
+                        <th>Date de remise</th>
+                        <th>Lieu (POS)</th>
+                        <th>Méthode Paiement</th>
+                        <th class="text-right">Montant Brut</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($recentPaidOrders as $order)
+                    @forelse($recentSales as $sale)
                     <tr>
-                        <td>
-                            <p class="font-bold text-[#2C1810]">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</p>
-                        </td>
-                        <td>
-                            <p class="text-[#8B7355] font-medium">{{ $order->created_at->format('d/m/Y') }}</p>
-                        </td>
-                        <td>
-                            <p class="font-bold text-[#ED5F1E] text-lg">{{ number_format($order->creator_gross, 0, ',', ' ') }} F</p>
-                        </td>
-                        <td>
-                            <p class="font-semibold text-[#F59E0B]">{{ number_format($order->creator_commission, 0, ',', ' ') }} F</p>
-                        </td>
-                        <td>
-                            <p class="font-bold text-[#22C55E] text-lg">{{ number_format($order->creator_net, 0, ',', ' ') }} F</p>
-                        </td>
+                        <td class="font-weight-bold">#{{ str_pad($sale->order_id, 6, '0', STR_PAD_LEFT) }}</td>
+                        <td>{{ $sale->fulfilled_at ? $sale->fulfilled_at->format('d/m/Y H:i') : 'En attente' }}</td>
+                        <td>{{ $sale->pickup_location }}</td>
+                        <td><span class="badge badge-info">{{ $sale->payment_method }}</span></td>
+                        <td class="text-right font-weight-bold">{{ number_format($sale->gross_amount, 0, ',', ' ') }} F</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="py-12 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <i class="fas fa-wallet text-5xl text-[#8B7355]"></i>
-                                <p class="text-xl font-bold text-[#2C1810]">Aucune commande payée pour le moment</p>
-                                <p class="text-[#8B7355]">Vos commandes payées apparaîtront ici</p>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">Aucun enregistrement de vente trouvé</h5>
                             </div>
                         </td>
                     </tr>

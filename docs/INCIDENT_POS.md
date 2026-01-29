@@ -274,6 +274,20 @@ Cette convention permet:
 
 ---
 
+## 📞 CONTACTS ESCALADE — À COMPLÉTER AVANT PRODUCTION
+
+| Rôle | Nom | Email | Téléphone | Disponibilité |
+|------|-----|-------|-----------|--------------|
+
+| **Responsable Magasin** | [À compléter] | [À compléter] | [À compléter] | Heures ouverture |
+| **Lead Dev** | [NIKA DIGITAL HUB] | [nikadigitalhub1@gmail.com] | [+242 06 832 52 86] | 24/7 |
+| **DBA** | [À compléter] | [À compléter] | [À compléter] | 24/7 si critique |
+| **Escalade** | [Manager/CTO] | [À compléter] | [À compléter] | 24/7 escalade |
+
+**⚠️ TEMPLATE À REMPLIR AVANT TOUTE MISE EN PRODUCTION**
+
+---
+
 **Version:** 1.0.0  
 **Dernière mise à jour:** 2026-01-06  
 **Propriétaire:** Équipe Technique RACINE BY GANDA

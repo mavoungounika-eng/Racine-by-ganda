@@ -94,7 +94,7 @@
 <div class="max-w-5xl mx-auto px-4 py-4">
     
     <div class="mb-4">
-        <a href="{{ route('creator.messages.index') }}" class="text-[#ED5F1E] hover:underline flex items-center gap-2">
+        <a href="{{ route('messages.index') }}" class="text-[#ED5F1E] hover:underline flex items-center gap-2">
             <i class="fas fa-arrow-left"></i> Retour aux messages
         </a>
     </div>
@@ -170,7 +170,7 @@
 
         {{-- Input Area --}}
         <div class="chat-input-area">
-            <form action="{{ route('creator.messages.store', $conversation) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('messages.send', $conversation) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="flex gap-4">
                     {{-- Attachment Button --}}

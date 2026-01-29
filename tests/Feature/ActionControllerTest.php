@@ -40,7 +40,7 @@ class ActionControllerTest extends TestCase
 
         AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'pending',
             'justification' => 'Test action',
@@ -96,7 +96,7 @@ class ActionControllerTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'pending',
             'justification' => 'Test action',
@@ -128,7 +128,7 @@ class ActionControllerTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'pending',
             'justification' => 'Test action',
@@ -169,7 +169,7 @@ class ActionControllerTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test action',
@@ -200,7 +200,7 @@ class ActionControllerTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'pending', // Pas approuvé
             'justification' => 'Test action',
@@ -226,7 +226,7 @@ class ActionControllerTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'PROPOSE_SUSPENSION',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test suspension',
@@ -256,7 +256,7 @@ class ActionControllerTest extends TestCase
 
         AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'executed',
             'justification' => 'Test action',
@@ -281,6 +281,7 @@ class ActionControllerTest extends TestCase
         $response->assertStatus(401);
     }
 }
+
 
 
 

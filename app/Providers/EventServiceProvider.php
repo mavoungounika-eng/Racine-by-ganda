@@ -38,11 +38,18 @@ class EventServiceProvider extends ServiceProvider
         PaymentFailed::class => [
             [LogFunnelEvent::class, 'handlePaymentFailed'],
         ],
+        // Accounting
+        \Modules\Accounting\Events\PaymentRecorded::class => [
+            \Modules\Accounting\Listeners\PaymentRecordedListener::class,
+        ],
         // ==========================================
         // POS Events (Audit-Ready Architecture)
         // ==========================================
         \App\Events\PosSessionClosed::class => [
             \App\Listeners\PosSessionClosedListener::class,
+        ],
+        \App\Events\CashDiscrepancyDetected::class => [
+            \App\Listeners\SendCashDiscrepancyAlert::class,
         ],
         \App\Events\PosCardPaymentConfirmed::class => [
             \App\Listeners\PosCardPaymentConfirmedListener::class,

@@ -208,7 +208,7 @@ class FinancialReportsTest extends TestCase
         ]);
 
         // Vente marketplace
-        $creator = User::factory()->create(['role' => 'creator']);
+        $creator = User::factory()->create(['role' => 'createur']);
         Order::factory()->create([
             'user_id' => $this->user->id,
             'creator_id' => $creator->id,

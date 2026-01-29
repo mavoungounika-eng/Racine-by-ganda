@@ -437,15 +437,15 @@
                 
                 <div class="oauth-section">
                     <div class="oauth-divider">ou</div>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'creator']) }}" class="btn-oauth google">
+                    <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'createur']) }}" class="btn-oauth google">
                         <i class="fab fa-google"></i>
                         <span>Google</span>
                     </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'creator']) }}" class="btn-oauth apple">
+                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'createur']) }}" class="btn-oauth apple">
                         <i class="fab fa-apple"></i>
                         <span>Apple</span>
                     </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'creator']) }}" class="btn-oauth facebook">
+                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'createur']) }}" class="btn-oauth facebook">
                         <i class="fab fa-facebook-f"></i>
                         <span>Facebook</span>
                     </a>
@@ -562,6 +562,7 @@
     </div>
 </body>
 </html>
+
 
 
 

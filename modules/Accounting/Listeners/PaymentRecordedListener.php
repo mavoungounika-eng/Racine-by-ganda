@@ -104,18 +104,23 @@ class PaymentRecordedListener implements ShouldQueue
         try {
             // Commiter l'intent avec le callback de création d'écriture
             $this->intentService->commitIntent($intent, function (FinancialIntent $intent, LedgerService $ledger) use ($order) {
+                // Modèle SaaS Pur : On n'enregistre comptablement que les ventes propres à RACINE.
+                // Les ventes créateurs sont traitées via CreatorSaleRecord (Analytique) et non Ledger.
                 if ($order->creator_id) {
-                    return $this->createMarketplaceSaleEntry($order, $ledger);
-                } else {
-                    return $this->createBoutiqueSaleEntry($order, $ledger);
+                    Log::info('PaymentRecordedListener: Creator sale detected. Skipping accounting entry (SaaS Pur).', [
+                        'order_id' => $order->id,
+                        'creator_id' => $order->creator_id
+                    ]);
+                    return null; // Pas d'écriture comptable pour les fonds tiers
                 }
+
+                return $this->createBoutiqueSaleEntry($order, $ledger);
             });
 
-            Log::info('PaymentRecordedListener: Intent committed, entry created', [
+            Log::info('PaymentRecordedListener: Intent processed', [
                 'order_id' => $order->id,
                 'intent_id' => $intent->id,
-                'payment_method' => $order->payment_method,
-                'is_marketplace' => (bool) $order->creator_id,
+                'is_racine_sale' => !$order->creator_id,
             ]);
 
         } catch (LedgerException $e) {
@@ -142,23 +147,6 @@ class PaymentRecordedListener implements ShouldQueue
             debitAccount: $debitAccount,
             creditAccount: '7011',
             totalTTC: $order->total_amount,
-            vatRate: 18.0
-        );
-    }
-
-    /**
-     * Créer écriture vente marketplace (avec commission)
-     */
-    protected function createMarketplaceSaleEntry($order, LedgerService $ledger): AccountingEntry
-    {
-        $debitAccount = $this->getDebitAccountForPaymentMethod($order->payment_method);
-
-        return $ledger->createMarketplaceSaleEntry(
-            order: $order,
-            journalCode: 'VTE',
-            debitAccount: $debitAccount,
-            totalTTC: $order->total_amount,
-            commissionRate: 0.15,
             vatRate: 18.0
         );
     }

@@ -86,12 +86,12 @@ Route::post('/logout', [LoginController::class, 'logout'])
 // CONNEXION GOOGLE (Social Login) - Module v1
 // ============================================
 // PHASE 2.1 : Route avec paramètre role optionnel (client|creator)
-Route::get('/auth/google/redirect/{role?}', [GoogleAuthController::class, 'redirect'])
-    ->where('role', 'client|creator')
-    ->name('auth.google.redirect');
+// Route::get('/auth/google/redirect/{role?}', [GoogleAuthController::class, 'redirect'])
+//     ->where('role', 'client|creator')
+//     ->name('auth.google.redirect');
 
-Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
-    ->name('auth.google.callback');
+// Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+//     ->name('auth.google.callback');
 
 // ============================================
 // CONNEXION SOCIALE MULTI-PROVIDERS (Social Auth v2)

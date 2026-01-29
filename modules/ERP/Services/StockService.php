@@ -60,10 +60,19 @@ class StockService
                     continue;
                 }
 
-                // Vérifier le stock disponible
+                // ✅ RBG-P0-01 : Vérification STRICTE du stock disponible (Verrouillé)
                 if ($product->stock < $item->quantity) {
-                    Log::warning("Insufficient stock for Product #{$product->id}. Available: {$product->stock}, Required: {$item->quantity}");
-                    // On continue quand même (backorder) mais on log
+                    Log::error("CRITICAL: Insufficient stock detected during decrement for Product #{$product->id}", [
+                        'order_id' => $order->id,
+                        'available' => $product->stock,
+                        'required' => $item->quantity,
+                    ]);
+                    
+                    throw new \App\Exceptions\StockException(
+                        "Stock insuffisant pour le produit {$product->title}",
+                        400,
+                        "Le stock pour {$product->title} est devenu insuffisant ({$product->stock} disponible)."
+                    );
                 }
 
                 // Décrémenter le stock (produit déjà verrouillé)

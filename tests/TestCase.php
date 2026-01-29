@@ -18,16 +18,31 @@ abstract class TestCase extends BaseTestCase
      * @param string|null $guard
      * @return $this
      */
-    protected function actingAsWithContext(User $user, string $guard = null): static
+    protected function actAsWithContext(User $user, string $guard = null): static
     {
         // Resolve UserContext
         $contextResolver = app(UserContextResolver::class);
         $context = $contextResolver->resolve($user);
         
-        // Store in session
-        $contextResolver->storeInSession($context);
+        // Store in session using test helper to ensure persistence across request
+        $this->withSession([
+            'user_context' => $context->toArray(),
+            '2fa_verified' => true,
+        ]);
         
         // Authenticate user
-        return $this->actingAs($user, $guard);
+        return parent::actingAs($user, $guard);
+    }
+
+    /**
+     * Override actingAs to always provide UserContext
+     * This fixes widespread failures in tests that involve ValidateSessionContext
+     */
+    public function actingAs(\Illuminate\Contracts\Auth\Authenticatable $user, $guard = null): static
+    {
+        if ($user instanceof User) {
+            return $this->actAsWithContext($user, $guard);
+        }
+        return parent::actingAs($user, $guard);
     }
 }

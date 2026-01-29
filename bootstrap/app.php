@@ -24,7 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhooks/*',
             'api/webhooks/*',
-            'payment/card/webhook',
             'payment/monetbil/notify',
         ]);
 
@@ -41,9 +40,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'creator.active' => \App\Http\Middleware\EnsureCreatorActive::class,
             'capability' => \App\Http\Middleware\EnsureCapability::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
-            'legacy.webhook.deprecation' => \App\Http\Middleware\LegacyWebhookDeprecationHeaders::class,
-            'legacy.webhook.guard' => \App\Http\Middleware\LegacyWebhookGuard::class,
+            
+            // Aliases needed by framework (Laravel auto-appends these in some cases)
+            'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+            'creator' => \App\Http\Middleware\EnsureAuthenticated::class, // Legacy alias, use 'ensure:createur' instead
+            'admin' => \App\Http\Middleware\EnsureAuthenticated::class . ':admin,super_admin',
+            'role.creator' => \App\Http\Middleware\EnsureAuthenticated::class . ':createur',
         ]);
+
 
         // Headers de sécurité HTTP (global)
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
@@ -54,12 +58,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Fusion automatique panier session → DB à la connexion
         $middleware->append(\App\Http\Middleware\MergeCartOnLogin::class);
 
-        // CRITICAL SECURITY: Validate session context on every request
-        // MUST be after authentication to ensure user is loaded
-        // Skip ONLY during unit tests to allow test-specific session manipulation
-        if (!app()->runningUnitTests()) {
-            $middleware->append(\App\Http\Middleware\ValidateSessionContext::class);
-        }
+        // Group 'web' configuration
+        $middleware->web(append: [
+            \App\Http\Middleware\ValidateSessionContext::class,
+        ]);
 
         // Enregistrement des métriques de performance (debug uniquement)
         $middleware->append(\App\Http\Middleware\RecordPerformanceMetrics::class);
@@ -68,7 +70,24 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, \Illuminate\Http\Request $request) {
+            // CRITICAL: Toute révocation de sécurité -> logout + redirect (302)
+            if (Auth::check()) {
+                Log::warning('Global Exception Handler: Access Denied. Forcing Logout.', [
+                    'user_id' => Auth::id(),
+                    'url' => $request->url()
+                ]);
+                
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')
+                    ->with('error', 'Accès refusé. Pour votre sécurité, votre session a été clôturée.');
+            }
+            
+            return null; // Let default handler handle if not logged in
+        });
     })
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
         // Planifier la vérification des alertes de stock (quotidien à 8h)

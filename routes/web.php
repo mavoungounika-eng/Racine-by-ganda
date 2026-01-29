@@ -24,7 +24,7 @@ use App\Http\Controllers\Creator\CreatorFinanceController;
 use App\Http\Controllers\Creator\CreatorSettingsController;
 use App\Http\Controllers\Creator\CreatorMessageController;
 
-Route::prefix('createur')->name('creator.')->group(function () {
+Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(function () {
     // ✅ C4: CGV Créateur (route publique)
     Route::get('cgv', function () {
         return view('creator.cgv');
@@ -199,12 +199,12 @@ use App\Http\Controllers\Auth\TwoFactorController;
 
 // Challenge 2FA (lors de la connexion)
 Route::get('/2fa/challenge', [TwoFactorController::class, 'challenge'])->name('2fa.challenge');
-Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify');
+Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:10,1')->name('2fa.verify');
 
 // Gestion 2FA (utilisateur connecté)
 Route::middleware('auth')->prefix('2fa')->name('2fa.')->group(function () {
     Route::get('/setup', [TwoFactorController::class, 'setup'])->name('setup');
-    Route::post('/confirm', [TwoFactorController::class, 'confirm'])->name('confirm');
+    Route::post('/confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:5,1')->name('confirm');
     Route::get('/manage', [TwoFactorController::class, 'manage'])->name('manage');
     Route::post('/disable', [TwoFactorController::class, 'disable'])->name('disable');
     Route::post('/recovery-codes/regenerate', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('recovery-codes.regenerate');
@@ -349,7 +349,7 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
 // ============================================
 // ROUTES ADMIN
 // ============================================
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(function () {
     // PHASE 10: Gestion des abonnements créateurs
     Route::prefix('creator-subscriptions')->name('creator-subscriptions.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CreatorSubscriptionController::class, 'index'])->name('index');

@@ -101,7 +101,12 @@ class EnsureAuthenticated
                     'url' => $request->url(),
                 ]);
 
-                abort(403, 'Vous n\'avez pas les permissions nécessaires pour accéder à cette page.');
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')
+                    ->with('error', 'Vous n\'avez pas les permissions nécessaires pour accéder à cette page.');
             }
         }
 

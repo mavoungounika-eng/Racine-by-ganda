@@ -5,7 +5,9 @@ namespace App\Services\Pos;
 use App\Models\PosSession;
 use App\Models\PosCashMovement;
 use App\Models\User;
+use App\Models\PosOperatorAuditLog;
 use App\Events\PosSessionClosed;
+use App\Traits\AuditsPosOperations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -16,9 +18,14 @@ use Illuminate\Support\Facades\Log;
  * - Une machine ne peut avoir qu'UNE session 'open' à la fois
  * - opening_cash obligatoire à l'ouverture
  * - closing_cash obligatoire pour passer à 'closed'
+ * 
+ * AUDIT:
+ * - Toutes actions automatiquement loggées
+ * - Traçabilité complète (Qui/Quoi/Quand/Où/Contexte)
  */
 class PosSessionService
 {
+    use AuditsPosOperations;
     /**
      * Ouvrir une nouvelle session de caisse
      * 
@@ -56,6 +63,9 @@ class PosSessionService
                 'opened_by' => $userId,
                 'opening_cash' => $openingCash,
             ]);
+
+            // 📋 AUDIT TRAIL
+            PosOperatorAuditLog::auditSessionOpen($session->id, $openingCash);
 
             return $session;
         });
@@ -184,6 +194,17 @@ class PosSessionService
                 'notes' => $notes,
             ]);
 
+            // 🔍 DÉTECTER DISCREPANCY CASH
+            $cashDifference = $closingCash - $expectedCash;
+            if (abs($cashDifference) >= 1.00) { // Seuil 1€
+                event(new \App\Events\CashDiscrepancyDetected(
+                    $session,
+                    $expectedCash,
+                    $closingCash,
+                    $cashDifference
+                ));
+            }
+
             // Confirmer tous les paiements cash pending de cette session
             $this->confirmAllCashPayments($session, $userId);
 
@@ -195,6 +216,15 @@ class PosSessionService
                 'expected_cash' => $expectedCash,
                 'cash_difference' => $session->cash_difference,
             ]);
+
+            // 📋 AUDIT TRAIL
+            PosOperatorAuditLog::auditSessionClose(
+                $session->id,
+                $expectedCash,
+                $closingCash,
+                $cashDifference,
+                $notes
+            );
 
             // Dispatcher l'événement de clôture
             event(new PosSessionClosed($session));

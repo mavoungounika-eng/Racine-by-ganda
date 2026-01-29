@@ -6,6 +6,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\ConversationParticipant;
 use App\Models\MessageAttachment;
+use App\Models\Role;
 use App\Services\NotificationService;
 use App\Services\EmailMessagingService;
 use Illuminate\Http\UploadedFile;
@@ -165,7 +166,7 @@ class MessageService
 
         // Vérifier que l'utilisateur est l'auteur ou admin
         $user = \App\Models\User::find($userId);
-        $isAdmin = $user && in_array($user->getRoleSlug(), ['super_admin', 'admin']);
+        $isAdmin = $user && in_array($user->getRoleSlug(), [Role::SUPER_ADMIN, Role::ADMIN]);
 
         if ($message->user_id !== $userId && !$isAdmin) {
             throw new \Exception('Vous ne pouvez supprimer que vos propres messages.');

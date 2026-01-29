@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -25,24 +26,43 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         parent::boot();
 
+        static::saving(function ($user) {
+            // SYNC LEGACY ROLE STRING -> ROLE_ID
+            // If 'role' (string) is changing
+            if ($user->isDirty('role')) {
+                // If role_id is NOT explicitly set to a valid ID (it's either not dirty, or dirty but null)
+                if (!$user->isDirty('role_id') || $user->role_id === null) {
+                    $slug = $user->role;
+                    $roleModel = Role::where('slug', $slug)->first();
+                    if ($roleModel) {
+                        $user->role_id = $roleModel->id;
+                    }
+                }
+            }
+        });
+
         static::saved(function ($user) {
             // Check if role or status was changed (using getChanges instead of isDirty)
             $changes = $user->getChanges();
             
-            if (array_key_exists('role_id', $changes) || array_key_exists('status', $changes)) {
+            // CRITICAL: Check 'role' string change OR 'role_id' change
+            $roleChanged = array_key_exists('role_id', $changes) || array_key_exists('role', $changes);
+            $statusChanged = array_key_exists('status', $changes);
+
+            if ($roleChanged || $statusChanged) {
                 // Use raw DB update to avoid triggering events
                 \DB::table('users')
                     ->where('id', $user->id)
                     ->increment('auth_version');
+                
+                // Synchroniser avec l'instance en mémoire (crucial pour les tests)
+                // On récupère la vraie valeur en base car elle peut différer de l'instance (non-fillable)
+                $user->auth_version = \DB::table('users')->where('id', $user->id)->value('auth_version');
 
                 \Log::info('[AUDIT] auth_version incremented', [
                     'user_id' => $user->id,
-                    'new_version' => $user->auth_version + 1,
+                    'new_version' => $user->auth_version,
                     'changed_fields' => $changes,
-                    'old_role_id' => $user->getOriginal('role_id'),
-                    'new_role_id' => $user->role_id,
-                    'old_status' => $user->getOriginal('status'),
-                    'new_status' => $user->status,
                     'changed_by' => \Auth::id(),
                 ]);
             }
@@ -99,6 +119,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_required' => 'boolean',
         'trusted_device_expires_at' => 'datetime',
+        'auth_version' => 'integer',
     ];
 
     /**
@@ -288,10 +309,14 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         // Vérifier si le rôle a la permission
-        return $this->roleRelation
+        $has = $this->roleRelation
             ?->permissions
             ?->pluck('slug')
             ?->contains($permission) ?? false;
+
+        Log::info("[PermissionCheck] User {$this->id} ({$this->getRoleSlug()}) checking for '{$permission}': " . ($has ? 'YES' : 'NO'));
+        
+        return $has;
     }
 
     /**
@@ -324,6 +349,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function products()
     {
         return $this->hasMany(Product::class, 'user_id');
+    }
+
+    /**
+     * Get the collections created by this user (for creators).
+     */
+    public function collections()
+    {
+        return $this->hasMany(Collection::class, 'user_id');
     }
 
 

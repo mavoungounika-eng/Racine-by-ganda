@@ -3,6 +3,7 @@
 namespace App\Services\Auth;
 
 use App\DTOs\Auth\UserContext;
+use App\Models\Role;
 
 /**
  * Post-Login Decision Engine
@@ -74,17 +75,17 @@ class PostLoginDecisionEngine
     private function handleTeamMemberRedirect(UserContext $context, ?string $intended): string
     {
         // Super admin → admin dashboard
-        if ($context->hasRole('super_admin')) {
+        if ($context->hasRole(Role::SUPER_ADMIN)) {
             return $intended ?? route('admin.dashboard');
         }
 
         // Admin → admin dashboard
-        if ($context->hasRole('admin')) {
+        if ($context->hasRole(Role::ADMIN)) {
             return $intended ?? route('admin.dashboard');
         }
 
         // Staff → staff dashboard (or admin dashboard if no staff dashboard exists)
-        if ($context->hasRole('staff')) {
+        if ($context->hasRole(Role::STAFF)) {
             // Check if staff dashboard exists, otherwise use admin dashboard
             if (\Illuminate\Support\Facades\Route::has('staff.dashboard')) {
                 return $intended ?? route('staff.dashboard');

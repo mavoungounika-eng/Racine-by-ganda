@@ -101,13 +101,14 @@ class AuthOrchestratorService
             );
         }
 
-        // Step 7: Store context in session
-        $this->contextResolver->storeInSession($context);
-
-        // Step 9: Regenerate session for security
+        // Step 7: Regenerate session for security FIRST
+        // CRITICAL: Must regenerate BEFORE storing context to preserve it
         $request->session()->regenerate();
 
-        // Step 10: Apply session security
+        // Step 8: Store context in session (now in fresh session)
+        $this->contextResolver->storeInSession($context);
+
+        // Step 9: Apply session security
         $this->sessionSecurity->initializeSessionTracking($user);
 
         // Step 11: Check if 2FA is required

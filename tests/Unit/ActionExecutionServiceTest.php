@@ -41,7 +41,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test action',
@@ -72,7 +72,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'pending', // Pas approuvé
             'justification' => 'Test action',
@@ -104,7 +104,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test action',
@@ -135,7 +135,7 @@ class ActionExecutionServiceTest extends TestCase
         // Créer une action avec un type invalide pour forcer l'échec
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'INVALID_ACTION',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test action',
@@ -165,7 +165,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test monitor',
@@ -179,6 +179,7 @@ class ActionExecutionServiceTest extends TestCase
         $this->assertEquals('logged', $result['result']['action']);
     }
 }
+
 
 
 

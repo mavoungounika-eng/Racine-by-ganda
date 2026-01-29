@@ -157,7 +157,7 @@ class SocialAuthController extends Controller
 
         // Récupérer le contexte et le rôle depuis la session
         $context = session('social_login_context', 'boutique');
-        $requestedRole = session('oauth_role', 'client');
+        $requestedRole = session('oauth_role', $request->query('role', 'client'));
         session()->forget(['social_login_context', 'oauth_role']);
 
         // Normaliser le rôle

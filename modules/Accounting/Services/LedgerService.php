@@ -39,6 +39,15 @@ final class LedgerService
                 throw new LedgerException("Exercice {$fiscalYear->name} est clôturé");
             }
             
+            // ✅ SAAS PUR : Verrouillage comptable
+            // Interdiction formelle de créer une écriture si la référence appartient à un créateur
+            if (isset($data['reference_type']) && $data['reference_type'] === 'order' && isset($data['reference_id'])) {
+                $order = \App\Models\Order::find($data['reference_id']);
+                if ($order && $order->creator_id !== null) {
+                    throw new LedgerException("SÉCURITÉ SAAS PUR : Tentative d'écriture comptable pour une commande créateur initiée.");
+                }
+            }
+
             $entryNumber = $this->generateEntryNumber($journal, $data['entry_date']);
             
             // Autoriser temporairement la création via le container
@@ -158,6 +167,11 @@ final class LedgerService
         float $totalTTC,
         float $vatRate = 18.0
     ): AccountingEntry {
+        // ✅ SAAS PUR : Verrouillage immédiat
+        if ($order && $order->creator_id !== null) {
+            throw new LedgerException("SÉCURITÉ SAAS PUR : RACINE ne comptabilise pas les ventes des créateurs.");
+        }
+
         return DB::transaction(function () use ($order, $journalCode, $debitAccount, $creditAccount, $totalTTC, $vatRate) {
             $journal = Journal::where('code', $journalCode)->firstOrFail();
             $fiscalYear = $this->getCurrentFiscalYear();
@@ -188,45 +202,6 @@ final class LedgerService
         });
     }
 
-    /**
-     * Créer écriture vente marketplace (avec commission et TVA)
-     */
-    public function createMarketplaceSaleEntry(
-        $order,
-        string $journalCode,
-        string $debitAccount,
-        float $totalTTC,
-        float $commissionRate = 0.15,
-        float $vatRate = 18.0
-    ): AccountingEntry {
-        return DB::transaction(function () use ($order, $journalCode, $debitAccount, $totalTTC, $commissionRate, $vatRate) {
-            $journal = Journal::where('code', $journalCode)->firstOrFail();
-            $fiscalYear = $this->getCurrentFiscalYear();
-            
-            $amountHT = $totalTTC / (1 + $vatRate / 100);
-            $vatAmount = $totalTTC - $amountHT;
-            $commissionHT = $amountHT * $commissionRate;
-            $creatorAmountHT = $amountHT - $commissionHT;
-            
-            $entry = $this->createEntry([
-                'journal_id' => $journal->id,
-                'fiscal_year_id' => $fiscalYear->id,
-                'entry_date' => now()->toDateString(),
-                'description' => "Vente marketplace commande #{$order->id}",
-                'reference_type' => 'order',
-                'reference_id' => $order->id,
-            ]);
-            
-            $this->addLine($entry, $debitAccount, $totalTTC, 0, "Encaissement marketplace");
-            $this->addLine($entry, '4671', 0, $creatorAmountHT, "Dette créateur");
-            $this->addLine($entry, '7013', 0, $commissionHT, "Commission marketplace");
-            $this->addLine($entry, '4421', 0, $vatAmount, "TVA collectée {$vatRate}%");
-            
-            $this->postEntry($entry);
-            
-            return $entry;
-        });
-    }
 
     /**
      * Contre-passation (annulation écriture)

@@ -231,9 +231,14 @@ class MobileMoneyPaymentController extends Controller
         $config = config("services.{$provider}");
         $webhookSecret = $config['webhook_secret'] ?? null;
 
-        // En mode développement ou si pas de secret configuré, accepter
-        if (app()->environment('local') || !$webhookSecret) {
+        // RBG-P0-02 : Signature obligatoire sauf en environnement de test (PHPUnit)
+        if (app()->runningUnitTests()) {
             return true;
+        }
+
+        if (!$webhookSecret) {
+            Log::error("Mobile Money webhook security alert: Secret not configured for {$provider}");
+            return false;
         }
 
         // Récupérer la signature depuis les headers

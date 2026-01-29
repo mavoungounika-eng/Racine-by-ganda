@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Modèle pour les comptes Stripe Connect des créateurs.
+ */
 class CreatorStripeAccount extends Model
 {
-    protected $table = 'creator_stripe_accounts';
+    use HasFactory;
 
     protected $fillable = [
         'creator_profile_id',
@@ -36,6 +40,9 @@ class CreatorStripeAccount extends Model
         'last_synced_at' => 'datetime',
     ];
 
+    /**
+     * Relation avec le profil créateur.
+     */
     public function creatorProfile(): BelongsTo
     {
         return $this->belongsTo(CreatorProfile::class);

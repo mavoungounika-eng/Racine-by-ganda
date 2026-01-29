@@ -171,6 +171,14 @@ class CreatorProfile extends Model
         return $this->hasOne(PaymentPreference::class, 'creator_profile_id');
     }
 
+    /**
+     * Relation avec les enregistrements analytiques des ventes (SaaS Option A).
+     */
+    public function saleRecords(): HasMany
+    {
+        return $this->hasMany(CreatorSaleRecord::class, 'creator_id');
+    }
+
     /* =========================
      | SCOPES & HELPERS
      ========================= */

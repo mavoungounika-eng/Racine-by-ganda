@@ -48,6 +48,14 @@
     <link rel="stylesheet" href="{{ asset('css/layout-components.css') }}">
     <link rel="stylesheet" href="{{ asset('css/layout-footer-cta.css') }}">
     
+    {{-- Page-specific CSS (chargement conditionnel pour performance) --}}
+    @if(request()->routeIs('home') || request()->routeIs('frontend.home'))
+        <link rel="stylesheet" href="{{ asset('css/frontend-home.css') }}">
+    @endif
+    @if(request()->routeIs('frontend.shop'))
+        <link rel="stylesheet" href="{{ asset('css/frontend-shop.css') }}">
+    @endif
+    
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -127,10 +135,31 @@
                         </div>
                     </div>
                     
-                    {{-- Bouton Connexion --}}
-                    <a href="{{ route('login') }}" class="nav-icon-btn nav-icon-btn-primary" title="Connexion" aria-label="Se connecter ou créer un compte">
-                        <i class="fas fa-user" aria-hidden="true"></i>
-                    </a>
+                    @auth
+                        {{-- Dropdown Compte (Utilisateur Connecté) --}}
+                        <div class="nav-dropdown d-none d-lg-block">
+                            <button class="nav-icon-btn nav-icon-btn-primary nav-dropdown-toggle" title="Mon compte" aria-label="Menu mon compte" aria-expanded="false" aria-haspopup="true">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                            </button>
+                            <div class="nav-dropdown-menu nav-dropdown-menu-right">
+                                <a href="{{ route('account.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Mon compte</a>
+                                <a href="{{ route('profile.edit') }}"><i class="fas fa-user-circle"></i> Mon profil</a>
+                                <a href="{{ route('profile.orders') }}"><i class="fas fa-shopping-bag"></i> Mes commandes</a>
+                                <div class="nav-dropdown-divider"></div>
+                                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                                    @csrf
+                                    <button type="submit" style="all: unset; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.8); cursor: pointer; width: 100%; transition: all 0.2s;">
+                                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        {{-- Bouton Connexion (Guest) --}}
+                        <a href="{{ route('login') }}" class="nav-icon-btn nav-icon-btn-primary" title="Connexion" aria-label="Se connecter ou créer un compte">
+                            <i class="fas fa-user" aria-hidden="true"></i>
+                        </a>
+                    @endauth
                     
                     {{-- Burger menu mobile --}}
                     <button id="mobile-menu-toggle" class="d-lg-none btn btn-link text-white p-0" style="font-size: 1.75rem; border: none; background: none;" aria-label="Ouvrir le menu mobile" aria-expanded="false" aria-controls="mobile-menu">
@@ -170,9 +199,27 @@
                         <span style="font-size: 1.25rem;">🛒</span> Panier
                     </a>
                     
-                    <a href="{{ route('login') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none;">
-                        <span style="font-size: 1.25rem;">👤</span> Connexion
-                    </a>
+                    
+                    @auth
+                        {{-- Options compte pour utilisateurs connectés (Mobile) --}}
+                        <a href="{{ route('account.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span style="font-size: 1.25rem;">🏠</span> Mon compte
+                        </a>
+                        <a href="{{ route('profile.orders') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span style="font-size: 1.25rem;">📦</span> Mes commandes
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                            @csrf
+                            <button type="submit" class="text-white d-flex align-items-center py-2 w-100 text-left" style="gap: 0.5rem; text-decoration: none; border: none; background: none; cursor: pointer; font-size: 1rem; font-family: inherit;">
+                                <span style="font-size: 1.25rem;">🚪</span> Déconnexion
+                            </button>
+                        </form>
+                    @else
+                        {{-- Bouton connexion pour invités (Mobile) --}}
+                        <a href="{{ route('login') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none;">
+                            <span style="font-size: 1.25rem;">👤</span> Connexion
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>
@@ -421,6 +468,24 @@
     
     {{-- RACINE Navigation JavaScript (extrait du inline) --}}
     <script src="{{ asset('js/layout-navigation.js') }}"></script>
+    
+    {{-- RACINE Core JavaScript (AXE E - namespace Racine.*) --}}
+    <script src="{{ asset('js/core/utilities.js') }}" defer></script>
+    <script src="{{ asset('js/core/ajax.js') }}" defer></script>
+    
+    {{-- Page-specific JS (chargement conditionnel pour performance) --}}
+    @if(request()->routeIs('frontend.shop'))
+        <script src="{{ asset('js/frontend-shop.js') }}"></script>
+    @endif
+    @if(request()->routeIs('cart.index'))
+        <script src="{{ asset('js/pages/cart.js') }}"></script>
+    @endif
+    @if(request()->routeIs('checkout.index'))
+        <script src="{{ asset('js/pages/checkout.js') }}"></script>
+    @endif
+    @if(request()->routeIs('frontend.product') || request()->routeIs('product.show'))
+        <script src="{{ asset('js/pages/product.js') }}"></script>
+    @endif
     
     {{-- RACINE AJAX Spinner -- Désactivé --}}
     {{-- <script src="{{ asset('js/racine-ajax-spinner.js') }}"></script> --}}
