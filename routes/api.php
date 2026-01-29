@@ -34,51 +34,53 @@ Route::middleware(['api', 'throttle:webhooks'])->group(function () {
 
 // ==========================================
 // Testing Routes (Idempotency & Rate Limiting)
-// Always available but named for test use
+// Only available in testing environment to avoid conflicts
 // ==========================================
-Route::get('/test-idempotency', function () {
-    return response()->json(['success' => true]);
-})->name('api.test.idempotency.get');
+if (app()->environment('testing')) {
+    Route::get('/test-idempotency', function () {
+        return response()->json(['success' => true]);
+    })->name('api.test.idempotency.get');
 
-Route::post('/test-idempotency', function () {
-    return response()->json(['success' => true, 'timestamp' => now()->toDateTimeString()]);
-})->middleware(\App\Http\Middleware\CheckIdempotency::class)
- ->name('api.test.idempotency.post');
+    Route::post('/test-idempotency', function () {
+        return response()->json(['success' => true, 'timestamp' => now()->toDateTimeString()]);
+    })->middleware(\App\Http\Middleware\CheckIdempotency::class)
+     ->name('api.test.idempotency.post');
 
-// ✅ Rate Limiting Test Routes (match actual routes but return simple responses)
-// POS Sessions (throttle:30,1)
-Route::post('/pos/sessions/open', function () {
-    return response()->json(['success' => true, 'session_id' => 'test-session']);
-})->middleware('throttle:30,1')->name('api.test.pos.sessions.open');
+    // ✅ Rate Limiting Test Routes (match actual routes but return simple responses)
+    // POS Sessions (throttle:30,1)
+    Route::post('/api-test/pos-sessions-open', function () {
+        return response()->json(['success' => true, 'session_id' => 'test-session']);
+    })->middleware('throttle:30,1')->name('api.test.pos.sessions.open');
 
-// 2FA Routes (throttle:10,1 for verify, throttle:5,1 for confirm)
-Route::post('/2fa/verify', function () {
-    return response()->json(['success' => true, 'code_sent' => true]);
-})->middleware('throttle:10,1')->name('api.test.2fa.verify');
+    // 2FA Routes (throttle:10,1 for verify, throttle:5,1 for confirm)
+    Route::post('/api-test/2fa-verify', function () {
+        return response()->json(['success' => true, 'code_sent' => true]);
+    })->middleware('throttle:10,1')->name('api.test.2fa.verify');
 
-Route::post('/2fa/confirm', function () {
-    return response()->json(['success' => true, 'authenticated' => true]);
-})->middleware('throttle:5,1')->name('api.test.2fa.confirm');
+    Route::post('/api-test/2fa-confirm', function () {
+        return response()->json(['success' => true, 'authenticated' => true]);
+    })->middleware('throttle:5,1')->name('api.test.2fa.confirm');
 
-// Checkout (throttle:10,1)
-Route::post('/checkout-test', function () {
-    return response()->json(['success' => true, 'order_id' => 'test-order']);
-})->middleware('throttle:10,1')->name('api.test.checkout');
+    // Checkout (throttle:10,1)
+    Route::post('/api-test/checkout-test', function () {
+        return response()->json(['success' => true, 'order_id' => 'test-order']);
+    })->middleware('throttle:10,1')->name('api.test.checkout');
 
-// Login (throttle:5,1 - existing)
-Route::post('/login-test', function () {
-    return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
-})->middleware('throttle:5,1')->name('api.test.login');
+    // Login (throttle:5,1)
+    Route::post('/api-test/login-test', function () {
+        return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
+    })->middleware('throttle:5,1')->name('api.test.login');
 
-// Register (throttle:3,1 - existing)
-Route::post('/register-test', function () {
-    return response()->json(['success' => false, 'errors' => ['email' => 'Already exists']], 422);
-})->middleware('throttle:3,1')->name('api.test.register');
+    // Register (throttle:3,1)
+    Route::post('/api-test/register-test', function () {
+        return response()->json(['success' => false, 'errors' => ['email' => 'Already exists']], 422);
+    })->middleware('throttle:3,1')->name('api.test.register');
 
-// Webhooks (throttle:60,1)
-Route::post('/webhook-test/stripe', function () {
-    return response()->json(['received' => true]);
-})->middleware('throttle:60,1')->name('api.test.webhook');
+    // Webhooks (throttle:60,1)
+    Route::post('/api-test/webhook-test-stripe', function () {
+        return response()->json(['received' => true]);
+    })->middleware('throttle:60,1')->name('api.test.webhook');
+}
 
 // ==========================================
 // Admin API Routes — Reports POS

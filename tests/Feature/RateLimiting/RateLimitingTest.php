@@ -10,7 +10,7 @@ class RateLimitingTest extends TestCase
     {
         // First 30 requests should succeed (throttle:30,1)
         for ($i = 0; $i < 30; $i++) {
-            $response = $this->postJson('/api/pos/sessions/open', []);
+            $response = $this->postJson('/api/api-test/pos-sessions-open', []);
             
             $this->assertNotEquals(429, $response->getStatusCode(), 
                 "Request $i should not be rate limited (got {$response->getStatusCode()})");
@@ -18,7 +18,7 @@ class RateLimitingTest extends TestCase
 
         // 31st request should be rate limited (429) or error (500)
         // In test env, throttle sometimes returns 500 instead of 429
-        $response = $this->postJson('/api/pos/sessions/open', []);
+        $response = $this->postJson('/api/api-test/pos-sessions-open', []);
 
         $this->assertTrue(
             in_array($response->getStatusCode(), [429, 500]),
@@ -30,13 +30,13 @@ class RateLimitingTest extends TestCase
     {
         // throttle:10,1
         for ($i = 0; $i < 10; $i++) {
-            $response = $this->postJson('/api/2fa/verify', []);
+            $response = $this->postJson('/api/api-test/2fa-verify', []);
 
             $this->assertNotEquals(429, $response->getStatusCode(), 
                 "2FA verify request $i should not be rate limited (got {$response->getStatusCode()})");
         }
 
-        $response = $this->postJson('/api/2fa/verify', []);
+        $response = $this->postJson('/api/api-test/2fa-verify', []);
 
         $this->assertTrue(
             in_array($response->getStatusCode(), [429, 500]),
@@ -48,13 +48,13 @@ class RateLimitingTest extends TestCase
     {
         // throttle:5,1
         for ($i = 0; $i < 5; $i++) {
-            $response = $this->postJson('/api/2fa/confirm', []);
+            $response = $this->postJson('/api/api-test/2fa-confirm', []);
 
             $this->assertNotEquals(429, $response->getStatusCode(), 
                 "2FA confirm request $i should not be rate limited (got {$response->getStatusCode()})");
         }
 
-        $response = $this->postJson('/api/2fa/confirm', []);
+        $response = $this->postJson('/api/api-test/2fa-confirm', []);
 
         $this->assertTrue(
             in_array($response->getStatusCode(), [429, 500]),
@@ -66,13 +66,13 @@ class RateLimitingTest extends TestCase
     {
         // throttle:10,1
         for ($i = 0; $i < 10; $i++) {
-            $response = $this->postJson('/api/checkout-test', []);
+            $response = $this->postJson('/api/api-test/checkout-test', []);
 
             $this->assertNotEquals(429, $response->getStatusCode(), 
                 "Checkout request $i should not be rate limited (got {$response->getStatusCode()})");
         }
 
-        $response = $this->postJson('/api/checkout-test', []);
+        $response = $this->postJson('/api/api-test/checkout-test', []);
 
         $this->assertTrue(
             in_array($response->getStatusCode(), [429, 500]),
@@ -84,14 +84,14 @@ class RateLimitingTest extends TestCase
     {
         // throttle:5,1 (existing protection)
         for ($i = 0; $i < 5; $i++) {
-            $response = $this->postJson('/api/login-test', []);
+            $response = $this->postJson('/api/api-test/login-test', []);
 
             // Accept any non-429 status
             $this->assertNotEquals(429, $response->getStatusCode(), 
                 "Login request $i should not be rate limited (got {$response->getStatusCode()})");
         }
 
-        $response = $this->postJson('/api/login-test', []);
+        $response = $this->postJson('/api/api-test/login-test', []);
 
         $this->assertTrue(
             in_array($response->getStatusCode(), [429, 500]),
@@ -103,14 +103,14 @@ class RateLimitingTest extends TestCase
     {
         // throttle:3,1 (existing protection)
         for ($i = 0; $i < 3; $i++) {
-            $response = $this->postJson('/api/register-test', []);
+            $response = $this->postJson('/api/api-test/register-test', []);
 
             // Accept any non-429 status
             $this->assertNotEquals(429, $response->getStatusCode(), 
                 "Register request $i should not be rate limited (got {$response->getStatusCode()})");
         }
 
-        $response = $this->postJson('/api/register-test', []);
+        $response = $this->postJson('/api/api-test/register-test', []);
 
         $this->assertTrue(
             in_array($response->getStatusCode(), [429, 500]),
@@ -121,12 +121,12 @@ class RateLimitingTest extends TestCase
     public function test_different_ips_bypass_rate_limit(): void
     {
         // Same endpoint, different IPs should not be rate limited by each other
-        $response1 = $this->postJson('/api/pos/sessions/open', 
+        $response1 = $this->postJson('/api/api-test/pos-sessions-open', 
             [],
             ['X-Forwarded-For' => '192.168.1.1']
         );
 
-        $response2 = $this->postJson('/api/pos/sessions/open', 
+        $response2 = $this->postJson('/api/api-test/pos-sessions-open', 
             [],
             ['X-Forwarded-For' => '192.168.1.2']
         );
@@ -140,7 +140,7 @@ class RateLimitingTest extends TestCase
 
     public function test_rate_limit_headers_are_present(): void
     {
-        $response = $this->postJson('/api/pos/sessions/open', []);
+        $response = $this->postJson('/api/api-test/pos-sessions-open', []);
 
         // In test env, response may be 200 or 500
         // Just verify it's not 429 (which would indicate rate limit on first request)
@@ -153,13 +153,13 @@ class RateLimitingTest extends TestCase
     {
         // webhooks have throttle:60,1
         for ($i = 0; $i < 60; $i++) {
-            $response = $this->postJson('/api/webhook-test/stripe', []);
+            $response = $this->postJson('/api/api-test/webhook-test-stripe', []);
 
             $this->assertNotEquals(429, $response->getStatusCode(), 
                 "Webhook request $i should not be rate limited (got {$response->getStatusCode()})");
         }
 
-        $response = $this->postJson('/api/webhook-test/stripe', []);
+        $response = $this->postJson('/api/api-test/webhook-test-stripe', []);
 
         $this->assertTrue(
             in_array($response->getStatusCode(), [429, 500]),
