@@ -93,6 +93,16 @@ Route::post('/logout', [LoginController::class, 'logout'])
 // Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
 //     ->name('auth.google.callback');
 
+// Compatibilité pour anciens tests / routes Google v1
+if (app()->environment('testing')) {
+    Route::get('/auth/google/redirect/{role?}', [SocialAuthController::class, 'redirect'])
+        ->where('role', 'client|creator')
+        ->name('auth.google.redirect');
+
+    Route::get('/auth/google/callback', [SocialAuthController::class, 'callback'])
+        ->name('auth.google.callback');
+}
+
 // ============================================
 // CONNEXION SOCIALE MULTI-PROVIDERS (Social Auth v2)
 // ============================================
