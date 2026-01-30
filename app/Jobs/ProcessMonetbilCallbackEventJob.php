@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\MonetbilCallbackEvent;
 use App\Models\Payment;
+use App\Services\AuditService;
 use App\Services\Payments\PaymentEventMapperService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -184,6 +185,21 @@ class ProcessMonetbilCallbackEventJob implements ShouldQueue, ShouldBeUnique
             }
 
             $mapperService->updatePaymentAndOrder($payment, $status);
+
+            // Log webhook retry and refund events to audit trail
+            if ($status === 'refunded') {
+                app(AuditService::class)->logWebhookRetry(
+                    webhookFailureId: $event->id,
+                    provider: 'monetbil',
+                    eventType: $event->payload['status'] ?? $event->payload['event_type'] ?? 'unknown',
+                    additionalData: [
+                        'payment_id' => $payment->id,
+                        'order_id' => $payment->order_id,
+                        'amount' => $payment->amount,
+                        'transaction_id' => $event->transaction_id,
+                    ]
+                );
+            }
 
             // Marquer l'événement comme traité
             $event->update([

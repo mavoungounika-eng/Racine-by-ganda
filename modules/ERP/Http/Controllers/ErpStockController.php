@@ -4,6 +4,7 @@ namespace Modules\ERP\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\AuditService;
 use Modules\ERP\Models\ErpStock;
 use Modules\ERP\Models\ErpStockMovement;
 use Modules\ERP\Http\Requests\StoreStockAdjustmentRequest;
@@ -180,6 +181,22 @@ class ErpStockController extends Controller
             } else {
                 $product->decrement('stock', $validated['quantity']);
             }
+
+            // 3. Enregistrer dans le journal d'audit
+            $quantityChange = $validated['type'] === 'in' 
+                ? $validated['quantity'] 
+                : -$validated['quantity'];
+            
+            app(AuditService::class)->logStockAdjustment(
+                productId: $product->id,
+                quantityChange: $quantityChange,
+                reason: $validated['reason'],
+                user: Auth::user(),
+                additionalData: [
+                    'stock_type' => $validated['type'],
+                    'product_sku' => $product->erpDetails?->sku,
+                ]
+            );
         });
 
         return redirect()->route('erp.stocks.index')

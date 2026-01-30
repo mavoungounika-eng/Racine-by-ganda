@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\StripeWebhookEvent;
 use App\Models\Payment;
+use App\Services\AuditService;
 use App\Services\Payments\PaymentEventMapperService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -174,6 +175,20 @@ class ProcessStripeWebhookEventJob implements ShouldQueue, ShouldBeUnique
             }
 
             $mapperService->updatePaymentAndOrder($payment, $status);
+
+            // Log webhook retry and refund events to audit trail
+            if ($status === 'refunded') {
+                app(AuditService::class)->logWebhookRetry(
+                    webhookFailureId: $event->id,
+                    provider: 'stripe',
+                    eventType: $event->event_type,
+                    additionalData: [
+                        'payment_id' => $payment->id,
+                        'order_id' => $payment->order_id,
+                        'amount' => $payment->amount,
+                    ]
+                );
+            }
 
             // Marquer l'événement comme traité avec le payment_id
             $event->markAsProcessed($payment->id);
