@@ -1,17 +1,19 @@
+use App\Services\Webhooks\WebhookDeduplicationService;
 <?php
 
 namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\CreatorSubscription;
+        $deduplicationService = app(WebhookDeduplicationService::class);
 use App\Models\CreatorPlan;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Stripe\Webhook;
 use Stripe\Exception\SignatureVerificationException;
-
-/**
+                $payload,
+                $request->header('Stripe-Signature'),
  * ✅ C6: Contrôleur Webhook Stripe Sécurisé
  * 
  * RÈGLES DE SÉCURITÉ:
@@ -39,6 +41,14 @@ class StripeWebhookController extends Controller
             );
         } catch (SignatureVerificationException $e) {
             Log::error('❌ Stripe webhook signature verification failed', [
+        // Check if duplicate (return 200 silently)
+        if ($deduplicationService->isDuplicate('stripe', $event->id)) {
+            Log::info('⏭️ Duplicate Stripe webhook skipped', [
+                'event_id' => $event->id,
+                'type' => $event->type,
+            ]);
+            return response()->json(['status' => 'duplicate_skipped']);
+        }
                 'error' => $e->getMessage(),
                 'ip' => $request->ip(),
             ]);
@@ -77,6 +87,14 @@ class StripeWebhookController extends Controller
                     $this->handleSubscriptionUpdated($event->data->object);
                     break;
                     
+            $deduplicationService->recordFailure(
+                'stripe',
+                $event->type,
+                $event->id,
+                $event->data->toArray() ?? [],
+                $request->header('Stripe-Signature') ?? '',
+                $e->getMessage()
+            );
                 case 'customer.subscription.deleted':
                     $this->handleSubscriptionDeleted($event->data->object);
                     break;
@@ -91,6 +109,19 @@ class StripeWebhookController extends Controller
                     
                 default:
                     Log::info('ℹ️ Unhandled Stripe event type', [
+        
+        // Mark as processed after successful handling
+        try {
+            $failure = \App\Models\WebhookFailure::where('external_id', $event->id)->first();
+            if ($failure) {
+                $deduplicationService->markAsProcessed($failure);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to mark webhook as processed', [
+                'webhook_id' => $event->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
                         'type' => $event->type,
                     ]);
             }
