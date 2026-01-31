@@ -7,6 +7,7 @@ use App\Jobs\ProcessMonetbilCallbackEventJob;
 use App\Jobs\ProcessStripeWebhookEventJob;
 use App\Models\MonetbilCallbackEvent;
 use App\Models\StripeWebhookEvent;
+use App\Services\Webhooks\CircuitBreakerService;
 use App\Services\Webhooks\WebhookDeduplicationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -303,6 +304,16 @@ class WebhookController extends Controller
      */
     public function monetbil(Request $request): JsonResponse
     {
+        // ✅ CIRCUIT BREAKER: Check if Monetbil is failing
+        $circuitBreaker = app(CircuitBreakerService::class);
+        if (!$circuitBreaker->isAvailable('monetbil')) {
+            Log::warning('❌ Monetbil Circuit Breaker OPEN - rejecting webhook');
+            return response()->json([
+                'status' => 'circuit_open',
+                'message' => 'Service temporarily unavailable'
+            ], 503);
+        }
+
         $payload = $request->all();
         $webhookSecret = config('services.monetbil.service_secret') ?? '';
         $isProduction = app()->environment('production');
@@ -318,6 +329,7 @@ class WebhookController extends Controller
                 'external_id' => $externalId,
                 'event_type' => $payload['event_type'] ?? $payload['status'] ?? null,
             ]);
+            $circuitBreaker->recordSuccess('monetbil');
             return response()->json(['status' => 'duplicate_skipped']);
         }
 
@@ -525,6 +537,9 @@ class WebhookController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+
+        // ✅ Record success for circuit breaker
+        $circuitBreaker->recordSuccess('monetbil');
 
         return response()->json(['status' => 'received'], 200);
     }

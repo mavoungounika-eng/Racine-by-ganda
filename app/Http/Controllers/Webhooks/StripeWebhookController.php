@@ -1,38 +1,56 @@
-use App\Services\Webhooks\WebhookDeduplicationService;
 <?php
 
 namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\CreatorSubscription;
-        $deduplicationService = app(WebhookDeduplicationService::class);
 use App\Models\CreatorPlan;
+use App\Services\Webhooks\CircuitBreakerService;
+use App\Services\Webhooks\WebhookDeduplicationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Stripe\Webhook;
 use Stripe\Exception\SignatureVerificationException;
-                $payload,
-                $request->header('Stripe-Signature'),
- * ✅ C6: Contrôleur Webhook Stripe Sécurisé
+
+/**
+ * ✅ Stripe Webhook Controller with Circuit Breaker
  * 
- * RÈGLES DE SÉCURITÉ:
- * - Vérification obligatoire de la signature Stripe
- * - Webhook = SEULE source de vérité pour abonnements payants
- * - Logging exhaustif de tous les événements
- * - Gestion d'erreurs robuste
+ * SECURITY & RESILIENCE:
+ * - Circuit Breaker: rejects if too many failures
+ * - Deduplication: prevents duplicate processing
+ * - Signature verification: validates Stripe events
+ * - Comprehensive logging: all events tracked
  */
 class StripeWebhookController extends Controller
 {
+    private CircuitBreakerService $circuitBreaker;
+    private WebhookDeduplicationService $deduplication;
+
+    public function __construct()
+    {
+        $this->circuitBreaker = app(CircuitBreakerService::class);
+        $this->deduplication = app(WebhookDeduplicationService::class);
+    }
+
     /**
-     * Point d'entrée principal pour tous les webhooks Stripe
+     * Main webhook handler for Stripe events
      */
     public function handle(Request $request): JsonResponse
     {
+        // ✅ CIRCUIT BREAKER: Check if Stripe is failing
+        if (!$this->circuitBreaker->isAvailable('stripe')) {
+            Log::warning('❌ Stripe Circuit Breaker OPEN - rejecting webhook');
+            return response()->json([
+                'status' => 'circuit_open',
+                'message' => 'Service temporarily unavailable'
+            ], 503);
+        }
+
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
         
-        // ✅ SÉCURITÉ P0: Vérification signature Stripe
+        // ✅ SECURITY: Verify Stripe signature
         try {
             $event = Webhook::constructEvent(
                 $payload,
@@ -41,14 +59,6 @@ class StripeWebhookController extends Controller
             );
         } catch (SignatureVerificationException $e) {
             Log::error('❌ Stripe webhook signature verification failed', [
-        // Check if duplicate (return 200 silently)
-        if ($deduplicationService->isDuplicate('stripe', $event->id)) {
-            Log::info('⏭️ Duplicate Stripe webhook skipped', [
-                'event_id' => $event->id,
-                'type' => $event->type,
-            ]);
-            return response()->json(['status' => 'duplicate_skipped']);
-        }
                 'error' => $e->getMessage(),
                 'ip' => $request->ip(),
             ]);
@@ -65,14 +75,23 @@ class StripeWebhookController extends Controller
                 'error' => 'Webhook error'
             ], 400);
         }
+
+        // ✅ DEDUPLICATION: Check if duplicate
+        if ($this->deduplication->isDuplicate('stripe', $event->id)) {
+            Log::info('⏭️ Duplicate Stripe webhook skipped', [
+                'event_id' => $event->id,
+                'type' => $event->type,
+            ]);
+            $this->circuitBreaker->recordSuccess('stripe');
+            return response()->json(['status' => 'duplicate_skipped']);
+        }
         
-        // Log de l'événement reçu
         Log::info('✅ Stripe webhook received', [
             'type' => $event->type,
             'id' => $event->id,
         ]);
         
-        // Dispatch vers le handler approprié
+        // Process the event
         try {
             switch ($event->type) {
                 case 'checkout.session.completed':
@@ -87,14 +106,6 @@ class StripeWebhookController extends Controller
                     $this->handleSubscriptionUpdated($event->data->object);
                     break;
                     
-            $deduplicationService->recordFailure(
-                'stripe',
-                $event->type,
-                $event->id,
-                $event->data->toArray() ?? [],
-                $request->header('Stripe-Signature') ?? '',
-                $e->getMessage()
-            );
                 case 'customer.subscription.deleted':
                     $this->handleSubscriptionDeleted($event->data->object);
                     break;
@@ -109,22 +120,25 @@ class StripeWebhookController extends Controller
                     
                 default:
                     Log::info('ℹ️ Unhandled Stripe event type', [
-        
-        // Mark as processed after successful handling
-        try {
-            $failure = \App\Models\WebhookFailure::where('external_id', $event->id)->first();
-            if ($failure) {
-                $deduplicationService->markAsProcessed($failure);
-            }
-        } catch (\Exception $e) {
-            Log::warning('Failed to mark webhook as processed', [
-                'webhook_id' => $event->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
                         'type' => $event->type,
                     ]);
             }
+            
+            // ✅ Mark as processed after successful handling
+            try {
+                $failure = \App\Models\WebhookFailure::where('external_id', $event->id)->first();
+                if ($failure) {
+                    $this->deduplication->markAsProcessed($failure);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to mark webhook as processed', [
+                    'webhook_id' => $event->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // ✅ Record success for circuit breaker
+            $this->circuitBreaker->recordSuccess('stripe');
             
             return response()->json(['status' => 'success']);
             
@@ -134,9 +148,28 @@ class StripeWebhookController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            // ✅ Record failure for circuit breaker
+            $this->circuitBreaker->recordFailure('stripe', $e->getMessage());
+
+            // ✅ Record in webhook failures table
+            try {
+                $this->deduplication->recordFailure(
+                    'stripe',
+                    $event->type,
+                    $event->id,
+                    $event->data->toArray() ?? [],
+                    $signature ?? '',
+                    $e->getMessage()
+                );
+            } catch (\Exception $logError) {
+                Log::error('Failed to log webhook failure', [
+                    'error' => $logError->getMessage(),
+                ]);
+            }
             
-            // Retourner 200 pour éviter que Stripe ne retry indéfiniment
-            // mais logger l'erreur pour investigation
+            // Return 200 to prevent Stripe from retrying indefinitely
+            // but log the error for investigation
             return response()->json([
                 'status' => 'error',
                 'message' => 'Event logged but processing failed'
@@ -146,16 +179,15 @@ class StripeWebhookController extends Controller
     
     /**
      * Checkout Session Completed
-     * Créer l'abonnement après paiement réussi
      */
-    protected function handleCheckoutCompleted($session): void
+    private function handleCheckoutCompleted($session): void
     {
         Log::info('💳 Processing checkout.session.completed', [
             'session_id' => $session->id,
             'customer' => $session->customer,
         ]);
         
-        // Récupérer les metadata
+        // Retrieve metadata
         $userId = $session->metadata->user_id ?? null;
         $planCode = $session->metadata->plan_code ?? null;
         
@@ -166,7 +198,7 @@ class StripeWebhookController extends Controller
             return;
         }
         
-        // Récupérer le plan
+        // Retrieve plan
         $plan = CreatorPlan::where('code', $planCode)->first();
         if (!$plan) {
             Log::error('❌ Plan not found', [
@@ -175,7 +207,7 @@ class StripeWebhookController extends Controller
             return;
         }
         
-        // Créer ou mettre à jour l'abonnement
+        // Create or update subscription
         $subscription = CreatorSubscription::updateOrCreate(
             [
                 'user_id' => $userId,
@@ -202,14 +234,13 @@ class StripeWebhookController extends Controller
     /**
      * Subscription Created
      */
-    protected function handleSubscriptionCreated($subscription): void
+    private function handleSubscriptionCreated($subscription): void
     {
         Log::info('📝 Processing customer.subscription.created', [
             'subscription_id' => $subscription->id,
             'customer' => $subscription->customer,
         ]);
         
-        // Récupérer l'abonnement existant via stripe_subscription_id
         $creatorSubscription = CreatorSubscription::where('stripe_subscription_id', $subscription->id)->first();
         
         if ($creatorSubscription) {
@@ -228,7 +259,7 @@ class StripeWebhookController extends Controller
     /**
      * Subscription Updated
      */
-    protected function handleSubscriptionUpdated($subscription): void
+    private function handleSubscriptionUpdated($subscription): void
     {
         Log::info('🔄 Processing customer.subscription.updated', [
             'subscription_id' => $subscription->id,
@@ -250,9 +281,9 @@ class StripeWebhookController extends Controller
     }
     
     /**
-     * Subscription Deleted (annulation)
+     * Subscription Deleted (cancellation)
      */
-    protected function handleSubscriptionDeleted($subscription): void
+    private function handleSubscriptionDeleted($subscription): void
     {
         Log::info('🗑️ Processing customer.subscription.deleted', [
             'subscription_id' => $subscription->id,
@@ -273,9 +304,9 @@ class StripeWebhookController extends Controller
     }
     
     /**
-     * Invoice Payment Succeeded (renouvellement)
+     * Invoice Payment Succeeded (renewal)
      */
-    protected function handleInvoicePaymentSucceeded($invoice): void
+    private function handleInvoicePaymentSucceeded($invoice): void
     {
         Log::info('💰 Processing invoice.payment_succeeded', [
             'invoice_id' => $invoice->id,
@@ -299,9 +330,9 @@ class StripeWebhookController extends Controller
     }
     
     /**
-     * Invoice Payment Failed (échec paiement)
+     * Invoice Payment Failed
      */
-    protected function handleInvoicePaymentFailed($invoice): void
+    private function handleInvoicePaymentFailed($invoice): void
     {
         Log::error('❌ Processing invoice.payment_failed', [
             'invoice_id' => $invoice->id,
@@ -319,8 +350,6 @@ class StripeWebhookController extends Controller
                 Log::warning('⚠️ Subscription payment failed', [
                     'id' => $creatorSubscription->id,
                 ]);
-                
-                // TODO: Envoyer notification au créateur
             }
         }
     }
