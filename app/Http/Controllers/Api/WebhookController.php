@@ -7,6 +7,7 @@ use App\Jobs\ProcessMonetbilCallbackEventJob;
 use App\Jobs\ProcessStripeWebhookEventJob;
 use App\Models\MonetbilCallbackEvent;
 use App\Models\StripeWebhookEvent;
+use App\Services\Webhooks\WebhookDeduplicationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -306,6 +307,20 @@ class WebhookController extends Controller
         $webhookSecret = config('services.monetbil.service_secret') ?? '';
         $isProduction = app()->environment('production');
 
+        $deduplicationService = app(WebhookDeduplicationService::class);
+        
+        // Generate unique external ID from transaction or event
+        $externalId = $payload['transaction_uuid'] ?? $payload['transaction_id'] ?? $payload['event_key'] ?? null;
+        
+        // Check for duplicate (return 200 silently to prevent retries)
+        if ($externalId && $deduplicationService->isDuplicate('monetbil', $externalId)) {
+            Log::info('⏭️ Duplicate Monetbil webhook skipped', [
+                'external_id' => $externalId,
+                'event_type' => $payload['event_type'] ?? $payload['status'] ?? null,
+            ]);
+            return response()->json(['status' => 'duplicate_skipped']);
+        }
+
         // 1. VERIFY signature/auth (OBLIGATOIRE en production)
         $signature = $request->header('X-Monetbil-Signature') 
                   ?? $request->header('X-Signature') 
@@ -453,6 +468,18 @@ class WebhookController extends Controller
             }
 
         } catch (\Exception $e) {
+            // Record failure for retry later
+            if ($externalId) {
+                $deduplicationService->recordFailure(
+                    'monetbil',
+                    $payload['event_type'] ?? $payload['status'] ?? 'unknown',
+                    $externalId,
+                    $payload,
+                    $signature ?? '',
+                    $e->getMessage()
+                );
+            }
+
             Log::error('Monetbil callback: Failed to persist event', [
                 'event_key' => $eventKey,
                 'error' => $e->getMessage(),
@@ -484,7 +511,21 @@ class WebhookController extends Controller
             }
         }
 
-        // 4. RETURN 200 vite
+        // 4. Mark as processed and RETURN 200 vite
+        try {
+            if ($externalId) {
+                $failure = \App\Models\WebhookFailure::where('external_id', $externalId)->first();
+                if ($failure) {
+                    $deduplicationService->markAsProcessed($failure);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to mark Monetbil webhook as processed', [
+                'external_id' => $externalId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         return response()->json(['status' => 'received'], 200);
     }
 
