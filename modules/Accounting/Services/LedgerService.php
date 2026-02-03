@@ -212,6 +212,16 @@ final class LedgerService
             throw new LedgerException("Seules les écritures postées peuvent être contre-passées");
         }
         
+        // ✅ GOVERNANCE C6: Vérifier creator_id sur l'order référencé
+        if ($originalEntry->reference_type === 'order' && $originalEntry->reference_id) {
+            $order = \App\Models\Order::find($originalEntry->reference_id);
+            if ($order && $order->creator_id !== null) {
+                throw new LedgerException(
+                    "SÉCURITÉ SAAS PUR : Contre-passation interdite pour commande créateur #{$order->id}."
+                );
+            }
+        }
+        
         return DB::transaction(function () use ($originalEntry, $reason) {
             $fiscalYear = $this->getCurrentFiscalYear();
             
@@ -267,8 +277,10 @@ final class LedgerService
         ]);
     }
 
-
-    private function getCurrentFiscalYear(): FiscalYear
+    /**
+     * Obtenir l'exercice fiscal courant
+     */
+    public function getCurrentFiscalYear(): FiscalYear
     {
         return FiscalYear::where('is_closed', false)
             ->where('start_date', '<=', now())

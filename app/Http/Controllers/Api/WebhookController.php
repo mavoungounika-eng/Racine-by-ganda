@@ -37,7 +37,7 @@ class WebhookController extends Controller
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
         $webhookSecret = config('services.stripe.webhook_secret') ?? '';
-        $isProduction = app()->environment('production');
+        $isProduction = app()->environment('production') || config('app.env') === 'production';
 
         // Log safe (début de méthode) - Ne jamais logger payload brut ni headers sensibles
         $signatureHeaderPresent = !empty($signature);
@@ -316,7 +316,7 @@ class WebhookController extends Controller
 
         $payload = $request->all();
         $webhookSecret = config('services.monetbil.service_secret') ?? '';
-        $isProduction = app()->environment('production');
+        $isProduction = app()->environment('production') || config('app.env') === 'production';
 
         $deduplicationService = app(WebhookDeduplicationService::class);
         

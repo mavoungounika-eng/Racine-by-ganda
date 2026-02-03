@@ -59,13 +59,13 @@ class AmiraTest extends TestCase
     public function api_endpoint_is_accessible()
     {
         $response = $this->postJson(route('api.amira.ask'), [
-            'question' => 'Comment retourner un produit ?'
+            'message' => '/aide'
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['answer', 'source']);
+            ->assertJsonStructure(['status', 'message', 'sender']);
             
-        $this->assertStringContainsString('14 jours', $response->json('answer'));
+        $this->assertStringContainsString('Commandes Amira', $response->json('message'));
     }
 
     /** @test */

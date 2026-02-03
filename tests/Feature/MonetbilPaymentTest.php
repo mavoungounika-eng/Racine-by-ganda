@@ -56,7 +56,13 @@ class MonetbilPaymentTest extends TestCase
             'services.monetbil.currency' => 'XAF',
             'services.monetbil.notify_url' => 'https://example.com/payment/monetbil/notify',
             'services.monetbil.return_url' => 'https://example.com/checkout/success',
+            // Clés requises par SaaSCheckoutService
+            'services.monetbil.provider' => 'monetbil',
+            'services.monetbil.api_key' => 'test_service_key', // Mappe vers service_key pour ce test
         ]);
+
+        // Seed Accounting initialization necessary for payment processing
+        $this->seed(\Modules\Accounting\Database\Seeders\AccountingDatabaseSeeder::class);
     }
 
     #[Test]
@@ -281,6 +287,8 @@ class MonetbilPaymentTest extends TestCase
                 'payment_url' => 'https://widget.monetbil.com/pay/test',
             ], 200),
         ]);
+
+        $this->withoutExceptionHandling(); // DEBUG
 
         $response = $this->actingAs($this->user)
             ->post(route('payment.monetbil.start', ['order' => $this->order->id]));

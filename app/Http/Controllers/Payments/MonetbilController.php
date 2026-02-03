@@ -122,6 +122,18 @@ class MonetbilController extends Controller
             // Injecter les clés dynamiques dans le service
             $this->monetbilService->setServiceKeys($paymentConfig['momo_provider'], $paymentConfig['momo_api_key']);
 
+            // Construire le payload
+            $payload = [
+                'amount' => $lockedOrder->total_amount,
+                'phone' => $lockedOrder->customer_phone,
+                'payment_ref' => $paymentRef,
+                'user_id' => $lockedOrder->user_id, // Metadata utile
+                'email' => $lockedOrder->customer_email,
+                'return_url' => route('checkout.success', ['order' => $lockedOrder->id]),
+                'notify_url' => route('payment.monetbil.notify'), // Route générique centralisée
+                'logo' => asset('img/logo.png'), 
+            ];
+
             // Créer l'URL de paiement
             $paymentUrl = $this->monetbilService->createPaymentUrl($payload);
 
@@ -532,5 +544,6 @@ class MonetbilController extends Controller
         }
     }
 }
+
 
 

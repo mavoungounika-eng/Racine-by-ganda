@@ -213,7 +213,7 @@ Route::middleware('auth')->prefix('2fa')->name('2fa.')->group(function () {
 // ============================================
 // DASHBOARDS PAR RÔLE
 // ============================================
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'ensure:client'])->group(function () {
     // Dashboard Client - Route principale (utiliser celle-ci uniquement)
     Route::get('/compte', [\App\Http\Controllers\Account\ClientAccountController::class, 'index'])
         ->name('account.dashboard');
@@ -226,10 +226,13 @@ Route::middleware('auth')->group(function () {
     })->name('staff.dashboard')->middleware('ensure:staff,admin,super_admin');
     
     // Routes Profil (Phase 7) - Unifiées pour tous les rôles
-    Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
-    Route::get('/profil/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
+    // Utilise 'ensure' sans rôles spécifiques pour autoriser tous les rôles authentifiés avec contexte valide
+    Route::middleware('ensure')->group(function () {
+        Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+        Route::get('/profil/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
+    });
     Route::get('/profil/commandes', [\App\Http\Controllers\ProfileController::class, 'orders'])->name('profile.orders');
     Route::get('/profil/commandes/{order}', [\App\Http\Controllers\ProfileController::class, 'showOrder'])->name('profile.orders.show');
     Route::get('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'addresses'])->name('profile.addresses');

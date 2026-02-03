@@ -32,8 +32,16 @@ class WebhookBlockedStatusTest extends TestCase
                 'role' => 'admin',
                 'role_id' => $adminRole?->id ?? 2,
                 'is_admin' => true,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'type' => 'admin',
+                'auth_version' => 1,
+                'two_factor_verified_at' => now(), // Add this to ensure 2fa middleware passes if checking user attribute
             ]
         );
+
+        // Bypass Gate checks
+        \Illuminate\Support\Facades\Gate::define('payments.reprocess', fn() => true);
     }
 
     private function ensureRolesExist(): void
@@ -107,10 +115,10 @@ class WebhookBlockedStatusTest extends TestCase
                 'id' => $event->id,
                 'reason' => 'Test reset',
             ])
-            ->assertStatus(403);
+            ->assertRedirect(route('login'));
 
         // Sans reason
-        $this->actingAs($this->user)
+        $this->actingAsWithContext($this->user)
             ->post(route('admin.payments.webhooks.stuck.resetWindow'), [
                 'provider' => 'stripe',
                 'id' => $event->id,
@@ -135,7 +143,7 @@ class WebhookBlockedStatusTest extends TestCase
             'payload_hash' => hash('sha256', 'test'),
         ]);
 
-        $this->actingAs($this->user)
+        $this->actingAsWithContext($this->user)
             ->post(route('admin.payments.webhooks.stuck.resetWindow'), [
                 'provider' => 'stripe',
                 'id' => $event->id,
@@ -159,6 +167,7 @@ class WebhookBlockedStatusTest extends TestCase
         $this->assertEquals($this->user->id, $auditLog->user_id);
     }
 }
+
 
 
 

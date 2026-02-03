@@ -83,6 +83,17 @@ class AuthOrchestratorService
         // Step 5: Clear failed attempts
         $this->clearFailedAttempts($email, $ipAddress);
 
+        // Step 5b: Check account status
+        if (!in_array($user->status, ['active', 'confirmed'], true)) { // Allow 'active' (default) or 'confirmed'
+             $this->authLogger->logLoginAttempt($email, false, $ipAddress); // Log failure
+             Auth::logout();
+             
+             return AuthResult::failed(
+                 ['email' => 'Votre compte est inactif ou suspendu.'],
+                 ['status_check_failed' => true]
+             );
+        }
+
         // Step 6: Resolve UserContext (SINGLE SOURCE OF TRUTH)
         try {
             $context = $this->contextResolver->resolve($user);
@@ -111,7 +122,6 @@ class AuthOrchestratorService
         // Step 9: Apply session security
         $this->sessionSecurity->initializeSessionTracking($user);
 
-        // Step 11: Check if 2FA is required
         if ($this->decisionEngine->should2FAVerify($context)) {
             // Log 2FA challenge
             $this->authLogger->logLoginAttempt($user->email, true, $request->ip());
@@ -120,6 +130,15 @@ class AuthOrchestratorService
                 $user,
                 $this->decisionEngine->get2FAVerificationUrl()
             );
+        }
+
+        // Step 11b: Check if 2FA is mandatory but NOT setup (Setup required)
+        if ($context->requires2FA && !$context->has2FAEnabled) {
+             return AuthResult::twoFactorRequired(
+                 $user,
+                 route('2fa.setup'),
+                 ['setup_required' => true]
+             );
         }
 
         // Step 11: Determine redirect URL

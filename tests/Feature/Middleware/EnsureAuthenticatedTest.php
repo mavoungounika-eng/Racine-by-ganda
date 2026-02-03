@@ -44,7 +44,8 @@ class EnsureAuthenticatedTest extends TestCase
         // Test staff dashboard which requires staff/admin/super_admin
         $response = $this->actingAsWithContext($client)->get('/staff/dashboard');
 
-        $response->assertStatus(403);
+        // EnsureAuthenticated logout + redirect pour les utilisateurs non autorisés (pas 403)
+        $response->assertRedirect('/login');
     }
 
     /** @test */
@@ -145,7 +146,7 @@ class EnsureAuthenticatedTest extends TestCase
         // Try to access creator dashboard
         $response = $this->actingAsWithContext($admin)->get('/createur/dashboard');
 
-        // Should be forbidden (403)
-        $response->assertStatus(403);
+        // EnsureAuthenticated logout + redirect pour les utilisateurs non autorisés (pas 403)
+        $response->assertRedirect('/login');
     }
 }

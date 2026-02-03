@@ -11,18 +11,26 @@ class PaymentsHubRbacTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Seed roles
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
+    }
+
     /**
      * Test que les utilisateurs non autorisés ne peuvent pas accéder au Payments Hub
      */
     public function test_unauthorized_users_cannot_access_payments_hub(): void
     {
         // Créer un utilisateur client (non autorisé)
+        $clientRole = \App\Models\Role::where('slug', 'client')->first();
         $client = User::firstOrCreate(
             ['email' => 'client@test.com'],
             [
                 'name' => 'Client Test',
                 'password' => bcrypt('password'),
-                'role' => 'client',
+                'role_id' => $clientRole->id,
             ]
         );
 
@@ -30,11 +38,11 @@ class PaymentsHubRbacTest extends TestCase
 
         // Tenter d'accéder au dashboard Payments Hub
         $response = $this->get(route('admin.payments.index'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
 
         // Tenter d'accéder à la page providers
         $response = $this->get(route('admin.payments.providers.index'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -43,12 +51,16 @@ class PaymentsHubRbacTest extends TestCase
     public function test_authorized_users_can_view_payments_hub(): void
     {
         // Créer un utilisateur admin (autorisé)
+        $adminRole = \App\Models\Role::where('slug', 'admin')->first();
         $admin = User::firstOrCreate(
             ['email' => 'admin@test.com'],
             [
                 'name' => 'Admin Test',
                 'password' => bcrypt('password'),
-                'role' => 'admin',
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
             ]
         );
 
@@ -65,13 +77,17 @@ class PaymentsHubRbacTest extends TestCase
      */
     public function test_authorized_users_can_update_providers(): void
     {
-        // Créer un utilisateur admin (autorisé)
+        // Créer un utilisateur super_admin (autorisé)
+        $adminRole = \App\Models\Role::where('slug', 'super_admin')->first();
         $admin = User::firstOrCreate(
-            ['email' => 'admin2@test.com'],
+            ['email' => 'superadmin@test.com'],
             [
-                'name' => 'Admin Test 2',
+                'name' => 'Super Admin Test',
                 'password' => bcrypt('password'),
-                'role' => 'admin',
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
             ]
         );
 
@@ -110,12 +126,13 @@ class PaymentsHubRbacTest extends TestCase
     public function test_unauthorized_users_cannot_update_providers(): void
     {
         // Créer un utilisateur staff (peut voir mais pas configurer)
+        $staffRole = \App\Models\Role::where('slug', 'staff')->first();
         $staff = User::firstOrCreate(
             ['email' => 'staff@test.com'],
             [
                 'name' => 'Staff Test',
                 'password' => bcrypt('password'),
-                'role' => 'staff',
+                'role_id' => $staffRole->id,
             ]
         );
 
@@ -138,7 +155,7 @@ class PaymentsHubRbacTest extends TestCase
             'is_enabled' => false,
         ]);
 
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -147,12 +164,16 @@ class PaymentsHubRbacTest extends TestCase
     public function test_payments_menu_visibility(): void
     {
         // Créer un utilisateur admin
+        $adminRole = \App\Models\Role::where('slug', 'admin')->first();
         $admin = User::firstOrCreate(
             ['email' => 'admin3@test.com'],
             [
                 'name' => 'Admin Test 3',
                 'password' => bcrypt('password'),
-                'role' => 'admin',
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
             ]
         );
 
@@ -166,6 +187,7 @@ class PaymentsHubRbacTest extends TestCase
         $response->assertStatus(200);
     }
 }
+
 
 
 

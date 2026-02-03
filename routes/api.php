@@ -95,3 +95,38 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
         Route::get('/dashboard', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'dashboard'])->name('api.admin.pos.reports.dashboard');
     });
 });
+// ==========================================
+// Webhook Monitoring & Observability Routes
+// Available to authenticated admin users for monitoring
+// ==========================================
+Route::middleware(['auth', 'role:admin'])->prefix('webhooks/monitoring')->group(function () {
+    Route::get('/prometheus', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'prometheusMetrics'])
+        ->name('api.webhooks.monitoring.prometheus');
+    Route::get('/dashboard', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'dashboard'])
+        ->name('api.webhooks.monitoring.dashboard');
+    Route::get('/health', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'systemHealth'])
+        ->name('api.webhooks.monitoring.health');
+    Route::get('/health/{provider}', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'providerHealth'])
+        ->name('api.webhooks.monitoring.provider.health');
+    Route::get('/kpis', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'kpis'])
+        ->name('api.webhooks.monitoring.kpis');
+    Route::get('/sla', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'slaMetrics'])
+        ->name('api.webhooks.monitoring.sla');
+    Route::get('/alerts', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'alertStatus'])
+        ->name('api.webhooks.monitoring.alerts');
+    Route::get('/errors', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'errorAnalysis'])
+        ->name('api.webhooks.monitoring.errors');
+    Route::get('/trends', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'performanceTrends'])
+        ->name('api.webhooks.monitoring.trends');
+    Route::get('/report', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'generateReport'])
+        ->name('api.webhooks.monitoring.report');
+    Route::get('/metrics/json', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'metricsJson'])
+        ->name('api.webhooks.monitoring.metrics.json');
+});
+
+// ==========================================
+// Webhook Status Page (Public)
+// For third-party monitoring service integration
+// ==========================================
+Route::get('/webhooks/status', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'statusPage'])
+    ->name('webhooks.status.page');

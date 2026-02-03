@@ -122,6 +122,16 @@ class PosController extends Controller
 
             foreach ($request->items as $itemData) {
                 $product = Product::findOrFail($itemData['product_id']);
+                
+                // ✅ SAAS PUR : Le POS est réservé aux produits de la marque (RACINE)
+                if (!$product->isBrand()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Le produit {$product->title} n'est pas autorisé pour la vente directe POS (Produit Marketplace).",
+                    ], 403);
+                }
+
                 $quantity = $itemData['quantity'];
 
                 // Vérifier le stock

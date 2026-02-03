@@ -77,7 +77,17 @@ class PaymentRecordedListener implements ShouldQueue
             return;
         }
 
-        // GUARD 2: Chercher ou créer l'intent
+        // ✅ GOVERNANCE C5: Exit immédiat pour commandes créateurs
+        // Vérifier AVANT création d'Intent pour éviter pollution table financial_intents
+        if ($order->creator_id !== null) {
+            Log::info('PaymentRecordedListener: Creator order detected. Exiting immediately (SaaS Pur).', [
+                'order_id' => $order->id,
+                'creator_id' => $order->creator_id
+            ]);
+            return; // EXIT TOTAL - pas d'intent, pas de traitement
+        }
+
+        // GUARD 2: Chercher ou créer l'intent (Brand orders only)
         $intent = $this->intentService->findByReference('order', $order->id);
         
         if (!$intent) {

@@ -98,8 +98,8 @@ class AuthHardeningTest extends TestCase
         // Tenter d'accéder à une route ERP
         $response = $this->get('/erp/dashboard');
         
-        // Vérifier que l'accès est refusé avec 403
-        $response->assertStatus(403);
+        // EnsureAuthenticated fait logout + redirect pour les utilisateurs non autorisés
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -117,8 +117,8 @@ class AuthHardeningTest extends TestCase
         // Tenter d'accéder à une route admin
         $response = $this->get('/admin/dashboard');
         
-        // Vérifier que l'accès est refusé (redirection ou 403)
-        $response->assertStatus(403) || $response->assertRedirect();
+        // EnsureAuthenticated fait logout + redirect pour les utilisateurs non autorisés
+        $response->assertRedirect(route('login'));
     }
 
     /**

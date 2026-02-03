@@ -16,6 +16,8 @@ class CreatorSaleRecord extends Model
 {
     use HasFactory;
 
+    protected $table = 'creator_sales_records';
+
     protected $fillable = [
         'order_id',
         'creator_id',
@@ -31,6 +33,21 @@ class CreatorSaleRecord extends Model
         'gross_amount' => 'decimal:2',
         'fulfilled_at' => 'datetime',
     ];
+
+    /**
+     * ✅ GOVERNANCE C4: Guards d'invariants
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (CreatorSaleRecord $record) {
+            if ($record->creator_id === null) {
+                throw new \DomainException(
+                    "INVARIANT VIOLATION: CreatorSaleRecord requires non-null creator_id. " .
+                    "Order #{$record->order_id} cannot have analytics record without creator."
+                );
+            }
+        });
+    }
 
     /**
      * Relation avec la commande d'origine.

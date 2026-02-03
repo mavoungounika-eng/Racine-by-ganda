@@ -50,8 +50,9 @@ class AuthTest extends TestCase
     #[Test]
     public function user_is_redirected_based_on_role_after_login(): void
     {
+        $role = \App\Models\Role::firstOrCreate(['slug' => 'staff'], ['name' => 'Staff']);
         $staff = User::factory()->create([
-            'role' => 'staff',
+            'role_id' => $role->id,
             'password' => Hash::make('password123'),
         ]);
 
@@ -66,8 +67,9 @@ class AuthTest extends TestCase
     #[Test]
     public function client_is_redirected_to_account_dashboard(): void
     {
+        $role = \App\Models\Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client']);
         $client = User::factory()->create([
-            'role' => 'client',
+            'role_id' => $role->id,
             'password' => Hash::make('password123'),
         ]);
 
@@ -82,8 +84,9 @@ class AuthTest extends TestCase
     #[Test]
     public function creator_is_redirected_to_creator_dashboard(): void
     {
+        $role = \App\Models\Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur']);
         $creator = User::factory()->create([
-            'role' => 'createur',
+            'role_id' => $role->id,
             'password' => Hash::make('password123'),
         ]);
 

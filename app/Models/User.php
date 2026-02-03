@@ -42,14 +42,14 @@ class User extends Authenticatable implements MustVerifyEmail
         });
 
         static::saved(function ($user) {
-            // Check if role or status was changed (using getChanges instead of isDirty)
             $changes = $user->getChanges();
             
-            // CRITICAL: Check 'role' string change OR 'role_id' change
+            // CRITICAL: Check 'role' string change OR 'role_id' change OR 'password' change
             $roleChanged = array_key_exists('role_id', $changes) || array_key_exists('role', $changes);
             $statusChanged = array_key_exists('status', $changes);
+            $passwordChanged = array_key_exists('password', $changes);
 
-            if ($roleChanged || $statusChanged) {
+            if ($roleChanged || $statusChanged || $passwordChanged) {
                 // Use raw DB update to avoid triggering events
                 \DB::table('users')
                     ->where('id', $user->id)

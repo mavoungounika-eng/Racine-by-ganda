@@ -105,7 +105,8 @@ class SecurityTest extends TestCase
         
         $response = $this->actingAs($client)->get('/admin/dashboard');
         
-        $response->assertStatus(403);
+        // EnsureAuthenticated fait logout + redirect pour les utilisateurs non autorisés
+        $response->assertRedirect('/login');
     }
 
     #[Test]
@@ -115,7 +116,8 @@ class SecurityTest extends TestCase
         
         $response = $this->actingAs($client)->get('/createur/dashboard');
         
-        $response->assertStatus(403);
+        // EnsureAuthenticated fait logout + redirect pour les utilisateurs non autorisés
+        $response->assertRedirect('/login');
     }
 
     #[Test]
@@ -125,7 +127,8 @@ class SecurityTest extends TestCase
         
         $response = $this->actingAs($client)->get('/erp/dashboard');
         
-        $response->assertStatus(403);
+        // EnsureAuthenticated fait logout + redirect pour les utilisateurs non autorisés
+        $response->assertRedirect('/login');
     }
 
     #[Test]

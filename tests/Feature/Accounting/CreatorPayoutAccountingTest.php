@@ -11,7 +11,25 @@ use Modules\Accounting\Models\AccountingEntry;
 use Modules\Accounting\Models\AccountingEntryLine;
 use Modules\Accounting\Events\CreatorPayoutProcessed;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Group;
 
+/**
+ * ⚠️ TESTS OBSOLÈTES — ARCHITECTURE SAAS PUR
+ * 
+ * Ces tests supposent que RACINE comptabilise les ventes des créateurs (compte 4671).
+ * Cette architecture a été abandonnée au profit du modèle "SaaS Pur" où :
+ * 
+ * 1. RACINE ne comptabilise PAS les fonds des créateurs dans son Ledger
+ * 2. Les ventes créateurs sont trackées via CreatorSaleRecord (analytique)
+ * 3. Les payouts créateurs sont des transferts directs, pas des écritures comptables RACINE
+ * 
+ * @see LedgerService::createEntry() — Guard "SÉCURITÉ SAAS PUR"
+ * @see PaymentRecordedListener::handle() — Skip des ordres créateurs
+ * @see ChartOfAccountsSeeder — Compte 4671 commenté (DÉSACTIVÉ)
+ * 
+ * Ces tests sont conservés comme documentation historique mais skippés.
+ */
+#[Group('skip')]
 class CreatorPayoutAccountingTest extends TestCase
 {
     use RefreshDatabase;
@@ -23,12 +41,8 @@ class CreatorPayoutAccountingTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
-        $this->creator = User::factory()->create(['role' => 'createur']);
-        $this->actingAs($this->user);
-
-        // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        // Skip tous les tests de cette classe
+        $this->markTestSkipped('Architecture SaaS Pur: RACINE ne comptabilise pas les fonds créateurs. Voir docblock de la classe.');
     }
 
     /** @test */

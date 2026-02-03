@@ -65,7 +65,8 @@ class RouteProtectionTest extends TestCase
         
         $response = $this->actingAsWithContext($client)->get(route('admin.kyc.index'));
         
-        $response->assertStatus(403);
+        // EnsureAuthenticated fait logout + redirect pour les utilisateurs non autorisés
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -77,7 +78,8 @@ class RouteProtectionTest extends TestCase
         
         $response = $this->actingAsWithContext($creator)->get(route('admin.creator-subscriptions.index'));
         
-        $response->assertStatus(403);
+        // EnsureAuthenticated fait logout + redirect pour les utilisateurs non autorisés
+        $response->assertRedirect(route('login'));
     }
 
     /**

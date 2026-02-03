@@ -43,6 +43,10 @@ class EnsureAuthenticated
     {
         // Step 1: Check authentication
         if (!Auth::check()) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+
             return redirect()->route('login')
                 ->with('error', 'Vous devez être connecté pour accéder à cette page.');
         }
@@ -52,41 +56,55 @@ class EnsureAuthenticated
         // Refresh user from DB to get latest auth_version
         $user->refresh();
 
-        // Step 2: Get UserContext from session (ZERO DB query)
-        $context = $this->contextResolver->getFromSession();
+        // Step 2: Resolve UserContext
+        if ($request->is('api/*')) {
+            // For API requests (stateless), resolve context directly from the User model
+            $context = $this->contextResolver->resolve($user);
+        } else {
+            // For web requests, prefer the session-frozen context (ZERO DB queries)
+            $context = $this->contextResolver->getFromSession();
 
-        if (!$context) {
-            // No context in session - invalid state, logout and redirect
-            Log::warning('EnsureAuthenticated: Missing UserContext in session', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-            ]);
+            if (!$context) {
+                // No context in session - invalid state, logout and redirect
+                Log::warning('EnsureAuthenticated: Missing UserContext in session', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                ]);
 
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
 
-            return redirect()->route('login')
-                ->with('error', 'Votre session a expiré. Veuillez vous reconnecter.');
-        }
+                if ($request->expectsJson() || $request->is('api/*')) {
+                    return response()->json(['message' => 'Session expired.'], 401);
+                }
 
-        // Step 3: Validate auth_version (prevent privilege escalation)
-        if (!$this->contextResolver->validateSession($user, $context)) {
-            // auth_version mismatch - user context changed in DB
-            Log::warning('EnsureAuthenticated: auth_version mismatch (privilege escalation prevented)', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'session_auth_version' => $context->authVersion,
-                'db_auth_version' => $user->auth_version,
-                'session_role' => $context->role,
-            ]);
+                return redirect()->route('login')
+                    ->with('error', 'Votre session a expiré. Veuillez vous reconnecter.');
+            }
 
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            // Step 3: Validate auth_version (prevent privilege escalation)
+            if (!$this->contextResolver->validateSession($user, $context)) {
+                // auth_version mismatch - user context changed in DB
+                Log::warning('EnsureAuthenticated: auth_version mismatch (privilege escalation prevented)', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'session_auth_version' => $context->authVersion,
+                    'db_auth_version' => $user->auth_version,
+                    'session_role' => $context->role,
+                ]);
 
-            return redirect()->route('login')
-                ->with('error', 'Votre session a été invalidée suite à une modification de votre compte. Veuillez vous reconnecter.');
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                if ($request->expectsJson() || $request->is('api/*')) {
+                    return response()->json(['message' => 'Session invalidated.'], 401);
+                }
+
+                return redirect()->route('login')
+                    ->with('error', 'Votre session a été invalidée suite à une modification de votre compte. Veuillez vous reconnecter.');
+            }
         }
 
         // Step 4: Check role authorization (if roles specified)
@@ -100,6 +118,10 @@ class EnsureAuthenticated
                     'required_roles' => $roles,
                     'url' => $request->url(),
                 ]);
+
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json(['message' => 'Forbidden.'], 403);
+                }
 
                 Auth::logout();
                 $request->session()->invalidate();

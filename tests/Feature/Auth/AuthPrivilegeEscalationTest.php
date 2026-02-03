@@ -106,11 +106,11 @@ class AuthPrivilegeEscalationTest extends TestCase
             ]);
 
         // Try to access admin dashboard with old session
-        $response = $this->withSession([])->get(route('admin.dashboard'));
+        $response = $this->withSession(['user_context' => null])->get(route('admin.dashboard'));
 
         // MUST be redirected to login
         $response->assertRedirect(route('login'));
-        $response->assertSessionHasErrors('session');
+        $response->assertSessionHas('error');
 
         // User should be logged out
         $this->assertGuest();
@@ -149,7 +149,7 @@ class AuthPrivilegeEscalationTest extends TestCase
 
         // MUST be redirected to login
         $response->assertRedirect(route('login'));
-        $response->assertSessionHasErrors('session');
+        $response->assertSessionHas('error');
 
         // User should be logged out
         $this->assertGuest();
@@ -179,11 +179,11 @@ class AuthPrivilegeEscalationTest extends TestCase
         $user->update(['status' => 'suspended']);
 
         // Try to access protected page
-        $response = $this->withSession([])->get(route('account.dashboard'));
+        $response = $this->withSession(['user_context' => null])->get(route('account.dashboard'));
 
         // MUST be redirected to login
         $response->assertRedirect(route('login'));
-        $response->assertSessionHasErrors('session');
+        $response->assertSessionHas('error');
 
         // User should be logged out
         $this->assertGuest();
@@ -247,11 +247,11 @@ class AuthPrivilegeEscalationTest extends TestCase
         $this->actingAs($user);
 
         // Try to access protected page WITHOUT user_context in session
-        $response = $this->withSession([])->get(route('account.dashboard'));
+        $response = $this->withSession(['user_context' => null])->get(route('account.dashboard'));
 
         // MUST be redirected to login
         $response->assertRedirect(route('login'));
-        $response->assertSessionHasErrors('session');
+        $response->assertSessionHas('error');
 
         // User should be logged out
         $this->assertGuest();

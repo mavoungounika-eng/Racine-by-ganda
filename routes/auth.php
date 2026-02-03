@@ -97,9 +97,11 @@ Route::post('/logout', [LoginController::class, 'logout'])
 if (app()->environment('testing')) {
     Route::get('/auth/google/redirect/{role?}', [SocialAuthController::class, 'redirect'])
         ->where('role', 'client|creator')
+        ->defaults('provider', 'google')
         ->name('auth.google.redirect');
 
     Route::get('/auth/google/callback', [SocialAuthController::class, 'callback'])
+        ->defaults('provider', 'google')
         ->name('auth.google.callback');
 }
 

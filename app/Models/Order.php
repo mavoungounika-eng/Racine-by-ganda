@@ -57,6 +57,33 @@ class Order extends Model
                 $order->order_number = $orderNumberService->generateOrderNumber();
             }
         });
+
+        // ✅ GOVERNANCE C1 + C2 : Guards d'invariants critiques
+        static::updating(function (Order $order) {
+            // C1: Non-régression payment_status (paid → pending interdit)
+            if ($order->isDirty('payment_status')) {
+                $old = $order->getOriginal('payment_status');
+                $new = $order->payment_status;
+                
+                if ($old === 'paid' && $new === 'pending') {
+                    throw new \DomainException(
+                        "INVARIANT VIOLATION: payment_status cannot regress from 'paid' to 'pending'. " .
+                        "Order #{$order->id}. Use refund/compensation instead."
+                    );
+                }
+            }
+
+            // C2: États terminaux immuables (completed/cancelled)
+            if ($order->isDirty('status')) {
+                $old = $order->getOriginal('status');
+                
+                if (in_array($old, ['completed', 'cancelled'], true)) {
+                    throw new \DomainException(
+                        "INVARIANT VIOLATION: Order #{$order->id} status '{$old}' is terminal and cannot be modified."
+                    );
+                }
+            }
+        });
     }
 
     public function user(): BelongsTo

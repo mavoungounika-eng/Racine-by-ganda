@@ -11,6 +11,7 @@ use Modules\Accounting\Models\BankReconciliation;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\FiscalYear;
 use Modules\Accounting\Services\BankReconciliationService;
+use Modules\Accounting\Services\LedgerService;
 use Carbon\Carbon;
 
 class BankReconciliationTest extends TestCase
@@ -19,6 +20,7 @@ class BankReconciliationTest extends TestCase
 
     protected User $user;
     protected BankReconciliationService $reconciliationService;
+    protected LedgerService $ledgerService;
 
     protected function setUp(): void
     {
@@ -31,6 +33,46 @@ class BankReconciliationTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
 
         $this->reconciliationService = app(BankReconciliationService::class);
+        $this->ledgerService = app(LedgerService::class);
+    }
+
+    /**
+     * Helper: Créer une écriture comptable de paiement en attente
+     * Simule l'écriture créée par PaymentRecordedListener
+     */
+    protected function createPendingPaymentEntry(Order $order): AccountingEntry
+    {
+        $debitAccount = match ($order->payment_method) {
+            'card' => '5112',           // Encaissements Stripe (attente)
+            'mobile_money' => '5113',   // Encaissements Monetbil (attente)
+            'cash' => '5700',           // Caisse
+            default => '5112',
+        };
+
+        $journal = Journal::where('code', 'VTE')->firstOrFail();
+        $fiscalYear = $this->ledgerService->getCurrentFiscalYear();
+
+        $totalTTC = $order->total_amount;
+        $vatRate = 18.0;
+        $amountHT = $totalTTC / (1 + $vatRate / 100);
+        $vatAmount = $totalTTC - $amountHT;
+
+        $entry = $this->ledgerService->createEntry([
+            'journal_id' => $journal->id,
+            'fiscal_year_id' => $fiscalYear->id,
+            'entry_date' => now()->toDateString(),
+            'description' => "Vente commande #{$order->id}",
+            'reference_type' => 'order',
+            'reference_id' => $order->id,
+        ]);
+
+        $this->ledgerService->addLine($entry, $debitAccount, $totalTTC, 0, "Encaissement commande #{$order->id}");
+        $this->ledgerService->addLine($entry, '7011', 0, $amountHT, "Vente HT");
+        $this->ledgerService->addLine($entry, '4421', 0, $vatAmount, "TVA collectée {$vatRate}%");
+
+        $this->ledgerService->postEntry($entry);
+
+        return $entry;
     }
 
     /** @test */
@@ -44,10 +86,8 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        // Vérifier écriture initiale créée
-        $initialEntry = AccountingEntry::where('reference_type', 'order')
-            ->where('reference_id', $order->id)
-            ->first();
+        // Simuler l'écriture comptable créée par PaymentRecordedListener
+        $initialEntry = $this->createPendingPaymentEntry($order);
         $this->assertNotNull($initialEntry);
 
         // Vérifier solde compte attente
@@ -105,6 +145,9 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
+        // Simuler l'écriture comptable créée par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
+
         // Vérifier solde compte attente
         $pendingAmount = $this->reconciliationService->getPendingMonetbilAmount();
         $this->assertEquals(59.00, $pendingAmount);
@@ -148,6 +191,9 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
+        // Simuler l'écriture comptable créée par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
+
         // Premier rapprochement
         $this->reconciliationService->reconcileStripePayout(
             payoutId: 'po_test_789',
@@ -177,6 +223,9 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
+        // Simuler l'écriture comptable créée par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
+
         // Tentative de rapprocher 200 € (> 118 €)
         $this->expectException(\Modules\Accounting\Exceptions\LedgerException::class);
         $this->expectExceptionMessage('supérieur aux encaissements en attente');
@@ -193,12 +242,14 @@ class BankReconciliationTest extends TestCase
     {
         // Créer 3 ventes Stripe
         for ($i = 0; $i < 3; $i++) {
-            Order::factory()->create([
+            $order = Order::factory()->create([
                 'user_id' => $this->user->id,
                 'total_amount' => 118.00,
                 'payment_method' => 'card',
                 'payment_status' => 'paid',
             ]);
+            // Simuler l'écriture comptable créée par PaymentRecordedListener
+            $this->createPendingPaymentEntry($order);
         }
 
         // Vérifier solde total
@@ -227,6 +278,9 @@ class BankReconciliationTest extends TestCase
             'payment_method' => 'card',
             'payment_status' => 'paid',
         ]);
+
+        // Simuler l'écriture comptable créée par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
 
         // Créer rapprochement
         $this->reconciliationService->reconcileStripePayout(

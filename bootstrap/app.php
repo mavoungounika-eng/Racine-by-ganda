@@ -29,6 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Enregistrer les middlewares personnalisés
         $middleware->alias([
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            
             // PHASE 3: Unified Authentication & Authorization
             'ensure' => \App\Http\Middleware\EnsureAuthenticated::class,
             
@@ -45,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
             'creator' => \App\Http\Middleware\EnsureAuthenticated::class, // Legacy alias, use 'ensure:createur' instead
             'admin' => \App\Http\Middleware\EnsureAuthenticated::class . ':admin,super_admin',
+            'role' => \App\Http\Middleware\EnsureAuthenticated::class,
             'role.creator' => \App\Http\Middleware\EnsureAuthenticated::class . ':createur',
         ]);
 
@@ -60,7 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Group 'web' configuration
         $middleware->web(append: [
-            \App\Http\Middleware\ValidateSessionContext::class,
+            // ValidateSessionContext is now replaced by Unified EnsureAuthenticated middleware at route level
         ]);
 
         // Enregistrement des métriques de performance (debug uniquement)

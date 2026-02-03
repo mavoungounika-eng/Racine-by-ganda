@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -37,7 +38,10 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_role_revoked_during_session_blocks_access(): void
     {
         $admin = User::factory()->create([
+            'role_id' => \App\Models\Role::where('slug', 'admin')->first()->id,
+            'is_admin' => true,
             'role' => 'admin',
+            'auth_version' => 1,
             'two_factor_secret' => 'stub-secret',
             'two_factor_confirmed_at' => now(),
         ]);
@@ -69,7 +73,9 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_staff_role_revoked_loses_erp_access(): void
     {
         $staff = User::factory()->create([
+            'role_id' => \App\Models\Role::where('slug', 'staff')->first()->id,
             'role' => 'staff',
+            'auth_version' => 1,
         ]);
         $staff->refresh();
 
@@ -96,7 +102,9 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_creator_suspended_loses_access(): void
     {
         $creator = User::factory()->create([
+            'role_id' => \App\Models\Role::where('slug', 'createur')->first()->id,
             'role' => 'createur',
+            'auth_version' => 1,
         ]);
 
         // Créer le profil créateur actif
@@ -124,7 +132,7 @@ class AuthDynamicRevocationTest extends TestCase
 
         // Tenter d'accéder à nouveau -> 302 (Session invalidée ou redirect suspended)
         $response = $this->get(route('creator.dashboard'));
-        $response->assertStatus(302);
+        $response->assertStatus(302); // Login redirect
     }
 
     /**
@@ -133,7 +141,10 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_admin_2fa_revoked_redirects_to_setup(): void
     {
         $admin = User::factory()->create([
+            'role_id' => \App\Models\Role::where('slug', 'admin')->first()->id,
+            'is_admin' => true,
             'role' => 'admin',
+            'auth_version' => 1,
             'two_factor_secret' => 'stub-secret',
             'two_factor_confirmed_at' => now(),
         ]);
@@ -165,7 +176,10 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_specific_permission_revoked_blocks_access(): void
     {
         $admin = User::factory()->create([
+            'role_id' => \App\Models\Role::where('slug', 'admin')->first()->id,
+            'is_admin' => true,
             'role' => 'admin',
+            'auth_version' => 1,
             'two_factor_secret' => 'stub-secret',
             'two_factor_confirmed_at' => now(),
         ]);
@@ -189,19 +203,9 @@ class AuthDynamicRevocationTest extends TestCase
         $admin->refresh();
         $admin->load('roleRelation.permissions');
         
-        // Note: changer les permissions du rôle ne change PAS l'auth_version du User automatiquement
-        // SAUF si on implémente un observer sur permission_role... ce qui est lourd.
-        // Mais ValidateSessionContext ne vérifie que le User.
-        // C'est le CheckPermission (Gate) qui revérifie les permissions.
-        // Donc on garde la même session.
-        
-        // On doit forcer le rechargement du User pour le Gate check dans la requête suivante ?
-        // actingAs persiste le user.
-        // On re-authentifie pour être sûr que le Gate utilise les relations fraîches
         $this->actAsWithContext($admin);
 
         // Tenter d'accéder à nouveau -> Redirection 302 vers login
-        // La consigne exige 302 pour TOUTE révocation.
         $response = $this->get(route('admin.payments.index'));
         $response->assertRedirect(route('login'));
     }
@@ -212,7 +216,10 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_session_invalidated_after_critical_role_revocation(): void
     {
         $admin = User::factory()->create([
+            'role_id' => \App\Models\Role::where('slug', 'admin')->first()->id,
+            'is_admin' => true,
             'role' => 'admin',
+            'auth_version' => 1,
             'two_factor_secret' => 'stub-secret',
             'two_factor_confirmed_at' => now(),
         ]);
@@ -247,7 +254,10 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_multiple_simultaneous_revocations_handled_correctly(): void
     {
         $users = User::factory()->count(3)->create([
+            'role_id' => \App\Models\Role::where('slug', 'admin')->first()->id,
+            'is_admin' => true,
             'role' => 'admin',
+            'auth_version' => 1,
             'two_factor_secret' => 'stub-secret',
             'two_factor_confirmed_at' => now(),
         ]);
@@ -287,7 +297,10 @@ class AuthDynamicRevocationTest extends TestCase
     public function test_role_downgrade_maintains_appropriate_access(): void
     {
         $admin = User::factory()->create([
+            'role_id' => \App\Models\Role::where('slug', 'admin')->first()->id,
+            'is_admin' => true,
             'role' => 'admin',
+            'auth_version' => 1,
             'two_factor_secret' => 'stub-secret',
             'two_factor_confirmed_at' => now(),
         ]);

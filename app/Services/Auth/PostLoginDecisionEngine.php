@@ -133,7 +133,7 @@ class PostLoginDecisionEngine
      */
     public function get2FAVerificationUrl(): string
     {
-        return route('2fa.verify');
+        return route('2fa.challenge');
     }
 
     /**

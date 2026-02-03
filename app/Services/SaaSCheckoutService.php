@@ -30,7 +30,22 @@ class SaaSCheckoutService
             throw new OrderException(
                 'Panier mixte non autorisé',
                 422,
-                "Pour garantir que votre paiement aille directement au bon destinataire, vous ne pouvez pas mélanger des produits RACINE avec des produits d'un créateur (ou de deux créateurs différents) dans le même panier."
+                "Pour garantir que votre paiement aille directement au bon destinataire, vous ne pouvez pas mélanger des produits RACINE avec des produits d'un créateur dans le même panier."
+            );
+        }
+
+        // INVARIANT I6: Panier multi-créateurs INTERDIT
+        // Un panier ne peut contenir des produits que d'un seul créateur
+        $creatorUserIds = $cartItems
+            ->filter(fn($item) => $item->product->product_type === 'marketplace')
+            ->map(fn($item) => $item->product->user_id)
+            ->unique();
+
+        if ($creatorUserIds->count() > 1) {
+            throw new OrderException(
+                'Panier multi-créateurs non autorisé',
+                422,
+                "Un panier ne peut contenir des produits que d'un seul créateur. Veuillez commander séparément auprès de chaque créateur."
             );
         }
 

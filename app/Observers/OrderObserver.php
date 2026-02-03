@@ -202,17 +202,27 @@ class OrderObserver
             // StockService vérifie automatiquement si un mouvement existe déjà (protection double décrément)
             // ✅ RBG-P0-01 : Le stock a déjà été décrémenté à la création (created())
 
-            // ✅ POS AUDIT-READY: Skip PaymentRecorded for POS orders
-            // POS orders have user_id = null and create their own Intents via listeners
-            $isPosOrder = is_null($order->user_id) && \App\Models\PosSale::where('order_id', $order->id)->exists();
-            
-            if (!$isPosOrder) {
-                // ✅ SPRINT 5-6: Dispatch événement pour comptabilité (non-POS only)
-                event(new \Modules\Accounting\Events\PaymentRecorded($order));
-            } else {
-                \Log::info('OrderObserver: Skipping PaymentRecorded for POS order (handled by POS listeners)', [
+            // ✅ GOVERNANCE C3: Skip PaymentRecorded for creator orders (SaaS Pur)
+            // Creator orders go directly to creator's payment gateway - no RACINE accounting
+            if ($order->creator_id !== null) {
+                \Log::info('OrderObserver: Skipping PaymentRecorded for creator order (SaaS Pur)', [
                     'order_id' => $order->id,
+                    'creator_id' => $order->creator_id,
                 ]);
+                // Continue to loyalty points and notifications, but skip accounting event
+            } else {
+                // ✅ POS AUDIT-READY: Skip PaymentRecorded for POS orders
+                // POS orders have user_id = null and create their own Intents via listeners
+                $isPosOrder = is_null($order->user_id) && \App\Models\PosSale::where('order_id', $order->id)->exists();
+                
+                if (!$isPosOrder) {
+                    // ✅ SPRINT 5-6: Dispatch événement pour comptabilité (Brand orders only)
+                    event(new \Modules\Accounting\Events\PaymentRecorded($order));
+                } else {
+                    \Log::info('OrderObserver: Skipping PaymentRecorded for POS order (handled by POS listeners)', [
+                        'order_id' => $order->id,
+                    ]);
+                }
             }
 
             // Attribuer des points de fidélité
