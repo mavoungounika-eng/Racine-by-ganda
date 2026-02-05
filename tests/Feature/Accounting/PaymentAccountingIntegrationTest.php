@@ -12,10 +12,11 @@ use Modules\Accounting\Models\FiscalYear;
 use Modules\Accounting\Models\ChartOfAccount;
 use Modules\Accounting\Events\PaymentRecorded;
 use Illuminate\Support\Facades\Event;
+use Tests\Traits\SeedsAccounting;
 
 class PaymentAccountingIntegrationTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected Journal $journal;
@@ -28,11 +29,11 @@ class PaymentAccountingIntegrationTest extends TestCase
         // Créer utilisateur
         $this->user = User::factory()->create();
 
-        // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        // Seed données comptables via trait explicite
+        $this->seedAccounting();
 
         $this->journal = Journal::where('code', 'VTE')->first();
-        $this->fiscalYear = FiscalYear::current()->first();
+        $this->fiscalYear = FiscalYear::where('is_closed', false)->first();
     }
 
     /** @test */

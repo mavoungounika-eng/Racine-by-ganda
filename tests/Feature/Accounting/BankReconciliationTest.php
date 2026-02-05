@@ -13,10 +13,11 @@ use Modules\Accounting\Models\FiscalYear;
 use Modules\Accounting\Services\BankReconciliationService;
 use Modules\Accounting\Services\LedgerService;
 use Carbon\Carbon;
+use Tests\Traits\SeedsAccounting;
 
 class BankReconciliationTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected BankReconciliationService $reconciliationService;
@@ -29,8 +30,8 @@ class BankReconciliationTest extends TestCase
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
 
-        // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        // Seed données comptables via trait explicite
+        $this->seedAccounting();
 
         $this->reconciliationService = app(BankReconciliationService::class);
         $this->ledgerService = app(LedgerService::class);

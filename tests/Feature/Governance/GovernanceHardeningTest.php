@@ -13,6 +13,7 @@ use Modules\Accounting\Events\PaymentRecorded;
 use Modules\Accounting\Services\LedgerService;
 use Modules\Accounting\Exceptions\LedgerException;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests bloquants de gouvernance SaaS Pur.
@@ -25,7 +26,7 @@ use Tests\TestCase;
  */
 class GovernanceHardeningTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     // =========================================================================
     // C1: Non-régression payment_status
@@ -208,39 +209,8 @@ class GovernanceHardeningTest extends TestCase
     /** @test */
     public function reverse_entry_blocked_for_creator_order(): void
     {
-        // Setup accounting environment
-        $fiscalYear = \Modules\Accounting\Models\FiscalYear::create([
-            'name' => 'Test 2026',
-            'start_date' => now()->startOfYear(),
-            'end_date' => now()->endOfYear(),
-            'is_closed' => false,
-        ]);
-        
-        $journal = \Modules\Accounting\Models\Journal::create([
-            'code' => 'VTE',
-            'name' => 'Journal des Ventes',
-            'type' => 'sales',
-        ]);
-        
-        // Create required accounts
-        \Modules\Accounting\Models\ChartOfAccount::create([
-            'code' => '5112',
-            'label' => 'Banque Carte Bancaire',
-            'account_type' => 'asset',
-            'normal_balance' => 'debit',
-        ]);
-        \Modules\Accounting\Models\ChartOfAccount::create([
-            'code' => '7011',
-            'label' => 'Ventes de marchandises',
-            'account_type' => 'revenue',
-            'normal_balance' => 'credit',
-        ]);
-        \Modules\Accounting\Models\ChartOfAccount::create([
-            'code' => '4421',
-            'label' => 'TVA collectée',
-            'account_type' => 'liability',
-            'normal_balance' => 'credit',
-        ]);
+        // Seed données comptables via trait
+        $this->seedAccounting();
         
         // Créer une écriture pour un order Brand
         $brandOrder = Order::factory()->create(['creator_id' => null]);

@@ -8,6 +8,7 @@ use App\Models\User;
 use Modules\Accounting\Models\AccountingEntry;
 use Modules\Accounting\Services\LedgerService;
 use Modules\Accounting\Exceptions\ForbiddenCreationException;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests d'architecture pour le verrouillage du LedgerService
@@ -19,7 +20,7 @@ use Modules\Accounting\Exceptions\ForbiddenCreationException;
  */
 class LedgerServiceArchitectureTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected function setUp(): void
     {
@@ -28,8 +29,8 @@ class LedgerServiceArchitectureTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
         
-        // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        // Seed données comptables via trait explicite
+        $this->seedAccounting();
     }
 
     /**

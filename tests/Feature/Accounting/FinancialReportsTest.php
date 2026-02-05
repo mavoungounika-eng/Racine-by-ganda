@@ -11,10 +11,11 @@ use Modules\ERP\Models\ErpSupplier;
 use Modules\Accounting\Models\FiscalYear;
 use Modules\Accounting\Services\ReportingService;
 use Carbon\Carbon;
+use Tests\Traits\SeedsAccounting;
 
 class FinancialReportsTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected FiscalYear $fiscalYear;
@@ -27,10 +28,10 @@ class FinancialReportsTest extends TestCase
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
 
-        // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        // Seed données comptables via trait explicite
+        $this->seedAccounting();
 
-        $this->fiscalYear = FiscalYear::current()->first();
+        $this->fiscalYear = FiscalYear::where('is_closed', false)->first();
         $this->reportingService = app(ReportingService::class);
     }
 
