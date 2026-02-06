@@ -65,6 +65,7 @@ jobs:
           DB_PASSWORD: password
         run: |
           php artisan migrate --force
+          php artisan migrate --path=modules/Accounting/database/migrations --force
           php artisan db:seed --class=RolesTableSeeder --force
           php artisan db:seed --class=CreatorPlanSeeder --force
           php artisan test --filter=GovernanceHardeningTest --stop-on-failure
