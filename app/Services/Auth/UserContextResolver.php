@@ -144,21 +144,15 @@ class UserContextResolver
 
     /**
      * Determine if 2FA is required for this user
+     * 
+     * Delegates to TwoFactorService which handles environment-specific logic
+     * (2FA is not required in local/testing environments)
      */
     private function requires2FA(User $user, string $role): bool
     {
-        // Check user-level 2FA requirement
-        if ($user->two_factor_required) {
-            return true;
-        }
-
-        // Check role-level 2FA requirement
-        // Super admins and admins should have 2FA
-        if (in_array($role, [Role::SUPER_ADMIN, Role::ADMIN], true)) {
-            return true;
-        }
-
-        return false;
+        // Delegate to TwoFactorService for consistent environment handling
+        $twoFactorService = app(\App\Services\TwoFactorService::class);
+        return $twoFactorService->isRequired($user);
     }
 
     /**

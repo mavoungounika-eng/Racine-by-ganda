@@ -186,9 +186,9 @@ class TwoFactorService
      */
     public function isRequired(User $user): bool
     {
-        // En développement local, la 2FA n'est pas obligatoire
+        // En développement local ou testing, la 2FA n'est pas obligatoire
         // On permet de surcharger via config pour les tests
-        if (app()->environment('local') || config('app.env') === 'local') {
+        if (app()->environment(['local', 'testing']) || config('app.env') === 'local') {
             return false;
         }
         
