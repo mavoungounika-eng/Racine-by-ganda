@@ -139,7 +139,7 @@ class OrderService
             // Déterminer le creator_id (Propriétaire des produits)
             // On prend le user_id du premier produit car validateCartIntegrity garantit l'unicité du propriétaire
             $firstProduct = $lockedProducts->first();
-            $creatorId = ($firstProduct && $firstProduct->product_type === 'creator') 
+            $creatorId = ($firstProduct && $firstProduct->product_type === 'marketplace') 
                 ? $firstProduct->user_id 
                 : null;
 
