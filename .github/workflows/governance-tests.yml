@@ -65,8 +65,11 @@ jobs:
           DB_PASSWORD: password
         run: |
           php artisan migrate --force
+          php artisan db:seed --class=RolesTableSeeder --force
+          php artisan db:seed --class=CreatorPlanSeeder --force
           php artisan test --filter=GovernanceHardeningTest --stop-on-failure
           php artisan test --filter=SaasPurInvariantsTest --stop-on-failure
+          php artisan test --filter=AccountingIsolationTest --stop-on-failure
 
       - name: Governance Tests Failed
         if: failure()
