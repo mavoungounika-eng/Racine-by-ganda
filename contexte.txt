@@ -1,0 +1,8 @@
+STRUCTURE DU PROJET :
+$(find . -maxdepth 2 -type d | sort)
+
+FICHIERS PRINCIPAUX :
+$(ls -la app/Http/Controllers/ 2>/dev/null || echo 'Pas de contrôleurs détectés')
+
+PAQUETS INSTALLÉS :
+$(cat composer.json | grep -A 20 '"require"' 2>/dev/null || echo 'Composer.json non lisible')

@@ -304,14 +304,14 @@ Payments    → payments, orders     (≠ accounting_*)
 
 ## 📞 CONTACTS D'ESCALADE
 
-**À COMPLÉTER AVANT PRODUCTION:**
+**✅ CONTACTS PRODUCTION:**
 
 | Rôle | Contact | Disponibilité |
 |------|---------|---------------|
-| Lead Dev | [À remplir] | 24/7 si critique |
-| DBA | [À remplir] | 24/7 si critique |
-| Product | [À remplir] | Heures bureau |
-| Manager/CTO | [À remplir] | 24/7 escalade |
+| Lead Dev | NIKA DIGITAL HUB - nikadigitalhub1@gmail.com - +242 06 832 52 86 | 24/7 si critique |
+| DBA | NIKA DIGITAL HUB - nikadigitalhub1@gmail.com - +242 06 832 52 86 | 24/7 si critique |
+| Product | NIKA DIGITAL HUB - nikadigitalhub1@gmail.com - +242 06 832 52 86 | Heures bureau |
+| Manager/CTO | NIKA DIGITAL HUB - nikadigitalhub1@gmail.com - +242 06 832 52 86 | 24/7 escalade |
 
 ---
 

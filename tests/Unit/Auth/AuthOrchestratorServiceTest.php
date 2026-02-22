@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Auth;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\DTOs\Auth\AuthResult;
 use App\Models\Role;
 use App\Models\User;
@@ -56,8 +58,7 @@ class AuthOrchestratorServiceTest extends TestCase
         RateLimiter::clear('login:test@example.com:127.0.0.1');
         parent::tearDown();
     }
-
-    /** @test */
+    #[Test]
     public function it_authenticates_user_with_valid_credentials()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -81,8 +82,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $this->assertNotNull($result->redirectUrl);
         $this->assertTrue(Auth::check());
     }
-
-    /** @test */
+    #[Test]
     public function it_fails_authentication_with_invalid_credentials()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -104,8 +104,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $this->assertNotEmpty($result->errors);
         $this->assertFalse(Auth::check());
     }
-
-    /** @test */
+    #[Test]
     public function it_stores_user_context_in_session_on_success()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -132,8 +131,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $this->assertEquals($user->id, $context->userId);
         $this->assertEquals('client', $context->role);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_admin_to_admin_dashboard()
     {
         $adminRole = Role::where('slug', 'admin')->first();
@@ -154,8 +152,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $this->assertTrue($result->isSuccess());
         $this->assertEquals(route('admin.dashboard'), $result->redirectUrl);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_client_to_home()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -176,8 +173,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $this->assertTrue($result->isSuccess());
         $this->assertEquals(route('home'), $result->redirectUrl);
     }
-
-    /** @test */
+    #[Test]
     public function it_requires_2fa_for_admin_with_2fa_enabled()
     {
         $adminRole = Role::where('slug', 'admin')->first();
@@ -202,8 +198,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $this->assertEquals('2fa', $result->challenge);
         $this->assertEquals(route('2fa.verify'), $result->redirectUrl);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_logout()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -226,8 +221,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $this->assertNull($this->contextResolver->getFromSession());
         $this->assertEquals(route('login'), $redirectUrl);
     }
-
-    /** @test */
+    #[Test]
     public function it_validates_session_context()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -245,8 +239,7 @@ class AuthOrchestratorServiceTest extends TestCase
 
         $this->assertTrue($isValid);
     }
-
-    /** @test */
+    #[Test]
     public function it_invalidates_session_without_context()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -263,8 +256,7 @@ class AuthOrchestratorServiceTest extends TestCase
 
         $this->assertFalse($isValid);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_refresh_user_context()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -285,8 +277,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $refreshedContext = $this->contextResolver->getFromSession();
         $this->assertEquals('Updated Name', $refreshedContext->name);
     }
-
-    /** @test */
+    #[Test]
     public function it_records_failed_attempts()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -310,8 +301,7 @@ class AuthOrchestratorServiceTest extends TestCase
         $key = 'login:test@example.com:127.0.0.1';
         $this->assertEquals(1, RateLimiter::attempts($key));
     }
-
-    /** @test */
+    #[Test]
     public function it_clears_failed_attempts_on_success()
     {
         $clientRole = Role::where('slug', 'client')->first();

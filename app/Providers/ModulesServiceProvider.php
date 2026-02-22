@@ -10,37 +10,31 @@ use Illuminate\Support\Facades\File;
 class ModulesServiceProvider extends ServiceProvider
 {
     /**
-     * Liste des modules actifs
+     * Liste des modules actifs (découverte automatique)
      */
-    protected array $modules = [
-        'Core',
-        'Frontend',
-        'Auth',
-        'Boutique',
-        'Showroom',
-        'Atelier',
-        'ERP',
-        'CRM',
-        'HR',
-        'Accounting',
-        'Reporting',
-        'Social',
-        'Brand',
-        'Assistant',
-        'Analytics',
-        'CMS',
-    ];
+    protected array $modules = [];
 
     /**
      * Register services.
      */
     public function register(): void
     {
-        // Enregistrement des services des modules si nécessaire
+        // Découverte automatique des modules sur le disque
+        $modulesPath = base_path('modules');
+        if (File::isDirectory($modulesPath)) {
+            $this->modules = collect(File::directories($modulesPath))
+                ->map(fn($path) => basename($path))
+                ->toArray();
+        }
+
+        // Enregistrement des services des modules
         foreach ($this->modules as $module) {
             $configPath = base_path("modules/{$module}/config");
             if (File::isDirectory($configPath)) {
                 foreach (File::files($configPath) as $file) {
+                    if ($file->getExtension() !== 'php') {
+                        continue;
+                    }
                     $this->mergeConfigFrom(
                         $file->getPathname(),
                         strtolower($module) . '.' . $file->getFilenameWithoutExtension()

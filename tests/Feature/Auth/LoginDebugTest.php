@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,8 +21,7 @@ class LoginDebugTest extends TestCase
         // Seed roles before each test
         $this->seed(\Database\Seeders\RolesTableSeeder::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_debugs_login_flow()
     {
         // Create user with seeded role

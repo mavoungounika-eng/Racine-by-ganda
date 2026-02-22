@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,8 +20,7 @@ class LoginDiagnosticTest extends TestCase
         // Seed roles before each test
         $this->seed(\Database\Seeders\RolesTableSeeder::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_authenticate_with_orchestrator()
     {
         // Create user with seeded role

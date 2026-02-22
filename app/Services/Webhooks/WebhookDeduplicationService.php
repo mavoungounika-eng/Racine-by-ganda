@@ -23,19 +23,55 @@ class WebhookDeduplicationService
      */
     public function isDuplicate(string $provider, string $externalId): bool
     {
-        $cacheKey = self::CACHE_PREFIX . $provider . ':' . $externalId;
-        
-        if (Cache::has($cacheKey)) {
-            Log::info('WebhookDeduplicationService: Duplicate webhook detected', [
+        // 1. Vérification en base de données (Persistance longue durée)
+        if (\App\Models\ProcessedWebhook::where('provider', $provider)
+            ->where('external_id', $externalId)
+            ->exists()) {
+            
+            Log::info('WebhookDeduplicationService: Duplicate webhook detected (Database)', [
                 'provider' => $provider,
                 'external_id' => $externalId,
             ]);
             return true;
         }
 
-        // Mark as seen
-        Cache::put($cacheKey, true, self::CACHE_TTL);
+        // 2. Prévention des Race Conditions (Traitement concurrent immédiat)
+        $cacheKey = self::CACHE_PREFIX . $provider . ':' . $externalId;
+        
+        // Cache::add est ATOMIQUE. Retourne true si la clé est créée, false si elle existe déjà.
+        if (!Cache::add($cacheKey, true, self::CACHE_TTL)) {
+            Log::info('WebhookDeduplicationService: Concurrent webhook processing detected (Cache Lock)', [
+                'provider' => $provider,
+                'external_id' => $externalId,
+            ]);
+            return true;
+        }
+
         return false;
+    }
+
+    /**
+     * Mark a webhook as successfully processed in permanent storage.
+     * To be called at the very end of the controller/job.
+     * 
+     * @param string $provider
+     * @param string $externalId
+     */
+    public function markAsProcessedSuccess(string $provider, string $externalId): void
+    {
+        try {
+            \App\Models\ProcessedWebhook::firstOrCreate([
+                'provider' => $provider,
+                'external_id' => $externalId,
+            ]);
+        } catch (\Exception $e) {
+            // Dans le cas extrêmement rare d'une erreur d'insertion (Unique Constraint), on l'étouffe
+            // car le but (noter que c'est fait) est déjà accompli.
+        }
+
+        // Nettoyage immédiat du verrou en cache
+        $cacheKey = self::CACHE_PREFIX . $provider . ':' . $externalId;
+        Cache::forget($cacheKey);
     }
 
     /**

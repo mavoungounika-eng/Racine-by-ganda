@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Auth;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\DTOs\Auth\AuthResult;
 use App\Models\User;
 use Tests\TestCase;
@@ -13,7 +15,7 @@ use Tests\TestCase;
  */
 class AuthResultTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_create_successful_result()
     {
         $user = User::factory()->make(['id' => 1]);
@@ -26,8 +28,7 @@ class AuthResultTest extends TestCase
         $this->assertEmpty($result->errors);
         $this->assertNull($result->challenge);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_create_failed_result()
     {
         $errors = ['email' => 'Invalid credentials'];
@@ -40,8 +41,7 @@ class AuthResultTest extends TestCase
         $this->assertEquals($errors, $result->errors);
         $this->assertNull($result->challenge);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_create_captcha_required_result()
     {
         $result = AuthResult::captchaRequired();
@@ -52,8 +52,7 @@ class AuthResultTest extends TestCase
         $this->assertEquals('captcha', $result->challenge);
         $this->assertNotEmpty($result->errors);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_create_2fa_required_result()
     {
         $user = User::factory()->make(['id' => 1]);
@@ -66,8 +65,7 @@ class AuthResultTest extends TestCase
         $this->assertEquals($user, $result->user);
         $this->assertEquals('/2fa/verify', $result->redirectUrl);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_get_first_error()
     {
         $errors = [
@@ -78,8 +76,7 @@ class AuthResultTest extends TestCase
 
         $this->assertEquals('Invalid email', $result->getFirstError());
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_null_when_no_errors()
     {
         $user = User::factory()->make(['id' => 1]);
@@ -87,8 +84,7 @@ class AuthResultTest extends TestCase
 
         $this->assertNull($result->getFirstError());
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_array_error_values()
     {
         $errors = [
@@ -98,8 +94,7 @@ class AuthResultTest extends TestCase
 
         $this->assertEquals('First error', $result->getFirstError());
     }
-
-    /** @test */
+    #[Test]
     public function it_can_convert_to_array()
     {
         $user = User::factory()->make(['id' => 1]);
@@ -116,8 +111,7 @@ class AuthResultTest extends TestCase
             'metadata' => null,
         ], $array);
     }
-
-    /** @test */
+    #[Test]
     public function it_includes_metadata_in_array()
     {
         $metadata = ['attempts_remaining' => 3];
@@ -127,8 +121,7 @@ class AuthResultTest extends TestCase
 
         $this->assertEquals($metadata, $array['metadata']);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_create_success_with_challenge()
     {
         $user = User::factory()->make(['id' => 1]);
@@ -138,8 +131,7 @@ class AuthResultTest extends TestCase
         $this->assertEquals('2fa', $result->challenge);
         $this->assertTrue($result->requires2FA());
     }
-
-    /** @test */
+    #[Test]
     public function it_distinguishes_between_captcha_and_2fa()
     {
         $captchaResult = AuthResult::requiresCaptcha();

@@ -54,16 +54,15 @@ php artisan queue:work --queue=high,default
 
 ---
 
-## 📞 CONTACTS — À COMPLÉTER AVANT PRODUCTION
+## 📞 CONTACTS ESCALADE — PRODUCTION
 
 | Rôle | Nom | Email | Téléphone | Disponibilité |
-|------|-----|-------|-----------|--------------|
-| **Lead Dev** | [À compléter] | [À compléter] | [À compléter] | 24/7 si critique |
-| **DBA** | [À compléter] | [À compléter] | [À compléter] | 24/7 si critique |
-| **Product Manager** | [À compléter] | [À compléter] | [À compléter] | Heures bureau |
-| **Escalade** | [Manager/CTO] | [À compléter] | [À compléter] | 24/7 escalade |
+|------|-----|-------|-----------|--------------| | **Lead Dev** | NIKA DIGITAL HUB | nikadigitalhub1@gmail.com | +242 06 832 52 86 | 24/7 si critique |
+| **DBA** | NIKA DIGITAL HUB | nikadigitalhub1@gmail.com | +242 06 832 52 86 | 24/7 si critique |
+| **Product Manager** | NIKA DIGITAL HUB | nikadigitalhub1@gmail.com | +242 06 832 52 86 | Heures bureau |
+| **Escalade** | NIKA DIGITAL HUB (CTO) | nikadigitalhub1@gmail.com | +242 06 832 52 86 | 24/7 escalade |
 
-**⚠️ TEMPLATE À REMPLIR AVANT TOUTE MISE EN PRODUCTION**
+**✅ CONTACTS VALIDÉS POUR PRODUCTION**
 
 ---
 

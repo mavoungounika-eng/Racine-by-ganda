@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Webhooks;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\WebhookHealthCheck;
 use App\Models\WebhookMetric;
 use App\Services\Webhooks\WebhookObservabilityService;
@@ -23,8 +24,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // METRIC RECORDING
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function records_webhook_metric_event(): void
     {
         $metric = $this->observability->recordMetric(
@@ -43,8 +43,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertEquals(250, $metric->response_time_ms);
         $this->assertTrue($metric->success);
     }
-
-    /** @test */
+    #[Test]
     public function records_failed_webhook_metric(): void
     {
         $metric = $this->observability->recordMetric(
@@ -60,8 +59,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertEquals('Connection timeout', $metric->error_message);
         $this->assertEquals('500', $metric->status_code);
     }
-
-    /** @test */
+    #[Test]
     public function records_metric_with_metadata_and_context(): void
     {
         $tags = ['priority' => 'high', 'region' => 'us-west'];
@@ -82,8 +80,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // METRIC AGGREGATION & ANALYSIS
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function calculates_system_summary(): void
     {
         // Create test metrics
@@ -105,8 +102,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertEquals(80, $summary['success_rate']);
         $this->assertEquals(20, $summary['error_rate']);
     }
-
-    /** @test */
+    #[Test]
     public function calculates_provider_metrics(): void
     {
         // Create Stripe metrics
@@ -138,8 +134,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertEquals(5, $stripeMetrics['total_events']);
         $this->assertEquals(200, $stripeMetrics['avg_response_time_ms']);
     }
-
-    /** @test */
+    #[Test]
     public function retrieves_recent_events(): void
     {
         for ($i = 0; $i < 60; $i++) {
@@ -159,8 +154,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertArrayHasKey('provider', $recent[0]);
         $this->assertArrayHasKey('success', $recent[0]);
     }
-
-    /** @test */
+    #[Test]
     public function calculates_performance_trends(): void
     {
         $now = now();
@@ -186,8 +180,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertArrayHasKey('successful', $trends[0]);
         $this->assertArrayHasKey('avg_response_time_ms', $trends[0]);
     }
-
-    /** @test */
+    #[Test]
     public function calculates_error_distribution(): void
     {
         WebhookMetric::create([
@@ -228,8 +221,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // HEALTH CHECK INTEGRATION
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function updates_health_checks_from_metrics(): void
     {
         // Create metrics
@@ -253,8 +245,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertEquals(2, $health->errors_last_hour);
         $this->assertEquals(90, $health->success_rate);
     }
-
-    /** @test */
+    #[Test]
     public function provides_provider_health_status(): void
     {
         $health = WebhookHealthCheck::forProvider('stripe');
@@ -272,8 +263,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertEquals('HEALTHY', $status['health_status']);
         $this->assertEquals('success', $status['status_color']);
     }
-
-    /** @test */
+    #[Test]
     public function returns_all_providers_health(): void
     {
         WebhookHealthCheck::forProvider('stripe');
@@ -290,8 +280,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // DASHBOARD DATA
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function generates_complete_dashboard_data(): void
     {
         // Create sample metrics
@@ -326,8 +315,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // REPORTING
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function generates_health_report(): void
     {
         // Create metrics and update health
@@ -352,8 +340,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertArrayHasKey('recommendations', $report);
         $this->assertEquals(1440, $report['time_range_minutes']);
     }
-
-    /** @test */
+    #[Test]
     public function generates_monitoring_recommendations(): void
     {
         $recommendations = $this->observability->generateRecommendations();
@@ -368,8 +355,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // EXPORT FORMATS
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function exports_metrics_as_json(): void
     {
         WebhookMetric::create([
@@ -387,8 +373,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertIsArray($decoded);
         $this->assertArrayHasKey('total_events', $decoded);
     }
-
-    /** @test */
+    #[Test]
     public function exports_metrics_as_prometheus(): void
     {
         WebhookMetric::create([
@@ -410,8 +395,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // SCOPES & FILTERING
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function filters_metrics_by_provider(): void
     {
         WebhookMetric::create(['provider' => 'stripe', 'event_type' => 'charge.succeeded', 'response_time_ms' => 200, 'success' => true, 'received_at' => now()]);
@@ -424,8 +408,7 @@ class WebhookObservabilityTest extends TestCase
         $monetbil = WebhookMetric::byProvider('monetbil')->get();
         $this->assertCount(1, $monetbil);
     }
-
-    /** @test */
+    #[Test]
     public function filters_successful_and_failed_metrics(): void
     {
         for ($i = 0; $i < 15; $i++) {
@@ -444,8 +427,7 @@ class WebhookObservabilityTest extends TestCase
         $this->assertEquals(12, $successful);
         $this->assertEquals(3, $failed);
     }
-
-    /** @test */
+    #[Test]
     public function filters_slow_webhooks(): void
     {
         WebhookMetric::create(['provider' => 'stripe', 'event_type' => 'charge.succeeded', 'response_time_ms' => 100, 'success' => true, 'received_at' => now()]);
@@ -462,8 +444,7 @@ class WebhookObservabilityTest extends TestCase
     // ========================================================================
     // HEALTH CHECK SCOPES
     // ========================================================================
-
-    /** @test */
+    #[Test]
     public function identifies_healthy_providers(): void
     {
         WebhookHealthCheck::create(['provider' => 'stripe', 'is_healthy' => true, 'circuit_state' => 'closed']);
@@ -472,8 +453,7 @@ class WebhookObservabilityTest extends TestCase
         $healthy = WebhookHealthCheck::healthy()->count();
         $this->assertEquals(1, $healthy);
     }
-
-    /** @test */
+    #[Test]
     public function identifies_degraded_providers(): void
     {
         WebhookHealthCheck::create(['provider' => 'stripe', 'success_rate' => 98, 'is_healthy' => true]);
@@ -482,8 +462,7 @@ class WebhookObservabilityTest extends TestCase
         $degraded = WebhookHealthCheck::degraded()->count();
         $this->assertEquals(1, $degraded);
     }
-
-    /** @test */
+    #[Test]
     public function identifies_open_circuits(): void
     {
         WebhookHealthCheck::create(['provider' => 'stripe', 'circuit_state' => 'closed']);
@@ -493,8 +472,7 @@ class WebhookObservabilityTest extends TestCase
         $open = WebhookHealthCheck::circuitOpen()->count();
         $this->assertEquals(1, $open);
     }
-
-    /** @test */
+    #[Test]
     public function calculates_overall_system_health(): void
     {
         WebhookHealthCheck::create(['provider' => 'stripe', 'is_healthy' => true, 'circuit_state' => 'closed', 'success_rate' => 99.5]);

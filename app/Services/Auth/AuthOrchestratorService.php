@@ -2,8 +2,8 @@
 
 namespace App\Services\Auth;
 
-use App\DTOs\Auth\AuthResult;
-use App\DTOs\Auth\UserContext;
+use App\DTO\Auth\AuthResult;
+use App\DTO\Auth\UserContext;
 use App\Models\User;
 use App\Services\AuthLogger;
 use App\Services\LoginAttemptService;

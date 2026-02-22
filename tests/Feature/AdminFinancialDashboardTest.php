@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -13,12 +14,12 @@ use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * ⚠️ TESTS EN ATTENTE — PERMISSIONS ADMIN REQUISES
+ * âš ï¸ TESTS EN ATTENTE â€” PERMISSIONS ADMIN REQUISES
  * 
- * Ces tests nécessitent des permissions admin spécifiques pour accéder
- * aux routes /admin/financial/*. Le rôle 'admin' seul ne suffit pas.
+ * Ces tests nÃ©cessitent des permissions admin spÃ©cifiques pour accÃ©der
+ * aux routes /admin/financial/*. Le rÃ´le 'admin' seul ne suffit pas.
  * 
- * TODO: Configurer les permissions RBAC appropriées pour les tests
+ * TODO: Configurer les permissions RBAC appropriÃ©es pour les tests
  */
 #[Group('skip')]
 class AdminFinancialDashboardTest extends TestCase
@@ -32,13 +33,12 @@ class AdminFinancialDashboardTest extends TestCase
         parent::setUp();
         
         // Skip tous les tests de cette classe
-        $this->markTestSkipped('Permissions admin spécifiques requises. Voir docblock de la classe.');
+        $this->markTestSkipped('Permissions admin spÃ©cifiques requises. Voir docblock de la classe.');
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_dashboard_metrics_for_admin()
     {
-        // Créer des données de test
+        // CrÃ©er des donnÃ©es de test
         $this->createTestData();
 
         $response = $this->actingAs($this->adminUser)
@@ -93,8 +93,7 @@ class AdminFinancialDashboardTest extends TestCase
                 'alerts',
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_empty_database()
     {
         $response = $this->actingAs($this->adminUser)
@@ -117,17 +116,16 @@ class AdminFinancialDashboardTest extends TestCase
                 ],
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_mrr_correctly()
     {
-        // Créer un plan OFFICIEL à 5000 XAF
+        // CrÃ©er un plan OFFICIEL Ã  5000 XAF
         $plan = CreatorPlan::factory()->create([
             'code' => 'official',
             'price' => 5000,
         ]);
 
-        // Créer 3 abonnements actifs
+        // CrÃ©er 3 abonnements actifs
         for ($i = 0; $i < 3; $i++) {
             $creator = CreatorProfile::factory()->create();
             CreatorSubscription::factory()->create([
@@ -143,15 +141,14 @@ class AdminFinancialDashboardTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'revenue' => [
-                    'mrr' => 15000.0, // 3 × 5000
+                    'mrr' => 15000.0, // 3 Ã— 5000
                 ],
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_churn_rate_correctly()
     {
-        // Créer des abonnements actifs et annulés
+        // CrÃ©er des abonnements actifs et annulÃ©s
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
 
         // 10 abonnements actifs
@@ -165,7 +162,7 @@ class AdminFinancialDashboardTest extends TestCase
             ]);
         }
 
-        // 2 abonnements annulés le mois dernier
+        // 2 abonnements annulÃ©s le mois dernier
         for ($i = 0; $i < 2; $i++) {
             $creator = CreatorProfile::factory()->create();
             CreatorSubscription::factory()->create([
@@ -187,8 +184,7 @@ class AdminFinancialDashboardTest extends TestCase
         $this->assertGreaterThanOrEqual(15, $data['advanced_kpis']['churn_rate_month']);
         $this->assertLessThanOrEqual(25, $data['advanced_kpis']['churn_rate_month']);
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_snapshot_for_bi_export()
     {
         $this->createTestData();
@@ -211,7 +207,7 @@ class AdminFinancialDashboardTest extends TestCase
     }
 
     /**
-     * Créer des données de test
+     * CrÃ©er des donnÃ©es de test
      */
     private function createTestData(): void
     {
@@ -220,7 +216,7 @@ class AdminFinancialDashboardTest extends TestCase
             'price' => 5000,
         ]);
 
-        // Créer 5 créateurs avec abonnements actifs
+        // CrÃ©er 5 crÃ©ateurs avec abonnements actifs
         for ($i = 0; $i < 5; $i++) {
             $user = User::factory()->create();
             $creator = CreatorProfile::factory()->create([
@@ -245,7 +241,7 @@ class AdminFinancialDashboardTest extends TestCase
             ]);
         }
 
-        // Créer quelques factures payées
+        // CrÃ©er quelques factures payÃ©es
         $subscription = CreatorSubscription::first();
         CreatorSubscriptionInvoice::factory()->create([
             'creator_subscription_id' => $subscription->id,

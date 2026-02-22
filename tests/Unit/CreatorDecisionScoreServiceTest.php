@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -32,8 +34,7 @@ class CreatorDecisionScoreServiceTest extends TestCase
         $riskService = new CreatorRiskAssessmentService();
         $this->service = new CreatorDecisionScoreService($kpiService, $riskService);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_decision_score_for_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -73,8 +74,7 @@ class CreatorDecisionScoreServiceTest extends TestCase
         $this->assertLessThanOrEqual(100, $result['global_score']);
         $this->assertContains($result['qualitative_grade'], ['A', 'B', 'C', 'D']);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_creator_with_no_subscription()
     {
         $creator = CreatorProfile::factory()->create([
@@ -89,8 +89,7 @@ class CreatorDecisionScoreServiceTest extends TestCase
         // Score devrait être faible sans abonnement
         $this->assertLessThan(50, $result['global_score']);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_qualitative_grade_correctly()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -124,8 +123,7 @@ class CreatorDecisionScoreServiceTest extends TestCase
         // Avec un créateur bien configuré, devrait avoir un grade B ou A
         $this->assertContains($result['qualitative_grade'], ['A', 'B', 'C', 'D']);
     }
-
-    /** @test */
+    #[Test]
     public function it_identifies_strengths_and_weaknesses()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -157,8 +155,7 @@ class CreatorDecisionScoreServiceTest extends TestCase
         $this->assertNotEmpty($result['strengths']);
         $this->assertNotEmpty($result['weaknesses']);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_confidence_level()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);

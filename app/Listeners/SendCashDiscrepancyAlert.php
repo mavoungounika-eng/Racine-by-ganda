@@ -30,10 +30,8 @@ class SendCashDiscrepancyAlert
             'closed_by' => $session->closer?->name,
         ]);
 
-        // Envoyer notification aux admins
-        $admins = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
-        })->get();
+        // Envoyer notification aux admins (compat avec modèle User basé sur role_id/slug).
+        $admins = User::query()->admins()->get();
 
         foreach ($admins as $admin) {
             $admin->notify(new CashDiscrepancyAlert($event));

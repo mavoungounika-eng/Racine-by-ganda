@@ -5,7 +5,6 @@ namespace App\Services\Pos;
 use App\Models\PosSession;
 use App\Models\PosCashMovement;
 use App\Models\User;
-use App\Models\PosOperatorAuditLog;
 use App\Events\PosSessionClosed;
 use App\Traits\AuditsPosOperations;
 use Illuminate\Support\Facades\DB;
@@ -65,7 +64,7 @@ class PosSessionService
             ]);
 
             // 📋 AUDIT TRAIL
-            PosOperatorAuditLog::auditSessionOpen($session->id, $openingCash);
+            self::auditSessionOpen($session->id, $openingCash, $userId);
 
             return $session;
         });
@@ -218,12 +217,13 @@ class PosSessionService
             ]);
 
             // 📋 AUDIT TRAIL
-            PosOperatorAuditLog::auditSessionClose(
+            self::auditSessionClose(
                 $session->id,
                 $expectedCash,
                 $closingCash,
                 $cashDifference,
-                $notes
+                $notes,
+                $userId
             );
 
             // Dispatcher l'événement de clôture

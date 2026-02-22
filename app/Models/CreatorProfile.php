@@ -127,7 +127,7 @@ class CreatorProfile extends Model
 
     public function adminNotes(): HasMany
     {
-        return $this->hasMany(CreatorAdminNote::class);
+        return $this->hasMany(\Modules\CreatorNetwork\Models\CreatorAdminNote::class);
     }
 
     public function validationSteps(): HasMany

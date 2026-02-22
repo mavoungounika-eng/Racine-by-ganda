@@ -18,7 +18,7 @@ use Exception;
  * USAGE:
  * $service = new WebhookRetryService();
  * $success = $service->retry(
- *     handler: function($payload) { /* process */ },
+ *     handler: function($payload) { ... },
  *     payload: $webhookData,
  *     maxAttempts: 3,
  *     initialDelay: 1 // secondes
@@ -86,6 +86,7 @@ class WebhookRetryService
 
     /**
      * Envoyer vers Dead Letter Queue
+     * Utilise le modèle WebhookFailure (schéma: provider, event_type, external_id, payload, etc.)
      */
     private function sendToDeadLetterQueue(
         array $payload,
@@ -93,20 +94,29 @@ class WebhookRetryService
         ?string $webhookId = null
     ): void {
         try {
-            DB::table('webhook_failures')->insert([
-                'provider' => $payload['provider'] ?? 'unknown',
-                'event_type' => $payload['type'] ?? 'unknown',
-                'payload' => json_encode($payload),
+            $provider = $payload['provider'] ?? 'unknown';
+            $eventType = $payload['type'] ?? $payload['event_type'] ?? 'unknown';
+            $externalId = $payload['external_id'] ?? $payload['event_id'] ?? $webhookId ?? 'dlq-' . uniqid();
+
+            $payloadForStorage = $payload;
+            unset($payloadForStorage['event']);
+            $payloadForStorage = array_filter($payloadForStorage, fn ($v) => ! is_object($v));
+
+            \App\Models\WebhookFailure::create([
+                'provider' => $provider,
+                'event_type' => $eventType,
+                'external_id' => (string) $externalId,
+                'payload' => $payloadForStorage,
                 'error_message' => $error->getMessage(),
                 'retry_count' => 3,
                 'last_retry_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'status' => 'dead_letter',
             ]);
 
             Log::error('[WEBHOOK] Dead Letter Queue entry created', [
                 'webhook_id' => $webhookId,
-                'provider' => $payload['provider'] ?? 'unknown',
+                'provider' => $provider,
+                'external_id' => $externalId,
             ]);
 
         } catch (Exception $e) {
@@ -140,14 +150,13 @@ class WebhookRetryService
     }
 
     /**
-     * Récupérer et rejouer les webhooks en echec
+     * Récupérer et rejouer les webhooks en échec (nécessitant retry)
      */
     public function retryFailedWebhooks(
         callable $handler,
         int $limit = 10
     ): int {
-        $failed = DB::table('webhook_failures')
-            ->where('retry_count', '<', 3)
+        $failed = \App\Models\WebhookFailure::needingRetry()
             ->orderBy('created_at', 'asc')
             ->limit($limit)
             ->get();
@@ -156,25 +165,24 @@ class WebhookRetryService
 
         foreach ($failed as $entry) {
             try {
-                $payload = json_decode($entry->payload, true);
-                
+                $payload = is_array($entry->payload) ? $entry->payload : (array) json_decode($entry->payload ?? '{}', true);
+                $payload['provider'] = $payload['provider'] ?? $entry->provider;
+                $payload['type'] = $payload['type'] ?? $entry->event_type;
+                $payload['external_id'] = $payload['external_id'] ?? $entry->external_id;
+                $payload['event_id'] = $payload['event_id'] ?? $entry->external_id;
+
                 if ($this->retry($handler, $payload, 1)) {
-                    DB::table('webhook_failures')->where('id', $entry->id)->delete();
+                    $entry->markAsProcessed();
                     $successCount++;
                 } else {
-                    DB::table('webhook_failures')
-                        ->where('id', $entry->id)
-                        ->increment('retry_count');
+                    $entry->markAsFailed($entry->error_message ?? 'Retry failed');
                 }
             } catch (Exception $e) {
                 Log::error('[WEBHOOK] Failed to retry dead letter', [
                     'id' => $entry->id,
                     'error' => $e->getMessage(),
                 ]);
-
-                DB::table('webhook_failures')
-                    ->where('id', $entry->id)
-                    ->increment('retry_count');
+                $entry->markAsFailed($e->getMessage());
             }
         }
 

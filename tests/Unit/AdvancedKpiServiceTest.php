@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorSubscription;
@@ -25,16 +27,14 @@ class AdvancedKpiServiceTest extends TestCase
         parent::setUp();
         $this->service = new AdvancedKpiService();
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_churn_rate_with_no_data()
     {
         $churnRate = $this->service->calculateChurnRate('month');
         
         $this->assertEquals(0.0, $churnRate);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_churn_rate_correctly()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -68,8 +68,7 @@ class AdvancedKpiServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(15, $churnRate);
         $this->assertLessThanOrEqual(25, $churnRate);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_arpu_correctly()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -89,16 +88,14 @@ class AdvancedKpiServiceTest extends TestCase
         // ARPU = 25000 / 5 = 5000
         $this->assertEquals(5000.0, $arpu);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_arpu_with_no_paying_creators()
     {
         $arpu = $this->service->calculateArpu();
         
         $this->assertEquals(0.0, $arpu);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_ltv_correctly()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -125,8 +122,7 @@ class AdvancedKpiServiceTest extends TestCase
         $this->assertGreaterThan(30000, $ltv);
         $this->assertLessThan(50000, $ltv);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_average_subscription_duration()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -150,8 +146,7 @@ class AdvancedKpiServiceTest extends TestCase
         $this->assertGreaterThan(5, $averageDuration);
         $this->assertLessThan(7, $averageDuration);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_empty_data_for_duration()
     {
         // Aucun abonnement annulé, devrait utiliser les abonnements actifs

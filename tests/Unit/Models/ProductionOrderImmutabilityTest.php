@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Models;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Product;
@@ -11,8 +13,7 @@ use App\Exceptions\Production\ImmutableOrderException;
 class ProductionOrderImmutabilityTest extends TestCase
 {
     use RefreshDatabase;
-
-    /** @test */
+    #[Test]
     public function it_prevents_modifying_completed_order()
     {
         $product = Product::factory()->create();
@@ -27,8 +28,7 @@ class ProductionOrderImmutabilityTest extends TestCase
 
         $order->update(['notes' => 'Trying to change a completed order']);
     }
-
-    /** @test */
+    #[Test]
     public function it_prevents_deleting_completed_order()
     {
         $product = Product::factory()->create();
@@ -43,8 +43,7 @@ class ProductionOrderImmutabilityTest extends TestCase
 
         $order->delete();
     }
-
-    /** @test */
+    #[Test]
     public function it_prevents_modifying_bom_snapshot_after_creation()
     {
         $product = Product::factory()->create();
@@ -68,8 +67,7 @@ class ProductionOrderImmutabilityTest extends TestCase
             ],
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_allows_modifying_non_completed_order()
     {
         $product = Product::factory()->create();
@@ -83,8 +81,7 @@ class ProductionOrderImmutabilityTest extends TestCase
 
         $this->assertEquals('This is allowed', $order->fresh()->notes);
     }
-
-    /** @test */
+    #[Test]
     public function it_allows_deleting_non_completed_order()
     {
         $product = Product::factory()->create();
@@ -98,8 +95,7 @@ class ProductionOrderImmutabilityTest extends TestCase
 
         $this->assertSoftDeleted('production_orders', ['id' => $order->id]);
     }
-
-    /** @test */
+    #[Test]
     public function it_allows_setting_bom_snapshot_on_creation()
     {
         $product = Product::factory()->create();

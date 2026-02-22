@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Middleware;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,8 +23,7 @@ class EnsureAuthenticatedTest extends TestCase
         // Seed creator plans (required for creator dashboard)
         $this->seed(\Database\Seeders\CreatorPlanSeeder::class);
     }
-
-    /** @test */
+    #[Test]
     public function authenticated_admin_can_access_admin_route()
     {
         $adminRole = Role::where('slug', 'admin')->first();
@@ -34,8 +34,7 @@ class EnsureAuthenticatedTest extends TestCase
 
         $response->assertStatus(200);
     }
-
-    /** @test */
+    #[Test]
     public function authenticated_client_cannot_access_admin_route()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -44,19 +43,17 @@ class EnsureAuthenticatedTest extends TestCase
         // Test staff dashboard which requires staff/admin/super_admin
         $response = $this->actingAsWithContext($client)->get('/staff/dashboard');
 
-        // EnsureAuthenticated logout + redirect pour les utilisateurs non autorisés (pas 403)
+        // EnsureAuthenticated logout + redirect pour les utilisateurs non autorisÃ©s (pas 403)
         $response->assertRedirect('/login');
     }
-
-    /** @test */
+    #[Test]
     public function unauthenticated_user_is_redirected_to_login()
     {
         $response = $this->get('/staff/dashboard');
 
         $response->assertRedirect('/login');
     }
-
-    /** @test */
+    #[Test]
     public function user_with_outdated_auth_version_is_logged_out()
     {
         $adminRole = Role::where('slug', 'admin')->first();
@@ -80,8 +77,7 @@ class EnsureAuthenticatedTest extends TestCase
         $response->assertRedirect('/login');
         $this->assertGuest();
     }
-
-    /** @test */
+    #[Test]
     public function user_without_user_context_in_session_is_logged_out()
     {
         $adminRole = Role::where('slug', 'admin')->first();
@@ -100,8 +96,7 @@ class EnsureAuthenticatedTest extends TestCase
         $response->assertRedirect('/login');
         $this->assertGuest();
     }
-
-    /** @test */
+    #[Test]
     public function authenticated_user_can_access_route_with_no_role_restriction()
     {
         $clientRole = Role::where('slug', 'client')->first();
@@ -113,13 +108,12 @@ class EnsureAuthenticatedTest extends TestCase
 
         $response->assertStatus(200);
     }
-
-    /** @test */
+    #[Test]
     public function creator_can_access_creator_route()
     {
         $creatorRole = Role::where('slug', 'createur')->first();
         if (!$creatorRole) {
-            $creatorRole = Role::factory()->create(['slug' => 'createur', 'name' => 'Créateur']);
+            $creatorRole = Role::factory()->create(['slug' => 'createur', 'name' => 'CrÃ©ateur']);
         }
         
         $creator = User::factory()->create(['role_id' => $creatorRole->id]);
@@ -136,8 +130,7 @@ class EnsureAuthenticatedTest extends TestCase
         // Should be accessible (200)
         $response->assertStatus(200);
     }
-
-    /** @test */
+    #[Test]
     public function admin_cannot_access_creator_only_route()
     {
         $adminRole = Role::where('slug', 'admin')->first();
@@ -146,7 +139,7 @@ class EnsureAuthenticatedTest extends TestCase
         // Try to access creator dashboard
         $response = $this->actingAsWithContext($admin)->get('/createur/dashboard');
 
-        // EnsureAuthenticated logout + redirect pour les utilisateurs non autorisés (pas 403)
+        // EnsureAuthenticated logout + redirect pour les utilisateurs non autorisÃ©s (pas 403)
         $response->assertRedirect('/login');
     }
 }

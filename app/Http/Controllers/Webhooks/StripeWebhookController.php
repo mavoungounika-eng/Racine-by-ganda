@@ -7,6 +7,7 @@ use App\Models\CreatorSubscription;
 use App\Models\CreatorPlan;
 use App\Services\Webhooks\CircuitBreakerService;
 use App\Services\Webhooks\WebhookDeduplicationService;
+use App\Services\Webhooks\WebhookRetryService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -26,11 +27,13 @@ class StripeWebhookController extends Controller
 {
     private CircuitBreakerService $circuitBreaker;
     private WebhookDeduplicationService $deduplication;
+    private WebhookRetryService $retryService;
 
     public function __construct()
     {
         $this->circuitBreaker = app(CircuitBreakerService::class);
         $this->deduplication = app(WebhookDeduplicationService::class);
+        $this->retryService = app(WebhookRetryService::class);
     }
 
     /**
@@ -90,42 +93,54 @@ class StripeWebhookController extends Controller
             'type' => $event->type,
             'id' => $event->id,
         ]);
-        
-        // Process the event
-        try {
-            switch ($event->type) {
-                case 'checkout.session.completed':
-                    $this->handleCheckoutCompleted($event->data->object);
-                    break;
-                    
-                case 'customer.subscription.created':
-                    $this->handleSubscriptionCreated($event->data->object);
-                    break;
-                    
-                case 'customer.subscription.updated':
-                    $this->handleSubscriptionUpdated($event->data->object);
-                    break;
-                    
-                case 'customer.subscription.deleted':
-                    $this->handleSubscriptionDeleted($event->data->object);
-                    break;
-                    
-                case 'invoice.payment_succeeded':
-                    $this->handleInvoicePaymentSucceeded($event->data->object);
-                    break;
-                    
-                case 'invoice.payment_failed':
-                    $this->handleInvoicePaymentFailed($event->data->object);
-                    break;
-                    
-                default:
-                    Log::info('ℹ️ Unhandled Stripe event type', [
-                        'type' => $event->type,
-                    ]);
-            }
-            
-            // ✅ Mark as processed after successful handling
+
+        $eventDataArray = json_decode(json_encode($event->data->object ?? null), true) ?? [];
+        $payload = [
+            'provider' => 'stripe',
+            'type' => $event->type,
+            'event_id' => $event->id,
+            'external_id' => $event->id,
+            'event' => $event,
+            'event_data' => $eventDataArray,
+        ];
+
+        $success = $this->retryService->retry(
+            handler: function (array $p) {
+                $ev = $p['event'];
+                switch ($ev->type) {
+                    case 'checkout.session.completed':
+                        $this->handleCheckoutCompleted($ev->data->object);
+                        break;
+                    case 'customer.subscription.created':
+                        $this->handleSubscriptionCreated($ev->data->object);
+                        break;
+                    case 'customer.subscription.updated':
+                        $this->handleSubscriptionUpdated($ev->data->object);
+                        break;
+                    case 'customer.subscription.deleted':
+                        $this->handleSubscriptionDeleted($ev->data->object);
+                        break;
+                    case 'invoice.payment_succeeded':
+                        $this->handleInvoicePaymentSucceeded($ev->data->object);
+                        break;
+                    case 'invoice.payment_failed':
+                        $this->handleInvoicePaymentFailed($ev->data->object);
+                        break;
+                    default:
+                        Log::info('ℹ️ Unhandled Stripe event type', ['type' => $ev->type]);
+                }
+            },
+            payload: $payload,
+            maxAttempts: 3,
+            initialDelay: 1,
+            webhookId: $event->id
+        );
+
+        if ($success) {
             try {
+                // ✅ EXACTLY-ONCE GUARANTEE: Mark permanently as processed
+                $this->deduplication->markAsProcessedSuccess('stripe', $event->id);
+
                 $failure = \App\Models\WebhookFailure::where('external_id', $event->id)->first();
                 if ($failure) {
                     $this->deduplication->markAsProcessed($failure);
@@ -136,47 +151,58 @@ class StripeWebhookController extends Controller
                     'error' => $e->getMessage(),
                 ]);
             }
-
-            // ✅ Record success for circuit breaker
             $this->circuitBreaker->recordSuccess('stripe');
-            
             return response()->json(['status' => 'success']);
-            
-        } catch (\Exception $e) {
-            Log::error('❌ Error processing Stripe webhook', [
-                'type' => $event->type,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // ✅ Record failure for circuit breaker
-            $this->circuitBreaker->recordFailure('stripe', $e->getMessage());
-
-            // ✅ Record in webhook failures table
-            try {
-                $this->deduplication->recordFailure(
-                    'stripe',
-                    $event->type,
-                    $event->id,
-                    $event->data->toArray() ?? [],
-                    $signature ?? '',
-                    $e->getMessage()
-                );
-            } catch (\Exception $logError) {
-                Log::error('Failed to log webhook failure', [
-                    'error' => $logError->getMessage(),
-                ]);
-            }
-            
-            // Return 200 to prevent Stripe from retrying indefinitely
-            // but log the error for investigation
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Event logged but processing failed'
-            ], 200);
         }
+
+        $this->circuitBreaker->recordFailure('stripe', 'Processing failed after retries');
+        // WebhookRetryService a déjà envoyé l'événement vers la Dead Letter Queue (webhook_failures)
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Event logged but processing failed'
+        ], 200);
     }
     
+    /**
+     * Traiter un payload depuis la Dead Letter Queue (retry)
+     * Utilisé par webhook:retry-failures pour rejouer les événements Stripe créateurs
+     */
+    public function processFromPayload(array $payload): void
+    {
+        $eventType = $payload['type'] ?? $payload['event_type'] ?? null;
+        $eventData = $payload['event_data'] ?? [];
+
+        if (!$eventType) {
+            throw new \InvalidArgumentException('Missing event type in payload');
+        }
+
+        $object = (object) json_decode(json_encode($eventData));
+
+        switch ($eventType) {
+            case 'checkout.session.completed':
+                $this->handleCheckoutCompleted($object);
+                break;
+            case 'customer.subscription.created':
+                $this->handleSubscriptionCreated($object);
+                break;
+            case 'customer.subscription.updated':
+                $this->handleSubscriptionUpdated($object);
+                break;
+            case 'customer.subscription.deleted':
+                $this->handleSubscriptionDeleted($object);
+                break;
+            case 'invoice.payment_succeeded':
+                $this->handleInvoicePaymentSucceeded($object);
+                break;
+            case 'invoice.payment_failed':
+                $this->handleInvoicePaymentFailed($object);
+                break;
+            default:
+                Log::info('ℹ️ Unhandled Stripe event type (retry)', ['type' => $eventType]);
+        }
+    }
+
     /**
      * Checkout Session Completed
      */

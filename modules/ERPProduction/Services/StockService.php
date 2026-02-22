@@ -28,6 +28,8 @@ class StockService
 
                 // Créer mouvement sortie matières premières
                 $movement = StockMovement::create([
+                    'stockable_type' => \Modules\ERP\Models\ErpRawMaterial::class,
+                    'stockable_id' => $rawMaterial->id,
                     'material_id' => $rawMaterial->id,
                     'production_order_id' => $order->id,
                     'type' => 'out',
@@ -37,6 +39,7 @@ class StockService
                     'total_cost' => $quantityNeeded * $rawMaterial->unit_cost,
                     'description' => "Consommation pour production {$order->order_number}",
                     'created_by' => Auth::id(),
+                    'user_id' => Auth::id(),
                 ]);
 
                 // Mettre à jour balance stock matières premières
@@ -75,6 +78,8 @@ class StockService
 
             // Créer mouvement entrée WIP
             $movement = StockMovement::create([
+                'stockable_type' => \App\Models\Product::class,
+                'stockable_id' => $order->product_id,
                 'product_id' => $order->product_id,
                 'production_order_id' => $order->id,
                 'type' => 'in',
@@ -84,6 +89,7 @@ class StockService
                 'total_cost' => $totalCost,
                 'description' => "Entrée en-cours production {$order->order_number}",
                 'created_by' => Auth::id(),
+                'user_id' => Auth::id(),
             ]);
 
             // Mettre à jour balance WIP
@@ -105,12 +111,14 @@ class StockService
     {
         return DB::transaction(function () use ($order, $quantity, $reason) {
             // Obtenir coût unitaire WIP actuel
-            $wipBalance = $this->getStockBalance($order->product_id, 'wip');
+            $wipBalance = $this->getStockBalance(productId: $order->product_id, stockType: 'wip');
             $unitCost = $wipBalance ? $wipBalance->average_cost : 0;
             $totalCost = $quantity * $unitCost;
 
             // Créer mouvement sortie WIP (rebut)
             $movement = StockMovement::create([
+                'stockable_type' => \App\Models\Product::class,
+                'stockable_id' => $order->product_id,
                 'product_id' => $order->product_id,
                 'production_order_id' => $order->id,
                 'type' => 'out',
@@ -120,6 +128,7 @@ class StockService
                 'total_cost' => $totalCost,
                 'description' => "Rebut - {$reason}",
                 'created_by' => Auth::id(),
+                'user_id' => Auth::id(),
             ]);
 
             // Mettre à jour balance WIP
@@ -144,12 +153,14 @@ class StockService
     {
         return DB::transaction(function () use ($order, $quantity) {
             // Obtenir coût unitaire WIP actuel
-            $wipBalance = $this->getStockBalance($order->product_id, 'wip');
+            $wipBalance = $this->getStockBalance(productId: $order->product_id, stockType: 'wip');
             $unitCost = $wipBalance ? $wipBalance->average_cost : 0;
             $totalCost = $quantity * $unitCost;
 
             // Créer mouvement entrée produits finis
             $movement = StockMovement::create([
+                'stockable_type' => \App\Models\Product::class,
+                'stockable_id' => $order->product_id,
                 'product_id' => $order->product_id,
                 'production_order_id' => $order->id,
                 'type' => 'in',
@@ -159,6 +170,7 @@ class StockService
                 'total_cost' => $totalCost,
                 'description' => "Production terminée {$order->order_number}",
                 'created_by' => Auth::id(),
+                'user_id' => Auth::id(),
             ]);
 
             // Mettre à jour balance produits finis

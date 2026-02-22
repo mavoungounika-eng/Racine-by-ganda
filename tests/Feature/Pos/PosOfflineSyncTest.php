@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Pos;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
@@ -10,13 +11,13 @@ use App\Services\Pos\PosOfflineService;
 use Illuminate\Support\Str;
 
 /**
- * Test Offline ↔ Online Sync Flow
+ * Test Offline â†” Online Sync Flow
  *
- * Vérifie:
- * - Détection offline/online
+ * VÃ©rifie:
+ * - DÃ©tection offline/online
  * - Queueing ventes offline
- * - Sync quand reconnecté
- * - État cohérent après sync
+ * - Sync quand reconnectÃ©
+ * - Ã‰tat cohÃ©rent aprÃ¨s sync
  */
 class PosOfflineSyncTest extends TestCase
 {
@@ -32,14 +33,12 @@ class PosOfflineSyncTest extends TestCase
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }
-
-    /** @test */
+    #[Test]
     public function system_starts_online()
     {
         $this->assertFalse($this->offlineService->isOffline());
     }
-
-    /** @test */
+    #[Test]
     public function system_can_be_marked_offline()
     {
         $this->offlineService->markOffline('Redis unavailable');
@@ -49,8 +48,7 @@ class PosOfflineSyncTest extends TestCase
         $this->assertNotNull($status);
         $this->assertEquals('Redis unavailable', $status['reason']);
     }
-
-    /** @test */
+    #[Test]
     public function system_can_be_marked_online()
     {
         $this->offlineService->markOffline('Test');
@@ -59,8 +57,7 @@ class PosOfflineSyncTest extends TestCase
         $this->offlineService->markOnline();
         $this->assertFalse($this->offlineService->isOffline());
     }
-
-    /** @test */
+    #[Test]
     public function offline_sales_are_queued()
     {
         $machineId = Str::uuid()->toString();
@@ -76,11 +73,10 @@ class PosOfflineSyncTest extends TestCase
         $this->offlineService->queueOfflineSale($machineId, $saleData);
         $this->offlineService->queueOfflineSale($machineId, $saleData);
 
-        // Vérifier count
+        // VÃ©rifier count
         $this->assertEquals(2, $this->offlineService->getOfflineQueueCount());
     }
-
-    /** @test */
+    #[Test]
     public function offline_queue_can_be_flushed()
     {
         $machineId = Str::uuid()->toString();
@@ -96,15 +92,14 @@ class PosOfflineSyncTest extends TestCase
         // Flush queue
         $queue = $this->offlineService->flushOfflineQueue();
 
-        // Vérifier contenu
+        // VÃ©rifier contenu
         $this->assertArrayHasKey($machineId, $queue);
         $this->assertCount(1, $queue[$machineId]);
 
-        // Vérifier queue vidée
+        // VÃ©rifier queue vidÃ©e
         $this->assertEquals(0, $this->offlineService->getOfflineQueueCount());
     }
-
-    /** @test */
+    #[Test]
     public function multiple_machines_can_queue_independently()
     {
         $machine1 = Str::uuid()->toString();
@@ -122,32 +117,30 @@ class PosOfflineSyncTest extends TestCase
         // Total: 3
         $this->assertEquals(3, $this->offlineService->getOfflineQueueCount());
 
-        // Flush et vérifier structure
+        // Flush et vÃ©rifier structure
         $queue = $this->offlineService->flushOfflineQueue();
         $this->assertCount(2, $queue[$machine1]);
         $this->assertCount(1, $queue[$machine2]);
     }
-
-    /** @test */
+    #[Test]
     public function offline_mode_timeout_clears_after_expiration()
     {
         // Cache duration = 3600 secondes
         $this->offlineService->markOffline('Test');
         $this->assertTrue($this->offlineService->isOffline());
 
-        // Avancer temps (simulé via cache backend)
+        // Avancer temps (simulÃ© via cache backend)
         // En test, on simule simplement l'expiration
         \Illuminate\Support\Facades\Cache::flush();
 
         $this->assertFalse($this->offlineService->isOffline());
     }
-
-    /** @test */
+    #[Test]
     public function full_offline_to_online_cycle()
     {
         $machineId = Str::uuid()->toString();
 
-        // 1. Système online
+        // 1. SystÃ¨me online
         $this->assertFalse($this->offlineService->isOffline());
 
         // 2. Marquer offline
@@ -170,12 +163,16 @@ class PosOfflineSyncTest extends TestCase
         // 5. Flush queue pour processing
         $queue = $this->offlineService->flushOfflineQueue();
 
-        // 6. Vérifier données intactes
+        // 6. VÃ©rifier donnÃ©es intactes
         $this->assertCount(2, $queue[$machineId]);
         $this->assertEquals(100.00, $queue[$machineId][0]['data']['total_amount']);
         $this->assertEquals(150.00, $queue[$machineId][1]['data']['total_amount']);
 
-        // 7. Queue vide après flush
+        // 7. Queue vide aprÃ¨s flush
         $this->assertEquals(0, $this->offlineService->getOfflineQueueCount());
     }
 }
+
+
+
+

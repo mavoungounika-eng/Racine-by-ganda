@@ -81,13 +81,19 @@ class GlobalStateWidget
 
     private function getConversionRate(Carbon $today): array
     {
+        $yesterday = Carbon::yesterday();
         $conversionRate = $this->orderRepository->getConversionRateByDate($today);
+        $yesterdayRate = $this->orderRepository->getConversionRateByDate($yesterday);
         $thresholds = config('dashboard.thresholds.conversion');
+
+        $variation = $yesterdayRate > 0 
+            ? (($conversionRate - $yesterdayRate) / $yesterdayRate) * 100 
+            : 0;
 
         return [
             'value' => $conversionRate,
             'formatted' => number_format($conversionRate, 1) . '%',
-            'variation' => 0, // TODO: Calculer vs J-1
+            'variation' => round($variation, 1),
             'status' => $this->getConversionStatus($conversionRate, $thresholds),
         ];
     }

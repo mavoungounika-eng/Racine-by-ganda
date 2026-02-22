@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Builder;
+
 /**
  * Audit Log Model
  * 
@@ -13,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class AuditLog extends Model
 {
+    use Prunable;
+
     protected $guarded = [];
 
     protected $casts = [
@@ -68,5 +73,14 @@ class AuditLog extends Model
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('created_at', '>=', now()->subHours($hours));
+    }
+
+    /**
+     * Get the prunable model query.
+     */
+    public function prunable(): Builder
+    {
+        // Conserve les logs pendant 1 an (selon exigences de conformité PCI-DSS/etc.)
+        return static::where('created_at', '<=', now()->subYear());
     }
 }

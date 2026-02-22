@@ -18,6 +18,16 @@ Vous travaillez sur le projet : **RACINE-BACKEND**, un écosystème modulaire co
 * Layout professionnel interne
 
 **L’architecture est modulaire. Aucun code ne doit être ajouté dans le monolithe sans justification.**
+**RÈGLE D'OR ANTIGRAVITY : Zéro ajout métier dans `app/`. Tout nouveau domaine = 1 module.**
+
+---
+
+# 🔥 **1.B GOUVERNANCE ANTIGRAVITY (OBLIGATOIRE)**
+
+Toute intervention doit respecter le document `docs/ANTIGRAVITY_CORE.md` :
+1. **Red Flag System** : Identifier le niveau de risque (L1, L2, L3) avant d'agir.
+2. **Architecture Locking** : Ne pas modifier les fichiers verrouillés sans ADR.
+3. **ADR Registry** : Documenter chaque décision structurante dans `docs/decisions/`.
 
 ---
 

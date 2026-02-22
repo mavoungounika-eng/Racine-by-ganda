@@ -74,7 +74,7 @@ class AdminMobileMoneyController extends Controller
     /**
      * Valider manuellement une transaction.
      */
-    public function validate(CreatorSubscription $subscription)
+    public function validateTransaction(CreatorSubscription $subscription)
     {
         if ($subscription->status === 'active') {
             return redirect()->back()

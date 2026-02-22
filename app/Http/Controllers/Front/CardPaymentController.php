@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Http\Controllers\Api\WebhookController;
 use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\Payments\CardPaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Stripe\Exception\SignatureVerificationException;
-use Symfony\Component\HttpFoundation\Response;
-use UnexpectedValueException;
 
 /**
  * Contrôleur pour les paiements par carte bancaire via Stripe
@@ -113,5 +112,14 @@ class CardPaymentController extends Controller
         return view('frontend.checkout.card-cancel', [
             'order' => $order,
         ]);
+    }
+
+    /**
+     * Webhook Stripe legacy (compatibility shim)
+     * Forwards processing to the unified Payments Hub webhook controller.
+     */
+    public function webhook(Request $request, WebhookController $webhookController): JsonResponse
+    {
+        return $webhookController->stripe($request);
     }
 }

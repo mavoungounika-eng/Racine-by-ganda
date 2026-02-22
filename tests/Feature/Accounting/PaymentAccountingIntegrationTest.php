@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Accounting;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Order;
@@ -26,17 +27,16 @@ class PaymentAccountingIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        // Créer utilisateur
+        // CrÃ©er utilisateur
         $this->user = User::factory()->create();
 
-        // Seed données comptables via trait explicite
+        // Seed donnÃ©es comptables via trait explicite
         $this->seedAccounting();
 
         $this->journal = Journal::where('code', 'VTE')->first();
         $this->fiscalYear = FiscalYear::where('is_closed', false)->first();
     }
-
-    /** @test */
+    #[Test]
     public function it_creates_accounting_entry_for_stripe_payment()
     {
         $order = Order::factory()->create([
@@ -46,10 +46,10 @@ class PaymentAccountingIntegrationTest extends TestCase
             'payment_status' => 'pending',
         ]);
 
-        // Simuler paiement confirmé
+        // Simuler paiement confirmÃ©
         $order->update(['payment_status' => 'paid']);
 
-        // Vérifier écriture créée
+        // VÃ©rifier Ã©criture crÃ©Ã©e
         $entry = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->first();
@@ -59,29 +59,28 @@ class PaymentAccountingIntegrationTest extends TestCase
         $this->assertEquals(118.00, $entry->total_debit);
         $this->assertEquals(118.00, $entry->total_credit);
 
-        // Vérifier lignes
+        // VÃ©rifier lignes
         $lines = $entry->lines;
         $this->assertCount(3, $lines);
 
-        // Ligne 1: Débit Stripe (TTC)
+        // Ligne 1: DÃ©bit Stripe (TTC)
         $stripeLine = $lines->where('account_code', '5112')->first();
         $this->assertNotNull($stripeLine);
         $this->assertEquals(118.00, $stripeLine->debit);
 
-        // Ligne 2: Crédit Ventes (HT)
+        // Ligne 2: CrÃ©dit Ventes (HT)
         $salesLine = $lines->where('account_code', '7011')->first();
         $this->assertNotNull($salesLine);
         $this->assertEquals(100.00, $salesLine->credit);
         $this->assertEquals(100.00, $salesLine->amount_ht);
         $this->assertEquals(18.00, $salesLine->vat_amount);
 
-        // Ligne 3: Crédit TVA
+        // Ligne 3: CrÃ©dit TVA
         $vatLine = $lines->where('account_code', '4421')->first();
         $this->assertNotNull($vatLine);
         $this->assertEquals(18.00, $vatLine->credit);
     }
-
-    /** @test */
+    #[Test]
     public function it_creates_accounting_entry_for_mobile_money_payment()
     {
         $order = Order::factory()->create([
@@ -99,13 +98,12 @@ class PaymentAccountingIntegrationTest extends TestCase
 
         $this->assertNotNull($entry);
 
-        // Vérifier compte débit Monetbil
+        // VÃ©rifier compte dÃ©bit Monetbil
         $monetbilLine = $entry->lines->where('account_code', '5113')->first();
         $this->assertNotNull($monetbilLine);
         $this->assertEquals(59.00, $monetbilLine->debit);
     }
-
-    /** @test */
+    #[Test]
     public function it_creates_accounting_entry_for_cash_payment()
     {
         $order = Order::factory()->create([
@@ -123,13 +121,12 @@ class PaymentAccountingIntegrationTest extends TestCase
 
         $this->assertNotNull($entry);
 
-        // Vérifier compte débit Caisse
+        // VÃ©rifier compte dÃ©bit Caisse
         $cashLine = $entry->lines->where('account_code', '5700')->first();
         $this->assertNotNull($cashLine);
         $this->assertEquals(236.00, $cashLine->debit);
     }
-
-    /** @test */
+    #[Test]
     public function it_creates_marketplace_accounting_entry_with_commission()
     {
         $creator = User::factory()->create(['role' => 'createur']);
@@ -144,15 +141,14 @@ class PaymentAccountingIntegrationTest extends TestCase
 
         $order->update(['payment_status' => 'paid']);
 
-        // SaaS Pur: Les ventes créateurs sont comptabilisées via CreatorSaleRecord, pas via le Ledger
+        // SaaS Pur: Les ventes crÃ©ateurs sont comptabilisÃ©es via CreatorSaleRecord, pas via le Ledger
         $entry = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->first();
 
-        $this->assertNull($entry, 'SaaS Pur: Aucune entrée comptable ne doit être créée pour une vente créateur.');
+        $this->assertNull($entry, 'SaaS Pur: Aucune entrÃ©e comptable ne doit Ãªtre crÃ©Ã©e pour une vente crÃ©ateur.');
     }
-
-    /** @test */
+    #[Test]
     public function it_does_not_create_entry_if_payment_not_confirmed()
     {
         $order = Order::factory()->create([
@@ -170,8 +166,7 @@ class PaymentAccountingIntegrationTest extends TestCase
 
         $this->assertNull($entry);
     }
-
-    /** @test */
+    #[Test]
     public function it_dispatches_payment_recorded_event()
     {
         Event::fake([PaymentRecorded::class]);

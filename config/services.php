@@ -105,4 +105,19 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google reCAPTCHA v3
+    |--------------------------------------------------------------------------
+    */
+    'recaptcha' => [
+        'enabled' => env('RECAPTCHA_ENABLED', false),
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+        'threshold' => env('RECAPTCHA_THRESHOLD', 0.5),
+        'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
+        'timeout' => 5.0,
+        'skip_for_testing' => env('RECAPTCHA_SKIP_FOR_TESTING', false),
+    ],
+
 ];

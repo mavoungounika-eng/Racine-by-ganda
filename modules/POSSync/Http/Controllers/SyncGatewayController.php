@@ -26,9 +26,12 @@ class SyncGatewayController extends Controller
      */
     public function syncEvents(Request $request)
     {
-        // 1. Valider le token JWT (auth machine)
-        $token = $request->bearerToken();
-        $device = $this->deviceAuthService->validateToken($token);
+        // 1. Device resolved by middleware when available (fallback to manual JWT validation)
+        $device = $request->attributes->get('pos_device');
+        if (!$device) {
+            $token = $request->bearerToken();
+            $device = $this->deviceAuthService->validateToken($token);
+        }
 
         if (!$device) {
             return response()->json(['error' => 'Invalid token'], 401);
@@ -251,8 +254,11 @@ class SyncGatewayController extends Controller
      */
     public function refreshToken(Request $request)
     {
-        $oldToken = $request->bearerToken();
-        $newToken = $this->deviceAuthService->refreshToken($oldToken);
+        /** @var \Modules\POSSync\Models\PosDevice|null $device */
+        $device = $request->attributes->get('pos_device');
+        $newToken = $device
+            ? $this->deviceAuthService->generateToken($device->machine_id)
+            : $this->deviceAuthService->refreshToken((string) $request->bearerToken());
 
         if (!$newToken) {
             return response()->json(['error' => 'Token refresh failed'], 401);
@@ -272,7 +278,11 @@ class SyncGatewayController extends Controller
      */
     public function getDeviceStatus(Request $request)
     {
-        $device = $this->deviceAuthService->validateToken($request->bearerToken());
+        // Device resolved by middleware when available (fallback to manual JWT validation)
+        $device = $request->attributes->get('pos_device');
+        if (!$device) {
+            $device = $this->deviceAuthService->validateToken($request->bearerToken());
+        }
 
         if (!$device) {
             return response()->json(['error' => 'Invalid token'], 401);

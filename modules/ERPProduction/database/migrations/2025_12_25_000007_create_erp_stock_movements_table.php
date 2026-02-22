@@ -11,27 +11,72 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('erp_stock_movements', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('material_id')->nullable()->constrained('erp_raw_materials')->onDelete('restrict');
-            $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('restrict');
-            $table->foreignId('production_order_id')->nullable()->constrained('erp_production_orders')->onDelete('restrict');
-            $table->enum('type', ['in', 'out']);
-            $table->enum('source', ['raw', 'wip', 'finished']); // Matière première, En-cours, Produit fini
-            $table->decimal('quantity', 10, 2);
-            $table->decimal('unit_cost', 12, 2); // Coût unitaire
-            $table->decimal('total_cost', 12, 2); // Quantité × coût
-            $table->text('description')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
-            $table->timestamps();
-            
-            // Index
-            $table->index('material_id');
-            $table->index('product_id');
-            $table->index('production_order_id');
-            $table->index('type');
-            $table->index('source');
-            $table->index('created_at');
+        if (!Schema::hasTable('erp_stock_movements')) {
+            Schema::create('erp_stock_movements', function (Blueprint $table) {
+                $table->id();
+                $table->morphs('stockable');
+                $table->enum('type', ['in', 'out', 'transfer', 'adjustment']);
+                $table->decimal('quantity', 10, 2);
+                $table->string('from_location')->nullable();
+                $table->string('to_location')->nullable();
+                $table->string('reason')->nullable();
+                $table->string('reference_type')->nullable();
+                $table->unsignedBigInteger('reference_id')->nullable();
+                $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+
+                // ERPProduction extension columns.
+                $table->foreignId('material_id')->nullable()->constrained('erp_raw_materials')->nullOnDelete();
+                $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
+                $table->foreignId('production_order_id')->nullable()->constrained('erp_production_orders')->nullOnDelete();
+                $table->enum('source', ['raw', 'wip', 'finished'])->nullable();
+                $table->decimal('unit_cost', 12, 2)->nullable();
+                $table->decimal('total_cost', 12, 2)->nullable();
+                $table->text('description')->nullable();
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->timestamps();
+
+                $table->index('material_id');
+                $table->index('product_id');
+                $table->index('production_order_id');
+                $table->index('source');
+                $table->index('created_at');
+            });
+
+            return;
+        }
+
+        Schema::table('erp_stock_movements', function (Blueprint $table) {
+            if (!Schema::hasColumn('erp_stock_movements', 'material_id')) {
+                $table->foreignId('material_id')->nullable()->constrained('erp_raw_materials')->nullOnDelete();
+            }
+
+            if (!Schema::hasColumn('erp_stock_movements', 'product_id')) {
+                $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
+            }
+
+            if (!Schema::hasColumn('erp_stock_movements', 'production_order_id')) {
+                $table->foreignId('production_order_id')->nullable()->constrained('erp_production_orders')->nullOnDelete();
+            }
+
+            if (!Schema::hasColumn('erp_stock_movements', 'source')) {
+                $table->enum('source', ['raw', 'wip', 'finished'])->nullable();
+            }
+
+            if (!Schema::hasColumn('erp_stock_movements', 'unit_cost')) {
+                $table->decimal('unit_cost', 12, 2)->nullable();
+            }
+
+            if (!Schema::hasColumn('erp_stock_movements', 'total_cost')) {
+                $table->decimal('total_cost', 12, 2)->nullable();
+            }
+
+            if (!Schema::hasColumn('erp_stock_movements', 'description')) {
+                $table->text('description')->nullable();
+            }
+
+            if (!Schema::hasColumn('erp_stock_movements', 'created_by')) {
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            }
         });
     }
 
@@ -40,6 +85,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('erp_stock_movements');
+        // No-op: this migration extends a shared table created by ERP.
     }
 };

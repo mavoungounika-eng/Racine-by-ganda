@@ -33,6 +33,22 @@ class Product extends Model
     ];
 
     /**
+     * Backward compatibility alias: legacy code often reads/writes "name".
+     */
+    public function setNameAttribute(string $value): void
+    {
+        $this->attributes['title'] = $value;
+    }
+
+    /**
+     * Backward compatibility alias for legacy "name" reads.
+     */
+    public function getNameAttribute(): string
+    {
+        return (string) ($this->attributes['title'] ?? '');
+    }
+
+    /**
      * Get the category that owns the product.
      */
     public function category(): BelongsTo
@@ -223,4 +239,3 @@ class Product extends Model
         return $this->mainImage ?? $this->images->first();
     }
 }
-

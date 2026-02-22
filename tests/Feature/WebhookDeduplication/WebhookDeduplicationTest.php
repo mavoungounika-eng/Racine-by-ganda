@@ -355,7 +355,27 @@ class WebhookDeduplicationTest extends TestCase
         // Clear cache
         $this->deduplicationService->clearCache();
 
-        // Should not be duplicate after cache clear
+        // Should not be duplicate after cache clear (for non-permanent webhooks)
         $this->assertFalse($this->deduplicationService->isDuplicate('stripe', 'evt_12345'));
+    }
+
+    /**
+     * Test: Permanent storage resists cache clears (Exactly-once)
+     */
+    public function test_webhook_persists_in_database_and_resists_cache_clear(): void
+    {
+        // Marquer comme traité avec succès
+        $this->deduplicationService->markAsProcessedSuccess('stripe', 'evt_permanent_123');
+        
+        // Vider le cache pour simuler l'amnésie
+        $this->deduplicationService->clearCache();
+        
+        // La base de données doit s'en souvenir indéfiniment
+        $this->assertTrue($this->deduplicationService->isDuplicate('stripe', 'evt_permanent_123'));
+        
+        $this->assertDatabaseHas('processed_webhooks', [
+            'provider' => 'stripe',
+            'external_id' => 'evt_permanent_123'
+        ]);
     }
 }

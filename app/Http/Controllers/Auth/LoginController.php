@@ -77,10 +77,21 @@ class LoginController extends Controller
      */
     public function login(Request $request): RedirectResponse
     {
-        $credentials = $request->validate([
+        $rules = [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-        ]);
+        ];
+
+        /** @var \App\Services\Auth\RecaptchaService $recaptcha */
+        $recaptcha = app(\App\Services\Auth\RecaptchaService::class);
+        $rules['g-recaptcha-response'] = $recaptcha->isEnabled()
+            ? ['required', new \App\Rules\Recaptcha('login')]
+            : ['nullable', new \App\Rules\Recaptcha('login')];
+
+        $credentials = $request->validate($rules);
+
+        // Retirer le token recaptcha des credentials avant l'authentification
+        unset($credentials['g-recaptcha-response']);
 
         $remember = $request->boolean('remember');
 
@@ -115,4 +126,3 @@ class LoginController extends Controller
         return redirect($redirectUrl);
     }
 }
-

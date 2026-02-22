@@ -42,6 +42,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'creator.active' => \App\Http\Middleware\EnsureCreatorActive::class,
             'capability' => \App\Http\Middleware\EnsureCapability::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
+            'pos.device' => \App\Http\Middleware\PosDeviceAuth::class,
+            
+            // Legacy webhook guards (deprecated routes)
+            'legacy.webhook.guard' => \App\Http\Middleware\LegacyWebhookGuard::class,
+            'legacy.webhook.deprecation' => \App\Http\Middleware\LegacyWebhookDeprecation::class,
             
             // Aliases needed by framework (Laravel auto-appends these in some cases)
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
@@ -66,8 +71,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // ValidateSessionContext is now replaced by Unified EnsureAuthenticated middleware at route level
         ]);
 
-        // Enregistrement des métriques de performance (debug uniquement)
-        $middleware->append(\App\Http\Middleware\RecordPerformanceMetrics::class);
+        // Enregistrement des métriques de performance (disabled for local dev)
+        // $middleware->append(\App\Http\Middleware\RecordPerformanceMetrics::class);
 
         // Rate limiting global
         $middleware->throttleApi();
@@ -146,5 +151,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping()
             ->onOneServer()
             ->description('Downgrade automatique des abonnements expirés vers FREE');
+
+        // Rejouer les webhooks en échec (toutes les 10 minutes)
+        $schedule->command('webhook:retry-failures --limit=20')
+            ->everyTenMinutes()
+            ->withoutOverlapping(5)
+            ->onOneServer()
+            ->description('Rejoue les webhooks Stripe/Monetbil en échec');
     })
     ->create();

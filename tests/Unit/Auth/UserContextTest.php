@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Auth;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\DTOs\Auth\UserContext;
 use App\Models\User;
 use Carbon\Carbon;
@@ -14,7 +16,7 @@ use Tests\TestCase;
  */
 class UserContextTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_be_created_with_all_properties()
     {
         $frozenAt = Carbon::now();
@@ -43,8 +45,7 @@ class UserContextTest extends TestCase
         $this->assertEquals(1, $context->authVersion);
         $this->assertEquals($frozenAt, $context->frozenAt);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_check_specific_role()
     {
         $context = $this->createContext(role: 'admin');
@@ -52,8 +53,7 @@ class UserContextTest extends TestCase
         $this->assertTrue($context->hasRole('admin'));
         $this->assertFalse($context->hasRole('client'));
     }
-
-    /** @test */
+    #[Test]
     public function it_can_check_multiple_roles()
     {
         $context = $this->createContext(role: 'staff');
@@ -61,8 +61,7 @@ class UserContextTest extends TestCase
         $this->assertTrue($context->hasAnyRole(['admin', 'staff']));
         $this->assertFalse($context->hasAnyRole(['admin', 'client']));
     }
-
-    /** @test */
+    #[Test]
     public function it_identifies_admin_roles()
     {
         $superAdmin = $this->createContext(role: 'super_admin');
@@ -75,8 +74,7 @@ class UserContextTest extends TestCase
         $this->assertFalse($staff->isAdmin());
         $this->assertFalse($client->isAdmin());
     }
-
-    /** @test */
+    #[Test]
     public function it_identifies_team_members()
     {
         $superAdmin = $this->createContext(role: 'super_admin');
@@ -91,8 +89,7 @@ class UserContextTest extends TestCase
         $this->assertFalse($creator->isTeamMember());
         $this->assertFalse($client->isTeamMember());
     }
-
-    /** @test */
+    #[Test]
     public function it_identifies_creators()
     {
         $createur = $this->createContext(role: 'createur');
@@ -103,8 +100,7 @@ class UserContextTest extends TestCase
         $this->assertTrue($creator->isCreator());
         $this->assertFalse($client->isCreator());
     }
-
-    /** @test */
+    #[Test]
     public function it_identifies_clients()
     {
         $client = $this->createContext(role: 'client');
@@ -113,8 +109,7 @@ class UserContextTest extends TestCase
         $this->assertTrue($client->isClient());
         $this->assertFalse($admin->isClient());
     }
-
-    /** @test */
+    #[Test]
     public function it_identifies_creator_statuses()
     {
         $pending = $this->createContext(role: 'createur', creatorStatus: 'pending');
@@ -138,8 +133,7 @@ class UserContextTest extends TestCase
         $this->assertFalse($client->isCreatorActive());
         $this->assertFalse($client->isCreatorSuspended());
     }
-
-    /** @test */
+    #[Test]
     public function it_can_check_permissions()
     {
         $context = $this->createContext(permissions: ['view_dashboard', 'manage_users']);
@@ -148,8 +142,7 @@ class UserContextTest extends TestCase
         $this->assertTrue($context->hasPermission('manage_users'));
         $this->assertFalse($context->hasPermission('delete_users'));
     }
-
-    /** @test */
+    #[Test]
     public function it_can_convert_to_array()
     {
         $frozenAt = Carbon::now();
@@ -181,8 +174,7 @@ class UserContextTest extends TestCase
             'frozen_at' => $frozenAt->toIso8601String(),
         ], $array);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_be_created_from_array()
     {
         $frozenAt = Carbon::now();
@@ -212,8 +204,7 @@ class UserContextTest extends TestCase
         $this->assertEquals(1, $context->authVersion);
         $this->assertEquals($frozenAt->toIso8601String(), $context->frozenAt->toIso8601String());
     }
-
-    /** @test */
+    #[Test]
     public function it_round_trips_through_array_conversion()
     {
         $original = $this->createContext(

@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Services\Production;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Product;
@@ -23,8 +25,7 @@ class ProductionOrderClosureTest extends TestCase
         parent::setUp();
         $this->service = new ProductionService();
     }
-
-    /** @test */
+    #[Test]
     public function it_cannot_close_order_without_material_logs()
     {
         $product = Product::factory()->create();
@@ -40,8 +41,7 @@ class ProductionOrderClosureTest extends TestCase
             ['variant_sku' => 'TEST-S', 'qty_good' => 10],
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_cannot_close_order_without_time_logs()
     {
         $product = Product::factory()->create();
@@ -73,8 +73,7 @@ class ProductionOrderClosureTest extends TestCase
             ['variant_sku' => 'TEST-S', 'qty_good' => 10],
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_cannot_close_order_without_outputs()
     {
         $product = Product::factory()->create();
@@ -96,8 +95,7 @@ class ProductionOrderClosureTest extends TestCase
 
         $this->service->closeOrder($order, []); // Empty outputs
     }
-
-    /** @test */
+    #[Test]
     public function it_rejects_output_with_zero_total_quantity()
     {
         $product = Product::factory()->create();
@@ -126,8 +124,7 @@ class ProductionOrderClosureTest extends TestCase
             ],
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_cannot_close_order_not_in_progress()
     {
         $product = Product::factory()->create();
@@ -143,8 +140,7 @@ class ProductionOrderClosureTest extends TestCase
             ['variant_sku' => 'TEST-S', 'qty_good' => 10],
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_rejects_output_missing_variant_sku()
     {
         $product = Product::factory()->create();
@@ -168,8 +164,7 @@ class ProductionOrderClosureTest extends TestCase
             ['qty_good' => 10], // Missing variant_sku
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_successfully_closes_order_with_valid_data()
     {
         $product = Product::factory()->create();

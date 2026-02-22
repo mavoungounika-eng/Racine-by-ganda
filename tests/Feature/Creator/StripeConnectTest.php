@@ -27,7 +27,6 @@ class StripeConnectTest extends TestCase
             })
         );
     }
-
     #[Test]
     public function it_redirects_to_stripe_onboarding_url()
     {
@@ -58,7 +57,6 @@ class StripeConnectTest extends TestCase
 
         $response->assertRedirect('https://stripe.com/onboarding/test');
     }
-
     #[Test]
     public function it_syncs_status_on_return()
     {

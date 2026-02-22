@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
@@ -23,15 +24,7 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        // Get or create the client role (FK constraint)
-        $clientRole = \App\Models\Role::where('slug', 'client')->first();
-        if (!$clientRole) {
-            $clientRole = \App\Models\Role::create([
-                'name' => 'Client',
-                'slug' => 'client',
-                'description' => 'Client role',
-            ]);
-        }
+        $clientRoleId = $this->resolveRoleId('client', 'Client', 'Client role');
 
         return [
             'name' => fake()->name(),
@@ -39,7 +32,8 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role_id' => $clientRole->id, // Default to client role
+            'role_id' => $clientRoleId,
+            'role' => 'client',
             'phone' => fake()->optional()->phoneNumber(),
             'is_admin' => false,
             'status' => 'active',
@@ -62,19 +56,35 @@ class UserFactory extends Factory
      */
     public function admin(): static
     {
-        $adminRole = \App\Models\Role::where('slug', 'admin')->first();
-        if (!$adminRole) {
-            $adminRole = \App\Models\Role::create([
-                'name' => 'Admin',
-                'slug' => 'admin',
-                'description' => 'Administrator role',
-            ]);
-        }
+        $adminRoleId = $this->resolveRoleId('admin', 'Admin', 'Administrator role');
 
         return $this->state(fn (array $attributes) => [
             'is_admin' => true,
-            'role_id' => $adminRole->id,
+            'role_id' => $adminRoleId,
+            'role' => 'admin',
             'status' => 'active',
         ]);
+    }
+
+    private function resolveRoleId(string $slug, string $name, string $description): ?int
+    {
+        try {
+            if (!Schema::hasTable('roles')) {
+                return null;
+            }
+
+            $role = \App\Models\Role::query()->firstOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $name,
+                    'description' => $description,
+                ]
+            );
+
+            return $role->id;
+        } catch (\Throwable) {
+            // Unit tests that only build models with make() may not have roles migrated.
+            return null;
+        }
     }
 }

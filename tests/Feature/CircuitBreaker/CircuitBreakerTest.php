@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\CircuitBreaker;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\CircuitBreaker;
 use App\Services\Webhooks\CircuitBreakerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,8 +23,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // INITIALIZATION & STATE TRACKING
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function circuit_breaker_initializes_in_closed_state(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -33,8 +33,7 @@ class CircuitBreakerTest extends TestCase
         $this->assertFalse($breaker->isHalfOpen());
         $this->assertEquals(0, $breaker->failure_count);
     }
-
-    /** @test */
+    #[Test]
     public function is_available_returns_true_when_closed(): void
     {
         $this->assertTrue($this->service->isAvailable('stripe'));
@@ -43,8 +42,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // FAILURE TRACKING & OPENING CIRCUIT
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function records_failures_incrementally(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -56,8 +54,7 @@ class CircuitBreakerTest extends TestCase
         $this->assertEquals(2, $breaker->failure_count);
         $this->assertEquals('Timeout', $breaker->last_error);
     }
-
-    /** @test */
+    #[Test]
     public function opens_circuit_when_failure_threshold_exceeded(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -75,8 +72,7 @@ class CircuitBreakerTest extends TestCase
         $this->assertTrue($breaker->isOpen());
         $this->assertNotNull($breaker->opened_at);
     }
-
-    /** @test */
+    #[Test]
     public function circuit_rejects_requests_when_open(): void
     {
         $breaker = CircuitBreaker::forProvider('monetbil');
@@ -88,8 +84,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // RECOVERY: HALF_OPEN STATE
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function transitions_to_half_open_after_delay(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -103,8 +98,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = $breaker->fresh();
         $this->assertTrue($breaker->isHalfOpen());
     }
-
-    /** @test */
+    #[Test]
     public function half_open_allows_recovery_test(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -112,8 +106,7 @@ class CircuitBreakerTest extends TestCase
         
         $this->assertTrue($this->service->isAvailable('stripe'));
     }
-
-    /** @test */
+    #[Test]
     public function closes_circuit_after_success_in_half_open(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -127,8 +120,7 @@ class CircuitBreakerTest extends TestCase
         $this->assertEquals(0, $breaker->success_count);
         $this->assertNull($breaker->opened_at);
     }
-
-    /** @test */
+    #[Test]
     public function reopens_circuit_after_failure_in_half_open(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -144,8 +136,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // SUCCESS TRACKING
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function records_successful_operations(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -160,8 +151,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // THRESHOLD & BACKOFF CALCULATIONS
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function checks_if_exceeded_failure_threshold(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -172,13 +162,12 @@ class CircuitBreakerTest extends TestCase
         $breaker->update(['failure_count' => 5]);
         $this->assertTrue($breaker->hasExceededFailureThreshold());
     }
-
-    /** @test */
+    #[Test]
     public function calculates_exponential_backoff_delay(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
         
-        // Backoff: 10s (1 fail) → 20s (2 fail) → 40s (3 fail) → 80s (4 fail)
+        // Backoff: 10s (1 fail) â†’ 20s (2 fail) â†’ 40s (3 fail) â†’ 80s (4 fail)
         $breaker->update(['failure_count' => 1]);
         $this->assertEquals(10, $breaker->getBackoffDelaySeconds());
         
@@ -191,8 +180,7 @@ class CircuitBreakerTest extends TestCase
         $breaker->update(['failure_count' => 4]);
         $this->assertEquals(80, $breaker->getBackoffDelaySeconds());
     }
-
-    /** @test */
+    #[Test]
     public function checks_readiness_for_half_open_transition(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -209,8 +197,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // STATUS & STATISTICS
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function returns_status_summary(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -230,8 +217,7 @@ class CircuitBreakerTest extends TestCase
         $this->assertEquals(2, $status['successes']);
         $this->assertNotNull($status['open_since']);
     }
-
-    /** @test */
+    #[Test]
     public function returns_all_statistics(): void
     {
         CircuitBreaker::forProvider('stripe')->update(['state' => 'closed']);
@@ -250,8 +236,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // MANUAL OPERATIONS (ADMIN)
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function manually_resets_circuit_breaker(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -268,8 +253,7 @@ class CircuitBreakerTest extends TestCase
         $this->assertEquals(0, $breaker->failure_count);
         $this->assertNull($breaker->opened_at);
     }
-
-    /** @test */
+    #[Test]
     public function resets_all_circuit_breakers(): void
     {
         CircuitBreaker::forProvider('stripe')->update(['state' => 'open', 'failure_count' => 5]);
@@ -284,8 +268,7 @@ class CircuitBreakerTest extends TestCase
     // ============================================================================
     // INTEGRATION: SERVICE METHODS
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function service_tracks_success_state_transitions(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -311,8 +294,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = $breaker->fresh();
         $this->assertTrue($breaker->isClosed());
     }
-
-    /** @test */
+    #[Test]
     public function different_providers_have_independent_circuits(): void
     {
         $stripe = CircuitBreaker::forProvider('stripe');
@@ -323,8 +305,7 @@ class CircuitBreakerTest extends TestCase
         $this->assertFalse($this->service->isAvailable('stripe'));
         $this->assertTrue($this->service->isAvailable('monetbil'));
     }
-
-    /** @test */
+    #[Test]
     public function updates_last_error_on_failure(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');
@@ -337,8 +318,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = $breaker->fresh();
         $this->assertEquals('Timeout after 30s', $breaker->last_error);
     }
-
-    /** @test */
+    #[Test]
     public function returns_backoff_delay(): void
     {
         $breaker = CircuitBreaker::forProvider('stripe');

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Governance;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -18,8 +19,8 @@ use Tests\Traits\SeedsAccounting;
 /**
  * Tests bloquants de gouvernance SaaS Pur.
  * 
- * Ces tests DOIVENT passer avant tout déploiement en production.
- * Ils vérifient les invariants critiques identifiés dans l'audit.
+ * Ces tests DOIVENT passer avant tout dÃ©ploiement en production.
+ * Ils vÃ©rifient les invariants critiques identifiÃ©s dans l'audit.
  * 
  * @see AUDIT_VERDICT.md
  * @see SAAS_PUR_INVARIANTS.md
@@ -29,10 +30,9 @@ class GovernanceHardeningTest extends TestCase
     use RefreshDatabase, SeedsAccounting;
 
     // =========================================================================
-    // C1: Non-régression payment_status
+    // C1: Non-rÃ©gression payment_status
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function payment_status_regression_from_paid_to_pending_is_blocked(): void
     {
         $order = Order::factory()->create(['payment_status' => 'paid']);
@@ -43,23 +43,21 @@ class GovernanceHardeningTest extends TestCase
         
         $order->update(['payment_status' => 'pending']);
     }
-
-    /** @test */
+    #[Test]
     public function payment_status_can_transition_to_refunded(): void
     {
         $order = Order::factory()->create(['payment_status' => 'paid']);
         
-        // Transition paid → refunded autorisée
+        // Transition paid â†’ refunded autorisÃ©e
         $order->update(['payment_status' => 'refunded']);
         
         $this->assertEquals('refunded', $order->fresh()->payment_status);
     }
 
     // =========================================================================
-    // C2: États terminaux immuables
+    // C2: Ã‰tats terminaux immuables
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function terminal_order_status_completed_cannot_be_modified(): void
     {
         $order = Order::factory()->create(['status' => 'completed']);
@@ -70,8 +68,7 @@ class GovernanceHardeningTest extends TestCase
         
         $order->update(['status' => 'pending']);
     }
-
-    /** @test */
+    #[Test]
     public function terminal_order_status_cancelled_cannot_be_modified(): void
     {
         $order = Order::factory()->create(['status' => 'cancelled']);
@@ -82,23 +79,21 @@ class GovernanceHardeningTest extends TestCase
         
         $order->update(['status' => 'processing']);
     }
-
-    /** @test */
+    #[Test]
     public function non_terminal_order_status_can_transition(): void
     {
         $order = Order::factory()->create(['status' => 'processing']);
         
-        // Transition processing → shipped autorisée
+        // Transition processing â†’ shipped autorisÃ©e
         $order->update(['status' => 'shipped']);
         
         $this->assertEquals('shipped', $order->fresh()->status);
     }
 
     // =========================================================================
-    // C3: PaymentRecorded non dispatché pour créateurs
+    // C3: PaymentRecorded non dispatchÃ© pour crÃ©ateurs
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function payment_recorded_event_not_dispatched_for_creator_orders(): void
     {
         Event::fake([PaymentRecorded::class]);
@@ -110,14 +105,13 @@ class GovernanceHardeningTest extends TestCase
             'payment_status' => 'pending'
         ]);
         
-        // Transition pending → paid
+        // Transition pending â†’ paid
         $order->update(['payment_status' => 'paid']);
         
-        // PaymentRecorded NE DOIT PAS être dispatché pour créateurs
+        // PaymentRecorded NE DOIT PAS Ãªtre dispatchÃ© pour crÃ©ateurs
         Event::assertNotDispatched(PaymentRecorded::class);
     }
-
-    /** @test */
+    #[Test]
     public function payment_recorded_event_dispatched_for_brand_orders(): void
     {
         Event::fake([PaymentRecorded::class]);
@@ -129,10 +123,10 @@ class GovernanceHardeningTest extends TestCase
             'payment_status' => 'pending'
         ]);
         
-        // Transition pending → paid
+        // Transition pending â†’ paid
         $order->update(['payment_status' => 'paid']);
         
-        // PaymentRecorded DOIT être dispatché pour Brand orders
+        // PaymentRecorded DOIT Ãªtre dispatchÃ© pour Brand orders
         Event::assertDispatched(PaymentRecorded::class, function ($event) use ($order) {
             return $event->order->id === $order->id;
         });
@@ -141,8 +135,7 @@ class GovernanceHardeningTest extends TestCase
     // =========================================================================
     // C4: CreatorSaleRecord requiert creator_id non null
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function creator_sale_record_requires_non_null_creator_id(): void
     {
         $order = Order::factory()->create(['creator_id' => null]);
@@ -159,8 +152,7 @@ class GovernanceHardeningTest extends TestCase
             'status' => 'completed'
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function creator_sale_record_created_with_valid_creator_id(): void
     {
         $creator = User::factory()->create();
@@ -180,10 +172,9 @@ class GovernanceHardeningTest extends TestCase
     }
 
     // =========================================================================
-    // C5: Intent non créé pour commandes créateurs
+    // C5: Intent non crÃ©Ã© pour commandes crÃ©ateurs
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function financial_intent_not_created_for_creator_orders(): void
     {
         $creator = User::factory()->create();
@@ -195,7 +186,7 @@ class GovernanceHardeningTest extends TestCase
         // Dispatch event manuellement
         event(new PaymentRecorded($order));
         
-        // Vérifier qu'aucun intent n'a été créé
+        // VÃ©rifier qu'aucun intent n'a Ã©tÃ© crÃ©Ã©
         $this->assertDatabaseMissing('financial_intents', [
             'reference_type' => 'order',
             'reference_id' => $order->id
@@ -203,20 +194,19 @@ class GovernanceHardeningTest extends TestCase
     }
 
     // =========================================================================
-    // C6: reverseEntry() bloque commandes créateurs
+    // C6: reverseEntry() bloque commandes crÃ©ateurs
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function reverse_entry_blocked_for_creator_order(): void
     {
-        // Seed données comptables via trait
+        // Seed donnÃ©es comptables via trait
         $this->seedAccounting();
         
-        // Créer une écriture pour un order Brand
+        // CrÃ©er une Ã©criture pour un order Brand
         $brandOrder = Order::factory()->create(['creator_id' => null]);
         $ledger = app(LedgerService::class);
         
-        // Créer l'écriture via le service autorisé
+        // CrÃ©er l'Ã©criture via le service autorisÃ©
         $entry = $ledger->createSaleEntry(
             $brandOrder,
             'VTE',
@@ -226,12 +216,12 @@ class GovernanceHardeningTest extends TestCase
         );
         
         // Maintenant, simuler une modification malicieuse de l'order
-        // (en production, cela ne devrait jamais arriver grâce aux guards)
+        // (en production, cela ne devrait jamais arriver grÃ¢ce aux guards)
         \DB::table('orders')->where('id', $brandOrder->id)->update(['creator_id' => 999]);
         
-        // La contre-passation doit échouer
+        // La contre-passation doit Ã©chouer
         $this->expectException(LedgerException::class);
-        $this->expectExceptionMessage('SÉCURITÉ SAAS PUR');
+        $this->expectExceptionMessage('SÃ‰CURITÃ‰ SAAS PUR');
         $this->expectExceptionMessage('Contre-passation interdite');
         
         $ledger->reverseEntry($entry, 'Test reversal');
@@ -240,8 +230,7 @@ class GovernanceHardeningTest extends TestCase
     // =========================================================================
     // Tests additionnels : Combinaisons
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function full_brand_order_lifecycle_works(): void
     {
         Event::fake([PaymentRecorded::class]);
@@ -264,11 +253,10 @@ class GovernanceHardeningTest extends TestCase
         $this->assertEquals('completed', $order->status);
         $this->assertEquals('paid', $order->payment_status);
         
-        // Event dispatché une seule fois
+        // Event dispatchÃ© une seule fois
         Event::assertDispatchedTimes(PaymentRecorded::class, 1);
     }
-
-    /** @test */
+    #[Test]
     public function full_creator_order_lifecycle_works(): void
     {
         Event::fake([PaymentRecorded::class]);
@@ -294,10 +282,10 @@ class GovernanceHardeningTest extends TestCase
         $this->assertEquals('completed', $order->status);
         $this->assertEquals('paid', $order->payment_status);
         
-        // AUCUN event dispatché pour créateur
+        // AUCUN event dispatchÃ© pour crÃ©ateur
         Event::assertNotDispatched(PaymentRecorded::class);
         
-        // Analytics record peut être créé
+        // Analytics record peut Ãªtre crÃ©Ã©
         $record = CreatorSaleRecord::create([
             'order_id' => $order->id,
             'creator_id' => $profile->id,

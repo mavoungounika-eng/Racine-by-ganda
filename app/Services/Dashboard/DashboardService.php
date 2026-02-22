@@ -120,11 +120,37 @@ class DashboardService
     {
         return [
             'late_orders' => $this->orderRepository->getLateOrdersCount(),
-            'critical_stock' => \App\Models\Product::where('stock', '<', 5)->count(), // Pas encore dans repo
-            'failed_payments' => 0, // TODO: Implémenter Logique Paiement
-            'at_risk_creators' => 0, // TODO: Implémenter Logique Risque Créateur
+            'critical_stock' => \App\Models\Product::where('stock', '<', 5)->count(),
+            'failed_payments' => $this->getFailedPaymentsCount(),
+            'at_risk_creators' => $this->getAtRiskCreatorsCount(),
             'low_conversion' => $this->orderRepository->getConversionRateByDate(now()) < 1.0,
         ];
+    }
+
+    /**
+     * Compter paiements échoués (dernières 24h)
+     */
+    private function getFailedPaymentsCount(): int
+    {
+        return \App\Models\Payment::where('status', 'failed')
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+    }
+
+    /**
+     * Compter créateurs à risque
+     * Critères: aucune vente depuis 30j ET stock > 0
+     */
+    private function getAtRiskCreatorsCount(): int
+    {
+        return \App\Models\User::where('role', 'createur')
+            ->whereDoesntHave('products.orderItems', function($query) {
+                $query->where('created_at', '>=', now()->subDays(30));
+            })
+            ->whereHas('products', function($query) {
+                $query->where('stock', '>', 0);
+            })
+            ->count();
     }
 
     /**
@@ -164,9 +190,29 @@ class DashboardService
         return [
             'to_prepare' => $this->orderRepository->getOrdersToPrepareCount(),
             'ready_not_shipped' => $this->orderRepository->getReadyNotShippedCount(),
-            'returns' => 0, // TODO
-            'incidents' => 0, // TODO
+            'returns' => $this->getReturnsCount(),
+            'incidents' => $this->getIncidentsCount(),
         ];
+    }
+
+    /**
+     * Compter retours en cours
+     */
+    private function getReturnsCount(): int
+    {
+        return \App\Models\Order::whereIn('status', ['return_requested', 'return_in_progress'])
+            ->count();
+    }
+
+    /**
+     * Compter incidents actifs (sessions POS avec écarts significatifs)
+     */
+    private function getIncidentsCount(): int
+    {
+        return \App\Models\PosSession::where('status', 'closed')
+            ->whereRaw('ABS(cash_difference) >= 100.00') // Seuil 100 FCFA
+            ->where('closed_at', '>=', now()->subDays(7))
+            ->count();
     }
 
     /**

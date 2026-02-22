@@ -92,6 +92,25 @@ class CheckoutController extends Controller
     public function placeOrder(PlaceOrderRequest $request)
     {
         // ... (Log headers)
+        $user = $request->user();
+        $data = $request->validated();
+
+        // Validate anti-replay token when checkout flow has initialized one in session.
+        $sessionToken = session('checkout_token');
+        if ($sessionToken !== null) {
+            $requestToken = (string) $request->input('_checkout_token', '');
+            if ($requestToken === '' || !hash_equals((string) $sessionToken, $requestToken)) {
+                \Log::warning('Checkout: Invalid checkout token detected', [
+                    'user_id' => $user?->id,
+                    'has_session_token' => true,
+                    'has_request_token' => $request->filled('_checkout_token'),
+                    'ip' => $request->ip(),
+                ]);
+
+                return redirect()->route('checkout.index')
+                    ->with('error', 'Session de paiement invalide. Veuillez recommencer le checkout.');
+            }
+        }
 
         // Charger le panier
         $cartService = $this->getCartService();

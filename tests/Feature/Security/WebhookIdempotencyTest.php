@@ -10,9 +10,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
+use Tests\Traits\SeedsAccounting;
+
 class WebhookIdempotencyTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     /**
      * Test qu'un même webhook Stripe reçu deux fois ne valide pas la commande deux fois
@@ -20,6 +22,9 @@ class WebhookIdempotencyTest extends TestCase
      */
     public function test_stripe_webhook_idempotency()
     {
+        // Initialiser la comptabilité pour éviter ModelNotFoundException sur les Journaux
+        $this->seedAccounting();
+
         // 1. Préparation
         $order = Order::factory()->create([
             'total_amount' => 5000,

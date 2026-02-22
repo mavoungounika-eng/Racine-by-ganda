@@ -11,9 +11,6 @@ class EventDispatcher
      */
     protected array $eventHandlers = [
         'PosSaleCreated' => \Modules\POSSync\Jobs\ProcessPosSale::class,
-        'PosPaymentRecorded' => \Modules\POSSync\Jobs\ProcessPosPayment::class,
-        'PosSaleFinalized' => \Modules\POSSync\Jobs\FinalizePosS ale::class,
-        'PosCashDrawerClosed' => \Modules\POSSync\Jobs\ProcessCashDrawerClosure::class,
     ];
 
     /**
@@ -35,6 +32,13 @@ class EventDispatcher
         }
 
         $handlerClass = $this->eventHandlers[$eventType];
+        if (!class_exists($handlerClass)) {
+            Log::error('POS event handler class not found', [
+                'event_type' => $eventType,
+                'handler' => $handlerClass,
+            ]);
+            throw new \RuntimeException("Handler class not found for event type: {$eventType}");
+        }
 
         // Dispatcher le job de manière asynchrone (queue)
         dispatch(new $handlerClass($payload));

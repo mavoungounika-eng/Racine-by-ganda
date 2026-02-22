@@ -46,7 +46,7 @@ class AuthAccountDisabledTest extends TestCase
 
         // Tenter d'accéder à nouveau
         $response = $this->get(route('account.dashboard'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -72,7 +72,7 @@ class AuthAccountDisabledTest extends TestCase
 
         // Tenter d'accéder à nouveau
         $response = $this->get(route('admin.dashboard'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -102,7 +102,7 @@ class AuthAccountDisabledTest extends TestCase
 
         // Tenter d'accéder à nouveau
         $response = $this->get(route('creator.dashboard'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -127,7 +127,8 @@ class AuthAccountDisabledTest extends TestCase
         $response = $this->get(route('account.dashboard'));
 
         // Vérifier que l'accès est refusé
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
+        $this->assertFalse(auth()->check());
     }
 
     /**
@@ -193,7 +194,7 @@ class AuthAccountDisabledTest extends TestCase
 
         // Vérifier que l'accès est bloqué
         $response = $this->get(route('account.dashboard'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
 
         // Vérifier que tous les comptes sont désactivés
         foreach ($users as $user) {
@@ -222,7 +223,7 @@ class AuthAccountDisabledTest extends TestCase
         ]);
 
         // Vérifier que l'action est refusée
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -247,7 +248,8 @@ class AuthAccountDisabledTest extends TestCase
         $response = $this->get(route('account.dashboard'));
 
         // Vérifier que l'accès est refusé
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
+        $this->assertFalse(auth()->check());
     }
 
     /**
@@ -273,7 +275,7 @@ class AuthAccountDisabledTest extends TestCase
 
         // Vérifier que l'utilisateur ne peut plus accéder à ses commandes
         $response = $this->get(route('profile.orders'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
 
         // Vérifier que la commande existe toujours (pas supprimée)
         $this->assertDatabaseHas('orders', [

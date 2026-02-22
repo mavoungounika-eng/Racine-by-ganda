@@ -33,9 +33,9 @@ class RateLimitServiceProvider extends ServiceProvider
                 });
         });
 
-        // Rate limiting pour webhooks (100 requêtes par minute par IP)
+        // Rate limiting pour webhooks (60 requêtes par minute par IP)
         RateLimiter::for('webhooks', function (Request $request) {
-            return Limit::perMinute(100)
+            return Limit::perMinute(60)
                 ->by($request->ip())
                 ->response(function () {
                     return response()->json([

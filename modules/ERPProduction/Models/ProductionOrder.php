@@ -59,6 +59,11 @@ class ProductionOrder extends Model
         return $this->hasMany(WorkStep::class)->orderBy('sequence');
     }
 
+    public function qualityChecks(): HasMany
+    {
+        return $this->hasMany(QualityCheck::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -340,6 +340,11 @@ Incident procedures ....... ✅ 90% (contacts pending)
 - [ ] Performance tuning
 - [ ] Load testing
 
+### Contacts support
+- **Technique:** nikadigitalhub1@gmail.com / +242 06 832 52 86
+- **Finance:** nikadigitalhub1@gmail.com / +242 06 832 52 86
+- **Urgence:** +242 06 832 52 86 (NIKA DIGITAL HUB - 24/7)
+
 ---
 
 ## ✅ SIGN-OFF

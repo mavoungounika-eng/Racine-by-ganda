@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\AdminActionDecision;
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
@@ -27,8 +29,7 @@ class ActionExecutionServiceTest extends TestCase
         parent::setUp();
         $this->service = new ActionExecutionService();
     }
-
-    /** @test */
+    #[Test]
     public function it_executes_approved_action()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -58,8 +59,7 @@ class ActionExecutionServiceTest extends TestCase
         $this->assertEquals('executed', $actionDecision->status);
         $this->assertNotNull($actionDecision->executed_at);
     }
-
-    /** @test */
+    #[Test]
     public function it_blocks_execution_of_non_approved_action()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -83,8 +83,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $this->service->execute($actionDecision);
     }
-
-    /** @test */
+    #[Test]
     public function it_captures_state_before_and_after()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -120,8 +119,7 @@ class ActionExecutionServiceTest extends TestCase
         $this->assertIsArray($actionDecision->state_before);
         $this->assertIsArray($actionDecision->state_after);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_execution_failure()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -151,8 +149,7 @@ class ActionExecutionServiceTest extends TestCase
         $actionDecision->refresh();
         $this->assertEquals('failed', $actionDecision->status);
     }
-
-    /** @test */
+    #[Test]
     public function it_executes_monitor_action()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);

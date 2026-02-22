@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Pos;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
@@ -14,22 +15,23 @@ use App\Models\FinancialIntent;
 use App\Services\Pos\PosSessionService;
 use App\Services\Pos\PosSaleService;
 use Illuminate\Support\Str;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * POS Invariants Test Suite
  * 
  * Tests critiques validant les 7 invariants POS audit-ready:
  * 1. Pas de vente sans session ouverte
- * 2. Pas de cash "paid" avant clôture
- * 3. POS ≠ autorité comptable
+ * 2. Pas de cash "paid" avant clÃ´ture
+ * 3. POS â‰  autoritÃ© comptable
  * 4. Une session = un responsable
- * 5. Toute anomalie = traçable
- * 6. Offline ≠ perte de vérité
- * 7. Fait terrain ≠ écriture comptable
+ * 5. Toute anomalie = traÃ§able
+ * 6. Offline â‰  perte de vÃ©ritÃ©
+ * 7. Fait terrain â‰  Ã©criture comptable
  */
 class PosInvariantsTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected Product $product;
@@ -42,7 +44,7 @@ class PosInvariantsTest extends TestCase
         parent::setUp();
 
         // Seed accounting data (required for bootstrap check)
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        $this->seedAccounting();
         $this->artisan('db:seed', ['--class' => 'AccountingBootstrapSeeder']);
 
         $this->user = User::factory()->create();
@@ -57,11 +59,7 @@ class PosInvariantsTest extends TestCase
         $this->sessionService = app(PosSessionService::class);
         $this->saleService = app(PosSaleService::class);
     }
-
-    /**
-     * @test
-     * INVARIANT 1: Pas de vente sans session ouverte
-     */
+    #[Test]
     public function it_blocks_sale_without_open_session()
     {
         $this->expectException(\Exception::class);
@@ -74,11 +72,7 @@ class PosInvariantsTest extends TestCase
             $this->user->id
         );
     }
-
-    /**
-     * @test
-     * INVARIANT 1: Vente possible avec session ouverte
-     */
+    #[Test]
     public function it_allows_sale_with_open_session()
     {
         // Ouvrir une session
@@ -88,7 +82,7 @@ class PosInvariantsTest extends TestCase
             50000
         );
 
-        // Créer une vente
+        // CrÃ©er une vente
         $sale = $this->saleService->createSale(
             $this->machineId,
             [['product_id' => $this->product->id, 'quantity' => 1]],
@@ -100,11 +94,7 @@ class PosInvariantsTest extends TestCase
         $this->assertEquals($session->id, $sale->session_id);
         $this->assertEquals(PosSale::STATUS_PENDING, $sale->status);
     }
-
-    /**
-     * @test
-     * INVARIANT 2: Cash payment stays pending after sale
-     */
+    #[Test]
     public function cash_payment_stays_pending_after_sale()
     {
         $session = $this->sessionService->openSession(
@@ -120,17 +110,13 @@ class PosInvariantsTest extends TestCase
             $this->user->id
         );
 
-        // Vérifier que le paiement est pending
+        // VÃ©rifier que le paiement est pending
         $payment = $sale->payments->first();
         $this->assertNotNull($payment);
         $this->assertEquals(PosPayment::STATUS_PENDING, $payment->status);
         $this->assertNull($payment->confirmed_at);
     }
-
-    /**
-     * @test
-     * INVARIANT 2: Cash confirmed only on session close
-     */
+    #[Test]
     public function cash_confirmed_only_on_session_close()
     {
         $session = $this->sessionService->openSession(
@@ -152,16 +138,12 @@ class PosInvariantsTest extends TestCase
         // Fermer la session
         $this->sessionService->closeSession($session, 51000, $this->user->id);
 
-        // Rafraîchir le paiement
+        // RafraÃ®chir le paiement
         $payment->refresh();
         $this->assertEquals(PosPayment::STATUS_CONFIRMED, $payment->status);
         $this->assertNotNull($payment->confirmed_at);
     }
-
-    /**
-     * @test
-     * INVARIANT 3: POS sale does not trigger PaymentRecorded
-     */
+    #[Test]
     public function pos_sale_does_not_trigger_payment_recorded()
     {
         $session = $this->sessionService->openSession(
@@ -177,7 +159,7 @@ class PosInvariantsTest extends TestCase
             $this->user->id
         );
 
-        // Vérifier qu'aucun FinancialIntent classique n'est créé
+        // VÃ©rifier qu'aucun FinancialIntent classique n'est crÃ©Ã©
         $intent = FinancialIntent::where('reference_type', 'order')
             ->where('reference_id', $sale->order_id)
             ->where('intent_type', FinancialIntent::TYPE_PAYMENT)
@@ -185,11 +167,7 @@ class PosInvariantsTest extends TestCase
 
         $this->assertNull($intent, 'POS should not create standard payment intent');
     }
-
-    /**
-     * @test
-     * INVARIANT 3: Session closure creates PosCashSettlementIntent
-     */
+    #[Test]
     public function session_closure_creates_pos_cash_settlement_intent()
     {
         $session = $this->sessionService->openSession(
@@ -208,7 +186,7 @@ class PosInvariantsTest extends TestCase
         // Fermer la session (dispatche PosSessionClosed)
         $this->sessionService->closeSession($session, 51000, $this->user->id);
 
-        // Vérifier qu'un PosCashSettlementIntent est créé
+        // VÃ©rifier qu'un PosCashSettlementIntent est crÃ©Ã©
         $intent = FinancialIntent::where('reference_type', 'pos_session')
             ->where('reference_id', $session->id)
             ->where('intent_type', FinancialIntent::TYPE_POS_CASH_SETTLEMENT)
@@ -217,11 +195,7 @@ class PosInvariantsTest extends TestCase
         $this->assertNotNull($intent, 'Session closure should create PosCashSettlementIntent');
         $this->assertEquals(1000, $intent->amount);
     }
-
-    /**
-     * @test
-     * INVARIANT 4: Session has responsible user (opened_by)
-     */
+    #[Test]
     public function session_has_responsible_user()
     {
         $session = $this->sessionService->openSession(
@@ -233,11 +207,7 @@ class PosInvariantsTest extends TestCase
         $this->assertEquals($this->user->id, $session->opened_by);
         $this->assertNotNull($session->opener);
     }
-
-    /**
-     * @test
-     * INVARIANT 5: Cash movements are tracked
-     */
+    #[Test]
     public function cash_movements_are_tracked()
     {
         $session = $this->sessionService->openSession(
@@ -246,7 +216,7 @@ class PosInvariantsTest extends TestCase
             50000
         );
 
-        // Vérifier mouvement d'ouverture
+        // VÃ©rifier mouvement d'ouverture
         $openingMovement = $session->cashMovements()
             ->where('type', PosCashMovement::TYPE_OPENING)
             ->first();
@@ -255,7 +225,7 @@ class PosInvariantsTest extends TestCase
         $this->assertEquals(50000, $openingMovement->amount);
         $this->assertEquals('in', $openingMovement->direction);
 
-        // Créer une vente cash
+        // CrÃ©er une vente cash
         $sale = $this->saleService->createSale(
             $this->machineId,
             [['product_id' => $this->product->id, 'quantity' => 1, 'price' => 1000]],
@@ -263,7 +233,7 @@ class PosInvariantsTest extends TestCase
             $this->user->id
         );
 
-        // Vérifier mouvement de vente
+        // VÃ©rifier mouvement de vente
         $saleMovement = $session->cashMovements()
             ->where('type', PosCashMovement::TYPE_SALE)
             ->where('pos_sale_id', $sale->id)
@@ -272,11 +242,7 @@ class PosInvariantsTest extends TestCase
         $this->assertNotNull($saleMovement);
         $this->assertEquals(1000, $saleMovement->amount);
     }
-
-    /**
-     * @test
-     * INVARIANT 5: Cash difference is calculated on close
-     */
+    #[Test]
     public function cash_difference_is_calculated_on_close()
     {
         $session = $this->sessionService->openSession(
@@ -301,11 +267,7 @@ class PosInvariantsTest extends TestCase
         $this->assertEquals(50500, $session->closing_cash);
         $this->assertEquals(-500, $session->cash_difference);
     }
-
-    /**
-     * @test
-     * INVARIANT 6: Same machine cannot have two open sessions
-     */
+    #[Test]
     public function same_machine_cannot_have_two_open_sessions()
     {
         $this->sessionService->openSession(
@@ -323,11 +285,7 @@ class PosInvariantsTest extends TestCase
             60000
         );
     }
-
-    /**
-     * @test
-     * INVARIANT 7: POS sale creates order with null user_id
-     */
+    #[Test]
     public function pos_sale_creates_order_with_null_user_id()
     {
         $session = $this->sessionService->openSession(
@@ -347,3 +305,7 @@ class PosInvariantsTest extends TestCase
         $this->assertNull($sale->order->user_id);
     }
 }
+
+
+
+

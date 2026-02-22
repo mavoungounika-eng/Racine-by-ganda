@@ -526,6 +526,9 @@ class WebhookController extends Controller
         // 4. Mark as processed and RETURN 200 vite
         try {
             if ($externalId) {
+                // ✅ EXACTLY-ONCE GUARANTEE: Mark permanently as processed
+                $deduplicationService->markAsProcessedSuccess('monetbil', $externalId);
+
                 $failure = \App\Models\WebhookFailure::where('external_id', $externalId)->first();
                 if ($failure) {
                     $deduplicationService->markAsProcessed($failure);

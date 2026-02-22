@@ -140,6 +140,9 @@ class AuthDynamicRevocationTest extends TestCase
      */
     public function test_admin_2fa_revoked_redirects_to_setup(): void
     {
+        \Illuminate\Support\Facades\Config::set('app.env', 'production');
+        \Illuminate\Support\Facades\Config::set('auth.force_2fa_required_in_testing', true);
+
         $admin = User::factory()->create([
             'role_id' => \App\Models\Role::where('slug', 'admin')->first()->id,
             'is_admin' => true,

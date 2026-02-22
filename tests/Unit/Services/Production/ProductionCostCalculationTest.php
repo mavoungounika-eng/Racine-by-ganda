@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Services\Production;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Product;
@@ -22,8 +24,7 @@ class ProductionCostCalculationTest extends TestCase
         parent::setUp();
         $this->service = new ProductionService();
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_cost_only_from_bom_snapshot()
     {
         $product = Product::factory()->create();
@@ -68,8 +69,7 @@ class ProductionCostCalculationTest extends TestCase
         $this->assertArrayHasKey('bom_version', $cost);
         $this->assertEquals('1.0', $cost['bom_version']);
     }
-
-    /** @test */
+    #[Test]
     public function it_cannot_calculate_cost_for_non_completed_order()
     {
         $product = Product::factory()->create();
@@ -84,8 +84,7 @@ class ProductionCostCalculationTest extends TestCase
 
         $this->service->calculateRealCost($order);
     }
-
-    /** @test */
+    #[Test]
     public function it_throws_exception_if_bom_snapshot_missing()
     {
         $product = Product::factory()->create();
@@ -101,8 +100,7 @@ class ProductionCostCalculationTest extends TestCase
 
         $this->service->calculateRealCost($order);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_unit_cost_correctly()
     {
         $product = Product::factory()->create();

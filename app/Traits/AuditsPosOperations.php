@@ -24,10 +24,11 @@ trait AuditsPosOperations
         ?int $sessionId = null,
         ?array $oldValues = null,
         ?array $newValues = null,
-        ?string $notes = null
+        ?string $notes = null,
+        ?int $actorId = null
     ): PosOperatorAuditLog {
         return PosOperatorAuditLog::create([
-            'user_id' => Auth::id(),
+            'user_id' => $actorId ?? Auth::id(),
             'action' => $action,
             'pos_session_id' => $sessionId,
             'old_values' => $oldValues ? json_encode($oldValues) : null,
@@ -42,14 +43,15 @@ trait AuditsPosOperations
     /**
      * Enregistrer ouverture session
      */
-    public static function auditSessionOpen(int $sessionId, float $openingCash): PosOperatorAuditLog
+    public static function auditSessionOpen(int $sessionId, float $openingCash, ?int $actorId = null): PosOperatorAuditLog
     {
         return self::auditOperation(
             'SESSION_OPEN',
             $sessionId,
             null,
             ['opening_cash' => $openingCash, 'status' => 'open'],
-            'Session de caisse ouverte'
+            'Session de caisse ouverte',
+            $actorId
         );
     }
 
@@ -61,7 +63,8 @@ trait AuditsPosOperations
         float $expectedCash,
         float $actualCash,
         float $difference,
-        ?string $notes = null
+        ?string $notes = null,
+        ?int $actorId = null
     ): PosOperatorAuditLog {
         return self::auditOperation(
             'SESSION_CLOSE',
@@ -73,7 +76,8 @@ trait AuditsPosOperations
                 'actual_cash' => $actualCash,
                 'difference' => $difference,
             ],
-            $notes ?? 'Session de caisse clôturée'
+            $notes ?? 'Session de caisse clôturée',
+            $actorId
         );
     }
 

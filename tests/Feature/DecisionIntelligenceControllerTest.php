@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -13,7 +14,7 @@ use Tests\TestCase;
 /**
  * Tests Feature - DecisionIntelligenceController
  * 
- * Phase 7.5 - Tests d'intégration de l'interface admin
+ * Phase 7.5 - Tests d'intÃ©gration de l'interface admin
  */
 class DecisionIntelligenceControllerTest extends TestCase
 {
@@ -25,12 +26,11 @@ class DecisionIntelligenceControllerTest extends TestCase
     {
         parent::setUp();
         
-        // Créer un utilisateur admin
+        // CrÃ©er un utilisateur admin
         $this->adminUser = User::factory()->create();
-        // TODO: Ajouter le rôle admin si nécessaire
+        // TODO: Ajouter le rÃ´le admin si nÃ©cessaire
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_decision_analysis_for_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -90,13 +90,12 @@ class DecisionIntelligenceControllerTest extends TestCase
                 'metadata',
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_overview_of_creators()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
 
-        // Créer plusieurs créateurs
+        // CrÃ©er plusieurs crÃ©ateurs
         for ($i = 0; $i < 5; $i++) {
             $user = User::factory()->create();
             $creator = CreatorProfile::factory()->create([
@@ -134,8 +133,7 @@ class DecisionIntelligenceControllerTest extends TestCase
                 'generated_at',
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_nonexistent_creator()
     {
         $response = $this->actingAs($this->adminUser)
@@ -143,13 +141,12 @@ class DecisionIntelligenceControllerTest extends TestCase
 
         $response->assertStatus(404);
     }
-
-    /** @test */
+    #[Test]
     public function it_filters_overview_by_score()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
 
-        // Créer des créateurs avec différents profils
+        // CrÃ©er des crÃ©ateurs avec diffÃ©rents profils
         for ($i = 0; $i < 3; $i++) {
             $user = User::factory()->create();
             $creator = CreatorProfile::factory()->create([
@@ -177,8 +174,7 @@ class DecisionIntelligenceControllerTest extends TestCase
             $this->assertLessThanOrEqual(100, $item['decision_score']);
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/admin/decision/overview');

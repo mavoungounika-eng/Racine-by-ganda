@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Order;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -35,11 +36,7 @@ class StockConcurrencyTest extends TestCase
             'is_active' => true,
         ]);
     }
-
-    /**
-     * @test
-     * RBG-P0-01 : Vérifie que le stock ne devient jamais négatif
-     */
+    #[Test]
     public function it_fails_to_create_order_if_stock_becomes_insufficient_during_process()
     {
         $orderService = app(OrderService::class);
@@ -63,18 +60,18 @@ class StockConcurrencyTest extends TestCase
             ]
         ]);
 
-        // Simuler un autre processus qui vide le stock juste avant le décrément final
-        // (On utilise un lock factice ou on modifie la DB manuellement si on était en multi-process)
+        // Simuler un autre processus qui vide le stock juste avant le dÃ©crÃ©ment final
+        // (On utilise un lock factice ou on modifie la DB manuellement si on Ã©tait en multi-process)
         
         // Ici on teste simplement que StockService jette bien l'exception
         $this->expectException(StockException::class);
         
-        // On réduit le stock à 0 juste avant l'appel (pour simuler une perte de stock entre validation et created)
+        // On rÃ©duit le stock Ã  0 juste avant l'appel (pour simuler une perte de stock entre validation et created)
         $this->product->update(['stock' => 0]);
         
         $orderService->createOrderFromCart($formData, $items, $this->user->id);
         
-        // Vérifier que l'ordre n'existe pas en DB (rollback)
+        // VÃ©rifier que l'ordre n'existe pas en DB (rollback)
         $this->assertDatabaseMissing('orders', ['user_id' => $this->user->id]);
     }
 }

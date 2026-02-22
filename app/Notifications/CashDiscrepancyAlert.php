@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Notification d'alerte discrepancy cash
@@ -24,7 +25,15 @@ class CashDiscrepancyAlert extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        // This project uses a custom notifications schema in some environments.
+        if (
+            Schema::hasTable('notifications')
+            && Schema::hasColumns('notifications', ['notifiable_id', 'notifiable_type'])
+        ) {
+            return ['mail', 'database'];
+        }
+
+        return ['mail'];
     }
 
     /**

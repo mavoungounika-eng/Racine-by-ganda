@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Accounting;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Order;
@@ -11,18 +12,19 @@ use App\Services\Financial\FinancialIntentService;
 use Modules\Accounting\Models\AccountingEntry;
 use Modules\Accounting\Services\LedgerService;
 use Modules\Accounting\Exceptions\LedgerException;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests pour l'architecture Intent-Based
  * 
- * Ces tests vérifient que:
- * 1. Intent requis pour création d'écriture
+ * Ces tests vÃ©rifient que:
+ * 1. Intent requis pour crÃ©ation d'Ã©criture
  * 2. Double commit idempotent
  * 3. Status transitions correctes
  */
 class IntentBasedAccountingTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected FinancialIntentService $intentService;
@@ -35,15 +37,11 @@ class IntentBasedAccountingTest extends TestCase
         $this->actingAs($this->user);
 
         // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        $this->seedAccounting();
 
         $this->intentService = app(FinancialIntentService::class);
     }
-
-    /**
-     * @test
-     * RÈGLE: Un intent peut être créé pour une commande
-     */
+    #[Test]
     public function it_creates_payment_intent_for_order()
     {
         $order = Order::factory()->create([
@@ -61,11 +59,7 @@ class IntentBasedAccountingTest extends TestCase
         $this->assertEquals(FinancialIntent::STATUS_PENDING, $intent->status);
         $this->assertEquals(118.00, $intent->amount);
     }
-
-    /**
-     * @test
-     * RÈGLE: Créer un intent pour la même commande retourne l'existant (idempotent)
-     */
+    #[Test]
     public function it_returns_existing_intent_on_duplicate_creation()
     {
         $order = Order::factory()->create([
@@ -80,15 +74,11 @@ class IntentBasedAccountingTest extends TestCase
 
         $this->assertEquals($intent1->id, $intent2->id);
         
-        // Vérifier qu'il n'y a qu'un seul intent
+        // VÃ©rifier qu'il n'y a qu'un seul intent
         $count = FinancialIntent::forReference('order', $order->id)->count();
         $this->assertEquals(1, $count);
     }
-
-    /**
-     * @test
-     * RÈGLE: Commiter un intent crée une écriture comptable
-     */
+    #[Test]
     public function it_creates_accounting_entry_on_commit()
     {
         $order = Order::factory()->create([
@@ -113,21 +103,17 @@ class IntentBasedAccountingTest extends TestCase
             );
         });
 
-        // Vérifier écriture créée
+        // VÃ©rifier Ã©criture crÃ©Ã©e
         $this->assertInstanceOf(AccountingEntry::class, $entry);
         $this->assertTrue($entry->is_posted);
 
-        // Vérifier intent commis
+        // VÃ©rifier intent commis
         $intent->refresh();
         $this->assertEquals(FinancialIntent::STATUS_COMMITTED, $intent->status);
         $this->assertEquals($entry->id, $intent->accounting_entry_id);
         $this->assertNotNull($intent->committed_at);
     }
-
-    /**
-     * @test
-     * RÈGLE: Double commit retourne l'écriture existante (idempotent)
-     */
+    #[Test]
     public function it_returns_existing_entry_on_double_commit()
     {
         $order = Order::factory()->create([
@@ -153,25 +139,21 @@ class IntentBasedAccountingTest extends TestCase
         // Premier commit
         $entry1 = $this->intentService->commitIntent($intent, $entryCreator);
         
-        // Rafraîchir l'intent
+        // RafraÃ®chir l'intent
         $intent->refresh();
         
-        // Deuxième commit (doit retourner la même écriture)
+        // DeuxiÃ¨me commit (doit retourner la mÃªme Ã©criture)
         $entry2 = $this->intentService->commitIntent($intent, $entryCreator);
 
         $this->assertEquals($entry1->id, $entry2->id);
 
-        // Vérifier qu'il n'y a qu'une seule écriture
+        // VÃ©rifier qu'il n'y a qu'une seule Ã©criture
         $count = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->count();
         $this->assertEquals(1, $count);
     }
-
-    /**
-     * @test
-     * RÈGLE: Intent commis ne peut pas être re-traité
-     */
+    #[Test]
     public function committed_intent_cannot_be_processed()
     {
         $order = Order::factory()->create([
@@ -188,22 +170,18 @@ class IntentBasedAccountingTest extends TestCase
 
         $this->assertFalse($intent->canProcess());
     }
-
-    /**
-     * @test
-     * RÈGLE: L'idempotency_key est un hash unique
-     */
+    #[Test]
     public function it_generates_unique_idempotency_key()
     {
         $key1 = FinancialIntent::generateIdempotencyKey('order', 1);
         $key2 = FinancialIntent::generateIdempotencyKey('order', 2);
         $key3 = FinancialIntent::generateIdempotencyKey('payout', 1);
 
-        // Clés différentes pour références différentes
+        // ClÃ©s diffÃ©rentes pour rÃ©fÃ©rences diffÃ©rentes
         $this->assertNotEquals($key1, $key2);
         $this->assertNotEquals($key1, $key3);
 
-        // Même clé pour même référence
+        // MÃªme clÃ© pour mÃªme rÃ©fÃ©rence
         $key1bis = FinancialIntent::generateIdempotencyKey('order', 1);
         $this->assertEquals($key1, $key1bis);
     }

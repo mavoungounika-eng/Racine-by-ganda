@@ -2,17 +2,18 @@
 
 namespace Tests\Feature\Governance;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\SeedsAccounting;
 
 /**
- * Tests anti-régression pour l'isolation comptable.
+ * Tests anti-rÃ©gression pour l'isolation comptable.
  * 
  * Ces tests garantissent que:
- * 1. Les tests comptables ne dépendent PAS de seeders globaux
- * 2. Le trait SeedsAccounting crée bien les données nécessaires
- * 3. Sans seeding, les requêtes comptables échouent proprement
+ * 1. Les tests comptables ne dÃ©pendent PAS de seeders globaux
+ * 2. Le trait SeedsAccounting crÃ©e bien les donnÃ©es nÃ©cessaires
+ * 3. Sans seeding, les requÃªtes comptables Ã©chouent proprement
  */
 class AccountingIsolationTest extends TestCase
 {
@@ -21,25 +22,23 @@ class AccountingIsolationTest extends TestCase
     // =========================================================================
     // TESTS POSITIFS: Avec seeding explicite
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function accounting_data_exists_after_explicit_seeding(): void
     {
-        // SANS seeding → rien
+        // SANS seeding â†’ rien
         $this->assertDatabaseMissing('accounting_fiscal_years', ['is_closed' => false]);
         
         // AVEC seeding explicite
         $this->seedAccounting();
         
-        // Toutes les données minimales existent
+        // Toutes les donnÃ©es minimales existent
         $this->assertAccountingSeeded();
         $this->assertDatabaseHas('accounting_journals', ['code' => 'VTE']);
         $this->assertDatabaseHas('accounting_journals', ['code' => 'BNQ']);
         $this->assertDatabaseHas('accounting_chart_of_accounts', ['code' => '5112']);
         $this->assertDatabaseHas('accounting_chart_of_accounts', ['code' => '7011']);
     }
-
-    /** @test */
+    #[Test]
     public function seed_accounting_is_idempotent(): void
     {
         $this->seedAccounting();
@@ -50,8 +49,7 @@ class AccountingIsolationTest extends TestCase
         $count = \Modules\Accounting\Models\FiscalYear::count();
         $this->assertEquals(1, $count);
     }
-
-    /** @test */
+    #[Test]
     public function seed_accounting_and_return_provides_objects(): void
     {
         $data = $this->seedAccountingAndReturn();
@@ -65,10 +63,9 @@ class AccountingIsolationTest extends TestCase
     }
 
     // =========================================================================
-    // TESTS NÉGATIFS: Sans seeding
+    // TESTS NÃ‰GATIFS: Sans seeding
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function fiscal_year_query_returns_null_without_seeding(): void
     {
         // DB vide
@@ -76,8 +73,7 @@ class AccountingIsolationTest extends TestCase
         
         $this->assertNull($fiscalYear);
     }
-
-    /** @test */
+    #[Test]
     public function journal_query_returns_null_without_seeding(): void
     {
         $journal = \Modules\Accounting\Models\Journal::where('code', 'VTE')->first();
@@ -86,14 +82,13 @@ class AccountingIsolationTest extends TestCase
     }
 
     // =========================================================================
-    // TESTS ANTI-RÉGRESSION
+    // TESTS ANTI-RÃ‰GRESSION
     // =========================================================================
-
-    /** @test */
+    #[Test]
     public function no_global_seeder_dependency_in_test_setup(): void
     {
-        // Ce test prouve qu'un test peut s'exécuter sur DB vide
-        // et utiliser seedAccounting() à la demande
+        // Ce test prouve qu'un test peut s'exÃ©cuter sur DB vide
+        // et utiliser seedAccounting() Ã  la demande
         
         $this->assertDatabaseCount('accounting_fiscal_years', 0);
         $this->assertDatabaseCount('accounting_journals', 0);
@@ -103,13 +98,12 @@ class AccountingIsolationTest extends TestCase
         $this->assertDatabaseCount('accounting_fiscal_years', 1);
         $this->assertDatabaseCount('accounting_journals', 4);
     }
-
-    /** @test */
+    #[Test]
     public function accounting_test_seeder_creates_minimum_required_accounts(): void
     {
         $this->seedAccounting();
         
-        // Comptes obligatoires pour écritures
+        // Comptes obligatoires pour Ã©critures
         $requiredCodes = ['5112', '5113', '5211', '5212', '5700', '4421', '7011', '7071', '6011', '6271', '4011'];
         
         foreach ($requiredCodes as $code) {

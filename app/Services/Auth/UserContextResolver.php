@@ -2,7 +2,7 @@
 
 namespace App\Services\Auth;
 
-use App\DTOs\Auth\UserContext;
+use App\DTO\Auth\UserContext;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;

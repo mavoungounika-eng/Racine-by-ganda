@@ -339,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gray: '#8B7355'
     };
 
+    @can('view-sales-analytics')
     // Graphique Ventes par Mois
     const salesCtx = document.getElementById('salesChart');
     if (salesCtx) {
@@ -379,6 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    @endcan
 
     // Graphique Commandes par Mois
     const ordersCtx = document.getElementById('ordersChart');

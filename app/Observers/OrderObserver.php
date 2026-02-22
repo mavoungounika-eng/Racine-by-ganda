@@ -249,6 +249,8 @@ class OrderObserver
         } elseif ($order->payment_status === 'failed') {
             $this->notificationService->danger(
                 $order->user_id,
+                'Paiement échoué',
+                "Le paiement de votre commande #{$order->id} a échoué. Veuillez réessayer avec un autre moyen de paiement."
             );
         }
     }

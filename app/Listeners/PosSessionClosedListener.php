@@ -36,6 +36,19 @@ class PosSessionClosedListener implements ShouldQueue
             $intent = $this->financeService->createCashSettlementIntent($session);
 
             // Commiter l'intent (créer écriture comptable)
+            if ((float) $intent->amount <= 0.0) {
+                if ($intent->status === \App\Models\FinancialIntent::STATUS_PENDING) {
+                    $intent->markAsSkipped('No cash sales to settle for this session.');
+                }
+
+                Log::info('PosSessionClosedListener: No cash settlement required', [
+                    'session_id' => $session->id,
+                    'intent_id' => $intent->id,
+                ]);
+
+                return;
+            }
+
             if ($intent->canProcess()) {
                 $entry = $this->financeService->commitIntent($intent);
 
@@ -71,3 +84,5 @@ class PosSessionClosedListener implements ShouldQueue
         return 5;
     }
 }
+
+

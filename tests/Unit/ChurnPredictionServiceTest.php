@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -27,8 +29,7 @@ class ChurnPredictionServiceTest extends TestCase
         parent::setUp();
         $this->service = new ChurnPredictionService();
     }
-
-    /** @test */
+    #[Test]
     public function it_predicts_churn_for_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -58,8 +59,7 @@ class ChurnPredictionServiceTest extends TestCase
         $this->assertLessThanOrEqual(100, $result['churn_probability']);
         $this->assertContains($result['classification'], ['low', 'medium', 'high']);
     }
-
-    /** @test */
+    #[Test]
     public function it_predicts_high_churn_for_unpaid_subscription()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -83,8 +83,7 @@ class ChurnPredictionServiceTest extends TestCase
         $this->assertGreaterThan(50, $result['churn_probability']);
         $this->assertContains('Abonnement unpaid', $result['factors']);
     }
-
-    /** @test */
+    #[Test]
     public function it_predicts_low_churn_for_stable_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -115,8 +114,7 @@ class ChurnPredictionServiceTest extends TestCase
         // Avec un abonnement stable, le risque devrait être faible
         $this->assertLessThan(50, $result['churn_probability']);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_creator_with_no_subscription()
     {
         $creator = CreatorProfile::factory()->create([
@@ -130,8 +128,7 @@ class ChurnPredictionServiceTest extends TestCase
         $this->assertContains('Aucun abonnement actif', $result['factors']);
         $this->assertGreaterThan(20, $result['risk_score']);
     }
-
-    /** @test */
+    #[Test]
     public function it_includes_failed_payments_in_prediction()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);

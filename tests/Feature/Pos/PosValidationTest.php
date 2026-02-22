@@ -2,21 +2,23 @@
 
 namespace Tests\Feature\Pos;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\PosSession;
-use App\Jobs\ProcessPosSale;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
+use Modules\POSSync\Jobs\ProcessPosSale;
 
 /**
- * Test de validation métier POS
+ * Test de validation mÃ©tier POS
  *
- * Vérifie que ProcessPosSale valide correctement :
+ * VÃ©rifie que ProcessPosSale valide correctement :
  * - Produits existent
- * - Prix cohérents
+ * - Prix cohÃ©rents
  * - Paiement complet
  */
 class PosValidationTest extends TestCase
@@ -40,13 +42,14 @@ class PosValidationTest extends TestCase
         ]);
 
         $this->session = PosSession::factory()->create([
-            'user_id' => $this->user->id,
+            'opened_by' => $this->user->id,
             'status' => 'open',
-            'machine_id' => Str::uuid()
+            'machine_id' => Str::uuid()->toString(),
+            'opened_at' => now(),
+            'opening_cash' => 0,
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function valide_vente_avec_produits_existants_et_prix_coherents()
     {
         Queue::fake();
@@ -72,8 +75,7 @@ class PosValidationTest extends TestCase
         // Si pas d'exception, validation OK
         $this->assertTrue(true);
     }
-
-    /** @test */
+    #[Test]
     public function rejette_vente_avec_produit_inexistant()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -94,8 +96,7 @@ class PosValidationTest extends TestCase
         $job = new ProcessPosSale($payload);
         $job->handle();
     }
-
-    /** @test */
+    #[Test]
     public function rejette_vente_avec_prix_incoherent()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -107,7 +108,7 @@ class PosValidationTest extends TestCase
                 [
                     'product_id' => $this->product->id,
                     'quantity' => 1,
-                    'price' => 150.00 // Prix différent de 100.00
+                    'price' => 150.00 // Prix diffÃ©rent de 100.00
                 ]
             ],
             'total_amount' => 150.00
@@ -116,8 +117,7 @@ class PosValidationTest extends TestCase
         $job = new ProcessPosSale($payload);
         $job->handle();
     }
-
-    /** @test */
+    #[Test]
     public function rejette_vente_avec_total_incoherent()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -132,10 +132,14 @@ class PosValidationTest extends TestCase
                     'price' => 100.00
                 ]
             ],
-            'total_amount' => 150.00 // Total différent de 100.00
+            'total_amount' => 150.00 // Total diffÃ©rent de 100.00
         ];
 
         $job = new ProcessPosSale($payload);
         $job->handle();
     }
 }
+
+
+
+

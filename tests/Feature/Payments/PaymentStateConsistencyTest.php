@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests de cohérence des états de paiement
@@ -17,6 +18,13 @@ use Tests\TestCase;
 class PaymentStateConsistencyTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAccounting;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seedAccounting();
+    }
 
     /**
      * Test qu'un paiement confirmé sur une commande annulée ne la ressuscite pas
@@ -30,7 +38,7 @@ class PaymentStateConsistencyTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'cancelled',
-            'total' => 100.00,
+            'total_amount' => 100.00,
         ]);
 
         // Créer un paiement en attente
@@ -39,6 +47,7 @@ class PaymentStateConsistencyTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_test_123',
             'status' => 'pending',
         ]);
@@ -68,12 +77,11 @@ class PaymentStateConsistencyTest extends TestCase
 
         // Vérifier que le paiement est marqué comme ignoré ou reste pending
         $payment->refresh();
-        $this->assertNotEquals('confirmed', $payment->status);
+        $this->assertEquals('pending', $payment->status);
 
-        // Vérifier qu'un log d'audit existe
-        // (Adapter selon votre système de logging)
-        $this->assertDatabaseHas('payment_events', [
-            'payment_id' => $payment->id,
+        // Vérifier que l'événement webhook a bien été persisté
+        $this->assertDatabaseHas('stripe_webhook_events', [
+            'event_id' => 'evt_test_123',
             'event_type' => 'payment_intent.succeeded',
         ]);
     }
@@ -86,8 +94,9 @@ class PaymentStateConsistencyTest extends TestCase
         $user = User::factory()->create();
         $order = Order::factory()->create([
             'user_id' => $user->id,
-            'status' => 'paid',
-            'total' => 100.00,
+            'status' => 'processing',
+            'payment_status' => 'paid',
+            'total_amount' => 100.00,
         ]);
 
         // Paiement déjà confirmé
@@ -96,8 +105,9 @@ class PaymentStateConsistencyTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_test_456',
-            'status' => 'confirmed',
+            'status' => 'paid',
         ]);
 
         // Webhook duplicate (même payment_intent)
@@ -120,10 +130,11 @@ class PaymentStateConsistencyTest extends TestCase
 
         // Vérifier que rien n'a changé
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
         $payment->refresh();
-        $this->assertEquals('confirmed', $payment->status);
+        $this->assertEquals('paid', $payment->status);
 
         // Vérifier qu'il n'y a pas de double paiement
         $this->assertEquals(1, Payment::where('order_id', $order->id)->count());
@@ -138,7 +149,7 @@ class PaymentStateConsistencyTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
         ]);
 
         $payment = Payment::create([
@@ -146,6 +157,7 @@ class PaymentStateConsistencyTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_test_789',
             'status' => 'pending',
         ]);
@@ -171,9 +183,10 @@ class PaymentStateConsistencyTest extends TestCase
             'Stripe-Signature' => 'valid_signature_mock',
         ]);
 
-        // Vérifier que la commande est marquée comme failed
+        // Vérifier que la commande reste pending mais paiement_status failed
         $order->refresh();
-        $this->assertEquals('failed', $order->status);
+        $this->assertEquals('pending', $order->status);
+        $this->assertEquals('failed', $order->payment_status);
 
         // Vérifier que le paiement est marqué comme failed
         $payment->refresh();
@@ -191,7 +204,8 @@ class PaymentStateConsistencyTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'shipped',
-            'total' => 100.00,
+            'payment_status' => 'paid',
+            'total_amount' => 100.00,
         ]);
 
         $payment = Payment::create([
@@ -199,8 +213,9 @@ class PaymentStateConsistencyTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_test_refund',
-            'status' => 'confirmed',
+            'status' => 'paid',
         ]);
 
         // Tentative de remboursement
@@ -225,8 +240,8 @@ class PaymentStateConsistencyTest extends TestCase
         $order->refresh();
         $this->assertEquals('shipped', $order->status);
 
-        // Vérifier que le paiement reste confirmed (pas refunded)
+        // Vérifier que le paiement reste paid (pas refunded)
         $payment->refresh();
-        $this->assertEquals('confirmed', $payment->status);
+        $this->assertEquals('paid', $payment->status);
     }
 }

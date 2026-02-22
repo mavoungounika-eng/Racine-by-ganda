@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -30,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class PosSession extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'machine_id',
         'opened_by',
@@ -189,5 +192,21 @@ class PosSession extends Model
             'closed_by' => $closedBy,
             'notes' => $notes,
         ]);
+    }
+
+    /**
+     * Legacy alias for backward compatibility (user_id -> opened_by).
+     */
+    public function getUserIdAttribute(): ?int
+    {
+        return $this->opened_by;
+    }
+
+    /**
+     * Legacy alias for backward compatibility (user_id -> opened_by).
+     */
+    public function setUserIdAttribute(?int $value): void
+    {
+        $this->attributes['opened_by'] = $value;
     }
 }

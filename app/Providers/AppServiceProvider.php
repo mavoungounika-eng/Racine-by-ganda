@@ -10,6 +10,8 @@ use App\Observers\OrderObserver;
 use App\Observers\ProductObserver;
 use App\Observers\CreatorProfileObserver;
 use App\Observers\CreatorDocumentObserver;
+use Modules\ERP\Models\ErpPurchase;
+use Modules\ERP\Observers\ErpPurchaseObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -56,6 +58,14 @@ class AppServiceProvider extends ServiceProvider
         
         // V2.3 : Enregistrer CreatorBundleService comme singleton
         $this->app->singleton(\App\Services\CreatorBundleService::class);
+        
+        // Phase 3 : Queue Protection Services
+        $this->app->singleton(\App\Services\Queue\QueueCircuitBreaker::class);
+        $this->app->singleton(\App\Services\Queue\QueueRateLimiter::class);
+        $this->app->singleton(\App\Services\Queue\QueueMonitor::class);
+        
+        // Phase 3 : Monitoring & Alerts
+        $this->app->singleton(\App\Services\Monitoring\AlertService::class);
     }
 
     /**
@@ -68,15 +78,11 @@ class AppServiceProvider extends ServiceProvider
         Product::observe(ProductObserver::class);
         CreatorProfile::observe(CreatorProfileObserver::class);
         CreatorDocument::observe(CreatorDocumentObserver::class);
+        ErpPurchase::observe(ErpPurchaseObserver::class);
 
         // Définir le rate limiter 'api' pour les webhooks
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
-        });
-
-        // Définir le rate limiter 'webhooks' pour les endpoints webhooks (anti-abus)
-        RateLimiter::for('webhooks', function (Request $request) {
-            return Limit::perMinute(60)->by($request->ip());
         });
 
         // ⚠️ DOUBLONS SUPPRIMÉS : Ces Gates sont déjà définis dans AuthServiceProvider
@@ -94,5 +100,33 @@ class AppServiceProvider extends ServiceProvider
         // - manage-crm
         //
         // Ne pas redéfinir ici pour éviter les conflits et incohérences.
+        
+        // Phase 3 : Configuration Sentry contexte utilisateur
+        if (app()->bound('sentry') && config('sentry.dsn')) {
+            \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
+                // User context
+                if (auth()->check()) {
+                    $user = auth()->user();
+                    $scope->setUser([
+                        'id' => $user->id,
+                        'email' => $user->email,
+                        'role' => $user->role,
+                        'username' => $user->name,
+                    ]);
+                }
+                
+                // Tags
+                $scope->setTag('environment', config('app.env'));
+                $scope->setTag('app_version', config('app.version', '1.0.0'));
+                $scope->setTag('laravel_version', app()->version());
+                
+                // Context
+                $scope->setContext('app', [
+                    'name' => config('app.name'),
+                    'url' => config('app.url'),
+                    'timezone' => config('app.timezone'),
+                ]);
+            });
+        }
     }
 }

@@ -11,13 +11,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests pour les paiements Mobile Money via Monetbil
  */
 class MonetbilPaymentTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected Product $product;
@@ -62,9 +63,8 @@ class MonetbilPaymentTest extends TestCase
         ]);
 
         // Seed Accounting initialization necessary for payment processing
-        $this->seed(\Modules\Accounting\Database\Seeders\AccountingDatabaseSeeder::class);
+        $this->seedAccounting();
     }
-
     #[Test]
     public function test_notify_rejects_missing_signature_in_production(): void
     {
@@ -94,7 +94,6 @@ class MonetbilPaymentTest extends TestCase
         $response->assertStatus(401);
         $response->assertJson(['message' => 'Missing signature']);
     }
-
     #[Test]
     public function test_notify_rejects_invalid_signature_in_production(): void
     {
@@ -125,7 +124,6 @@ class MonetbilPaymentTest extends TestCase
         $response->assertStatus(401);
         $response->assertJson(['message' => 'Invalid signature']);
     }
-
     #[Test]
     public function test_notify_returns_400_on_invalid_payload(): void
     {
@@ -155,7 +153,6 @@ class MonetbilPaymentTest extends TestCase
         $response2->assertStatus(400);
         $response2->assertJson(['message' => 'Missing status']);
     }
-
     #[Test]
     public function test_notify_accepts_success_and_marks_order_paid(): void
     {
@@ -212,7 +209,6 @@ class MonetbilPaymentTest extends TestCase
         $this->assertEquals('paid', $payment->status);
         $this->assertEquals(10000, $payment->amount);
     }
-
     #[Test]
     public function test_notify_is_idempotent(): void
     {
@@ -276,7 +272,6 @@ class MonetbilPaymentTest extends TestCase
         $this->assertEquals('success', $transaction->status);
         $this->assertEquals('TXN-123', $transaction->transaction_id);
     }
-
     #[Test]
     public function test_start_creates_payment_transaction_and_redirects(): void
     {

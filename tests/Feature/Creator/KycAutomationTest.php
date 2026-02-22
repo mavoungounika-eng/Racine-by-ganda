@@ -15,7 +15,6 @@ use Tests\TestCase;
 class KycAutomationTest extends TestCase
 {
     use RefreshDatabase;
-
     #[Test]
     public function it_detects_kyc_completion()
     {
@@ -47,7 +46,6 @@ class KycAutomationTest extends TestCase
 
         $this->assertTrue($kycService->hasKycJustCompleted($stripeAccount, $wasPayoutsEnabledBefore));
     }
-
     #[Test]
     public function it_does_not_detect_kyc_completion_if_already_enabled()
     {
@@ -75,7 +73,6 @@ class KycAutomationTest extends TestCase
 
         $this->assertFalse($kycService->hasKycJustCompleted($stripeAccount, $wasPayoutsEnabledBefore));
     }
-
     #[Test]
     public function it_sends_notification_when_kyc_is_completed()
     {
@@ -103,7 +100,6 @@ class KycAutomationTest extends TestCase
 
         Notification::assertSentTo($user, KycCompletedNotification::class);
     }
-
     #[Test]
     public function it_activates_creator_profile_when_kyc_is_completed()
     {
@@ -132,7 +128,6 @@ class KycAutomationTest extends TestCase
         $this->assertEquals('active', $profile->status);
         $this->assertTrue($profile->is_active);
     }
-
     #[Test]
     public function it_checks_kyc_status_correctly()
     {

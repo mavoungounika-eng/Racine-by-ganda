@@ -24,11 +24,28 @@ use App\Http\Controllers\Creator\CreatorFinanceController;
 use App\Http\Controllers\Creator\CreatorSettingsController;
 use App\Http\Controllers\Creator\CreatorMessageController;
 
+// Métriques & Health Check
+Route::get('/metrics', [\App\Http\Controllers\Admin\MetricsController::class, 'prometheus'])
+    ->middleware('auth.basic');
+Route::get('/health', [\App\Http\Controllers\Admin\MetricsController::class, 'health']);
+
+// Admin Queue Metrics (requires admin auth)
+Route::middleware(['auth', 'can:viewAny,App\Models\Order'])->prefix('admin/queue-metrics')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\MetricsController::class, 'dashboard']);
+    Route::post('/circuit-breaker/{queue}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetCircuitBreaker']);
+    Route::post('/rate-limiter/{jobType}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetRateLimiter']);
+});
+
 Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(function () {
     // ✅ C4: CGV Créateur (route publique)
     Route::get('cgv', function () {
         return view('creator.cgv');
     })->name('cgv');
+    
+    // API Documentation (Swagger UI)
+    Route::get('/api/documentation', function () {
+        return redirect('/api/documentation/default');
+    });
     
     // Routes publiques (guest)
     Route::middleware('guest')->group(function () {
@@ -159,9 +176,9 @@ Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(
             Route::get('plan/{plan}/paiement', [\App\Http\Controllers\Creator\SubscriptionController::class, 'payment'])->name('payment');
             Route::post('plan/{plan}/stripe', [\App\Http\Controllers\Creator\SubscriptionController::class, 'handleStripePayment'])->name('stripe');
             Route::post('plan/{plan}/mobile-money', [\App\Http\Controllers\Creator\SubscriptionController::class, 'handleMobileMoneyPayment'])->name('mobile-money');
-            // Callbacks Stripe Checkout
-            Route::get('plan/{plan}/checkout/success', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutSuccess'])->name('checkout.success');
-            Route::get('plan/{plan}/checkout/cancel', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutCancel'])->name('checkout.cancel');
+            // Callbacks Stripe Checkout (Legacy - renommées pour éviter conflit)
+            Route::get('plan/{plan}/checkout/success', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutSuccess'])->name('legacy.checkout.success');
+            Route::get('plan/{plan}/checkout/cancel', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutCancel'])->name('legacy.checkout.cancel');
             // Route legacy (dépréciée, conservée pour compatibilité)
             Route::get('plan/{plan}/success', [\App\Http\Controllers\Creator\SubscriptionController::class, 'handlePaymentSuccess'])->name('success');
             Route::get('actuel', [\App\Http\Controllers\Creator\SubscriptionController::class, 'current'])->name('current');
@@ -213,17 +230,16 @@ Route::middleware('auth')->prefix('2fa')->name('2fa.')->group(function () {
 // ============================================
 // DASHBOARDS PAR RÔLE
 // ============================================
+// Dashboard Staff (alias vers dashboard équipe unique)
+// PHASE 3: Migration vers EnsureAuthenticated
+Route::get('/staff/dashboard', function() {
+    return view('admin.dashboard');
+})->name('staff.dashboard')->middleware(['auth', 'ensure:staff,admin,super_admin']);
+
 Route::middleware(['auth', 'ensure:client'])->group(function () {
     // Dashboard Client - Route principale (utiliser celle-ci uniquement)
     Route::get('/compte', [\App\Http\Controllers\Account\ClientAccountController::class, 'index'])
         ->name('account.dashboard');
-
-
-    // Dashboard Staff (alias vers dashboard équipe unique)
-    // PHASE 3: Migration vers EnsureAuthenticated
-    Route::get('/staff/dashboard', function() {
-        return view('admin.dashboard');
-    })->name('staff.dashboard')->middleware('ensure:staff,admin,super_admin');
     
     // Routes Profil (Phase 7) - Unifiées pour tous les rôles
     // Utilise 'ensure' sans rôles spécifiques pour autoriser tous les rôles authentifiés avec contexte valide
@@ -457,13 +473,30 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
             Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
             Route::post('order/{order}/confirm-payment', [\App\Http\Controllers\Admin\PosController::class, 'confirmCardPayment'])->name('confirm-payment');
             Route::get('order/{order}', [\App\Http\Controllers\Admin\PosController::class, 'getOrder'])->name('order');
+            
+            // Analytics POS
+            Route::prefix('analytics')->name('analytics.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'index'])->name('index');
+                Route::post('/daily', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDailyReport'])->name('daily');
+                Route::post('/period', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getPeriodReport'])->name('period');
+                Route::post('/discrepancy', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDiscrepancyReport'])->name('discrepancy');
+                Route::get('/export', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'exportCsv'])->name('export');
+            });
         });
+        
         
         // Analytics / Dashboard
         Route::prefix('analytics')->name('analytics.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('index');
             Route::get('/funnel', [\App\Http\Controllers\Admin\AnalyticsController::class, 'funnel'])->name('funnel');
             Route::get('/sales', [\App\Http\Controllers\Admin\AnalyticsController::class, 'sales'])->name('sales');
+        });
+
+        // Queue Metrics & Management
+        Route::prefix('queue-metrics')->name('queue-metrics.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\MetricsController::class, 'dashboard'])->name('dashboard');
+            Route::post('/circuit-breaker/{queue}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetCircuitBreaker'])->name('circuit-breaker.reset');
+            Route::post('/rate-limiter/{jobType}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetRateLimiter'])->name('rate-limiter.reset');
         });
 
         // Gestion des créateurs
@@ -641,3 +674,6 @@ Route::match(['GET', 'POST'], '/payment/monetbil/notify', [\App\Http\Controllers
 //         ->with('status', 'Déconnecté avec succès');
 // })->name('debug.force-logout');
 
+
+// Health Check Endpoint (monitoring)
+Route::get('/health', [App\Http\Controllers\HealthCheckController::class, 'health'])->name('health');

@@ -19,7 +19,6 @@ class SubscriptionCheckoutTest extends TestCase
     {
         parent::setUp();
     }
-
     #[Test]
     public function it_displays_available_plans()
     {
@@ -53,7 +52,6 @@ class SubscriptionCheckoutTest extends TestCase
         $response->assertSee('Plan Basic');
         $response->assertSee('Plan Premium');
     }
-
     #[Test]
     public function it_redirects_to_stripe_checkout()
     {
@@ -87,7 +85,6 @@ class SubscriptionCheckoutTest extends TestCase
 
         $response->assertRedirect('https://checkout.stripe.com/test');
     }
-
     #[Test]
     public function it_handles_successful_checkout_return()
     {
@@ -116,7 +113,6 @@ class SubscriptionCheckoutTest extends TestCase
         $response->assertRedirect(route('creator.dashboard'));
         $response->assertSessionHas('success');
     }
-
     #[Test]
     public function it_handles_checkout_cancellation()
     {

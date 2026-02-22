@@ -29,9 +29,14 @@ class StrategicMetricsService
         $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
         $endOfMonth = Carbon::parse($month . '-01')->endOfMonth();
 
-        // Abonnements actifs au début du mois
-        $activeAtStart = CreatorSubscription::where('status', 'active')
-            ->where('started_at', '<=', $startOfMonth)
+        // Abonnements actifs au début du mois.
+        // Ne pas filtrer sur le statut courant: un abonnement annulé pendant le mois
+        // était potentiellement actif au début du mois et doit compter dans le dénominateur.
+        $activeAtStart = CreatorSubscription::where('started_at', '<=', $startOfMonth)
+            ->where(function ($query) use ($startOfMonth) {
+                $query->whereNull('canceled_at')
+                    ->orWhere('canceled_at', '>=', $startOfMonth);
+            })
             ->where(function ($query) use ($startOfMonth) {
                 $query->whereNull('ends_at')
                     ->orWhere('ends_at', '>=', $startOfMonth);
@@ -228,4 +233,3 @@ class StrategicMetricsService
         ];
     }
 }
-

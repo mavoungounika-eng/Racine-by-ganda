@@ -32,15 +32,9 @@ class CreatorSubscriptionService
      */
     public function __construct()
     {
-        $stripeSecret = config('services.stripe.secret');
-        
-        if (empty($stripeSecret)) {
-            throw new \RuntimeException(
-                'Stripe Billing non configuré : la clé secrète Stripe (STRIPE_SECRET) est manquante.'
-            );
-        }
-        
-        Stripe::setApiKey($stripeSecret);
+        // Constructeur vide — l'initialisation de Stripe est désormais différée (lazy)
+        // pour éviter de faire échouer le démarrage de l'application ou la résolution
+        // des routes si les clés API sont manquantes dans l'environnement local.
     }
 
     /**
@@ -54,6 +48,8 @@ class CreatorSubscriptionService
      */
     public function createCheckoutSession(User $creator, CreatorPlan $plan): string
     {
+        $this->initStripe();
+
         if (empty($plan->stripe_price_id)) {
             throw new \RuntimeException(
                 "Le plan '{$plan->name}' n'a pas de price_id Stripe configuré. Veuillez synchroniser les plans avec Stripe."
@@ -130,6 +126,8 @@ class CreatorSubscriptionService
      */
     public function cancelSubscription(CreatorSubscription $subscription, bool $immediately = false): void
     {
+        $this->initStripe();
+
         if (empty($subscription->stripe_subscription_id)) {
             throw new \RuntimeException("L'abonnement n'a pas d'identifiant Stripe.");
         }
@@ -169,6 +167,8 @@ class CreatorSubscriptionService
      */
     public function resumeSubscription(CreatorSubscription $subscription): void
     {
+        $this->initStripe();
+
         if (empty($subscription->stripe_subscription_id)) {
             throw new \RuntimeException("L'abonnement n'a pas d'identifiant Stripe.");
         }
@@ -189,5 +189,21 @@ class CreatorSubscriptionService
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Initialise la clé API Stripe.
+     */
+    private function initStripe(): void
+    {
+        $stripeSecret = config('services.stripe.secret');
+        
+        if (empty($stripeSecret)) {
+            throw new \RuntimeException(
+                'Stripe Billing non configuré : la clé secrète Stripe (STRIPE_SECRET) est manquante.'
+            );
+        }
+        
+        Stripe::setApiKey($stripeSecret);
     }
 }

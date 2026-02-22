@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Auth;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\DTOs\Auth\UserContext;
 use App\Services\Auth\PostLoginDecisionEngine;
 use Carbon\Carbon;
@@ -24,8 +26,7 @@ class PostLoginDecisionEngineTest extends TestCase
         parent::setUp();
         $this->engine = new PostLoginDecisionEngine();
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_super_admin_to_admin_dashboard()
     {
         $context = $this->createContext(role: 'super_admin');
@@ -34,8 +35,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('admin.dashboard'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_admin_to_admin_dashboard()
     {
         $context = $this->createContext(role: 'admin');
@@ -44,8 +44,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('admin.dashboard'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_staff_to_admin_dashboard()
     {
         $context = $this->createContext(role: 'staff');
@@ -54,8 +53,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('admin.dashboard'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_respects_intended_url_for_team_members()
     {
         $context = $this->createContext(role: 'admin');
@@ -65,8 +63,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals($intended, $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_client_to_home()
     {
         $context = $this->createContext(role: 'client');
@@ -75,8 +72,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('home'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_respects_intended_url_for_clients()
     {
         $context = $this->createContext(role: 'client');
@@ -86,8 +82,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals($intended, $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_active_creator_to_dashboard()
     {
         $context = $this->createContext(role: 'createur', creatorStatus: 'active');
@@ -96,8 +91,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('creator.dashboard'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_pending_creator_to_pending_page()
     {
         $context = $this->createContext(role: 'createur', creatorStatus: 'pending');
@@ -106,8 +100,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('creator.pending'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_suspended_creator_to_suspended_page()
     {
         $context = $this->createContext(role: 'createur', creatorStatus: 'suspended');
@@ -116,8 +109,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('creator.suspended'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_redirects_creator_without_status_to_pending_page()
     {
         $context = $this->createContext(role: 'createur', creatorStatus: null);
@@ -126,8 +118,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('creator.pending'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_ignores_intended_url_for_pending_creators()
     {
         $context = $this->createContext(role: 'createur', creatorStatus: 'pending');
@@ -138,8 +129,7 @@ class PostLoginDecisionEngineTest extends TestCase
         // Should redirect to pending page, not intended URL
         $this->assertEquals(route('creator.pending'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_ignores_intended_url_for_suspended_creators()
     {
         $context = $this->createContext(role: 'createur', creatorStatus: 'suspended');
@@ -150,8 +140,7 @@ class PostLoginDecisionEngineTest extends TestCase
         // Should redirect to suspended page, not intended URL
         $this->assertEquals(route('creator.suspended'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_2fa_verification_requirement()
     {
         $context = $this->createContext(
@@ -162,8 +151,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertTrue($this->engine->should2FAVerify($context));
     }
-
-    /** @test */
+    #[Test]
     public function it_does_not_require_2fa_when_not_enabled()
     {
         $context = $this->createContext(
@@ -174,8 +162,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertFalse($this->engine->should2FAVerify($context));
     }
-
-    /** @test */
+    #[Test]
     public function it_does_not_require_2fa_when_not_required()
     {
         $context = $this->createContext(
@@ -186,16 +173,14 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertFalse($this->engine->should2FAVerify($context));
     }
-
-    /** @test */
+    #[Test]
     public function it_provides_2fa_verification_url()
     {
         $url = $this->engine->get2FAVerificationUrl();
 
         $this->assertEquals(route('2fa.verify'), $url);
     }
-
-    /** @test */
+    #[Test]
     public function it_determines_logout_redirect_for_team_members()
     {
         $context = $this->createContext(role: 'admin');
@@ -204,8 +189,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('admin.login'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_determines_logout_redirect_for_clients()
     {
         $context = $this->createContext(role: 'client');
@@ -214,8 +198,7 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals(route('login'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_determines_logout_redirect_for_creators()
     {
         $context = $this->createContext(role: 'createur');
@@ -229,16 +212,14 @@ class PostLoginDecisionEngineTest extends TestCase
 
         $this->assertEquals($expected, $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_determines_logout_redirect_when_no_context()
     {
         $redirect = $this->engine->determineLogoutRedirect(null);
 
         $this->assertEquals(route('login'), $redirect);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_unknown_role_gracefully()
     {
         $context = $this->createContext(role: 'unknown_role');

@@ -54,8 +54,7 @@ class AuthSecurityTest extends TestCase
         ]);
 
         // Doit rediriger vers le challenge 2FA
-        // Note: PostLoginDecisionEngine redirige vers '2fa.verify'
-        $response->assertRedirect(route('2fa.verify'));
+        $response->assertRedirect(route('2fa.challenge'));
         
         // Vérifier que le user est connecté mais PAS vérifié 2FA
         // NOTE: L'implémentation connecte le user mais le middleware bloque l'accès aux routes protégées
@@ -169,37 +168,41 @@ class AuthSecurityTest extends TestCase
      */
     public function test_redirect_after_login_is_correct_by_role(): void
     {
-        $this->markTestSkipped('Flaky test env: Role ID resolution leads to fallback home redirect.');
-        
-        // Burn ID 1 pour éviter le fallback 'admin' du Resolver sur role_id=1
-        Role::create(['name' => 'Burner', 'slug' => 'burner', 'is_active' => true]);
+        $clientRole = Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client', 'is_active' => true]);
+        $creatorRole = Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur', 'is_active' => true]);
+        $adminRole = Role::firstOrCreate(['slug' => 'admin'], ['name' => 'Admin', 'is_active' => true]);
 
-        // Test Client
-        $clientRole = Role::create(['name' => 'Client', 'slug' => 'client', 'is_active' => true]);
-        $client = User::factory()->create(['role_id' => $clientRole->id]);
-        
-        $this->actingAs($client);
+        // Client -> account dashboard
+        $client = User::factory()->create([
+            'role_id' => $clientRole->id,
+            'role' => 'client',
+        ]);
+        $this->actingAs($client->fresh());
         $response = $this->get(route('login'));
         $response->assertRedirect(route('account.dashboard'));
 
-        // Test Créateur
-        $creatorRole = Role::create(['name' => 'Créateur', 'slug' => 'createur', 'is_active' => true]);
-        $creator = User::factory()->create(['role_id' => $creatorRole->id]);
-        
-        $this->actingAs($creator);
+        // Créateur actif -> creator dashboard
+        $creator = User::factory()->create([
+            'role_id' => $creatorRole->id,
+            'role' => 'createur',
+        ]);
+        $creator->creatorProfile()->create([
+            'status' => 'active',
+            'brand_name' => 'Creator Test Shop',
+        ]);
+        $this->actingAs($creator->fresh());
         $response = $this->get(route('login'));
         $response->assertRedirect(route('creator.dashboard'));
 
-        // Test Admin
-        $adminRole = Role::create(['name' => 'Admin', 'slug' => 'admin', 'is_active' => true]);
+        // Admin -> admin dashboard
         $admin = User::factory()->create([
             'role_id' => $adminRole->id,
+            'role' => 'admin',
+            'is_admin' => true,
             'two_factor_secret' => encrypt('test_secret'),
             'two_factor_confirmed_at' => now(),
         ]);
-        
-        $this->actingAs($admin);
-        Session::put('2fa_verified', true); // Bypass 2FA pour ce test
+        $this->actingAs($admin->fresh());
         $response = $this->get(route('login'));
         $response->assertRedirect(route('admin.dashboard'));
     }
@@ -322,4 +325,3 @@ class AuthSecurityTest extends TestCase
         $this->assertFalse(Gate::forUser($client)->allows('access-crm'));
     }
 }
-

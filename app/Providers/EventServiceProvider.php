@@ -42,6 +42,18 @@ class EventServiceProvider extends ServiceProvider
         \Modules\Accounting\Events\PaymentRecorded::class => [
             \Modules\Accounting\Listeners\PaymentRecordedListener::class,
         ],
+        \Modules\Accounting\Events\PurchaseReceived::class => [
+            \Modules\Accounting\Listeners\PurchaseReceivedListener::class,
+        ],
+        \Modules\ERPProduction\Events\ProductionStarted::class => [
+            \Modules\Accounting\Listeners\ProductionStartedListener::class,
+        ],
+        \Modules\ERPProduction\Events\ProductionFinished::class => [
+            \Modules\Accounting\Listeners\ProductionFinishedListener::class,
+        ],
+        \Modules\ERPProduction\Events\ProductionScrapped::class => [
+            \Modules\Accounting\Listeners\ProductionScrappedListener::class,
+        ],
         // ==========================================
         // POS Events (Audit-Ready Architecture)
         // ==========================================
@@ -70,6 +82,24 @@ class EventServiceProvider extends ServiceProvider
     {
         // Register model observers
         \App\Models\User::observe(\App\Observers\UserObserver::class);
+        
+        // Task 3: Global Audit Trail Observers
+        \App\Models\User::observe(\App\Observers\AuditObserver::class);
+        if (class_exists(\App\Models\Order::class)) {
+            \App\Models\Order::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\Payment::class)) {
+            \App\Models\Payment::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\Product::class)) {
+            \App\Models\Product::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\Role::class)) {
+            \App\Models\Role::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\CreatorProfile::class)) {
+            \App\Models\CreatorProfile::observe(\App\Observers\AuditObserver::class);
+        }
     }
 
     /**
@@ -80,4 +110,3 @@ class EventServiceProvider extends ServiceProvider
         return false;
     }
 }
-

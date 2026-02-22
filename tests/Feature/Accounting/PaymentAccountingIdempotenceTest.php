@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Accounting;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Order;
@@ -12,20 +13,21 @@ use Modules\Accounting\Events\PaymentRecorded;
 use Modules\Accounting\Listeners\PaymentRecordedListener;
 use Modules\Accounting\Services\LedgerService;
 use Illuminate\Support\Facades\Cache;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests d'idempotence pour PaymentRecordedListener
  * 
- * Ces tests vérifient que:
- * 1. Double dispatch du même event → UNE SEULE écriture
- * 2. Retry après succès partiel → UNE SEULE écriture
- * 3. Concurrence simulée → UNE SEULE écriture
+ * Ces tests vÃ©rifient que:
+ * 1. Double dispatch du mÃªme event â†’ UNE SEULE Ã©criture
+ * 2. Retry aprÃ¨s succÃ¨s partiel â†’ UNE SEULE Ã©criture
+ * 3. Concurrence simulÃ©e â†’ UNE SEULE Ã©criture
  * 
- * INVARIANT: Il ne doit JAMAIS exister plus d'UNE écriture comptable pour une même référence.
+ * INVARIANT: Il ne doit JAMAIS exister plus d'UNE Ã©criture comptable pour une mÃªme rÃ©fÃ©rence.
  */
 class PaymentAccountingIdempotenceTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
 
@@ -37,17 +39,12 @@ class PaymentAccountingIdempotenceTest extends TestCase
         $this->actingAs($this->user);
 
         // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        $this->seedAccounting();
 
         // Reset collision counter
         AccountingIdempotenceService::resetCounter();
     }
-
-    /**
-     * @test
-     * SCÉNARIO: Double dispatch du même event
-     * ATTENDU: Une seule écriture comptable créée
-     */
+    #[Test]
     public function it_creates_only_one_entry_on_double_dispatch()
     {
         // Arrange
@@ -64,31 +61,26 @@ class PaymentAccountingIdempotenceTest extends TestCase
         // Act - Premier dispatch
         $listener->handle($event);
 
-        // Assert - Première écriture créée
+        // Assert - PremiÃ¨re Ã©criture crÃ©Ã©e
         $entryCount1 = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->count();
         $this->assertEquals(1, $entryCount1);
 
-        // Act - Deuxième dispatch (simule retry ou double event)
+        // Act - DeuxiÃ¨me dispatch (simule retry ou double event)
         $listener->handle($event);
 
-        // Assert - Toujours UNE SEULE écriture
+        // Assert - Toujours UNE SEULE Ã©criture
         $entryCount2 = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->count();
 
-        $this->assertEquals(1, $entryCount2, 'INVARIANT VIOLÉ: Plus d\'une écriture pour la même commande');
+        $this->assertEquals(1, $entryCount2, 'INVARIANT VIOLÃ‰: Plus d\'une Ã©criture pour la mÃªme commande');
 
         // Note: Collision tracking is now handled by Intent-based flow
         // See IntentBasedAccountingTest for collision tests
     }
-
-    /**
-     * @test
-     * SCÉNARIO: Trois dispatches consécutifs (simule multiples retries)
-     * ATTENDU: Une seule écriture, deux collisions enregistrées
-     */
+    #[Test]
     public function it_handles_multiple_retries_gracefully()
     {
         // Arrange
@@ -107,7 +99,7 @@ class PaymentAccountingIdempotenceTest extends TestCase
         $listener->handle($event);
         $listener->handle($event);
 
-        // Assert - UNE SEULE écriture
+        // Assert - UNE SEULE Ã©criture
         $entries = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->get();
@@ -117,12 +109,7 @@ class PaymentAccountingIdempotenceTest extends TestCase
         // Note: Collision tracking is now handled by Intent-based flow
         // See IntentBasedAccountingTest for collision tests
     }
-
-    /**
-     * @test
-     * SCÉNARIO: Concurrence simulée (deux appels "parallèles")
-     * ATTENDU: Une seule écriture grâce au guard + contrainte DB
-     */
+    #[Test]
     public function it_prevents_duplicate_entries_under_simulated_concurrency()
     {
         // Arrange
@@ -133,7 +120,7 @@ class PaymentAccountingIdempotenceTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        // Act - Exécution "parallèle" via deux instances
+        // Act - ExÃ©cution "parallÃ¨le" via deux instances
         $listener1 = app(PaymentRecordedListener::class);
         $listener2 = app(PaymentRecordedListener::class);
         $event = new PaymentRecorded($order);
@@ -141,19 +128,14 @@ class PaymentAccountingIdempotenceTest extends TestCase
         $listener1->handle($event);
         $listener2->handle($event);
 
-        // Assert - UNE SEULE écriture
+        // Assert - UNE SEULE Ã©criture
         $count = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->count();
 
         $this->assertEquals(1, $count);
     }
-
-    /**
-     * @test
-     * SCÉNARIO: Paiement non confirmé ne crée pas d'écriture
-     * ATTENDU: Zéro écriture, zéro collision
-     */
+    #[Test]
     public function it_does_not_create_entry_for_pending_payment()
     {
         // Arrange
@@ -170,7 +152,7 @@ class PaymentAccountingIdempotenceTest extends TestCase
         // Act
         $listener->handle($event);
 
-        // Assert - Aucune écriture
+        // Assert - Aucune Ã©criture
         $count = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order->id)
             ->count();
@@ -180,12 +162,7 @@ class PaymentAccountingIdempotenceTest extends TestCase
         // Assert - Aucune collision
         $this->assertEquals(0, AccountingIdempotenceService::getCollisionCount());
     }
-
-    /**
-     * @test
-     * SCÉNARIO: Plusieurs commandes différentes
-     * ATTENDU: Chaque commande a sa propre écriture unique
-     */
+    #[Test]
     public function it_creates_separate_entries_for_different_orders()
     {
         // Arrange
@@ -209,7 +186,7 @@ class PaymentAccountingIdempotenceTest extends TestCase
         $listener->handle(new PaymentRecorded($order1));
         $listener->handle(new PaymentRecorded($order2));
 
-        // Assert - Deux écritures distinctes
+        // Assert - Deux Ã©critures distinctes
         $entry1 = AccountingEntry::where('reference_type', 'order')
             ->where('reference_id', $order1->id)
             ->first();
@@ -222,15 +199,10 @@ class PaymentAccountingIdempotenceTest extends TestCase
         $this->assertNotNull($entry2);
         $this->assertNotEquals($entry1->id, $entry2->id);
 
-        // Assert - Aucune collision (ordres différents)
+        // Assert - Aucune collision (ordres diffÃ©rents)
         $this->assertEquals(0, AccountingIdempotenceService::getCollisionCount());
     }
-
-    /**
-     * @test
-     * SCÉNARIO: Vérifier équilibre de l'écriture créée
-     * ATTENDU: total_debit = total_credit
-     */
+    #[Test]
     public function it_creates_balanced_entry()
     {
         // Arrange

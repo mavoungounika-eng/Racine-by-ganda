@@ -22,6 +22,8 @@ class DashboardRBACTest extends TestCase
         
         // Seed comptes test
         $this->seed(\Database\Seeders\RolesTableSeeder::class);
+        $this->seed(\Database\Seeders\PermissionsSeeder::class);
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
         $this->seed(\Database\Seeders\TestUsersSeeder::class);
     }
 

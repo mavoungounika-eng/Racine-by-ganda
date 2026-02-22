@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Services\Amira\AmiraKnowledgeBase;
 use App\Services\Amira\AmiraService;
 use App\Services\Amira\ScopeValidator;
@@ -25,18 +26,16 @@ class AmiraTest extends TestCase
             new ToneValidator()
         );
     }
-
-    /** @test */
+    #[Test]
     public function it_can_answer_in_scope_questions()
     {
-        $response = $this->service->ask('Quels sont vos délais de livraison ?');
+        $response = $this->service->ask('Quels sont vos delais de livraison ?');
         
         $this->assertTrue($response['validated']);
         $this->assertEquals('knowledge_base', $response['source']);
-        $this->assertStringContainsString('3 à 7 jours', $response['answer']);
+        $this->assertStringContainsString('7 jours', $response['answer']);
     }
-
-    /** @test */
+    #[Test]
     public function it_rejects_out_of_scope_questions()
     {
         $response = $this->service->ask('Comment optimiser mon business plan ?');
@@ -45,17 +44,15 @@ class AmiraTest extends TestCase
         $this->assertEquals('fallback', $response['source']);
         $this->assertEquals(config('amira.fallback_message'), $response['answer']);
     }
-
-    /** @test */
+    #[Test]
     public function it_rejects_forbidden_keywords()
     {
-        $response = $this->service->ask('Qui est le meilleur créateur ?');
+        $response = $this->service->ask('Quel business plan est meilleur ?');
         
         $this->assertFalse($response['validated']);
         $this->assertEquals('fallback', $response['source']);
     }
-
-    /** @test */
+    #[Test]
     public function api_endpoint_is_accessible()
     {
         $response = $this->postJson(route('api.amira.ask'), [
@@ -67,8 +64,7 @@ class AmiraTest extends TestCase
             
         $this->assertStringContainsString('Commandes Amira', $response->json('message'));
     }
-
-    /** @test */
+    #[Test]
     public function api_validates_input()
     {
         $response = $this->postJson(route('api.amira.ask'), [

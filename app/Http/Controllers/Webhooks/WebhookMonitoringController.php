@@ -136,8 +136,9 @@ class WebhookMonitoringController extends Controller
      */
     public function slaMetrics(Request $request): array
     {
+        $days = (int) $request->get('days', 7);
         $timeRange = [
-            now()->subDays($request->get('days', 7)),
+            now()->subDays($days),
             now(),
         ];
 
@@ -169,10 +170,10 @@ class WebhookMonitoringController extends Controller
         })->toArray();
 
         return [
-            'time_range_days' => $request->get('days', 7),
+            'time_range_days' => $days,
             'time_range_start' => $timeRange[0]->toIso8601String(),
             'time_range_end' => $timeRange[1]->toIso8601String(),
-            'overall_sla_compliance' => array_every($sla, fn ($s) => $s['compliant']),
+            'overall_sla_compliance' => collect($sla)->every(fn ($s) => $s['compliant']),
             'providers' => $sla,
         ];
     }
@@ -262,7 +263,6 @@ class WebhookMonitoringController extends Controller
         
         $errors = WebhookMetric::failed()
             ->inTimeRange($timeRange[0], $timeRange[1])
-            ->with('payment')  // If this relationship exists
             ->latest()
             ->limit(50)
             ->get();

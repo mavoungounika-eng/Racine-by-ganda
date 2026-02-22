@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\StateMachine;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentStateHistory;
@@ -44,8 +45,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // STATE TRANSITIONS: VALID PATHS
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function transitions_from_pending_to_processing(): void
     {
         $history = $this->stateMachine->transitionTo(
@@ -59,8 +59,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertEquals('processing', $history->to_state);
         $this->assertEquals('processing', $this->stateMachine->getCurrentState($this->payment->id));
     }
-
-    /** @test */
+    #[Test]
     public function transitions_from_pending_to_expired(): void
     {
         $history = $this->stateMachine->transitionTo(
@@ -73,8 +72,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertEquals('expired', $this->stateMachine->getCurrentState($this->payment->id));
         $this->assertTrue($this->stateMachine->isTerminalState('expired'));
     }
-
-    /** @test */
+    #[Test]
     public function transitions_from_processing_to_completed(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -87,8 +85,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertTrue($history->is_valid);
         $this->assertEquals('completed', $this->stateMachine->getCurrentState($this->payment->id));
     }
-
-    /** @test */
+    #[Test]
     public function transitions_from_processing_to_failed(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -102,8 +99,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertTrue($history->is_valid);
         $this->assertEquals('failed', $this->stateMachine->getCurrentState($this->payment->id));
     }
-
-    /** @test */
+    #[Test]
     public function transitions_from_completed_to_refunded(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -123,8 +119,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // STATE TRANSITIONS: INVALID PATHS
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function rejects_invalid_transition_from_pending_to_completed(): void
     {
         $history = $this->stateMachine->transitionTo(
@@ -138,8 +133,7 @@ class PaymentStateMachineTest extends TestCase
         // State should NOT be updated
         $this->assertEquals('pending', $this->stateMachine->getCurrentState($this->payment->id));
     }
-
-    /** @test */
+    #[Test]
     public function rejects_invalid_transition_from_completed_to_processing(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -154,8 +148,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertFalse($history->is_valid);
         $this->assertEquals('completed', $this->stateMachine->getCurrentState($this->payment->id));
     }
-
-    /** @test */
+    #[Test]
     public function rejects_transition_from_refunded_state(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -171,8 +164,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertFalse($history->is_valid);
         $this->assertEquals('refunded', $this->stateMachine->getCurrentState($this->payment->id));
     }
-
-    /** @test */
+    #[Test]
     public function rejects_transition_from_expired_state(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'expired', 'timeout');
@@ -190,8 +182,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // RETRY LOGIC
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function allows_retry_from_failed_state(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -205,8 +196,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertEquals('pending', $this->stateMachine->getCurrentState($this->payment->id));
         $this->assertEquals('retry', $history->trigger);
     }
-
-    /** @test */
+    #[Test]
     public function prevents_retry_from_completed_state(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -217,8 +207,7 @@ class PaymentStateMachineTest extends TestCase
         $this->expectException(\Exception::class);
         $this->stateMachine->retry($this->payment->id);
     }
-
-    /** @test */
+    #[Test]
     public function prevents_retry_from_refunded_state(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -231,8 +220,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // STATE TRACKING & HISTORY
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function tracks_complete_state_history(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -247,8 +235,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertEquals('completed', $history[1]->to_state);
         $this->assertEquals('refunded', $history[2]->to_state);
     }
-
-    /** @test */
+    #[Test]
     public function returns_current_state(): void
     {
         $this->assertEquals('pending', $this->stateMachine->getCurrentState($this->payment->id));
@@ -259,8 +246,7 @@ class PaymentStateMachineTest extends TestCase
         $this->stateMachine->transitionTo($this->payment->id, 'completed', 'success');
         $this->assertEquals('completed', $this->stateMachine->getCurrentState($this->payment->id));
     }
-
-    /** @test */
+    #[Test]
     public function ignores_invalid_transitions_in_history(): void
     {
         $this->stateMachine->transitionTo($this->payment->id, 'processing', 'initiated');
@@ -278,8 +264,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // TERMINAL STATES
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function identifies_terminal_states(): void
     {
         $this->assertTrue($this->stateMachine->isTerminalState('refunded'));
@@ -294,8 +279,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // NEXT STATES
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function returns_possible_next_states(): void
     {
         $nextStates = $this->stateMachine->getPossibleNextStates('pending');
@@ -303,8 +287,7 @@ class PaymentStateMachineTest extends TestCase
         $this->assertContains('expired', $nextStates);
         $this->assertCount(2, $nextStates);
     }
-
-    /** @test */
+    #[Test]
     public function returns_no_next_states_for_terminal_states(): void
     {
         $nextStates = $this->stateMachine->getPossibleNextStates('refunded');
@@ -317,8 +300,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // STATISTICS
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function returns_state_statistics(): void
     {
         // Create multiple transitions across different payments
@@ -351,8 +333,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // STATE MACHINE VALIDATION
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function validates_state_machine_configuration(): void
     {
         $validation = $this->stateMachine->validate();
@@ -370,8 +351,7 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // METADATA & CONTEXT
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function stores_metadata_with_transition(): void
     {
         $metadata = ['user_ip' => '192.168.1.1', 'device' => 'mobile'];
@@ -385,8 +365,7 @@ class PaymentStateMachineTest extends TestCase
 
         $this->assertEquals($metadata, $history->metadata);
     }
-
-    /** @test */
+    #[Test]
     public function stores_reason_for_transition(): void
     {
         $reason = 'User requested payment processing';
@@ -405,15 +384,13 @@ class PaymentStateMachineTest extends TestCase
     // ============================================================================
     // ERROR HANDLING
     // ============================================================================
-
-    /** @test */
+    #[Test]
     public function throws_exception_for_invalid_state(): void
     {
         $this->expectException(\Exception::class);
         $this->stateMachine->transitionTo($this->payment->id, 'invalid_state');
     }
-
-    /** @test */
+    #[Test]
     public function throws_exception_for_nonexistent_payment(): void
     {
         $this->expectException(\Exception::class);

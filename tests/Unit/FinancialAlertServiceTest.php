@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -32,8 +34,7 @@ class FinancialAlertServiceTest extends TestCase
         $dashboardService = new AdminFinancialDashboardService();
         $this->service = new FinancialAlertService($kpiService, $dashboardService);
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_empty_alerts_with_no_data()
     {
         $alerts = $this->service->checkGlobalAlerts();
@@ -41,8 +42,7 @@ class FinancialAlertServiceTest extends TestCase
         $this->assertIsArray($alerts);
         // Avec aucune donnée, il ne devrait pas y avoir d'alertes critiques
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_high_churn_alert()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -79,8 +79,7 @@ class FinancialAlertServiceTest extends TestCase
             $this->assertGreaterThan(10, $churnAlert['value']);
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_revenue_decline_alert()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -127,8 +126,7 @@ class FinancialAlertServiceTest extends TestCase
         // Peut ou ne peut pas déclencher selon le calcul exact
         $this->assertIsArray($alerts);
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_creator_unpaid_alert()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -158,8 +156,7 @@ class FinancialAlertServiceTest extends TestCase
         $this->assertEquals('subscription_unpaid', $unpaidAlert['type']);
         $this->assertEquals('high', $unpaidAlert['severity']);
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_stripe_charges_disabled_alert()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -189,8 +186,7 @@ class FinancialAlertServiceTest extends TestCase
         $this->assertEquals('stripe_charges_disabled', $chargesAlert['type']);
         $this->assertEquals('high', $chargesAlert['severity']);
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_onboarding_incomplete_alert()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -221,8 +217,7 @@ class FinancialAlertServiceTest extends TestCase
         $this->assertEquals('onboarding_incomplete', $onboardingAlert['type']);
         $this->assertEquals('medium', $onboardingAlert['severity']);
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_not_eligible_payments_alert()
     {
         $creator = CreatorProfile::factory()->create([

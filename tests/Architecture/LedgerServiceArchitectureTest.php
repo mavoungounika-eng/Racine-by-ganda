@@ -8,6 +8,7 @@ use App\Models\User;
 use Modules\Accounting\Models\AccountingEntry;
 use Modules\Accounting\Services\LedgerService;
 use Modules\Accounting\Exceptions\ForbiddenCreationException;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Traits\SeedsAccounting;
 
 /**
@@ -34,9 +35,9 @@ class LedgerServiceArchitectureTest extends TestCase
     }
 
     /**
-     * @test
      * RÈGLE: AccountingEntry::create() direct est INTERDIT
      */
+    #[Test]
     public function direct_accounting_entry_creation_throws_exception()
     {
         $this->expectException(ForbiddenCreationException::class);
@@ -53,9 +54,9 @@ class LedgerServiceArchitectureTest extends TestCase
     }
 
     /**
-     * @test
      * RÈGLE: Création via LedgerService est AUTORISÉE
      */
+    #[Test]
     public function creation_via_ledger_service_is_allowed()
     {
         $ledgerService = app(LedgerService::class);
@@ -78,9 +79,9 @@ class LedgerServiceArchitectureTest extends TestCase
     }
 
     /**
-     * @test
      * RÈGLE: LedgerService est une classe FINAL (non-extensible)
      */
+    #[Test]
     public function ledger_service_is_final_class()
     {
         $reflection = new \ReflectionClass(LedgerService::class);
@@ -92,9 +93,9 @@ class LedgerServiceArchitectureTest extends TestCase
     }
 
     /**
-     * @test
      * RÈGLE: Le flag container est nettoyé après création
      */
+    #[Test]
     public function container_flag_is_cleaned_after_creation()
     {
         $ledgerService = app(LedgerService::class);
@@ -120,9 +121,9 @@ class LedgerServiceArchitectureTest extends TestCase
     }
 
     /**
-     * @test
      * RÈGLE: Même après exception, le flag est nettoyé
      */
+    #[Test]
     public function container_flag_is_cleaned_even_on_exception()
     {
         $ledgerService = app(LedgerService::class);

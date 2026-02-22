@@ -56,9 +56,10 @@ class OAuthAppleTest extends TestCase
         $redirectResponse->assertRedirect();
 
         // Simuler le callback OAuth
-        $callbackResponse = $this->get(route('auth.social.callback', ['provider' => 'apple']), [
+        $callbackResponse = $this->get(route('auth.social.callback', [
+            'provider' => 'apple',
             'state' => Session::get('oauth_state'),
-        ]);
+        ]));
 
         // Vérifications
         $this->assertDatabaseCount('users', 1);
@@ -85,9 +86,10 @@ class OAuthAppleTest extends TestCase
         $redirectResponse = $this->get(route('auth.social.redirect', ['provider' => 'apple']));
         $redirectResponse->assertRedirect();
 
-        $callbackResponse = $this->get(route('auth.social.callback', ['provider' => 'apple']), [
+        $callbackResponse = $this->get(route('auth.social.callback', [
+            'provider' => 'apple',
             'state' => Session::get('oauth_state'),
-        ]);
+        ]));
 
         // Vérifications
         $this->assertDatabaseHas('users', [
@@ -109,9 +111,17 @@ class OAuthAppleTest extends TestCase
         $appleUser->shouldReceive('getId')->andReturn($appleId);
         $appleUser->shouldReceive('getName')->andReturn($name);
         $appleUser->shouldReceive('getAvatar')->andReturn(null);
+        $appleUser->shouldReceive('getRaw')->andReturn([]);
 
         Socialite::shouldReceive('driver')
             ->with('apple')
+            ->andReturnSelf();
+
+        Socialite::shouldReceive('scopes')
+            ->with(['name', 'email'])
+            ->andReturnSelf();
+
+        Socialite::shouldReceive('with')
             ->andReturnSelf();
             
         Socialite::shouldReceive('redirect')

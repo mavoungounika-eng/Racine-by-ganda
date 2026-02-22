@@ -2,13 +2,13 @@
 
 namespace Modules\Accounting\Listeners;
 
-use Modules\Accounting\Events\PurchaseReceived;
-use Modules\Accounting\Services\LedgerService;
-use Modules\Accounting\Models\Journal;
-use Modules\Accounting\Exceptions\LedgerException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
+use Modules\Accounting\Events\PurchaseReceived;
+use Modules\Accounting\Exceptions\LedgerException;
+use Modules\Accounting\Models\Journal;
+use Modules\Accounting\Services\LedgerService;
 
 class PurchaseReceivedListener implements ShouldQueue
 {
@@ -31,12 +31,13 @@ class PurchaseReceivedListener implements ShouldQueue
     {
         $purchase = $event->purchase;
 
-        // Vérifier que l'achat est reçu
+        // Book entries only when purchase is effectively received.
         if ($purchase->status !== 'received') {
             Log::info('PurchaseReceivedListener: Purchase not received, skipping accounting entry', [
                 'purchase_id' => $purchase->id,
                 'status' => $purchase->status,
             ]);
+
             return;
         }
 
@@ -45,7 +46,7 @@ class PurchaseReceivedListener implements ShouldQueue
 
             Log::info('PurchaseReceivedListener: Accounting entry created successfully', [
                 'purchase_id' => $purchase->id,
-                'total' => $purchase->total,
+                'total_amount' => $purchase->total_amount,
             ]);
         } catch (LedgerException $e) {
             Log::error('PurchaseReceivedListener: Failed to create accounting entry', [
@@ -53,49 +54,48 @@ class PurchaseReceivedListener implements ShouldQueue
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            // Re-throw pour retry (ShouldQueue)
+
+            // Re-throw so queue retries still apply.
             throw $e;
         }
     }
 
     /**
-     * Créer écriture achat matières premières
+     * Create accounting entry for raw material purchase.
      */
     protected function createPurchaseEntry($purchase): void
     {
         $journal = Journal::where('code', 'ACH')->firstOrFail();
         $fiscalYear = $this->ledgerService->getCurrentFiscalYear();
 
-        // Calculer HT et TVA
-        $totalTTC = $purchase->total;
+        $totalTTC = (float) ($purchase->total_amount ?? 0);
         $vatRate = 18.0;
         $amountHT = $totalTTC / (1 + $vatRate / 100);
         $vatAmount = $totalTTC - $amountHT;
+        $supplierName = $purchase->supplier?->name ?? 'Fournisseur inconnu';
 
         $entry = $this->ledgerService->createEntry([
             'journal_id' => $journal->id,
             'fiscal_year_id' => $fiscalYear->id,
             'entry_date' => now()->toDateString(),
-            'description' => "Achat matières premières #{$purchase->id} - {$purchase->supplier->name}",
+            'description' => "Achat matieres premieres #{$purchase->id} - {$supplierName}",
             'reference_type' => 'purchase',
             'reference_id' => $purchase->id,
         ]);
 
-        // Ligne 1: Débit achats (HT)
-        $this->ledgerService->addLine($entry, '6011', $amountHT, 0, "Achats tissus HT", [
+        // Debit purchases (HT)
+        $this->ledgerService->addLine($entry, '6011', $amountHT, 0, 'Achats tissus HT', [
             'amount_ht' => $amountHT,
             'vat_amount' => $vatAmount,
             'vat_rate' => $vatRate,
         ]);
 
-        // Ligne 2: Débit TVA déductible
-        $this->ledgerService->addLine($entry, '4422', $vatAmount, 0, "TVA déductible {$vatRate}%");
+        // Debit deductible VAT
+        $this->ledgerService->addLine($entry, '4422', $vatAmount, 0, "TVA deductible {$vatRate}%");
 
-        // Ligne 3: Crédit fournisseur (TTC)
-        $this->ledgerService->addLine($entry, '4011', 0, $totalTTC, "Fournisseur {$purchase->supplier->name}");
+        // Credit supplier (TTC)
+        $this->ledgerService->addLine($entry, '4011', 0, $totalTTC, "Fournisseur {$supplierName}");
 
-        // Poster automatiquement
         $this->ledgerService->postEntry($entry);
     }
 
