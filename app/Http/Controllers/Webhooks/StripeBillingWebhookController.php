@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
+use App\Services\Webhooks\WebhookDeduplicationService;
 
 /**
  * Contrôleur pour les webhooks Stripe Billing (abonnements créateurs).
@@ -38,6 +39,18 @@ use Stripe\Webhook;
  */
 class StripeBillingWebhookController extends Controller
 {
+    /**
+     * Service de déduplication pour éviter le traitement multiple
+     *
+     * @var WebhookDeduplicationService
+     */
+    protected WebhookDeduplicationService $deduplication;
+
+    public function __construct(WebhookDeduplicationService $deduplication)
+    {
+        $this->deduplication = $deduplication;
+    }
+
     /**
      * Gère les webhooks Stripe Billing.
      * 
@@ -141,9 +154,22 @@ class StripeBillingWebhookController extends Controller
             return response()->json(['error' => 'Invalid event'], 400);
         }
 
-        // Log avec event_type
+        // Extraire event_id (requis pour la déduplication)
+        $eventId = is_object($event) ? ($event->id ?? null) : ($eventArray['id'] ?? null);
+
+        // 1.5 DEDUPLICATION (Éviter de traiter deux fois le même événement)
+        if ($eventId && $this->deduplication->isDuplicate('stripe_billing', $eventId)) {
+            Log::info('Stripe Billing webhook: Duplicate event skipped', [
+                'event_type' => $eventType,
+                'event_id' => $eventId,
+            ]);
+            return response()->json(['status' => 'duplicate_skipped'], 200);
+        }
+
+        // Log avec event_type et event_id
         Log::info('received_stripe_billing_webhook_parsed', [
             'event_type' => $eventType,
+            'event_id' => $eventId,
             'ip' => $request->ip(),
         ]);
 
@@ -180,10 +206,37 @@ class StripeBillingWebhookController extends Controller
         } catch (\Exception $e) {
             Log::error('Stripe Billing webhook: Processing error', [
                 'event_type' => $eventType,
+                'event_id' => $eventId ?? null,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            // Ne pas retourner d'erreur HTTP pour éviter les retries Stripe
+
+            // Enregistrer l'échec pour audit/retry potentiel via le service
+            if (isset($eventId) && $eventId) {
+                try {
+                    $this->deduplication->recordFailure(
+                        provider: 'stripe_billing',
+                        eventType: $eventType,
+                        externalId: $eventId,
+                        payload: $eventArray,
+                        signature: $signature ?? '',
+                        errorMessage: mb_substr($e->getMessage(), 0, 500)
+                    );
+                } catch (\Exception $recordFailedE) {
+                    Log::error('Stripe Billing webhook: Failed to record failure', [
+                        'error' => $recordFailedE->getMessage()
+                    ]);
+                }
+            }
+            
+            // Ne pas retourner d'erreur HTTP pour éviter les retries Stripe s'ils sont ingérables
+            // Ou si on veut que Stripe re-tente :
+            // return response()->json(['error' => 'Processing failed'], 500);
+        }
+
+        // Marquer l'événement comme traité avec succès pour la déduplication persistante
+        if (isset($eventId) && $eventId) {
+            $this->deduplication->markAsProcessedSuccess('stripe_billing', $eventId);
         }
 
         // 3. RETOURNER 200 OK
