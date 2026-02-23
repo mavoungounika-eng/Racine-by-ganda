@@ -238,4 +238,12 @@ class Product extends Model
     {
         return $this->mainImage ?? $this->images->first();
     }
+
+    /**
+     * Get the order items associated with the product.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }

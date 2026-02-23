@@ -62,7 +62,11 @@ return new class extends Migration
         });
         
         // Contrainte: débit = crédit si posted
-        if (DB::getDriverName() !== 'sqlite') {
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE accounting_entries ADD CONSTRAINT chk_balanced 
+                CHECK (is_posted = false OR total_debit = total_credit)');
+        } elseif ($driver !== 'sqlite') {
             DB::statement('ALTER TABLE accounting_entries ADD CONSTRAINT chk_balanced 
                 CHECK (is_posted = 0 OR total_debit = total_credit)');
         }

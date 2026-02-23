@@ -25,12 +25,13 @@ return new class extends Migration
     {
         // 1. VÉRIFICATION PRÉ-MIGRATION: Aucun doublon ne doit exister
         $duplicates = DB::table('accounting_entries')
-            ->select('reference_type', 'reference_id', DB::raw('COUNT(*) as cnt'))
+            ->select('reference_type', 'reference_id')
             ->whereNotNull('reference_type')
             ->whereNotNull('reference_id')
             ->whereNull('deleted_at')
             ->groupBy('reference_type', 'reference_id')
-            ->having('cnt', '>', 1)
+            ->havingRaw('COUNT(*) > 1')
+            ->get()
             ->count();
 
         if ($duplicates > 0) {

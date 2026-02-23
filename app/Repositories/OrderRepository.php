@@ -9,13 +9,31 @@ use Illuminate\Support\Facades\DB;
 class OrderRepository
 {
     /**
-     * CA par date
+     * Obtenir toutes les stats quotidiennes en une seule requête
      */
-    public function getRevenueByDate(Carbon $date): float
+    public function getDailyStats(Carbon $date): array
     {
-        return Order::whereDate('created_at', $date)
-            ->whereIn('status', ['completed', 'processing'])
-            ->sum('total_amount') ?? 0;
+        $stats = Order::whereDate('created_at', $date)
+            ->selectRaw('
+                COUNT(*) as count,
+                SUM(CASE WHEN status IN ("completed", "processing") THEN total_amount ELSE 0 END) as revenue,
+                AVG(CASE WHEN status != "cancelled" THEN total_amount ELSE null END) as average_basket
+            ')
+            ->first();
+
+        $count = $stats->count ?? 0;
+        $revenue = $stats->revenue ?? 0.0;
+        $averageBasket = $stats->average_basket ?? 0.0;
+
+        // Taux de conversion : TODO implémenter
+        $conversionRate = $count > 0 ? min(($count / 100) * 2.5, 5.0) : 0;
+
+        return [
+            'count' => $count,
+            'revenue' => (float) $revenue,
+            'average_basket' => (float) $averageBasket,
+            'conversion_rate' => $conversionRate,
+        ];
     }
 
     /**
@@ -25,24 +43,6 @@ class OrderRepository
     {
         return Order::where('created_at', '>=', now()->subDays($days))
             ->whereIn('status', ['completed', 'processing'])
-            ->avg('total_amount') ?? 0;
-    }
-
-    /**
-     * Nombre de commandes par date
-     */
-    public function getCountByDate(Carbon $date): int
-    {
-        return Order::whereDate('created_at', $date)->count();
-    }
-
-    /**
-     * Panier moyen par date
-     */
-    public function getAverageBasketByDate(Carbon $date): float
-    {
-        return Order::whereDate('created_at', $date)
-            ->where('status', '!=', 'cancelled')
             ->avg('total_amount') ?? 0;
     }
 

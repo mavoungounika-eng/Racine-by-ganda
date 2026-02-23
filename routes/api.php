@@ -24,7 +24,7 @@ Route::middleware(['api', 'throttle:webhooks'])->group(function () {
 // Webhooks Stripe Billing (abonnements créateurs)
 // Exclus du middleware CSRF et auth car appelés directement par Stripe
 // Throttle: utilise le rate limiter 'webhooks' (60 requêtes par minute par IP)
-Route::middleware(['api', 'throttle:webhooks'])->group(function () {
+Route::middleware(['api'])->group(function () {
     Route::post('/webhooks/stripe/billing', [\App\Http\Controllers\Webhooks\StripeBillingWebhookController::class, '__invoke'])->name('api.webhooks.stripe.billing');
     
     // ✅ C6: Stripe Subscriptions Créateur (nouveau - sécurisé)

@@ -81,14 +81,15 @@ class AdminDashboardPerformanceTest extends TestCase
         $response1->assertStatus(200);
         
         // Vérifier que le cache est créé
-        $this->assertTrue(Cache::has('admin.dashboard.stats'));
+        $this->assertTrue(Cache::has('dashboard.global_state'));
+        $this->assertTrue(Cache::has('dashboard.alerts'));
         
         // Deuxième appel (avec cache)
         $response2 = $this->actingAs($this->admin)
             ->get(route('admin.dashboard'));
         $response2->assertStatus(200);
         
-        // Les deux réponses doivent être identiques
+        // Les deux réponses doivent être identiques en contenu html
         $this->assertEquals($response1->getContent(), $response2->getContent());
     }
 
@@ -109,16 +110,18 @@ class AdminDashboardPerformanceTest extends TestCase
             ->get(route('admin.dashboard'));
         
         $response->assertStatus(200);
-        $response->assertViewHas('stats');
-        $response->assertViewHas('chartData');
-        $response->assertViewHas('recentActivity');
+        $response->assertViewHas('global_state');
+        $response->assertViewHas('commercial_activity');
+        $response->assertViewHas('alerts');
         
-        // Vérifier que les stats contiennent les clés attendues
-        $stats = $response->viewData('stats');
-        $this->assertArrayHasKey('monthly_sales', $stats);
-        $this->assertArrayHasKey('monthly_orders', $stats);
-        $this->assertArrayHasKey('total_clients', $stats);
-        $this->assertArrayHasKey('total_products', $stats);
+        // Vérifier que l'état global contient les clés attendues
+        $globalState = $response->viewData('global_state');
+        if (!array_key_exists('revenue', $globalState)) {
+            dump($response->viewData('error')); // Afficher l'erreur du catch si présent
+        }
+        $this->assertArrayHasKey('revenue', $globalState);
+        $this->assertArrayHasKey('orders_count', $globalState);
+        $this->assertArrayHasKey('conversion_rate', $globalState);
     }
 
     /**
@@ -140,6 +143,12 @@ class AdminDashboardPerformanceTest extends TestCase
             ->get(route('admin.dashboard'));
         
         $queries = DB::getQueryLog();
+        // Debug: Afficher les requêtes pour trouver le N+1
+        if (count($queries) > 20) {
+            foreach ($queries as $i => $q) {
+                dump("Query " . ($i+1) . ": " . $q['query'], $q['bindings']);
+            }
+        }
         
         // Vérifier qu'il n'y a pas trop de requêtes (max 20 pour un dashboard complexe)
         $this->assertLessThanOrEqual(20, count($queries), "Trop de requêtes pour le dashboard admin");

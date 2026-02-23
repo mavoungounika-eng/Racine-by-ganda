@@ -16,21 +16,23 @@ class GlobalStateWidget
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
 
+        $todayStats = $this->orderRepository->getDailyStats($today);
+        $yesterdayStats = $this->orderRepository->getDailyStats($yesterday);
+        
+        // On récupère getAverageRevenue séparément
+        $avg7DaysRevenue = $this->orderRepository->getAverageRevenue(7);
+
         return [
-            'revenue' => $this->getRevenue($today, $yesterday),
-            'orders_count' => $this->getOrdersCount($today, $yesterday),
-            'average_basket' => $this->getAverageBasket($today, $yesterday),
-            'conversion_rate' => $this->getConversionRate($today),
+            'revenue' => $this->getRevenue($todayStats['revenue'], $yesterdayStats['revenue'], $avg7DaysRevenue),
+            'orders_count' => $this->getOrdersCount($todayStats['count'], $yesterdayStats['count']),
+            'average_basket' => $this->getAverageBasket($todayStats['average_basket'], $yesterdayStats['average_basket']),
+            'conversion_rate' => $this->getConversionRate($todayStats['conversion_rate'], $yesterdayStats['conversion_rate']),
             'pending_orders' => $this->getPendingOrders(),
         ];
     }
 
-    private function getRevenue(Carbon $today, Carbon $yesterday): array
+    private function getRevenue(float $todayRevenue, float $yesterdayRevenue, float $avg7Days): array
     {
-        $todayRevenue = $this->orderRepository->getRevenueByDate($today);
-        $yesterdayRevenue = $this->orderRepository->getRevenueByDate($yesterday);
-        $avg7Days = $this->orderRepository->getAverageRevenue(7);
-
         $variation = $yesterdayRevenue > 0 
             ? (($todayRevenue - $yesterdayRevenue) / $yesterdayRevenue) * 100 
             : 0;
@@ -43,11 +45,8 @@ class GlobalStateWidget
         ];
     }
 
-    private function getOrdersCount(Carbon $today, Carbon $yesterday): array
+    private function getOrdersCount(int $todayCount, int $yesterdayCount): array
     {
-        $todayCount = $this->orderRepository->getCountByDate($today);
-        $yesterdayCount = $this->orderRepository->getCountByDate($yesterday);
-
         $variation = $yesterdayCount > 0 
             ? (($todayCount - $yesterdayCount) / $yesterdayCount) * 100 
             : 0;
@@ -62,11 +61,8 @@ class GlobalStateWidget
         ];
     }
 
-    private function getAverageBasket(Carbon $today, Carbon $yesterday): array
+    private function getAverageBasket(float $todayAvg, float $yesterdayAvg): array
     {
-        $todayAvg = $this->orderRepository->getAverageBasketByDate($today);
-        $yesterdayAvg = $this->orderRepository->getAverageBasketByDate($yesterday);
-
         $variation = $yesterdayAvg > 0 
             ? (($todayAvg - $yesterdayAvg) / $yesterdayAvg) * 100 
             : 0;
@@ -79,11 +75,8 @@ class GlobalStateWidget
         ];
     }
 
-    private function getConversionRate(Carbon $today): array
+    private function getConversionRate(float $conversionRate, float $yesterdayRate): array
     {
-        $yesterday = Carbon::yesterday();
-        $conversionRate = $this->orderRepository->getConversionRateByDate($today);
-        $yesterdayRate = $this->orderRepository->getConversionRateByDate($yesterday);
         $thresholds = config('dashboard.thresholds.conversion');
 
         $variation = $yesterdayRate > 0 

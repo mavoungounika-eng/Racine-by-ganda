@@ -170,17 +170,20 @@ class IdempotencyTest extends TestCase
      */
     public function test_cleanup_removes_old_keys(): void
     {
+        $oldKeyValue = 'old-key-' . now()->timestamp;
+        $recentKeyValue = 'recent-key-' . now()->timestamp;
+
         // Create an old key (31 days old)
-        $oldKey = IdempotencyKey::create([
-            'key' => 'old-key-' . now()->timestamp,
+        IdempotencyKey::insert([
+            'key' => $oldKeyValue,
             'status' => 'completed',
             'created_at' => now()->subDays(31),
             'updated_at' => now()->subDays(31),
         ]);
 
         // Create a recent key (1 day old)
-        $recentKey = IdempotencyKey::create([
-            'key' => 'recent-key-' . now()->timestamp,
+        IdempotencyKey::insert([
+            'key' => $recentKeyValue,
             'status' => 'completed',
             'created_at' => now()->subDays(1),
             'updated_at' => now()->subDays(1),
@@ -191,12 +194,12 @@ class IdempotencyTest extends TestCase
 
         // Old key should be deleted
         $this->assertDatabaseMissing('idempotency_keys', [
-            'key' => 'old-key-' . now()->timestamp,
+            'key' => $oldKeyValue,
         ]);
 
         // Recent key should remain
         $this->assertDatabaseHas('idempotency_keys', [
-            'key' => 'recent-key-' . now()->timestamp,
+            'key' => $recentKeyValue,
         ]);
     }
 }

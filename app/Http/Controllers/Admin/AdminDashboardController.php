@@ -23,6 +23,9 @@ class AdminDashboardController extends Controller
 
             return view('admin.dashboard.index', $data);
         } catch (\Exception $e) {
+            if (app()->environment('testing')) {
+                throw $e;
+            }
             Log::error('Dashboard error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);

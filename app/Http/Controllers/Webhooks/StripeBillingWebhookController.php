@@ -46,6 +46,9 @@ class StripeBillingWebhookController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
+        // ENTRÉE DU CONTROLEUR
+        Log::info('Entered StripeBillingWebhookController');
+
         // Récupérer le payload brut (important pour vérification signature Stripe)
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
@@ -246,6 +249,7 @@ class StripeBillingWebhookController extends Controller
         }
 
         $creator = User::find($creatorId);
+        
         if (!$creator || !$creator->isCreator()) {
             Log::warning('Stripe Billing webhook: Creator not found or invalid', [
                 'creator_id' => $creatorId,
@@ -497,6 +501,15 @@ class StripeBillingWebhookController extends Controller
                 return null;
             }
 
+            // DEBUG LOGS (Temporary)
+            Log::debug('Stripe billing webhook attempting subscription creation payload', [
+                'creator_profile_id' => $creatorProfile->id,
+                'creator_id' => $creator->id,
+                'stripe_subscription_id' => $subscriptionObject['id'] ?? null,
+                'stripe_price_id' => $subscriptionObject['items']['data'][0]['price']['id'] ?? null,
+                'status' => $this->mapStripeStatusToLocal($subscriptionObject['status'] ?? 'incomplete'),
+            ]);
+
             // Extraire les données de l'abonnement Stripe
             $stripeSubscriptionId = $subscriptionObject['id'] ?? null;
             $stripeCustomerId = $subscriptionObject['customer'] ?? null;
@@ -511,10 +524,15 @@ class StripeBillingWebhookController extends Controller
                 ? date('Y-m-d H:i:s', $subscriptionObject['current_period_end'])
                 : now()->addMonth();
 
+            // Find the associated creator plan
+            $creatorPlan = \App\Models\CreatorPlan::where('stripe_price_id', $stripePriceId)->first();
+            $creatorPlanId = $creatorPlan ? $creatorPlan->id : null;
+
             // Créer l'abonnement
             $subscription = CreatorSubscription::create([
                 'creator_profile_id' => $creatorProfile->id,
                 'creator_id' => $creator->id,
+                'creator_plan_id' => $creatorPlanId,
                 'stripe_subscription_id' => $stripeSubscriptionId,
                 'stripe_customer_id' => $stripeCustomerId,
                 'stripe_price_id' => $stripePriceId,
@@ -545,6 +563,7 @@ class StripeBillingWebhookController extends Controller
                 'creator_id' => $creator->id ?? null,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
             ]);
             return null;
         }

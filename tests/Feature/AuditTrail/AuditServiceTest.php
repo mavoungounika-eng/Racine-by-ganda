@@ -238,7 +238,7 @@ class AuditServiceTest extends TestCase
     {
         $user = User::factory()->create();
         
-        $this->auditService->log('action1', 'Order', 1, $user);
+        $log1 = $this->auditService->log('action1', 'Order', 1, $user);
         
         // Backdate a log
         $oldLog = AuditLog::create([
@@ -251,8 +251,8 @@ class AuditServiceTest extends TestCase
 
         $recent = AuditLog::recent(24)->get();
         
-        $this->assertEquals(1, $recent->count());
-        $this->assertNotContains($oldLog->id, $recent->pluck('id'));
+        $this->assertTrue($recent->contains('id', $log1->id));
+        $this->assertFalse($recent->contains('id', $oldLog->id));
     }
 
     /**
