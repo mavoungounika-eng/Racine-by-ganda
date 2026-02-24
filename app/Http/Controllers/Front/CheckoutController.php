@@ -354,7 +354,7 @@ class CheckoutController extends Controller
         // Utiliser OrderPolicy pour vérifier l'accès
         $this->authorize('view', $order);
 
-        $order->load(['items.product', 'address']);
+        $order->load(['items.product.category', 'items.product.creator', 'address']);
 
         return view('frontend.checkout.success', compact('order'));
     }

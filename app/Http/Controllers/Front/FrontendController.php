@@ -38,7 +38,7 @@ class FrontendController extends Controller
 
         // Charger les produits mis en avant (featured)
         $featuredProducts = Product::where('is_active', true)
-            ->with('category')
+            ->with(['category', 'creator'])
             ->latest()
             ->limit(8)
             ->get();
@@ -231,8 +231,8 @@ class FrontendController extends Controller
         $relatedProducts = Product::where('is_active', true)
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->with('category:id,name,slug')
-            ->select('id', 'category_id', 'title', 'slug', 'price', 'main_image')
+            ->with(['category:id,name,slug', 'creator:id,name'])
+            ->select('id', 'user_id', 'category_id', 'title', 'slug', 'price', 'main_image')
             ->limit(4)
             ->get();
 
@@ -440,7 +440,7 @@ class FrontendController extends Controller
     {
         // Construire la requête produits avec eager loading optimisé
         $query = Product::where('is_active', true)
-            ->with(['category:id,name,slug,gender,parent_id', 'category.parent'])
+            ->with(['category:id,name,slug,gender,parent_id', 'category.parent', 'creator:id,name'])
             ->select('id', 'category_id', 'user_id', 'title', 'slug', 'price', 'stock', 'main_image', 'created_at');
 
         // Filtre par genre (nouveau)
