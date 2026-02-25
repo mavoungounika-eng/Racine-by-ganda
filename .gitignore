@@ -12,6 +12,7 @@
 .env.backup
 .env.local
 .env.*.local
+.env.production
 
 # Node / Front
 /node_modules/
