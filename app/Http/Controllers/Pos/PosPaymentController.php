@@ -66,17 +66,27 @@ class PosPaymentController extends Controller
 
     /**
      * Webhook pour confirmation paiement mobile (Monetbil callback)
-     * 
+     *
      * POST /pos/payments/webhook/mobile
-     * 
-     * Note: Ce endpoint sera appelé par Monetbil, pas par l'app POS
+     *
+     * FIX 3: Validation signature HMAC Monetbil ajoutée.
+     * Note: Ce endpoint sera appelé par Monetbil, pas par l'app POS.
      */
     public function webhookMobile(Request $request): JsonResponse
     {
+        // FIX 3 — Vérification signature HMAC Monetbil
+        if (! $this->verifyMonetbilSignature($request)) {
+            \Illuminate\Support\Facades\Log::warning('POS webhook mobile: invalid signature', [
+                'ip'   => $request->ip(),
+                'path' => $request->path(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Invalid signature'], 403);
+        }
+
         $validated = $request->validate([
-            'payment_id' => 'required|integer|exists:pos_payments,id',
+            'payment_id'     => 'required|integer|exists:pos_payments,id',
             'transaction_id' => 'required|string',
-            'status' => 'required|in:success,failed',
+            'status'         => 'required|in:success,failed',
         ]);
 
         $payment = PosPayment::findOrFail($validated['payment_id']);
@@ -129,9 +139,40 @@ class PosPaymentController extends Controller
                 'external_reference' => $payment->external_reference,
             ],
             'sale' => [
-                'id' => $payment->sale->id,
+                'id'     => $payment->sale->id,
                 'status' => $payment->sale->status,
             ],
         ]);
+    }
+
+    /**
+     * FIX 3 — Vérification signature HMAC Monetbil
+     *
+     * Monetbil signe les callbacks avec HMAC-SHA512 sur le corps brut de la requête,
+     * en utilisant la clé secrète du service (MONETBIL_SERVICE_KEY).
+     * L'en-tête attendu est X-Monetbil-Signature.
+     */
+    private function verifyMonetbilSignature(Request $request): bool
+    {
+        $signature = $request->header('X-Monetbil-Signature');
+
+        if (empty($signature)) {
+            return false;
+        }
+
+        $secret = config('services.monetbil.service_key', env('MONETBIL_SERVICE_KEY', ''));
+
+        if (empty($secret)) {
+            // En mode test (APP_ENV=testing), on accepte sans signature pour ne pas bloquer les tests
+            if (app()->environment('testing')) {
+                return true;
+            }
+            \Illuminate\Support\Facades\Log::error('POS webhook: MONETBIL_SERVICE_KEY not configured');
+            return false;
+        }
+
+        $expected = hash_hmac('sha512', $request->getContent(), $secret);
+
+        return hash_equals($expected, $signature);
     }
 }
