@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\PerformanceMetric;
 use App\Support\MetricsRecorder;
+use App\Services\Monitoring\AlertService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,6 +53,23 @@ class RecordPerformanceMetrics
             'db_time_ms' => $metrics['db_time_ms'],
             'response_time_ms' => $metrics['response_time_ms'],
         ]);
+
+        // 🚨 ALERTING PROACTIF
+        if ($response->getStatusCode() >= 500) {
+            app(AlertService::class)->high(
+                "API Error: {$response->getStatusCode()}",
+                "Route: {$request->method()} {$request->path()}\nError occurred in production, please investigate.",
+                ['status' => $response->getStatusCode(), 'ip' => $request->ip()]
+            );
+        }
+
+        if ($metrics['response_time_ms'] > 2000) { // > 2 secondes = Alert
+            app(AlertService::class)->warning(
+                "Slow Response Detected",
+                "Route: {$request->path()} took {$metrics['response_time_ms']}ms",
+                ['latency' => $metrics['response_time_ms']]
+            );
+        }
 
         return $response;
     }

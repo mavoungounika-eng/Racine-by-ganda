@@ -75,6 +75,9 @@ class QueueCircuitBreaker
                     'queue' => $queue,
                     'success_count' => $successCount,
                 ]);
+
+                // Notification
+                $this->notifyCircuitClosed($queue);
             }
         } elseif ($state === self::STATE_CLOSED) {
             // Reset compteur échecs
@@ -90,12 +93,17 @@ class QueueCircuitBreaker
         $state = $this->getState($queue);
         
         if ($state === self::STATE_HALF_OPEN) {
+            // Incrémenter les tentatives (exponential backoff)
+            $retries = $this->incrementRetryCount($queue);
+            
             // Retour à OPEN
             $this->setState($queue, self::STATE_OPEN);
             $this->setOpenedAt($queue, now());
             
-            Log::warning('[CIRCUIT BREAKER] Circuit re-opened after test failure', [
+            Log::warning('[CIRCUIT BREAKER] Circuit re-opened after test failure (Exponential backoff applied)', [
                 'queue' => $queue,
+                'retry_attempt' => $retries,
+                'next_timeout' => $this->calculateTimeout($queue),
             ]);
             
             return;
@@ -127,6 +135,7 @@ class QueueCircuitBreaker
         $this->setState($queue, self::STATE_CLOSED);
         $this->resetFailureCount($queue);
         $this->resetSuccessCount($queue);
+        $this->resetRetryCount($queue);
         Redis::del($this->getOpenedAtKey($queue));
     }
 
@@ -151,6 +160,8 @@ class QueueCircuitBreaker
             'failure_threshold' => $this->failureThreshold,
             'success_threshold' => $this->successThreshold,
             'timeout' => $this->timeout,
+            'current_timeout' => $this->calculateTimeout($queue),
+            'retry_count' => $this->getRetryCount($queue),
         ];
     }
 
@@ -165,7 +176,26 @@ class QueueCircuitBreaker
             return true;
         }
         
-        return Carbon::parse($openedAt)->addSeconds($this->timeout)->isPast();
+        $currentTimeout = $this->calculateTimeout($queue);
+        
+        return Carbon::parse($openedAt)->addSeconds($currentTimeout)->isPast();
+    }
+
+    /**
+     * Calculer le timeout actuel avec exponential backoff
+     */
+    protected function calculateTimeout(string $queue): int
+    {
+        $retries = $this->getRetryCount($queue);
+        
+        if ($retries <= 0) {
+            return $this->timeout;
+        }
+        
+        // Timeout = base_timeout * (2 ^ retries)
+        // Max 24 hours to avoid overflow
+        $multiplier = pow(2, min($retries, 12)); 
+        return min($this->timeout * (int)$multiplier, 24 * 3600);
     }
 
     /**
@@ -231,6 +261,33 @@ class QueueCircuitBreaker
     }
 
     /**
+     * Obtenir compteur tentatives (backoff)
+     */
+    protected function getRetryCount(string $queue): int
+    {
+        return (int) Redis::get($this->getRetryCountKey($queue)) ?? 0;
+    }
+
+    /**
+     * Incrémenter compteur tentatives
+     */
+    protected function incrementRetryCount(string $queue): int
+    {
+        $key = $this->getRetryCountKey($queue);
+        $count = Redis::incr($key);
+        Redis::expire($key, $this->ttl);
+        return $count;
+    }
+
+    /**
+     * Réinitialiser compteur tentatives
+     */
+    protected function resetRetryCount(string $queue): void
+    {
+        Redis::del($this->getRetryCountKey($queue));
+    }
+
+    /**
      * Définir timestamp ouverture
      */
     protected function setOpenedAt(string $queue, Carbon $timestamp): void
@@ -285,6 +342,30 @@ class QueueCircuitBreaker
     }
 
     /**
+     * Notifier fermeture circuit
+     */
+    protected function notifyCircuitClosed(string $queue): void
+    {
+        // Intégration avec AlertService
+        try {
+            $alertService = app(\App\Services\Monitoring\AlertService::class);
+            
+            $alertService->info(
+                "Circuit Breaker Closed - Queue: {$queue}",
+                "The circuit breaker has successfully closed for queue '{$queue}'. Normal processing has resumed.",
+                [
+                    'queue' => $queue,
+                    'status' => 'recovered',
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error('[CIRCUIT BREAKER] Failed to send recovery alert', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Clés Redis
      */
     protected function getStateKey(string $queue): string
@@ -305,5 +386,10 @@ class QueueCircuitBreaker
     protected function getOpenedAtKey(string $queue): string
     {
         return "circuit_breaker:{$queue}:opened_at";
+    }
+
+    protected function getRetryCountKey(string $queue): string
+    {
+        return "circuit_breaker:{$queue}:retries";
     }
 }

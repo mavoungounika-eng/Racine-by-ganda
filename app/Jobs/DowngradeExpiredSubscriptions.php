@@ -10,6 +10,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Jobs\Middleware\CircuitBreakerJob;
+use App\Jobs\Middleware\RateLimitedJob;
+use App\Services\Queue\QueueCircuitBreaker;
+use App\Services\Queue\QueueMonitor;
+use App\Services\Queue\QueueRateLimiter;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -26,6 +31,19 @@ class DowngradeExpiredSubscriptions implements ShouldQueue
     public function __construct(bool $dryRun = false)
     {
         $this->dryRun = $dryRun;
+    }
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware(): array
+    {
+        return [
+            new CircuitBreakerJob(app(QueueCircuitBreaker::class), app(QueueMonitor::class)),
+            new RateLimitedJob(app(QueueRateLimiter::class)),
+        ];
     }
 
     public function handle(CreatorCapabilityService $capabilityService): void

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Monitoring\HealthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -130,3 +131,26 @@ Route::middleware(['auth', 'role:admin'])->prefix('webhooks/monitoring')->group(
 // ==========================================
 Route::get('/webhooks/status', [\App\Http\Controllers\Webhooks\WebhookMonitoringController::class, 'statusPage'])
     ->name('webhooks.status.page');
+
+// ==========================================
+// Health & Liveness Monitoring
+// ==========================================
+Route::get('/health', [HealthController::class, 'index'])->name('api.health');
+Route::get('/liveness', [HealthController::class, 'liveness'])->name('api.liveness');
+
+// ==========================================
+// Multi-Account & Governance
+// ==========================================
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Switcher
+    Route::get('/auth/accounts', [\App\Http\Controllers\Auth\AccountSwitcherController::class, 'list'])->name('api.auth.accounts.list');
+    Route::post('/auth/accounts/{creatorId}/switch', [\App\Http\Controllers\Auth\AccountSwitcherController::class, 'switch'])->name('api.auth.accounts.switch');
+
+    // Team Management (Creator only, requires active account)
+    Route::middleware(['role:createur', \App\Http\Middleware\EnsureActiveAccount::class])->prefix('creator/team')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Creator\TeamManagementController::class, 'index'])->name('api.creator.team.index');
+        Route::post('/invite', [\App\Http\Controllers\Creator\TeamManagementController::class, 'invite'])->name('api.creator.team.invite');
+        Route::post('/members/{userId}/role', [\App\Http\Controllers\Creator\TeamManagementController::class, 'updateRole'])->name('api.creator.team.role.update');
+        Route::delete('/members/{userId}', [\App\Http\Controllers\Creator\TeamManagementController::class, 'removeMember'])->name('api.creator.team.member.remove');
+    });
+});

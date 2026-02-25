@@ -135,6 +135,32 @@ class CreatorProfile extends Model
         return $this->hasMany(CreatorValidationStep::class);
     }
 
+    /**
+     * Membres de l'équipe (Multi-Account)
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(CreatorMember::class);
+    }
+
+    /**
+     * Utilisateurs appartenant à cette organisation
+     */
+    public function usersTeam(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'creator_members')
+            ->withPivot('role', 'is_active')
+            ->withTimestamps();
+    }
+
+    /**
+     * Invitations en attente
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(CreatorInvitation::class);
+    }
+
     public function stripeAccount(): HasOne
     {
         return $this->hasOne(CreatorStripeAccount::class, 'creator_profile_id');

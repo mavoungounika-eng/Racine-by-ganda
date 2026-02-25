@@ -59,8 +59,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Headers de sécurité HTTP (global)
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
+        // Assign unique Request ID (global correlation)
+        $middleware->append(\App\Http\Middleware\AssignRequestId::class);
         
         // Définir la locale (global)
+
         $middleware->append(\App\Http\Middleware\SetLocale::class);
 
         // Fusion automatique panier session → DB à la connexion

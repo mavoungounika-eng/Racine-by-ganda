@@ -24,6 +24,7 @@ class AuditLog extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'request_id' => 'string',
     ];
 
     /**

@@ -12,6 +12,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Jobs\Middleware\CircuitBreakerJob;
+use App\Jobs\Middleware\RateLimitedJob;
+use App\Services\Queue\QueueCircuitBreaker;
+use App\Services\Queue\QueueMonitor;
+use App\Services\Queue\QueueRateLimiter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -61,6 +66,19 @@ class ProcessMonetbilCallbackEventJob implements ShouldQueue, ShouldBeUnique
      * Durée de l'unicité (secondes) - 5 minutes
      */
     public int $uniqueFor = 300;
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware(): array
+    {
+        return [
+            new CircuitBreakerJob(app(QueueCircuitBreaker::class), app(QueueMonitor::class)),
+            new RateLimitedJob(app(QueueRateLimiter::class)),
+        ];
+    }
 
     /**
      * Exécuter le job

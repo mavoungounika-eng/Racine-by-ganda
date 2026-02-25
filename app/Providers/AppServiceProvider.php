@@ -17,6 +17,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -73,6 +74,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // =====================================================
+        // TASK 11 — Security Hardening: Password Policy
+        // =====================================================
+        // Politique de mots de passe globale (appliquée via Password::defaults())
+        // Utilisée dans tous les validators avec la règle Password::defaults()
+        Password::defaults(function () {
+            return Password::min(12)
+                ->mixedCase()    // Au moins 1 majuscule + 1 minuscule
+                ->numbers()      // Au moins 1 chiffre
+                ->symbols()      // Au moins 1 caractère spécial
+                ->uncompromised(); // Vérification HaveIBeenPwned
+        });
+
         // Enregistrer les Observers pour les notifications automatiques
         Order::observe(OrderObserver::class);
         Product::observe(ProductObserver::class);

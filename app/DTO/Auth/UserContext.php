@@ -20,6 +20,8 @@ class UserContext
         public readonly bool $requires2FA = false,
         public readonly bool $has2FAEnabled = false,
         public readonly ?int $authVersion = null,
+        public readonly ?int $activeCreatorId = null,
+        public readonly ?string $creatorRole = null,
         public readonly Carbon $frozenAt = new Carbon(),
     ) {}
 
@@ -89,6 +91,8 @@ class UserContext
             'requires_2fa' => $this->requires2FA,
             'has_2fa_enabled' => $this->has2FAEnabled,
             'auth_version' => $this->authVersion,
+            'active_creator_id' => $this->activeCreatorId,
+            'creator_role' => $this->creatorRole,
             'frozen_at' => $this->frozenAt->toIso8601String(),
         ];
     }
@@ -109,6 +113,10 @@ class UserContext
             authVersion: isset($data['auth_version']) || isset($data['authVersion'])
                 ? (int) ($data['auth_version'] ?? $data['authVersion'])
                 : null,
+            activeCreatorId: isset($data['active_creator_id']) || isset($data['activeCreatorId'])
+                ? (int) ($data['active_creator_id'] ?? $data['activeCreatorId'])
+                : null,
+            creatorRole: $data['creator_role'] ?? $data['creatorRole'] ?? null,
             frozenAt: !empty($data['frozen_at'] ?? $data['frozenAt'])
                 ? Carbon::parse($data['frozen_at'] ?? $data['frozenAt'])
                 : now(),

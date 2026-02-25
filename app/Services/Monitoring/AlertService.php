@@ -5,6 +5,7 @@ namespace App\Services\Monitoring;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 use App\Mail\AlertNotification;
 
 /**
@@ -43,6 +44,13 @@ class AlertService
         ?array $channels = null
     ): void {
         $channels = $channels ?? $this->getChannelsForSeverity($severity);
+
+        // 🛡️ THROTTLING & DEDUPLICATION
+        $fingerprint = $this->generateFingerprint($title, $message, $context);
+        if ($this->shouldThrottle($fingerprint, $severity)) {
+            Log::debug("[ALERT SERVICE] Alert throttled (fingerprint: {$fingerprint})");
+            return;
+        }
 
         $alert = [
             'severity' => $severity,
@@ -227,6 +235,38 @@ class AlertService
             'info' => ['log'],
             default => ['log'],
         };
+    }
+
+    /**
+     * Générer une empreinte unique pour l'alerte
+     */
+    protected function generateFingerprint(string $title, string $message, array $context): string
+    {
+        return hash('sha256', $title . $message . json_encode($context));
+    }
+
+    /**
+     * Détermine si l'alerte doit être ignorée (doublon ou trop fréquente)
+     */
+    protected function shouldThrottle(string $fingerprint, string $severity): bool
+    {
+        $cacheKey = "alert_throttle:{$fingerprint}";
+        
+        // TTL selon la sévérité (on spamme moins les infos que les critiques)
+        $ttl = match ($severity) {
+            'critical' => 10,  // 10 minutes pour une alerte identique
+            'high' => 30,      // 30 minutes
+            'warning' => 60,   // 1 heure
+            'info' => 360,     // 6 heures
+            default => 60,
+        };
+
+        if (Cache::has($cacheKey)) {
+            return true;
+        }
+
+        Cache::put($cacheKey, true, now()->addMinutes($ttl));
+        return false;
     }
 
     /**

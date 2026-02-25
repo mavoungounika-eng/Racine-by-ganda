@@ -39,16 +39,19 @@ use App\Services\Webhooks\WebhookDeduplicationService;
  */
 class StripeBillingWebhookController extends Controller
 {
-    /**
-     * Service de déduplication pour éviter le traitement multiple
-     *
-     * @var WebhookDeduplicationService
-     */
     protected WebhookDeduplicationService $deduplication;
+    protected \App\Services\Webhooks\CircuitBreakerService $circuitBreaker;
+    protected \App\Services\Webhooks\WebhookRetryService $retryService;
 
-    public function __construct(WebhookDeduplicationService $deduplication)
+    public function __construct(
+        WebhookDeduplicationService $deduplication,
+        \App\Services\Webhooks\CircuitBreakerService $circuitBreaker,
+        \App\Services\Webhooks\WebhookRetryService $retryService
+    )
     {
         $this->deduplication = $deduplication;
+        $this->circuitBreaker = $circuitBreaker;
+        $this->retryService = $retryService;
     }
 
     /**
@@ -73,6 +76,15 @@ class StripeBillingWebhookController extends Controller
             'signature_header_present' => !empty($signature),
             'ip' => $request->ip(),
         ]);
+
+        // ✅ CIRCUIT BREAKER: Check if Stripe is failing
+        if (!$this->circuitBreaker->isAvailable('stripe')) {
+            Log::warning('❌ Stripe Circuit Breaker OPEN - rejecting billing webhook');
+            return response()->json([
+                'status' => 'circuit_open',
+                'message' => 'Service temporarily unavailable'
+            ], 503);
+        }
 
         // 1. VÉRIFIER LA SIGNATURE STRIPE
         try {
@@ -173,71 +185,63 @@ class StripeBillingWebhookController extends Controller
             'ip' => $request->ip(),
         ]);
 
-        // 2. FILTRER ET TRAITER LES ÉVÉNEMENTS
-        try {
-            switch ($eventType) {
-                case 'customer.subscription.created':
-                    $this->handleSubscriptionCreated($eventArray);
-                    break;
+        // 2. FILTRER ET TRAITER LES ÉVÉNEMENTS AVEC RETRY
+        $processingPayload = [
+            'eventType' => $eventType,
+            'eventArray' => $eventArray,
+            'provider' => 'stripe_billing'
+        ];
 
-                case 'customer.subscription.updated':
-                    $this->handleSubscriptionUpdated($eventArray);
-                    break;
+        $success = $this->retryService->retry(
+            handler: function (array $p) {
+                $eventType = $p['eventType'];
+                $eventArray = $p['eventArray'];
 
-                case 'customer.subscription.deleted':
-                    $this->handleSubscriptionDeleted($eventArray);
-                    break;
+                switch ($eventType) {
+                    case 'customer.subscription.created':
+                        $this->handleSubscriptionCreated($eventArray);
+                        break;
+                    case 'customer.subscription.updated':
+                        $this->handleSubscriptionUpdated($eventArray);
+                        break;
+                    case 'customer.subscription.deleted':
+                        $this->handleSubscriptionDeleted($eventArray);
+                        break;
+                    case 'invoice.payment_failed':
+                        $this->handleInvoicePaymentFailed($eventArray);
+                        break;
+                    case 'invoice.paid':
+                        $this->handleInvoicePaid($eventArray);
+                        break;
+                    default:
+                        Log::debug('Stripe Billing webhook: Event ignored', ['event_type' => $eventType]);
+                        break;
+                }
+            },
+            payload: $processingPayload,
+            maxAttempts: 3,
+            initialDelay: 1,
+            webhookId: $eventId
+        );
 
-                case 'invoice.payment_failed':
-                    $this->handleInvoicePaymentFailed($eventArray);
-                    break;
-
-                case 'invoice.paid':
-                    $this->handleInvoicePaid($eventArray);
-                    break;
-
-                default:
-                    // Ignorer tous les autres événements
-                    Log::debug('Stripe Billing webhook: Event ignored', [
-                        'event_type' => $eventType,
-                    ]);
-                    break;
-            }
-        } catch (\Exception $e) {
-            Log::error('Stripe Billing webhook: Processing error', [
-                'event_type' => $eventType,
-                'event_id' => $eventId ?? null,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // Enregistrer l'échec pour audit/retry potentiel via le service
-            if (isset($eventId) && $eventId) {
-                try {
-                    $this->deduplication->recordFailure(
-                        provider: 'stripe_billing',
-                        eventType: $eventType,
-                        externalId: $eventId,
-                        payload: $eventArray,
-                        signature: $signature ?? '',
-                        errorMessage: mb_substr($e->getMessage(), 0, 500)
-                    );
-                } catch (\Exception $recordFailedE) {
-                    Log::error('Stripe Billing webhook: Failed to record failure', [
-                        'error' => $recordFailedE->getMessage()
-                    ]);
+        if ($success) {
+            // Marquer comme traité avec succès
+            if ($eventId) {
+                $this->deduplication->markAsProcessedSuccess('stripe_billing', $eventId);
+                $this->circuitBreaker->recordSuccess('stripe');
+                
+                $failure = \App\Models\WebhookFailure::where('external_id', $eventId)->first();
+                if ($failure) {
+                    $this->deduplication->markAsProcessed($failure);
                 }
             }
-            
-            // Ne pas retourner d'erreur HTTP pour éviter les retries Stripe s'ils sont ingérables
-            // Ou si on veut que Stripe re-tente :
-            // return response()->json(['error' => 'Processing failed'], 500);
+            return response()->json(['status' => 'ok', 'message' => 'Processed'], 200);
         }
 
-        // Marquer l'événement comme traité avec succès pour la déduplication persistante
-        if (isset($eventId) && $eventId) {
-            $this->deduplication->markAsProcessedSuccess('stripe_billing', $eventId);
-        }
+        // En cas d'échec après retries
+        $this->circuitBreaker->recordFailure('stripe', 'Processing failed after retries');
+        // WebhookRetryService a déjà envoyé vers la Dead Letter Queue
+        return response()->json(['status' => 'error', 'message' => 'Logged but failed'], 200);
 
         // 3. RETOURNER 200 OK
         return response()->json(['status' => 'ok'], 200);

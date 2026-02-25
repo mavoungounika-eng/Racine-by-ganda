@@ -15,23 +15,33 @@ class SecurityHeaders
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Générer un nonce pour CSP
+        $nonce = base64_encode(random_bytes(16));
+        $request->attributes->set('csp_nonce', $nonce);
+
         $response = $next($request);
 
-        // Headers de sécurité HTTP
+        // Headers de sécurité HTTP de base
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         
-        // HSTS (Strict Transport Security) - Uniquement en HTTPS
-        if ($request->secure()) {
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        // Headers modernes (Isolation)
+        $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+        $response->headers->set('Cross-Origin-Resource-Policy', 'same-origin');
+        $response->headers->set('Cross-Origin-Embedder-Policy', 'require-corp');
+
+        // HSTS (Strict Transport Security)
+        if ($request->secure() || env('FORCE_HTTPS', false)) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
         }
         
-        // Content Security Policy (CSP) - Basique, à adapter selon besoins
+        // Content Security Policy (CSP) - Hardened
+        // On autorise unsafe-inline UNIQUEMENT s'il est accompagné du nonce
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com; " .
-               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
+               "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com; " .
+               "style-src 'self' 'nonce-{$nonce}' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " .
                "img-src 'self' data: https: http:; " .
                "connect-src 'self' https://api.stripe.com https://api.openai.com https://api.anthropic.com https://api.groq.com; " .
@@ -39,11 +49,12 @@ class SecurityHeaders
                "object-src 'none'; " .
                "base-uri 'self'; " .
                "form-action 'self'; " .
-               "frame-ancestors 'none';";
+               "frame-ancestors 'none'; " .
+               "upgrade-insecure-requests;";
         
         $response->headers->set('Content-Security-Policy', $csp);
         
-        // Permissions Policy (anciennement Feature-Policy)
+        // Permissions Policy
         $response->headers->set('Permissions-Policy', 
             'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=()'
         );

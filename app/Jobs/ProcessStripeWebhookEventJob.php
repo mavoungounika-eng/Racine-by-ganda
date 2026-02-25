@@ -6,6 +6,11 @@ use App\Models\StripeWebhookEvent;
 use App\Models\Payment;
 use App\Services\AuditService;
 use App\Services\Payments\PaymentEventMapperService;
+use App\Jobs\Middleware\CircuitBreakerJob;
+use App\Jobs\Middleware\RateLimitedJob;
+use App\Services\Queue\QueueCircuitBreaker;
+use App\Services\Queue\QueueMonitor;
+use App\Services\Queue\QueueRateLimiter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -60,6 +65,19 @@ class ProcessStripeWebhookEventJob implements ShouldQueue, ShouldBeUnique
      * Durée de l'unicité (secondes) - 5 minutes
      */
     public int $uniqueFor = 300;
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware(): array
+    {
+        return [
+            new CircuitBreakerJob(app(QueueCircuitBreaker::class), app(QueueMonitor::class)),
+            new RateLimitedJob(app(QueueRateLimiter::class)),
+        ];
+    }
 
     /**
      * Exécuter le job

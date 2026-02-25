@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\CreatorStripeAccount;
 use App\Models\CreatorSubscription;
+use App\Models\CreatorProfile;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -19,6 +20,8 @@ use App\Policies\ProductPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -45,6 +48,19 @@ class AuthServiceProvider extends ServiceProvider
         // Enregistrer les policies
         $this->registerPolicies();
 
+        // Enforce strong password policies globally
+        Password::defaults(function () {
+            $rule = Password::min(12)
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols();
+
+            return app()->isProduction()
+                ? $rule->uncompromised()
+                : $rule;
+        });
+
         // =============================================
         // GATES RBAC - PERMISSIONS ONLY
         // =============================================
@@ -54,7 +70,16 @@ class AuthServiceProvider extends ServiceProvider
         
         // Products
         Gate::define('view-products', fn(User $u) => $u->hasPermission('view-products'));
-        Gate::define('create-products', fn(User $u) => $u->hasPermission('create-products'));
+        
+        Gate::define('create-products', function (User $user) {
+            // Un créateur doit avoir une organisation active pour créer un produit
+            if ($user->isCreator()) {
+                $context = app(\App\Services\Auth\UserContextResolver::class)->getFromSession();
+                return $context && $context->activeCreatorId && $user->hasPermission('create-products');
+            }
+            return $user->hasPermission('create-products');
+        });
+
         Gate::define('edit-products', fn(User $u) => $u->hasPermission('edit-products'));
         Gate::define('delete-products', fn(User $u) => $u->hasPermission('delete-products'));
 
@@ -135,6 +160,23 @@ class AuthServiceProvider extends ServiceProvider
                 Role::CREATEUR,
                 Role::CLIENT,
             ]);
+        });
+
+        // =============================================
+        // GATES MULTI-ACCOUNT (TEAM)
+        // =============================================
+        Gate::define('view-team', function (User $user, CreatorProfile $creator) {
+            return $user->memberships()
+                ->where('creator_profile_id', $creator->id)
+                ->whereIn('role', ['owner', 'admin', 'editor', 'viewer'])
+                ->exists() || ($user->creatorProfile && $user->creatorProfile->id === $creator->id);
+        });
+
+        Gate::define('manage-team', function (User $user, CreatorProfile $creator) {
+            return $user->memberships()
+                ->where('creator_profile_id', $creator->id)
+                ->whereIn('role', ['owner', 'admin'])
+                ->exists() || ($user->creatorProfile && $user->creatorProfile->id === $creator->id);
         });
 
         // =============================================

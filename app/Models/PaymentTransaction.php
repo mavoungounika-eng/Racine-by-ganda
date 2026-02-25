@@ -57,6 +57,6 @@ class PaymentTransaction extends Model
      */
     public function isAlreadySuccessful(): bool
     {
-        return $this->status === 'succeeded';
+        return in_array($this->status, ['succeeded', 'success'], true);
     }
 }

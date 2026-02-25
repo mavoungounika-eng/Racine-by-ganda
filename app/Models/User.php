@@ -104,6 +104,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_secret',
         'two_factor_recovery_codes',
         'trusted_device_token',
+        'auth_version',
+        'google_id',
     ];
 
     protected $casts = [
@@ -194,12 +196,27 @@ class User extends Authenticatable implements MustVerifyEmail
             });
     }
 
-    /**
-     * Get the creator profile associated with the user.
-     */
     public function creatorProfile()
     {
         return $this->hasOne(CreatorProfile::class);
+    }
+
+    /**
+     * Adhésions à des organisations Creator (Multi-Account)
+     */
+    public function memberships()
+    {
+        return $this->hasMany(CreatorMember::class);
+    }
+
+    /**
+     * Organisations auxquelles l'utilisateur appartient
+     */
+    public function creatorProfiles()
+    {
+        return $this->belongsToMany(CreatorProfile::class, 'creator_members')
+            ->withPivot('role', 'is_active')
+            ->withTimestamps();
     }
 
     /**

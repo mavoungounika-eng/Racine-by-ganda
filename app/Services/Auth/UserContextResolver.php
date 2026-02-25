@@ -49,6 +49,9 @@ class UserContextResolver
         // Get auth_version (will be null until Phase 1.5)
         $authVersion = $user->auth_version ?? null;
 
+        // Multi-Account: Resolve active creator context
+        [$activeCreatorId, $creatorRole] = $this->resolveActiveCreator($user, $role);
+
         return new UserContext(
             userId: $user->id,
             email: $user->email,
@@ -59,6 +62,8 @@ class UserContextResolver
             requires2FA: $requires2FA,
             has2FAEnabled: $has2FAEnabled,
             authVersion: $authVersion,
+            activeCreatorId: $activeCreatorId,
+            creatorRole: $creatorRole,
             frozenAt: Carbon::now(),
         );
     }
@@ -116,6 +121,48 @@ class UserContextResolver
         }
 
         return $user->creatorProfile->status ?? 'pending';
+    }
+
+    /**
+     * Resolve the active creator organization and the user's role in it
+     * 
+     * Logic:
+     * 1. If role is NOT creator, return null.
+     * 2. Try to find an 'active_creator_id' already in session (switching context).
+     * 3. Fallback to the user's primary/legacy CreatorProfile.
+     * 4. Fallback to the first membership found.
+     */
+    private function resolveActiveCreator(User $user, string $role): array
+    {
+        if (!in_array($role, ['createur', 'creator'], true)) {
+            return [null, null];
+        }
+
+        // Check for session override (context switching)
+        if ($sessionId = Session::get('active_creator_id')) {
+            $membership = $user->memberships()
+                ->where('creator_profile_id', $sessionId)
+                ->where('is_active', true)
+                ->first();
+            
+            if ($membership) {
+                return [$membership->creator_profile_id, $membership->role];
+            }
+        }
+
+        // Fallback 1: Legacy 1-to-1 profile
+        // On considère que le créateur "original" est 'owner'
+        if ($user->creatorProfile) {
+            return [$user->creatorProfile->id, 'owner'];
+        }
+
+        // Fallback 2: First active membership
+        $firstMember = $user->memberships()->where('is_active', true)->first();
+        if ($firstMember) {
+            return [$firstMember->creator_profile_id, $firstMember->role];
+        }
+
+        return [null, null];
     }
 
     /**
