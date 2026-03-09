@@ -566,7 +566,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
 // ============================================
 // Groupe pour l'interface POS (Web) accessible par Staff et Admin
 // Situé en dehors du préfixe /admin pour correspondre à la configuration Electron
-Route::middleware(['auth', 'ensure:admin,super_admin,staff'])->prefix('pos-terminal')->name('pos.interface.')->group(function () {
+Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('pos-terminal')->name('pos.interface.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('index');
     Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
     Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');

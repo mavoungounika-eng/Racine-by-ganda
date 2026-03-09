@@ -81,9 +81,13 @@ class CheckoutController extends Controller
 
         // ✅ Module 8 - Protection double soumission : Générer token unique
         $checkoutToken = \Illuminate\Support\Str::random(32);
-        session(['checkout_token' => $checkoutToken]);
+        $idempotencyKey = (string) \Illuminate\Support\Str::uuid();
+        session([
+            'checkout_token' => $checkoutToken,
+            'checkout_idempotency_key' => $idempotencyKey,
+        ]);
 
-        return view('frontend.checkout.index', compact('items', 'subtotal', 'shipping_default', 'addresses', 'defaultAddress', 'user', 'checkoutToken'));
+        return view('frontend.checkout.index', compact('items', 'subtotal', 'shipping_default', 'addresses', 'defaultAddress', 'user', 'checkoutToken', 'idempotencyKey'));
     }
 
     /**
@@ -171,7 +175,10 @@ class CheckoutController extends Controller
 
             // Déléguer la création de commande au service avec token pour idempotence
             $checkoutToken = $request->input('_checkout_token');
-            $order = $this->orderService->createOrderFromCart($data, $items, $user->id, $checkoutToken);
+            $idempotencyKey = $request->header('X-Idempotency-Key')
+                ?: $request->input('idempotency_key')
+                ?: session('checkout_idempotency_key');
+            $order = $this->orderService->createOrderFromCart($data, $items, $user->id, $idempotencyKey, $checkoutToken);
 
             \Log::info('Checkout: Order created', [
                 'order_id' => $order->id ?? 'NO ID',
@@ -197,7 +204,7 @@ class CheckoutController extends Controller
             \Log::info('Checkout: Cart cleared');
 
             // ✅ Module 8 - Protection double soumission : Supprimer token après utilisation
-            session()->forget('checkout_token');
+            session()->forget(['checkout_token', 'checkout_idempotency_key']);
 
             \Log::info('Checkout: Calling redirectToPayment', [
                 'order_id' => $order->id,

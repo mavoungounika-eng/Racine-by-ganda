@@ -67,7 +67,7 @@ class OrderService
      * @throws StockException Si le stock est insuffisant
      * @throws \Throwable En cas d'erreur lors de la création
      */
-    public function createOrderFromCart(array $formData, Collection $cartItems, int $userId, ?string $checkoutToken = null): Order
+    public function createOrderFromCart(array $formData, Collection $cartItems, int $userId, ?string $idempotencyKey = null, ?string $checkoutToken = null): Order
     {
         if ($cartItems->isEmpty()) {
             throw new OrderException(
@@ -77,9 +77,8 @@ class OrderService
             );
         }
 
-        $idempotencyKey = null;
-        if ($checkoutToken) {
-            $idempotencyKey = "checkout:{$userId}:{$checkoutToken}";
+        $idempotencyKey = $idempotencyKey ?: ($checkoutToken ? "checkout:{$userId}:{$checkoutToken}" : null);
+        if ($idempotencyKey) {
             try {
                 IdempotencyKey::create([
                     'key' => $idempotencyKey,

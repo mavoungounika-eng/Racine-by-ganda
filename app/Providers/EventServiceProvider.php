@@ -69,6 +69,9 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\PosMobilePaymentConfirmed::class => [
             \App\Listeners\PosMobilePaymentConfirmedListener::class,
         ],
+        \App\Events\OrphanedPaymentDetected::class => [
+            \App\Listeners\NotifyOrphanedPaymentDetected::class,
+        ],
         // ✅ Phase 2 : Limiter les sessions actives
         \Illuminate\Auth\Events\Login::class => [
             \App\Listeners\LogSuccessfulLogin::class,

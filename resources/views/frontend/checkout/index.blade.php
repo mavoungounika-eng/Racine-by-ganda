@@ -81,6 +81,7 @@
         {{-- ✅ Module 8 - Protection double soumission : Token unique --}}
         @if(isset($checkoutToken))
             <input type="hidden" name="_checkout_token" value="{{ $checkoutToken }}">
+            <input type="hidden" name="idempotency_key" value="{{ $idempotencyKey }}">
         @endif
 
         <div class="row">
