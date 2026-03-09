@@ -5,6 +5,7 @@
 /storage/app/*
 /storage/framework/*
 /storage/logs/*
+/storage/backups/
 !.env.example
 
 # Environment files
@@ -16,6 +17,7 @@
 
 # Node / Front
 /node_modules/
+/racine-pos-electron/node_modules/
 /public/hot
 /public/storage
 /public/build

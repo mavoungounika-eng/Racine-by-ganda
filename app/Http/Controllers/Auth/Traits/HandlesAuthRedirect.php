@@ -31,9 +31,8 @@ trait HandlesAuthRedirect
         $context = $resolver->resolve($user);
 
         // 2. Déléguer la décision de redirection au moteur dédié
+        $intended = session()->pull('url.intended');
         $engine = app(\App\Services\Auth\PostLoginDecisionEngine::class);
-        
-        return $engine->determineRedirect($context);
+        return $engine->determineRedirect($context, $intended);
     }
 }
-
