@@ -466,25 +466,6 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         // Route resource pour les commandes (doit être APRÈS les routes spécifiques)
         Route::resource('orders', \App\Http\Controllers\Admin\AdminOrderController::class)->only(['index', 'show', 'update']);
         
-        // Système POS (Point of Sale) - Boutique physique
-        Route::prefix('pos')->name('pos.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('index');
-            Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
-            Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
-            Route::post('order/{order}/confirm-payment', [\App\Http\Controllers\Admin\PosController::class, 'confirmCardPayment'])->name('confirm-payment');
-            Route::get('order/{order}', [\App\Http\Controllers\Admin\PosController::class, 'getOrder'])->name('order');
-            
-            // Analytics POS
-            Route::prefix('analytics')->name('analytics.')->group(function () {
-                Route::get('/', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'index'])->name('index');
-                Route::post('/daily', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDailyReport'])->name('daily');
-                Route::post('/period', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getPeriodReport'])->name('period');
-                Route::post('/discrepancy', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDiscrepancyReport'])->name('discrepancy');
-                Route::get('/export', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'exportCsv'])->name('export');
-            });
-        });
-        
-        
         // Analytics / Dashboard
         Route::prefix('analytics')->name('analytics.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('index');
@@ -496,8 +477,8 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::prefix('queue-metrics')->name('queue-metrics.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\MetricsController::class, 'dashboard'])->name('dashboard');
             Route::post('/circuit-breaker/{queue}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetCircuitBreaker'])->name('circuit-breaker.reset');
-            Route::post('/rate-limiter/{jobType}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetRateLimiter'])->name('rate-limiter.reset');
         });
+
 
         // Gestion des créateurs
         Route::get('creators', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'index'])->name('creators.index');
@@ -577,11 +558,31 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
             Route::get('/routes', [\App\Http\Controllers\Admin\PerformanceController::class, 'routes'])->name('routes');
             Route::get('/alerts', [\App\Http\Controllers\Admin\PerformanceController::class, 'alerts'])->name('alerts');
         });
-
-        // Gestion CMS - Routes migrées vers modules/CMS/routes/web.php
-        // Utiliser les routes cms.admin.* du module CMS
     });
 });
+
+// ============================================
+// SYSTÈME POS (Point of Sale) - Interface Dédiée
+// ============================================
+// Groupe pour l'interface POS (Web) accessible par Staff et Admin
+// Situé en dehors du préfixe /admin pour correspondre à la configuration Electron
+Route::middleware(['auth', 'ensure:admin,super_admin,staff'])->prefix('pos-terminal')->name('pos.interface.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('index');
+    Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
+    Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
+    Route::post('order/{order}/confirm-payment', [\App\Http\Controllers\Admin\PosController::class, 'confirmCardPayment'])->name('confirm-payment');
+    Route::get('order/{order}', [\App\Http\Controllers\Admin\PosController::class, 'getOrder'])->name('order');
+    
+    // Analytics POS simplifiées pour le staff
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'index'])->name('index');
+        Route::post('/daily', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDailyReport'])->name('daily');
+    });
+});
+
+
+
+
 
 // Routes Front-end (Panier & Checkout) - Rate Limited: 120 req/min
 Route::middleware('throttle:120,1')->group(function () {

@@ -71,26 +71,28 @@
     @stack('styles')
 </head>
 <body>
-    {{-- HEADER PREMIUM RACINE BY GANDA - VERSION ÉPURÉE --}}
-    <header role="banner" class="position-fixed w-100 top-0 shadow-lg" style="background: linear-gradient(135deg, #1c1412 0%, #261915 100%); z-index: 1050; border-bottom: 2px solid rgba(237, 95, 30, 0.2);">
+    {{-- ANNOUNCEMENT BAR PREMIUM --}}
+    <div class="announcement-bar">
+        <div class="container text-center">
+            <span class="announcement-text">✨ Livraison offerte dès 150€ d'achat | Collection "Héritage" disponible 🌿</span>
+        </div>
+    </div>
+
+    {{-- HEADER PREMIUM RACINE BY GANDA --}}
+    <header role="banner" class="navbar-racine sticky-top w-100">
         <div class="container">
             <div class="d-flex align-items-center justify-content-between" style="height: 70px;">
                 
-                {{-- LOGO + NOM (Extrémité gauche) avec animation hover --}}
-                <a href="{{ route('frontend.home') }}" class="d-flex align-items-center logo-navbar-wrapper" style="gap: 0.75rem; text-decoration: none; transition: all 0.3s; position: relative;">
-                    <div class="d-flex align-items-center justify-content-center overflow-hidden logo-navbar-container" style="height: 42px; width: 42px; border-radius: 10px; background: rgba(0, 0, 0, 0.7); border: 1px solid #ED5F1E; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); position: relative;">
-                        <img src="{{ asset('images/logo-racine.png') }}" alt="Logo RACINE BY GANDA" class="logo-navbar-img" style="height: 32px; width: 32px; object-fit: contain; position: relative; z-index: 2;">
-                        {{-- Animation hover --}}
-                                {{-- Animation hover désactivée --}}
-                                {{-- @include('components.racine-logo-animation', ['variant' => 'hover', 'theme' => 'dark']) --}}
+                {{-- LOGO + NOM --}}
+                <a href="{{ route('frontend.home') }}" class="logo-navbar-wrapper">
+                    <div class="logo-navbar-container">
+                        <img src="{{ asset('images/logo-racine.png') }}" alt="Logo RACINE BY GANDA" class="logo-navbar-img">
                     </div>
-                    <p class="mb-0 d-none d-md-block" style="font-size: 1rem; letter-spacing: 0.18em; font-weight: 700; color: #ED5F1E; transition: color 0.3s;">
-                        RACINE BY GANDA
-                    </p>
+                    <span class="logo-text d-none d-md-block">RACINE BY GANDA</span>
                 </a>
                 
-                {{-- MENU DESKTOP ÉPURÉ --}}
-                <nav role="navigation" aria-label="Navigation principale" class="d-none d-lg-flex align-items-center" style="gap: 2rem; font-size: 0.9rem; font-weight: 500;">
+                {{-- MENU DESKTOP --}}
+                <nav role="navigation" aria-label="Navigation principale" class="d-none d-lg-flex align-items-center main-nav-racine">
                     <a href="{{ route('frontend.home') }}" class="nav-link-racine">Accueil</a>
                     <a href="{{ route('frontend.atelier') }}" class="nav-link-racine">Atelier</a>
                     
@@ -225,8 +227,6 @@
         </div>
     </header>
     
-    {{-- Spacer pour compenser le header fixed --}}
-    <div style="height: 70px;"></div>
     
     {{-- CONTENT --}}
     <main role="main">

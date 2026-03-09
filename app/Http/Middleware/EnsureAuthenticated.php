@@ -47,7 +47,7 @@ class EnsureAuthenticated
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
 
-            return redirect()->route('login')
+            return redirect()->guest(route('login'))
                 ->with('error', 'Vous devez être connecté pour accéder à cette page.');
         }
 

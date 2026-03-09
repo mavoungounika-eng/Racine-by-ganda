@@ -51,6 +51,7 @@ class PosSessionService
                 'opened_at' => now(),
                 'opening_cash' => $openingCash,
                 'status' => PosSession::STATUS_OPEN,
+                'is_active' => 1, // ✅ Hard invariant: only one per user
             ]);
 
             // Créer le mouvement d'ouverture
@@ -185,6 +186,7 @@ class PosSessionService
             // Fermer la session (atomic update)
             $session->update([
                 'status' => PosSession::STATUS_CLOSED,
+                'is_active' => null, // ✅ Release hard invariant (allows next session)
                 'closing_cash' => $closingCash,
                 'expected_cash' => $expectedCash,
                 'cash_difference' => $closingCash - $expectedCash,

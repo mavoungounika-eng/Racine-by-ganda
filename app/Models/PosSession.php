@@ -39,6 +39,7 @@ class PosSession extends Model
         'opened_at',
         'opening_cash',
         'status',
+        'is_active',
         'closed_at',
         'closing_cash',
         'expected_cash',
@@ -54,6 +55,7 @@ class PosSession extends Model
         'cash_difference' => 'decimal:2',
         'opened_at' => 'datetime',
         'closed_at' => 'datetime',
+        'is_active' => 'boolean',
     ];
 
     // Statuts

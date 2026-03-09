@@ -30,10 +30,11 @@ class RedirectIfAuthenticated
             $context = $this->contextResolver->resolve(Auth::user());
             
             // Déterminer redirection via PostLoginDecisionEngine
-            $redirectUrl = $this->decisionEngine->determineRedirect($context);
+            $intended = session()->pull('url.intended');
+            $redirectUrl = $this->decisionEngine->determineRedirect($context, $intended);
             
-            // Rediriger vers dashboard approprié
-            return redirect($redirectUrl);
+            // Rediriger vers dashboard approprié (ou URL intentionnelle)
+            return redirect()->intended($redirectUrl);
         }
 
         // Sinon, continuer vers page login

@@ -8,5 +8,8 @@
     "start": "electron ."
   },
   "author": "RACINE BY GANDA",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^22.0.0"
+  }
 }

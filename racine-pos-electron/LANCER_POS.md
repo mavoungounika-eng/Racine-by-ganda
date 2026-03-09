@@ -54,8 +54,9 @@ php artisan serve
 
 ## 🖥️ APRÈS LANCEMENT
 
-Une fenêtre Electron s'affichera avec:
-- ✅ **Interface POS complète** (http://localhost:8000/admin/pos)
+Une fenêtre Electron s'affichera avec :
+- ✅ **Interface POS complète** (http://localhost:8000/pos-terminal)
+- 🔑 **Note** : Une connexion est requise au premier lancement. Connectez-vous avec un compte `staff` ou `admin`.
 - 📊 Scan produits par code-barres
 - 💰 Gestion de panier et paiements
 - 🔧 Ctrl+Shift+I → Dev Tools

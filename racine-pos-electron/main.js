@@ -16,7 +16,7 @@ function createWindow() {
     icon: path.join(__dirname, 'assets/icon.png')
   });
 
-  const startUrl = 'http://localhost:8000/admin/pos';
+  const startUrl = 'http://localhost:8000/pos-terminal';
   mainWindow.loadURL(startUrl);
 
   mainWindow.on('closed', () => {

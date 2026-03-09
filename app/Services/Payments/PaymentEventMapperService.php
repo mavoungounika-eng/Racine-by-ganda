@@ -154,6 +154,20 @@ class PaymentEventMapperService
 
             // Protection des statuts de commande terminaux/non modifiables par webhook
             if ($order && in_array($order->status, ['cancelled', 'shipped', 'delivered'], true)) {
+                // 🚨 ALERTE SÉCURITÉ : Paiement reçu pour une commande DÉJÀ ANNULÉE
+                // Cas : worker down > 24h et le cron de nettoyage est passé avant le webhook.
+                if ($newPaymentStatus === 'paid') {
+                    Log::critical("ORPHANED PAYMENT DETECTED: Order #{$order->id} is {$order->status} but a 'paid' webhook was just received.", [
+                        'payment_id' => $lockedPayment->id,
+                        'order_id' => $order->id,
+                        'stripe_id' => $lockedPayment->stripe_id,
+                        'action_required' => 'Manual reconciliation or refund required.'
+                    ]);
+                    
+                    // Optionnel : Déclencher un événement pour notification admin
+                    event(new \App\Events\OrphanedPaymentDetected($order, $lockedPayment));
+                }
+
                 Log::debug('PaymentEventMapperService: Skipping update for terminal order status', [
                     'payment_id' => $lockedPayment->id,
                     'order_id' => $order->id,
