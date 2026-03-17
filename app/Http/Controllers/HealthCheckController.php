@@ -12,17 +12,28 @@ class HealthCheckController extends Controller
     public function health(): JsonResponse
     {
         $checks = [];
-        
+
         $checks['database'] = $this->checkDatabase();
-        $checks['redis'] = $this->checkRedis();
-        $checks['stripe'] = $this->checkStripe();
+        $checks['redis']    = $this->checkRedis();
+        $checks['stripe']   = $this->checkStripe();
+        $checks['queue']    = $this->checkQueue();
 
         $healthy = collect($checks)->every(fn($check) => in_array($check['status'], ['ok', 'skipped']));
 
+        $alerts = collect($checks)
+            ->filter(fn($c) => ($c['status'] ?? null) === 'error')
+            ->map(fn($c, $s) => [
+                'service' => $s,
+                'message' => $c['message'] ?? 'Health check failed',
+            ])
+            ->values()
+            ->all();
+
         return response()->json([
-            'status' => $healthy ? 'healthy' : 'degraded',
+            'status'    => $healthy ? 'healthy' : 'degraded',
+            'alerts'    => $alerts,
             'timestamp' => now()->toIso8601String(),
-            'checks' => $checks,
+            'checks'    => $checks,
         ], $healthy ? 200 : 503);
     }
 
@@ -47,6 +58,20 @@ class HealthCheckController extends Controller
         }
     }
 
+    private function checkQueue(): array
+    {
+        try {
+            $threshold = config('queue-protection.monitoring.thresholds.queue_size.critical', 1000);
+            $size = Redis::llen('queues:webhooks');
+            if ($size > $threshold) {
+                return ['status' => 'error', 'message' => "Queue size critical: {$size} jobs pending"];
+            }
+            return ['status' => 'ok'];
+        } catch (\Throwable $e) {
+            return ['status' => 'skipped', 'message' => 'Queue check unavailable'];
+        }
+    }
+
     private function checkStripe(): array
     {
         if (!env('STRIPE_ENABLED', false)) {
@@ -61,7 +86,6 @@ class HealthCheckController extends Controller
         try {
             $stripe = new StripeClient($secretKey);
             $stripe->balance->retrieve();
-            
             return ['status' => 'ok'];
         } catch (\Throwable $e) {
             return ['status' => 'error', 'message' => 'Stripe API connection failed'];
