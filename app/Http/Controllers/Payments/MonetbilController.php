@@ -248,6 +248,13 @@ class MonetbilController extends Controller
                 return response()->json(['message' => 'Unauthorized IP'], 403);
             }
 
+            // 0. Validation des champs obligatoires
+            if (empty($params['payment_ref'])) {
+                return response()->json(['message' => 'Missing payment_ref'], 400);
+            }
+            if (empty($params['status'])) {
+                return response()->json(['message' => 'Missing status'], 400);
+            }
             // 2. Identification du créateur et vérification de la signature
             // Lookup order par payment_ref
             $transaction = PaymentTransaction::where('payment_ref', $params['payment_ref'] ?? '')->first();
