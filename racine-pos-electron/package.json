@@ -2,14 +2,24 @@
   "name": "racine-pos",
   "version": "1.0.0",
   "description": "POS Desktop App - Racine by GANDA",
-  "main": "main.js",
+  "main": "electron/main.js",
   "homepage": "http://localhost:8000",
   "scripts": {
-    "start": "electron ."
+    "dev": "vite",
+    "electron:dev": "concurrently \"vite\" \"electron .\"",
+    "build": "vite build",
+    "electron:build": "vite build && electron-builder"
   },
   "author": "RACINE BY GANDA",
   "license": "MIT",
   "dependencies": {
-    "electron": "^22.0.0"
+    "axios": "^1.13.6",
+    "electron": "^22.0.0",
+    "idb": "^8.0.3",
+    "laravel-echo": "^2.3.1",
+    "pinia": "^3.0.4",
+    "pusher-js": "^8.4.0",
+    "vue": "^3.5.30",
+    "vue-router": "^4.6.4"
   }
 }

@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Pos;
-
-use App\Http\Controllers\Controller;
 use App\Models\PosPayment;
 use App\Services\Pos\PosSaleService;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
  * - Card confirmé via TPE (endpoint confirm)
  * - Mobile confirmé via Webhook (endpoint confirmMobile)
  */
-class PosPaymentController extends Controller
+class PosPaymentController extends PosApiController
 {
     public function __construct(
         protected PosSaleService $saleService
@@ -36,16 +34,23 @@ class PosPaymentController extends Controller
         ]);
 
         try {
+            if ($this->isMachineMismatch($payment->sale->machine_id)) {
+                return $this->error('MACHINE_MISMATCH', 'Payment does not belong to this device', null, 403);
+            }
+
+            $userId = $request->posUserId ?? Auth::id();
+            if (!$userId) {
+                return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
+            }
+
             $confirmedPayment = $this->saleService->confirmCardPayment(
                 $payment,
-                Auth::id(),
+                $userId,
                 $validated['transaction_id'] ?? null,
                 $validated['receipt_number'] ?? null
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Paiement carte confirmé',
+            return $this->success([
                 'payment' => [
                     'id' => $confirmedPayment->id,
                     'method' => $confirmedPayment->method,
@@ -55,12 +60,9 @@ class PosPaymentController extends Controller
                     'external_reference' => $confirmedPayment->external_reference,
                 ],
                 'sale_status' => $confirmedPayment->sale->status,
-            ]);
+            ], 'Paiement carte confirmé');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->error('PAYMENT_CONFIRM_FAILED', $e->getMessage());
         }
     }
 
@@ -77,10 +79,10 @@ class PosPaymentController extends Controller
         // FIX 3 — Vérification signature HMAC Monetbil
         if (! $this->verifyMonetbilSignature($request)) {
             \Illuminate\Support\Facades\Log::warning('POS webhook mobile: invalid signature', [
-                'ip'   => $request->ip(),
+                'ip' => $request->ip(),
                 'path' => $request->path(),
             ]);
-            return response()->json(['success' => false, 'message' => 'Invalid signature'], 403);
+            return $this->error('INVALID_SIGNATURE', 'Invalid signature', null, 403);
         }
 
         $validated = $request->validate([
@@ -93,11 +95,8 @@ class PosPaymentController extends Controller
 
         if ($validated['status'] !== 'success') {
             $payment->cancel();
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment failed',
-            ]);
+
+            return $this->error('PAYMENT_FAILED', 'Payment failed');
         }
 
         try {
@@ -107,15 +106,9 @@ class PosPaymentController extends Controller
                 $request->all()
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment confirmed',
-            ]);
+            return $this->success(null, 'Payment confirmed');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->error('PAYMENT_CONFIRM_FAILED', $e->getMessage());
         }
     }
 
@@ -126,10 +119,13 @@ class PosPaymentController extends Controller
      */
     public function status(PosPayment $payment): JsonResponse
     {
+        if ($this->isMachineMismatch($payment->sale->machine_id)) {
+            return $this->error('MACHINE_MISMATCH', 'Payment does not belong to this device', null, 403);
+        }
+
         $payment->load('sale');
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'payment' => [
                 'id' => $payment->id,
                 'method' => $payment->method,
@@ -139,7 +135,7 @@ class PosPaymentController extends Controller
                 'external_reference' => $payment->external_reference,
             ],
             'sale' => [
-                'id'     => $payment->sale->id,
+                'id' => $payment->sale->id,
                 'status' => $payment->sale->status,
             ],
         ]);
@@ -174,5 +170,12 @@ class PosPaymentController extends Controller
         $expected = hash_hmac('sha512', $request->getContent(), $secret);
 
         return hash_equals($expected, $signature);
+    }
+
+    private function isMachineMismatch(string $machineId): bool
+    {
+        $requestMachineId = request()->machineId ?? null;
+
+        return $requestMachineId !== null && $requestMachineId !== $machineId;
     }
 }

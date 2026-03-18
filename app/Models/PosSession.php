@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\AuditsPosOperations;
 
 /**
  * PosSession - Session de caisse obligatoire
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class PosSession extends Model
 {
-    use HasFactory;
+    use HasFactory, AuditsPosOperations;
 
     protected $fillable = [
         'machine_id',
@@ -62,6 +63,29 @@ class PosSession extends Model
     public const STATUS_OPEN = 'open';
     public const STATUS_CLOSING = 'closing';
     public const STATUS_CLOSED = 'closed';
+
+    protected static function booted(): void
+    {
+        static::created(function (PosSession $session) {
+            self::logPosAction(PosOperatorAuditLog::ACTION_SESSION_OPEN, [
+                'session_id' => $session->id,
+                'opening_amount' => $session->opening_cash,
+                'notes' => 'Session automatically logged on creation',
+            ], $session->opened_by);
+        });
+
+        static::updated(function (PosSession $session) {
+            if ($session->wasChanged('status') && $session->status === self::STATUS_CLOSED) {
+                self::logPosAction(PosOperatorAuditLog::ACTION_SESSION_CLOSE, [
+                    'session_id' => $session->id,
+                    'closing_amount' => $session->closing_cash,
+                    'expected_cash' => $session->expected_cash,
+                    'discrepancy' => $session->cash_difference,
+                    'notes' => $session->notes,
+                ], $session->closed_by);
+            }
+        });
+    }
 
     /**
      * Utilisateur qui a ouvert la session

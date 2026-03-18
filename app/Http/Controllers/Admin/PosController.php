@@ -470,7 +470,7 @@ class PosController extends Controller
 
                 // Attribuer des points de fidélité
                 try {
-                    $loyaltyService = app(\App\Services\LoyaltyService::class);
+                    $loyaltyService = app(\App\Services\Crm\LoyaltyService::class);
                     $loyaltyService->awardPointsForOrder($order);
 
                     // Notifier le client

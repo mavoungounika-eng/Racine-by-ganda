@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\PosOperatorAuditLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Trait pour auditer les opérations POS des opérateurs
@@ -17,133 +18,73 @@ use Illuminate\Support\Facades\Auth;
 trait AuditsPosOperations
 {
     /**
-     * Enregistrer action POS dans audit trail
+     * Liste statique des actions auditables
      */
-    public static function auditOperation(
-        string $action,
-        ?int $sessionId = null,
-        ?array $oldValues = null,
-        ?array $newValues = null,
-        ?string $notes = null,
-        ?int $actorId = null
-    ): PosOperatorAuditLog {
-        return PosOperatorAuditLog::create([
-            'user_id' => $actorId ?? Auth::id(),
-            'action' => $action,
-            'pos_session_id' => $sessionId,
-            'old_values' => $oldValues ? json_encode($oldValues) : null,
-            'new_values' => $newValues ? json_encode($newValues) : null,
-            'notes' => $notes,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'timestamp' => now(),
-        ]);
-    }
-
-    /**
-     * Enregistrer ouverture session
-     */
-    public static function auditSessionOpen(int $sessionId, float $openingCash, ?int $actorId = null): PosOperatorAuditLog
+    public static function auditableActions(): array
     {
-        return self::auditOperation(
-            'SESSION_OPEN',
-            $sessionId,
-            null,
-            ['opening_cash' => $openingCash, 'status' => 'open'],
-            'Session de caisse ouverte',
-            $actorId
-        );
+        return [
+            PosOperatorAuditLog::ACTION_SESSION_OPEN,
+            PosOperatorAuditLog::ACTION_SESSION_CLOSE,
+            PosOperatorAuditLog::ACTION_SALE_CREATED,
+            PosOperatorAuditLog::ACTION_SALE_CANCELLED,
+            PosOperatorAuditLog::ACTION_CASH_ADJUSTMENT,
+            'OPERATOR_LOGIN',
+            'OPERATOR_LOGOUT',
+        ];
     }
 
     /**
-     * Enregistrer clôture session
+     * Enregistrer action POS dans audit trail (Double stockage: DB + Log File)
+     * Asynchrone / Tolérant aux pannes via try-catch.
      */
-    public static function auditSessionClose(
-        int $sessionId,
-        float $expectedCash,
-        float $actualCash,
-        float $difference,
-        ?string $notes = null,
-        ?int $actorId = null
-    ): PosOperatorAuditLog {
-        return self::auditOperation(
-            'SESSION_CLOSE',
-            $sessionId,
-            ['status' => 'open'],
-            [
-                'status' => 'closed',
-                'expected_cash' => $expectedCash,
-                'actual_cash' => $actualCash,
-                'difference' => $difference,
-            ],
-            $notes ?? 'Session de caisse clôturée',
-            $actorId
-        );
-    }
-
-    /**
-     * Enregistrer vente
-     */
-    public static function auditSaleCreated(int $sessionId, float $amount, string $paymentMethod): PosOperatorAuditLog
+    public static function logPosAction(string $action, array $data, ?int $operatorId = null): void
     {
-        return self::auditOperation(
-            'SALE_CREATED',
-            $sessionId,
-            null,
-            ['amount' => $amount, 'payment_method' => $paymentMethod],
-            "Vente {$amount}€ ({$paymentMethod})"
-        );
-    }
+        try {
+            $userId = $operatorId ?? Auth::id();
+            
+            // Fallbacks sur les données
+            if (!$userId && isset($data['operator_id'])) {
+                $userId = $data['operator_id'];
+            }
 
-    /**
-     * Enregistrer annulation vente
-     */
-    public static function auditSaleCancelled(int $sessionId, float $amount, string $reason): PosOperatorAuditLog
-    {
-        return self::auditOperation(
-            'SALE_CANCELLED',
-            $sessionId,
-            null,
-            ['amount' => $amount, 'reason' => $reason],
-            "Vente annulée: {$reason}"
-        );
-    }
+            $ipAddress = request()->ip() ?? '127.0.0.1';
+            $userAgent = request()->userAgent() ?? 'Console';
+            $timestampMicro = now()->format('Y-m-d H:i:s.u');
 
-    /**
-     * Enregistrer ajustement cash
-     */
-    public static function auditCashAdjustment(int $sessionId, float $amount, string $direction, string $reason): PosOperatorAuditLog
-    {
-        return self::auditOperation(
-            'CASH_ADJUSTMENT',
-            $sessionId,
-            null,
-            ['amount' => $amount, 'direction' => $direction],
-            "Ajustement cash {$direction}: {$amount}€ ({$reason})"
-        );
-    }
+            $logContext = array_merge($data, [
+                'action' => $action,
+                'user_id' => $userId,
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'timestamp' => $timestampMicro,
+            ]);
 
-    /**
-     * Enregistrer incident
-     */
-    public static function auditIncident(int $sessionId, string $incidentType, string $resolution, ?string $notes = null): PosOperatorAuditLog
-    {
-        return self::auditOperation(
-            'INCIDENT_' . strtoupper($incidentType),
-            $sessionId,
-            null,
-            ['type' => $incidentType, 'resolution' => $resolution],
-            $notes ?? "Incident {$incidentType} — Résolution: {$resolution}"
-        );
-    }
+            // 1. Log Laravel (File Channel 'pos')
+            Log::channel('pos')->info("POS_AUDIT: {$action}", $logContext);
 
-    /**
-     * Récupérer l'audit trail complet d'une session
-     */
-    public static function getSessionAuditTrail(int $sessionId): \Illuminate\Database\Eloquent\Collection
-    {
-        return PosOperatorAuditLog::where('pos_session_id', $sessionId)
-            ->orderBy('timestamp', 'asc')
-            ->get();
+            // 2. Base de données
+            // Ne pas logger en base si pas d'utilisateur (clé étrangère requise)
+            if ($userId) {
+                PosOperatorAuditLog::create([
+                    'user_id' => $userId,
+                    'action' => $action,
+                    'pos_session_id' => $data['session_id'] ?? null,
+                    'old_values' => isset($data['old_values']) ? json_encode($data['old_values']) : null,
+                    'new_values' => json_encode(array_diff_key($data, array_flip(['old_values', 'session_id', 'notes']))),
+                    'notes' => $data['notes'] ?? null,
+                    'ip_address' => $ipAddress,
+                    'user_agent' => $userAgent,
+                    // Use standard now() since migration usually uses standard timestamp
+                    'timestamp' => now(), 
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Un bug d'audit DB ne doit JAMAIS bloquer une vente
+            try {
+                Log::error("Failed to write POS audit log to DB: " . $e->getMessage(), ['action' => $action]);
+            } catch (\Exception $ignored) {
+                // Ignore final failure
+            }
+        }
     }
 }

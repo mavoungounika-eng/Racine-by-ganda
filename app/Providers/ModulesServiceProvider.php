@@ -101,10 +101,16 @@ class ModulesServiceProvider extends ServiceProvider
     protected function loadModuleMigrations(): void
     {
         foreach ($this->modules as $module) {
-            $migrationsPath = base_path("modules/{$module}/database/migrations");
+            // Check both PascalCase and lowercase for WSL/Linux compatibility
+            $paths = [
+                base_path("modules/{$module}/Database/Migrations"),
+                base_path("modules/{$module}/database/migrations"),
+            ];
             
-            if (File::isDirectory($migrationsPath)) {
-                $this->loadMigrationsFrom($migrationsPath);
+            foreach ($paths as $path) {
+                if (File::isDirectory($path)) {
+                    $this->loadMigrationsFrom($path);
+                }
             }
         }
     }

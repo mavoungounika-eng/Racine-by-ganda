@@ -95,7 +95,44 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
         Route::get('/export', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'export'])->name('api.admin.pos.reports.export');
         Route::get('/dashboard', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'dashboard'])->name('api.admin.pos.reports.dashboard');
     });
+
+    // CRM Management
+    Route::prefix('crm')->group(function () {
+        Route::get('/segments', [\App\Http\Controllers\Api\Admin\CrmController::class, 'segments'])->name('api.admin.crm.segments');
+        Route::post('/segments', [\App\Http\Controllers\Api\Admin\CrmController::class, 'storeSegment'])->name('api.admin.crm.segments.store');
+        Route::get('/segments/{segment}', [\App\Http\Controllers\Api\Admin\CrmController::class, 'segmentDetails'])->name('api.admin.crm.segments.details');
+        Route::get('/customers/{customer}', [\App\Http\Controllers\Api\Admin\CrmController::class, 'customerProfile'])->name('api.admin.crm.customers.profile');
+        Route::post('/customers/{customer}/loyalty/adjust', [\App\Http\Controllers\Api\Admin\CrmController::class, 'adjustLoyalty'])->name('api.admin.crm.loyalty.adjust');
+    });
+
+    // Admin CMS (Étape 7.2)
+    Route::prefix('cms')->as('api.admin.cms.')->group(function () {
+        Route::apiResource('pages', \App\Http\Controllers\Api\Admin\CmsPageController::class);
+        Route::post('pages/{id}/publish', [\App\Http\Controllers\Api\Admin\CmsPageController::class, 'publish'])->name('pages.publish');
+        Route::post('pages/{id}/unpublish', [\App\Http\Controllers\Api\Admin\CmsPageController::class, 'unpublish'])->name('pages.unpublish');
+        
+        Route::apiResource('categories', \App\Http\Controllers\Api\Admin\CategoryController::class);
+        Route::post('categories/reorder', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'reorder'])->name('categories.reorder');
+        
+        Route::apiResource('banners', \App\Http\Controllers\Api\Admin\BannerController::class);
+        
+        Route::get('blocks', [\App\Http\Controllers\Api\Admin\ContentBlockController::class, 'index'])->name('blocks.index');
+        Route::get('blocks/{key}', [\App\Http\Controllers\Api\Admin\ContentBlockController::class, 'show'])->name('blocks.show');
+        Route::put('blocks/{key}', [\App\Http\Controllers\Api\Admin\ContentBlockController::class, 'update'])->name('blocks.update');
+    });
 });
+
+// Public CMS (Phase 11)
+Route::prefix('cms')->group(function () {
+    Route::get('banners/{position}', [\App\Http\Controllers\Api\Admin\BannerController::class, 'publicIndex'])->name('api.cms.banners.public');
+    Route::get('categories/tree', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'publicTree'])->name('api.cms.categories.tree');
+    Route::get('blocks/{key}', [\App\Http\Controllers\Api\Admin\ContentBlockController::class, 'publicShow'])->name('api.cms.blocks.public');
+    Route::post('banners/{id}/click', [\App\Http\Controllers\Api\Admin\BannerController::class, 'click'])->name('api.cms.banners.click');
+});
+
+// Multi-devise API
+Route::get('/currency/rates', [\App\Http\Controllers\CurrencyController::class, 'rates']);
+Route::post('/currency/convert', [\App\Http\Controllers\CurrencyController::class, 'convert']);
 // ==========================================
 // Webhook Monitoring & Observability Routes
 // Available to authenticated admin users for monitoring
@@ -152,5 +189,36 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/invite', [\App\Http\Controllers\Creator\TeamManagementController::class, 'invite'])->name('api.creator.team.invite');
         Route::post('/members/{userId}/role', [\App\Http\Controllers\Creator\TeamManagementController::class, 'updateRole'])->name('api.creator.team.role.update');
         Route::delete('/members/{userId}', [\App\Http\Controllers\Creator\TeamManagementController::class, 'removeMember'])->name('api.creator.team.member.remove');
+    });
+
+    // Customer Loyalty
+    Route::get('/loyalty/status', [\App\Http\Controllers\Api\Customer\LoyaltyController::class, 'status'])->name('api.customer.loyalty.status');
+
+    // ==========================================
+    // AI Module Routes
+    // ==========================================
+    Route::prefix('ai')->group(function () {
+        // Product AI
+        Route::post('/products/{id}/description', [\App\Http\Controllers\Api\Ai\ProductAiController::class, 'generateDescription']);
+        Route::post('/products/{id}/price-suggestion', [\App\Http\Controllers\Api\Ai\ProductAiController::class, 'suggestPrice']);
+        Route::get('/products/{id}/analysis', [\App\Http\Controllers\Api\Ai\ProductAiController::class, 'analyzeSales']);
+
+        // Chat AI
+        Route::post('/chat', [\App\Http\Controllers\Api\Ai\ChatAiController::class, 'chat']);
+        Route::get('/chat/conversations', [\App\Http\Controllers\Api\Ai\ChatAiController::class, 'conversations']);
+        Route::get('/chat/conversations/{id}', [\App\Http\Controllers\Api\Ai\ChatAiController::class, 'showConversation']);
+        Route::delete('/chat/conversations/{id}', [\App\Http\Controllers\Api\Ai\ChatAiController::class, 'deleteConversation']);
+
+        // Admin AI (Guard checks should be added in controller or middleware)
+        Route::prefix('admin')->group(function () {
+            Route::get('/summary/daily', [\App\Http\Controllers\Api\Ai\AdminAiController::class, 'dailySummary']);
+            Route::get('/crm/insights', [\App\Http\Controllers\Api\Ai\AdminAiController::class, 'crmInsights']);
+            Route::get('/stock/anomalies', [\App\Http\Controllers\Api\Ai\AdminAiController::class, 'stockAnomalies']);
+            Route::get('/usage', [\App\Http\Controllers\Api\Ai\AdminAiController::class, 'usage']);
+            
+            // CRM AI
+            Route::get('/crm/customers/{id}/behavior', [\App\Http\Controllers\Api\Ai\CrmAiController::class, 'customerBehavior']);
+            Route::get('/crm/segments/suggestions', [\App\Http\Controllers\Api\Ai\CrmAiController::class, 'segmentSuggestions']);
+        });
     });
 });

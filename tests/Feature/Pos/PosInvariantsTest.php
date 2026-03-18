@@ -22,12 +22,12 @@ use Tests\Traits\SeedsAccounting;
  * 
  * Tests critiques validant les 7 invariants POS audit-ready:
  * 1. Pas de vente sans session ouverte
- * 2. Pas de cash "paid" avant clÃ´ture
- * 3. POS â‰  autoritÃ© comptable
+ * 2. Pas de cash "paid" avant clôture
+ * 3. POS â‰  autorité comptable
  * 4. Une session = un responsable
- * 5. Toute anomalie = traÃ§able
- * 6. Offline â‰  perte de vÃ©ritÃ©
- * 7. Fait terrain â‰  Ã©criture comptable
+ * 5. Toute anomalie = traçable
+ * 6. Offline â‰  perte de vérité
+ * 7. Fait terrain â‰  écriture comptable
  */
 class PosInvariantsTest extends TestCase
 {
@@ -82,7 +82,7 @@ class PosInvariantsTest extends TestCase
             50000
         );
 
-        // CrÃ©er une vente
+        // Créer une vente
         $sale = $this->saleService->createSale(
             $this->machineId,
             [['product_id' => $this->product->id, 'quantity' => 1]],
@@ -110,7 +110,7 @@ class PosInvariantsTest extends TestCase
             $this->user->id
         );
 
-        // VÃ©rifier que le paiement est pending
+        // Vérifier que le paiement est pending
         $payment = $sale->payments->first();
         $this->assertNotNull($payment);
         $this->assertEquals(PosPayment::STATUS_PENDING, $payment->status);
@@ -138,7 +138,7 @@ class PosInvariantsTest extends TestCase
         // Fermer la session
         $this->sessionService->closeSession($session, 51000, $this->user->id);
 
-        // RafraÃ®chir le paiement
+        // Rafraîchir le paiement
         $payment->refresh();
         $this->assertEquals(PosPayment::STATUS_CONFIRMED, $payment->status);
         $this->assertNotNull($payment->confirmed_at);
@@ -159,7 +159,7 @@ class PosInvariantsTest extends TestCase
             $this->user->id
         );
 
-        // VÃ©rifier qu'aucun FinancialIntent classique n'est crÃ©Ã©
+        // Vérifier qu'aucun FinancialIntent classique n'est créé
         $intent = FinancialIntent::where('reference_type', 'order')
             ->where('reference_id', $sale->order_id)
             ->where('intent_type', FinancialIntent::TYPE_PAYMENT)
@@ -186,7 +186,7 @@ class PosInvariantsTest extends TestCase
         // Fermer la session (dispatche PosSessionClosed)
         $this->sessionService->closeSession($session, 51000, $this->user->id);
 
-        // VÃ©rifier qu'un PosCashSettlementIntent est crÃ©Ã©
+        // Vérifier qu'un PosCashSettlementIntent est créé
         $intent = FinancialIntent::where('reference_type', 'pos_session')
             ->where('reference_id', $session->id)
             ->where('intent_type', FinancialIntent::TYPE_POS_CASH_SETTLEMENT)
@@ -216,7 +216,7 @@ class PosInvariantsTest extends TestCase
             50000
         );
 
-        // VÃ©rifier mouvement d'ouverture
+        // Vérifier mouvement d'ouverture
         $openingMovement = $session->cashMovements()
             ->where('type', PosCashMovement::TYPE_OPENING)
             ->first();
@@ -225,7 +225,7 @@ class PosInvariantsTest extends TestCase
         $this->assertEquals(50000, $openingMovement->amount);
         $this->assertEquals('in', $openingMovement->direction);
 
-        // CrÃ©er une vente cash
+        // Créer une vente cash
         $sale = $this->saleService->createSale(
             $this->machineId,
             [['product_id' => $this->product->id, 'quantity' => 1, 'price' => 1000]],
@@ -233,7 +233,7 @@ class PosInvariantsTest extends TestCase
             $this->user->id
         );
 
-        // VÃ©rifier mouvement de vente
+        // Vérifier mouvement de vente
         $saleMovement = $session->cashMovements()
             ->where('type', PosCashMovement::TYPE_SALE)
             ->where('pos_sale_id', $sale->id)

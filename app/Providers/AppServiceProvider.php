@@ -10,6 +10,16 @@ use App\Observers\OrderObserver;
 use App\Observers\ProductObserver;
 use App\Observers\CreatorProfileObserver;
 use App\Observers\CreatorDocumentObserver;
+use App\Models\Page;
+use App\Models\Category;
+use App\Models\Banner;
+use App\Models\ContentBlock;
+use App\Observers\PageObserver;
+use App\Observers\CategoryObserver;
+use App\Services\Cms\PageService;
+use App\Services\Cms\CategoryService;
+use App\Services\Cms\BannerService;
+use App\Services\Cms\ContentBlockService;
 use Modules\ERP\Models\ErpPurchase;
 use Modules\ERP\Observers\ErpPurchaseObserver;
 use Illuminate\Support\Facades\Gate;
@@ -67,6 +77,20 @@ class AppServiceProvider extends ServiceProvider
         
         // Phase 3 : Monitoring & Alerts
         $this->app->singleton(\App\Services\Monitoring\AlertService::class);
+
+        // CMS Services
+        $this->app->singleton(PageService::class);
+        $this->app->singleton(CategoryService::class);
+        $this->app->singleton(BannerService::class);
+        $this->app->singleton(ContentBlockService::class);
+
+        // AI Module Services
+        $this->app->singleton(\App\Services\Ai\AiService::class);
+        $this->app->singleton(\App\Services\Ai\ProductAiService::class);
+        $this->app->singleton(\App\Services\Ai\CreatorChatService::class);
+        $this->app->singleton(\App\Services\Ai\CrmAiService::class);
+        $this->app->singleton(\App\Services\Ai\ErpAiService::class);
+        $this->app->singleton(\App\Services\Ai\AdminAiService::class);
     }
 
     /**
@@ -93,6 +117,10 @@ class AppServiceProvider extends ServiceProvider
         CreatorProfile::observe(CreatorProfileObserver::class);
         CreatorDocument::observe(CreatorDocumentObserver::class);
         ErpPurchase::observe(ErpPurchaseObserver::class);
+
+        // CMS Observers
+        Page::observe(PageObserver::class);
+        Category::observe(CategoryObserver::class);
 
         // Définir le rate limiter 'api' pour les webhooks
         RateLimiter::for('api', function (Request $request) {

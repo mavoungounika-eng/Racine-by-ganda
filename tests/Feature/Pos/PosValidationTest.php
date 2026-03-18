@@ -14,11 +14,11 @@ use Illuminate\Support\Str;
 use Modules\POSSync\Jobs\ProcessPosSale;
 
 /**
- * Test de validation mÃ©tier POS
+ * Test de validation métier POS
  *
- * VÃ©rifie que ProcessPosSale valide correctement :
+ * Vérifie que ProcessPosSale valide correctement :
  * - Produits existent
- * - Prix cohÃ©rents
+ * - Prix cohérents
  * - Paiement complet
  */
 class PosValidationTest extends TestCase
@@ -108,7 +108,7 @@ class PosValidationTest extends TestCase
                 [
                     'product_id' => $this->product->id,
                     'quantity' => 1,
-                    'price' => 150.00 // Prix diffÃ©rent de 100.00
+                    'price' => 150.00 // Prix différent de 100.00
                 ]
             ],
             'total_amount' => 150.00
@@ -132,7 +132,7 @@ class PosValidationTest extends TestCase
                     'price' => 100.00
                 ]
             ],
-            'total_amount' => 150.00 // Total diffÃ©rent de 100.00
+            'total_amount' => 150.00 // Total différent de 100.00
         ];
 
         $job = new ProcessPosSale($payload);

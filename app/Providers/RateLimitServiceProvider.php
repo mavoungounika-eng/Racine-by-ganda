@@ -49,5 +49,12 @@ class RateLimitServiceProvider extends ServiceProvider
             return Limit::perMinute(20)
                 ->by($request->user()?->id ?: $request->ip());
         });
+
+        // Rate limiting par device POS
+        RateLimiter::for('pos_device', function (Request $request) {
+            $deviceId = $request->posDevice?->id ?? $request->ip();
+
+            return Limit::perMinute(300)->by('pos_device_' . $deviceId);
+        });
     }
 }

@@ -335,6 +335,14 @@ Route::middleware(['auth', 'ensure:client'])->group(function () {
 Route::get('/language/{locale}', [\App\Http\Controllers\LanguageController::class, 'switch'])->name('language.switch');
 
 // Routes Frontend (Rate Limited: 60 req/min)
+// Anciennes routes statiques → CMS dynamique
+Route::redirect('/a-propos', '/pages/a-propos', 301);
+Route::redirect('/cgv', '/pages/cgv', 301);
+Route::redirect('/mentions-legales', '/pages/mentions-legales', 301);
+Route::redirect('/confidentialite', '/pages/confidentialite', 301);
+Route::redirect('/faq', '/pages/faq', 301);
+Route::redirect('/contact-old', '/pages/contact', 301); // Eviter conflit avec /contact existant si souhaité
+
 Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/', [FrontendController::class, 'home'])->name('home');
     Route::get('/boutique', [FrontendController::class, 'shop'])->name('shop');
@@ -354,7 +362,8 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/albums', [FrontendController::class, 'albums'])->name('albums');
     Route::get('/amira-ganda', [FrontendController::class, 'ceo'])->name('ceo');
     
-    // Pages informatives
+    // ✅ LES ROUTES CI-DESSOUS SONT DÉRIVÉES VERS LE CMS VIA LES REDIRECTIONS EN HAUT DE CE FICHIER
+    // OU POINTENT VERS DES MÉTHODES QUI REDIRIGENT SI BESOIN.
     Route::get('/aide', [FrontendController::class, 'help'])->name('help');
     Route::get('/aide/compte-client-createur', [FrontendController::class, 'accountClientCreator'])->name('account-client-creator');
     Route::get('/livraison', [FrontendController::class, 'shipping'])->name('shipping');
@@ -363,6 +372,10 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/confidentialite', [FrontendController::class, 'privacy'])->name('privacy');
     Route::get('/a-propos', [FrontendController::class, 'about'])->name('about');
     Route::get('/devenir-createur', [FrontendController::class, 'becomeCreator'])->name('become-creator');
+
+    // ✅ NOUVEAU: Routes CMS dynamiques
+    Route::get('/pages/{slug}', [FrontendController::class, 'page'])->name('page.show');
+    Route::post('/banner/{id}/click', [\App\Http\Controllers\Api\Admin\BannerController::class, 'click'])->name('banner.click');
 });
 
 // ============================================
@@ -583,6 +596,9 @@ Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('po
 
 
 
+
+// Multi-devise
+Route::post('/currency/switch', [\App\Http\Controllers\CurrencyController::class, 'switch'])->name('currency.switch');
 
 // Routes Front-end (Panier & Checkout) - Rate Limited: 120 req/min
 Route::middleware('throttle:120,1')->group(function () {

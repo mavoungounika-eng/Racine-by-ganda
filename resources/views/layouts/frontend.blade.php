@@ -18,7 +18,7 @@
     <meta property="og:description" content="@yield('og-description', $__env->yieldContent('meta-description', 'RACINE BY GANDA - Mode africaine premium. Créations authentiques qui célèbrent l\'héritage africain avec une touche contemporaine.'))">
     <meta property="og:image" content="@yield('og-image', asset('images/og-image-racine.jpg'))">
     <meta property="og:url" content="@yield('canonical-url', url()->current())">
-    <meta property="og:site_name" content="RACINE BY GANDA">
+    <meta property="og:site_name" content="{{ config('app.company.name') }}">
     <meta property="og:locale" content="fr_FR">
     
     {{-- Twitter Card Meta Tags --}}
@@ -102,8 +102,16 @@
                             Boutique <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 4px;"></i>
                         </button>
                         <div class="nav-dropdown-menu">
-                            <a href="{{ route('frontend.shop') }}"><i class="fas fa-store"></i> RACINE BY GANDA</a>
-                            <a href="{{ route('frontend.marketplace') }}"><i class="fas fa-shopping-bag"></i> Marketplace</a>
+                            @if(!empty($cmsNavCategories))
+                                @foreach($cmsNavCategories as $cat)
+                                    <a href="{{ route('frontend.shop', ['category' => $cat['slug']]) }}">
+                                        {{ $cat['name'] }}
+                                    </a>
+                                @endforeach
+                            @else
+                                <a href="{{ route('frontend.shop') }}"><i class="fas fa-store"></i> RACINE BY GANDA</a>
+                                <a href="{{ route('frontend.marketplace') }}"><i class="fas fa-shopping-bag"></i> Marketplace</a>
+                            @endif
                         </div>
                     </div>
                     
@@ -124,6 +132,9 @@
                 {{-- ICÔNES DROITE --}}
                 <div class="d-flex align-items-center" style="gap: 0.75rem;">
                     
+                    {{-- Sélecteur de Devise --}}
+                    @include('components.currency-selector')
+
                     {{-- Dropdown Info (À propos + Contact) --}}
                     <div class="nav-dropdown d-none d-lg-block">
                         <button class="nav-icon-btn nav-dropdown-toggle" title="Informations" aria-label="Menu informations" aria-expanded="false" aria-haspopup="true">
@@ -362,7 +373,7 @@
                             <li><a href="{{ route('frontend.portfolio') }}"><i class="fas fa-chevron-right"></i> Portfolio</a></li>
                             <li><a href="{{ route('frontend.albums') }}"><i class="fas fa-chevron-right"></i> Albums</a></li>
                             <li><a href="{{ route('frontend.events') }}"><i class="fas fa-chevron-right"></i> Événements</a></li>
-                            <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> Amira Ganda</a></li>
+                            <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> {{ config('app.company.ceo') }}</a></li>
                         </ul>
                     </div>
                     
@@ -370,11 +381,21 @@
                     <div class="footer-links-col">
                         <h4>Informations</h4>
                         <ul>
-                            <li><a href="{{ route('frontend.about') }}"><i class="fas fa-chevron-right"></i> Notre histoire</a></li>
-                            <li><a href="{{ route('frontend.contact') }}"><i class="fas fa-chevron-right"></i> Contact</a></li>
-                            <li><a href="{{ route('frontend.shipping') }}"><i class="fas fa-chevron-right"></i> Livraison</a></li>
-                            <li><a href="{{ route('frontend.returns') }}"><i class="fas fa-chevron-right"></i> Retours & Échanges</a></li>
-                            <li><a href="{{ route('frontend.help') }}"><i class="fas fa-chevron-right"></i> FAQ & Aide</a></li>
+                            @if(!empty($cmsFooterPages) && $cmsFooterPages->count())
+                                @foreach($cmsFooterPages as $fp)
+                                    <li>
+                                        <a href="{{ route('frontend.page.show', $fp->slug) }}">
+                                            <i class="fas fa-chevron-right"></i> {{ $fp->title }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @else
+                                <li><a href="{{ route('frontend.about') }}"><i class="fas fa-chevron-right"></i> Notre histoire</a></li>
+                                <li><a href="{{ route('frontend.contact') }}"><i class="fas fa-chevron-right"></i> Contact</a></li>
+                                <li><a href="{{ route('frontend.shipping') }}"><i class="fas fa-chevron-right"></i> Livraison</a></li>
+                                <li><a href="{{ route('frontend.returns') }}"><i class="fas fa-chevron-right"></i> Retours & Échanges</a></li>
+                                <li><a href="{{ route('frontend.help') }}"><i class="fas fa-chevron-right"></i> FAQ & Aide</a></li>
+                            @endif
                         </ul>
                     </div>
                     
@@ -382,9 +403,16 @@
                     <div class="footer-links-col">
                         <h4>Légal</h4>
                         <ul>
-                            <li><a href="{{ route('frontend.terms') }}"><i class="fas fa-chevron-right"></i> Conditions Générales</a></li>
-                            <li><a href="{{ route('frontend.privacy') }}"><i class="fas fa-chevron-right"></i> Confidentialité</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Cookies</a></li>
+                            @if(!empty($cmsFooterPages) && $cmsFooterPages->count())
+                                {{-- On peut filtrer par type ou juste afficher tout ici si approprié --}}
+                                @foreach($cmsFooterPages->where('footer_column', 'legal') as $fp)
+                                    <li><a href="{{ route('frontend.page.show', $fp->slug) }}"><i class="fas fa-chevron-right"></i> {{ $fp->title }}</a></li>
+                                @endforeach
+                            @else
+                                <li><a href="{{ route('frontend.terms') }}"><i class="fas fa-chevron-right"></i> Conditions Générales</a></li>
+                                <li><a href="{{ route('frontend.privacy') }}"><i class="fas fa-chevron-right"></i> Confidentialité</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Cookies</a></li>
+                            @endif
                         </ul>
                     </div>
                     
@@ -406,7 +434,7 @@
                                     <i class="fas fa-phone-alt"></i>
                                 </div>
                                 <div class="contact-text">
-                                    <span>+237 6XX XXX XXX</span>
+                                    <span>{{ config('app.company.phone') }}</span>
                                     <span>Lun-Sam: 9h-18h</span>
                                 </div>
                             </div>
@@ -415,8 +443,8 @@
                                     <i class="fas fa-envelope"></i>
                                 </div>
                                 <div class="contact-text">
-                                    <span>contact@racine.cm</span>
-                                    <span>support@racine.cm</span>
+                                    <span>{{ config('app.company.email') }}</span>
+                                    <span>support@racinebyganda.com</span>
                                 </div>
                             </div>
                         </div>

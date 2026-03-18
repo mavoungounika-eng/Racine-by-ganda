@@ -20,6 +20,7 @@ class PosSyncRoutingTest extends TestCase
 
         $response
             ->assertStatus(401)
-            ->assertJson(['error' => 'Missing bearer token']);
+            ->assertJsonPath('error.code', 'UNAUTHORIZED')
+            ->assertJsonPath('error.message', 'Missing bearer token');
     }
 }

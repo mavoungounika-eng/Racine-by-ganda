@@ -6,6 +6,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Redis;
 use Modules\POSSync\Models\PosDevice;
 use Modules\POSSync\Notifications\DeviceBlockedNotification;
 
@@ -132,7 +133,7 @@ class DeviceAuthService
         $key = "jwt:blacklist:{$machineId}:{$issuedAt}";
         $ttl = $this->getJwtTtl();
         
-        \Redis::setex($key, $ttl, '1');
+        Redis::setex($key, $ttl, '1');
     }
 
     /**
@@ -145,7 +146,7 @@ class DeviceAuthService
     private function isTokenBlacklisted(string $machineId, int $issuedAt): bool
     {
         $key = "jwt:blacklist:{$machineId}:{$issuedAt}";
-        return \Redis::exists($key);
+        return (bool) Redis::exists($key);
     }
 
     /**

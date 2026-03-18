@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Services\Cart\DatabaseCartService;
 use App\Services\Cart\SessionCartService;
 use Illuminate\Support\Facades\Auth;
+use App\Http\View\Composers\CmsViewComposer;
+use App\Http\View\Composers\HomeComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -44,5 +46,17 @@ class ViewComposerServiceProvider extends ServiceProvider
                 Auth::user()->loadMissing('creatorProfile');
             }
         });
+
+        // CMS global — layout principal
+        View::composer(
+            'layouts.frontend',
+            CmsViewComposer::class
+        );
+
+        // CMS homepage
+        View::composer(
+            ['frontend.home', 'home', 'welcome'],
+            HomeComposer::class
+        );
     }
 }

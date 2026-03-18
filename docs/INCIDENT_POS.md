@@ -277,15 +277,17 @@ Cette convention permet:
 ## 📞 CONTACTS ESCALADE — PRODUCTION
 
 | Rôle | Nom | Email | Téléphone | Disponibilité |
-|------|-----|-------|-----------|--------------| | **Responsable Magasin** | RACINE BY GANDA | contact@racinebyganda.com | +242 06 XXX XX XX | Heures ouverture |
+|------|-----|-------|-----------|--------------|
+| **Responsable Magasin** | AMIRA GANDA | contact@racinebyganda.com | +242 065166110 | Heures ouverture |
 | **Lead Dev** | NIKA DIGITAL HUB | nikadigitalhub1@gmail.com | +242 06 832 52 86 | 24/7 |
-| **DBA** | NIKA DIGITAL HUB | nikadigitalhub1@gmail.com | +242 06 832 52 86 | 24/7 si critique |
-| **Escalade** | NIKA DIGITAL HUB (CTO) | nikadigitalhub1@gmail.com | +242 06 832 52 86 | 24/7 escalade |
+| **DBA** | [NOM_DBA] | [EMAIL_DBA] | [TEL_DBA] | 24/7 si critique |
+| **Escalade Direction** | AMIRA GANDA (CEO) | contact@racinebyganda.com | +242 065166110 | 24/7 escalade |
 
-**✅ CONTACTS VALIDÉS POUR PRODUCTION**
+**Statut : ⚠️ PARTIEL — DBA à compléter**  
+**Mis à jour par : NIKA DIGITAL HUB — 14 mars 2026**
 
 ---
 
-**Version:** 1.0.0  
-**Dernière mise à jour:** 2026-01-06  
+**Version:** 1.1.0  
+**Dernière mise à jour:** 2026-03-14  
 **Propriétaire:** Équipe Technique RACINE BY GANDA

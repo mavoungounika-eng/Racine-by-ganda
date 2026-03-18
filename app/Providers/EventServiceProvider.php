@@ -76,6 +76,13 @@ class EventServiceProvider extends ServiceProvider
         \Illuminate\Auth\Events\Login::class => [
             \App\Listeners\LogSuccessfulLogin::class,
         ],
+        // ── ERP Stock Sync ──────────────────────────────────────────────
+        \App\Events\StockLowAlert::class => [
+            \App\Listeners\HandleStockLowAlert::class,
+        ],
+        \App\Events\StockAnomalyDetected::class => [
+            \App\Listeners\HandleStockAnomaly::class,
+        ],
     ];
 
     /**
@@ -102,6 +109,14 @@ class EventServiceProvider extends ServiceProvider
         }
         if (class_exists(\App\Models\CreatorProfile::class)) {
             \App\Models\CreatorProfile::observe(\App\Observers\AuditObserver::class);
+        }
+
+        // POS Analytics Cache Invalidation Observers
+        if (class_exists(\App\Models\PosSession::class)) {
+            \App\Models\PosSession::observe(\App\Observers\PosSessionObserver::class);
+        }
+        if (class_exists(\App\Models\PosSale::class)) {
+            \App\Models\PosSale::observe(\App\Observers\PosSaleObserver::class);
         }
     }
 

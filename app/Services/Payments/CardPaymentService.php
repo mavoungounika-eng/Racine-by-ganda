@@ -88,14 +88,22 @@ class CardPaymentService
         // Configurer la clé API Stripe dynamiquement
         Stripe::setApiKey($paymentConfig['stripe_secret']);
 
-        // Calculer le montant en centimes (Stripe utilise les plus petites unités)
-        $amountInCents = intval($lockedOrder->total_amount * 100);
+        // ✅ MULTI-DEVISE : XAF → EUR centimes pour Stripe
+        $currencyService = app(\App\Services\Currency\CurrencyService::class);
+        $amountEur = $currencyService->convert($lockedOrder->total_amount, 'XAF', 'EUR');
+        $stripeAmount = (int) round($amountEur * 100);
+
+        // Sauvegarder amount_eur sur l'order (Audit Trail)
+        $lockedOrder->update([
+            'currency' => 'XAF',
+            'amount_eur' => $amountEur,
+        ]);
 
         // Créer un enregistrement Payment en base de données
         $payment = Payment::create([
             'order_id' => $lockedOrder->id,
             'amount' => $lockedOrder->total_amount,
-            'currency' => config('services.stripe.currency', 'XAF'),
+            'currency' => 'XAF', // Toujours XAF en DB pour RACINE
             'channel' => 'card',
             'provider' => 'stripe',
             'status' => 'initiated',
@@ -103,6 +111,9 @@ class CardPaymentService
                 'order_id' => $lockedOrder->id,
                 'customer_name' => $lockedOrder->customer_name,
                 'customer_email' => $lockedOrder->customer_email,
+                'original_amount' => $lockedOrder->total_amount,
+                'original_currency' => 'XAF',
+                'converted_amount_eur' => $amountEur,
             ],
         ]);
 
@@ -117,12 +128,12 @@ class CardPaymentService
                 'line_items' => [
                     [
                         'price_data' => [
-                            'currency' => strtolower(config('services.stripe.currency', 'xaf')),
+                            'currency' => 'eur',
                             'product_data' => [
                                 'name' => 'Commande #' . $lockedOrder->id,
                                 'description' => 'Paiement de la commande #' . $lockedOrder->id,
                             ],
-                            'unit_amount' => $amountInCents,
+                            'unit_amount' => $stripeAmount,
                         ],
                         'quantity' => 1,
                     ],

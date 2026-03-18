@@ -15,13 +15,13 @@ use Illuminate\Support\Str;
 use Tests\Traits\SeedsAccounting;
 
 /**
- * Tests Complets POS â€” Session Lifecycle
+ * Tests Complets POS — Session Lifecycle
  *
  * Couvre:
- * - Ouverture/clÃ´ture session
+ * - Ouverture/clôture session
  * - Ventes multiples
- * - RÃ©conciliation cash
- * - DÃ©tection discrepancy
+ * - Réconciliation cash
+ * - Détection discrepancy
  */
 class PosSessionLifecycleTest extends TestCase
 {
@@ -51,8 +51,8 @@ class PosSessionLifecycleTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonPath('success', true);
-        $response->assertJsonPath('session.status', 'open');
-        $response->assertJsonPath('session.opening_cash', '5000.00');
+        $response->assertJsonPath('data.session.status', 'open');
+        $response->assertJsonPath('data.session.opening_cash', '5000.00');
 
         $this->assertDatabaseHas('pos_sessions', [
             'machine_id' => $this->machineId,
@@ -63,13 +63,13 @@ class PosSessionLifecycleTest extends TestCase
     #[Test]
     public function session_rejects_duplicate_open()
     {
-        // PremiÃ¨re ouverture
+        // Première ouverture
         $this->postIdempotentJson('/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ])->assertStatus(201);
 
-        // DeuxiÃ¨me tentative
+        // Deuxième tentative
         $response = $this->postIdempotentJson('/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
@@ -112,8 +112,8 @@ class PosSessionLifecycleTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $response->assertJsonPath('session.cash_difference', '0.00');
-        $response->assertJsonPath('session.status', 'closed');
+        $response->assertJsonPath('data.session.cash_difference', '0.00');
+        $response->assertJsonPath('data.session.status', 'closed');
     }
     #[Test]
     public function session_detects_cash_discrepancy()
@@ -147,9 +147,9 @@ class PosSessionLifecycleTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $response->assertJsonPath('session.cash_difference', '100.00');
+        $response->assertJsonPath('data.session.cash_difference', '100.00');
 
-        // VÃ©rifier alerte discrepancy gÃ©nÃ©rÃ©e
+        // Vérifier alerte discrepancy générée
         $this->assertDatabaseHas('pos_sessions', [
             'id' => $session->id,
             'cash_difference' => 100.00,
@@ -166,12 +166,12 @@ class PosSessionLifecycleTest extends TestCase
 
         $session = PosSession::where('machine_id', $this->machineId)->first();
 
-        // PremiÃ¨re clÃ´ture
+        // Première clôture
         $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ])->assertStatus(200);
 
-        // DeuxiÃ¨me tentative
+        // Deuxième tentative
         $response = $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ]);
@@ -190,19 +190,19 @@ class PosSessionLifecycleTest extends TestCase
 
         $session = PosSession::where('machine_id', $this->machineId)->first();
 
-        // Z-Report avant clÃ´ture
+        // Z-Report avant clôture
         $response = $this->getJson("/pos/sessions/{$session->id}/z-report");
         $response->assertStatus(400);
 
-        // ClÃ´turer
+        // Clôturer
         $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ]);
 
-        // Z-Report aprÃ¨s clÃ´ture
+        // Z-Report après clôture
         $response = $this->getJson("/pos/sessions/{$session->id}/z-report");
         $response->assertStatus(200);
-        $response->assertJsonPath('z_report.session_id', $session->id);
+        $response->assertJsonPath('data.z_report.session_id', $session->id);
     }
     #[Test]
     public function session_tracks_cash_movements()
@@ -215,19 +215,19 @@ class PosSessionLifecycleTest extends TestCase
 
         $session = PosSession::where('machine_id', $this->machineId)->first();
 
-        // VÃ©rifier mouvement d'ouverture
+        // Vérifier mouvement d'ouverture
         $this->assertDatabaseHas('pos_cash_movements', [
             'session_id' => $session->id,
             'type' => 'opening',
             'amount' => 5000.00,
         ]);
 
-        // ClÃ´turer
+        // Clôturer
         $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ]);
 
-        // VÃ©rifier mouvement de clÃ´ture
+        // Vérifier mouvement de clôture
         $this->assertDatabaseHas('pos_cash_movements', [
             'session_id' => $session->id,
             'type' => 'closing',
@@ -245,7 +245,7 @@ class PosSessionLifecycleTest extends TestCase
 
         $session = PosSession::where('machine_id', $this->machineId)->first();
 
-        // ClÃ´ture avec incident
+        // Clôture avec incident
         $response = $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
             'notes' => '[INCIDENT] Redis down 14:32',
@@ -253,7 +253,7 @@ class PosSessionLifecycleTest extends TestCase
 
         $response->assertStatus(200);
 
-        // VÃ©rifier que note incident est prÃ©sente
+        // Vérifier que note incident est présente
         $this->assertDatabaseHas('pos_sessions', [
             'id' => $session->id,
             'notes' => '[INCIDENT] Redis down 14:32',
@@ -267,7 +267,6 @@ class PosSessionLifecycleTest extends TestCase
         ]);
     }
 }
-
 
 
 

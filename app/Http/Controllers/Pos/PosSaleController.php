@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Http\Controllers\Pos;
-
-use App\Http\Controllers\Controller;
 use App\Models\PosSale;
+use App\Models\PosSession;
 use App\Services\Pos\PosSaleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 /**
  * PosSaleController - Création et gestion des ventes POS
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
  * - Cash reste 'pending' jusqu'à clôture
  * - POS ne déclenche JAMAIS PaymentRecorded
  */
-class PosSaleController extends Controller
+class PosSaleController extends PosApiController
 {
     public function __construct(
         protected PosSaleService $saleService
@@ -30,7 +30,7 @@ class PosSaleController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'machine_id' => 'required|uuid',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
@@ -40,24 +40,40 @@ class PosSaleController extends Controller
             'customer_name' => 'nullable|string|max:255',
             'customer_email' => 'nullable|email|max:255',
             'customer_phone' => 'nullable|string|max:50',
-        ]);
+        ];
+
+        if ($request->machineId !== null) {
+            $rules['machine_id'] = 'sometimes|uuid';
+        }
+
+        $validated = $request->validate($rules);
 
         try {
+            $machineId = $request->machineId ?? $validated['machine_id'];
+            if (!Str::isUuid($machineId)) {
+                return $this->error('INVALID_MACHINE_ID', 'machine_id must be a valid UUID');
+            }
+
+            $userId = $request->posUserId ?? Auth::id();
+            if (!$userId) {
+                return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
+            }
+
+            $idempotencyKey = $request->header('X-Idempotency-Key');
             $sale = $this->saleService->createSale(
-                $validated['machine_id'],
+                $machineId,
                 $validated['items'],
                 $validated['payment_method'],
-                Auth::id(),
+                $userId,
                 [
                     'customer_name' => $validated['customer_name'] ?? null,
                     'customer_email' => $validated['customer_email'] ?? null,
                     'customer_phone' => $validated['customer_phone'] ?? null,
-                ]
+                ],
+                $idempotencyKey
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Vente créée avec succès',
+            return $this->success([
                 'sale' => [
                     'id' => $sale->id,
                     'uuid' => $sale->uuid,
@@ -69,12 +85,9 @@ class PosSaleController extends Controller
                     'payment_status' => $sale->payments->first()?->status ?? 'pending',
                 ],
                 'awaiting_confirmation' => $validated['payment_method'] !== 'cash',
-            ], 201);
+            ], 'Vente créée avec succès', 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->error('SALE_CREATION_FAILED', $e->getMessage());
         }
     }
 
@@ -85,10 +98,13 @@ class PosSaleController extends Controller
      */
     public function show(PosSale $sale): JsonResponse
     {
+        if ($this->isMachineMismatch($sale->machine_id)) {
+            return $this->error('MACHINE_MISMATCH', 'Sale does not belong to this device', null, 403);
+        }
+
         $sale->load(['order.items.product', 'payments', 'session']);
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'sale' => [
                 'id' => $sale->id,
                 'uuid' => $sale->uuid,
@@ -134,27 +150,31 @@ class PosSaleController extends Controller
         ]);
 
         try {
+            if ($this->isMachineMismatch($sale->machine_id)) {
+                return $this->error('MACHINE_MISMATCH', 'Sale does not belong to this device', null, 403);
+            }
+
+            $userId = $request->posUserId ?? Auth::id();
+            if (!$userId) {
+                return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
+            }
+
             $cancelledSale = $this->saleService->cancelSale(
                 $sale,
-                Auth::id(),
+                $userId,
                 $validated['reason']
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Vente annulée',
+            return $this->success([
                 'sale' => [
                     'id' => $cancelledSale->id,
                     'status' => $cancelledSale->status,
                     'cancelled_at' => $cancelledSale->cancelled_at->toIso8601String(),
                     'cancellation_reason' => $cancelledSale->cancellation_reason,
                 ],
-            ]);
+            ], 'Vente annulée');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->error('SALE_CANCEL_FAILED', $e->getMessage());
         }
     }
 
@@ -165,13 +185,22 @@ class PosSaleController extends Controller
      */
     public function forSession(Request $request, int $sessionId): JsonResponse
     {
+        if ($request->machineId !== null) {
+            $session = PosSession::find($sessionId);
+            if (!$session) {
+                return $this->error('SESSION_NOT_FOUND', 'Session not found', null, 404);
+            }
+            if ($this->isMachineMismatch($session->machine_id)) {
+                return $this->error('MACHINE_MISMATCH', 'Session does not belong to this device', null, 403);
+            }
+        }
+
         $sales = PosSale::forSession($sessionId)
             ->with('payments')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'sales' => $sales->map(fn($sale) => [
                 'id' => $sale->id,
                 'uuid' => $sale->uuid,
@@ -185,5 +214,12 @@ class PosSaleController extends Controller
             'total_count' => $sales->count(),
             'total_amount' => $sales->sum('total_amount'),
         ]);
+    }
+
+    private function isMachineMismatch(string $machineId): bool
+    {
+        $requestMachineId = request()->machineId ?? null;
+
+        return $requestMachineId !== null && $requestMachineId !== $machineId;
     }
 }

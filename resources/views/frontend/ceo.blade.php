@@ -1,6 +1,6 @@
 @extends('layouts.frontend')
 
-@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Amira Ganda - Fondatrice & CEO - RACINE BY GANDA')
+@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? config('app.company.ceo') . ' - Fondatrice & CEO - RACINE BY GANDA')
 
 @push('styles')
 <style>
@@ -442,7 +442,7 @@
                     $heroSection = $cmsPage?->section('hero');
                     $heroData = $heroSection?->data ?? [];
                 @endphp
-                <h1>{{ $heroData['title'] ?? $cmsPage?->title ?? 'Amira Ganda' }}</h1>
+                <h1>{{ $heroData['title'] ?? $cmsPage?->title ?? config('app.company.ceo') }}</h1>
                 <p class="title">{{ $heroData['subtitle'] ?? 'FONDATRICE & CEO' }}</p>
                 <p class="quote">
                     {{ $heroData['quote'] ?? "La mode africaine n'est pas une tendance, c'est un héritage vivant que nous avons le devoir de préserver et de sublimer." }}
@@ -463,7 +463,7 @@
     <div class="container">
         <div class="bio-content">
             <p class="bio-intro">
-                Visionnaire, créatrice et ambassadrice de la mode africaine, <span>Amira Ganda</span> a fondé RACINE BY GANDA avec une mission claire : célébrer l'héritage africain à travers une mode raffinée et contemporaine.
+                Visionnaire, créatrice et ambassadrice de la mode africaine, <span>{{ config('app.company.ceo') }}</span> a fondé RACINE BY GANDA avec une mission claire : célébrer l'héritage africain à travers une mode raffinée et contemporaine.
             </p>
             
             <div class="bio-text">

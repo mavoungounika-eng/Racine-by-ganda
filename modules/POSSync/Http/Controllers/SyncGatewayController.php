@@ -2,6 +2,7 @@
 
 namespace Modules\POSSync\Http\Controllers;
 
+use App\Http\Responses\PosApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
@@ -34,16 +35,20 @@ class SyncGatewayController extends Controller
         }
 
         if (!$device) {
-            return response()->json(['error' => 'Invalid token'], 401);
+            return PosApiResponse::unauthorized('Invalid token');
         }
 
         // 2. Vérifier le statut de l'appareil (bloqué = rejeter)
         if ($device->status === 'blocked') {
-            return response()->json([
-                'error' => 'Device blocked',
-                'blocked_reason' => $device->blocked_reason,
-                'contact_admin' => true
-            ], 403);
+            return PosApiResponse::error(
+                'DEVICE_BLOCKED',
+                'Device blocked',
+                [
+                    'blocked_reason' => $device->blocked_reason,
+                    'contact_admin' => true,
+                ],
+                403
+            );
         }
 
         // 3. Valider la structure du lot d'événements
@@ -83,10 +88,12 @@ class SyncGatewayController extends Controller
                         'Invalid signature - device blocked'
                     );
 
-                    return response()->json([
-                        'error' => 'Security violation - device blocked',
-                        'device_status' => 'blocked'
-                    ], 403);
+                    return PosApiResponse::error(
+                        'INVALID_SIGNATURE',
+                        'Security violation - device blocked',
+                        ['device_status' => 'blocked'],
+                        403
+                    );
                 }
 
                 // Vérifier idempotence (machine_id + event_uuid)
@@ -150,9 +157,9 @@ class SyncGatewayController extends Controller
         $device->updateLastSync();
 
         // 5. Retourner les résultats du lot
-        return response()->json([
+        return PosApiResponse::success([
             'results' => $results,
-            'device_status' => $device->status
+            'device_status' => $device->status,
         ]);
     }
 
@@ -236,14 +243,13 @@ class SyncGatewayController extends Controller
         // Générer JWT
         $token = $this->deviceAuthService->generateToken($device->machine_id);
 
-        return response()->json([
+        return PosApiResponse::success([
             'device_id' => $device->id,
             'machine_id' => $device->machine_id,
             'machine_secret' => $machineSecret, // Retourné UNE SEULE FOIS
             'token' => $token,
             'status' => $device->status,
-            'message' => 'Device registered. Awaiting admin activation.'
-        ], 201);
+        ], 'Device registered. Awaiting admin activation.', 201);
     }
 
     /**
@@ -261,12 +267,12 @@ class SyncGatewayController extends Controller
             : $this->deviceAuthService->refreshToken((string) $request->bearerToken());
 
         if (!$newToken) {
-            return response()->json(['error' => 'Token refresh failed'], 401);
+            return PosApiResponse::unauthorized('Token refresh failed');
         }
 
-        return response()->json([
+        return PosApiResponse::success([
             'token' => $newToken,
-            'expires_at' => time() + (7 * 24 * 60 * 60)
+            'expires_at' => time() + (7 * 24 * 60 * 60),
         ]);
     }
 
@@ -285,10 +291,10 @@ class SyncGatewayController extends Controller
         }
 
         if (!$device) {
-            return response()->json(['error' => 'Invalid token'], 401);
+            return PosApiResponse::unauthorized('Invalid token');
         }
 
-        return response()->json([
+        return PosApiResponse::success([
             'machine_id' => $device->machine_id,
             'name' => $device->name,
             'status' => $device->status,

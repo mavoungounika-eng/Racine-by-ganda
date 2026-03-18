@@ -124,7 +124,7 @@ class SaasPurInvariantsTest extends TestCase
         $creatorProduct = Product::factory()->create(['product_type' => 'marketplace', 'stock' => 10]);
 
         $response = $this->actingAs($admin)
-            ->postJson(route('admin.pos.create-order'), [
+            ->postJson(route('pos.interface.create-order'), [
                 'items' => [
                     ['product_id' => $creatorProduct->id, 'quantity' => 1]
                 ],

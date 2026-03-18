@@ -128,6 +128,9 @@ class AuthTest extends TestCase
     #[Test]
     public function login_has_rate_limiting(): void
     {
+        // Désactiver le CAPTCHA pour ce test afin d'atteindre le rate limit (429)
+        config(['recaptcha.skip_for_testing' => true]);
+
         $user = User::factory()->create([
             'password' => Hash::make('password123'),
         ]);

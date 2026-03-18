@@ -107,7 +107,7 @@ class DashboardAccessTest extends TestCase
      */
     public function test_staff_can_access_staff_dashboard(): void
     {
-        $user = User::where('email', 'staff@racine.cm')->first();
+        $user = User::where('email', 'staff@racine.test')->first();
 
         $response = $this->actingAs($user)->followingRedirects()->get('/staff/dashboard');
 
@@ -119,7 +119,7 @@ class DashboardAccessTest extends TestCase
      */
     public function test_admin_can_access_admin_dashboard(): void
     {
-        $user = User::where('email', 'admin@racine.cm')->first();
+        $user = User::where('email', 'admin@racine.test')->first();
 
         $response = $this->actingAs($user)->followingRedirects()->get('/admin/dashboard');
 

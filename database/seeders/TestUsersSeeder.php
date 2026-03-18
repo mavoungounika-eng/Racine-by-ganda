@@ -21,7 +21,7 @@ class TestUsersSeeder extends Seeder
         $this->deleteOldTestAccounts();
         
         // 1. SUPER ADMINISTRATEUR
-        $superAdmin = User::updateOrCreate(
+        $superAdmin = User::withTrashed()->updateOrCreate(
             ['email' => 'superadmin@racine.cm'],
             [
                 'name' => 'Super Admin RACINE',
@@ -41,11 +41,11 @@ class TestUsersSeeder extends Seeder
         echo "✅ Super Admin créé : {$superAdmin->email}\n";
 
         // 2. ADMINISTRATEUR
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@racine.cm'],
+        $admin = User::withTrashed()->updateOrCreate(
+            ['email' => 'admin@racine.test'],
             [
                 'name' => 'Admin RACINE',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('Admin123!'),
                 'role_id' => 2,
                 'role' => 'admin',
                 'is_admin' => true,
@@ -61,11 +61,11 @@ class TestUsersSeeder extends Seeder
         echo "✅ Admin créé : {$admin->email}\n";
 
         // 3. STAFF GÉNÉRAL
-        $staff = User::updateOrCreate(
-            ['email' => 'staff@racine.cm'],
+        $staff = User::withTrashed()->updateOrCreate(
+            ['email' => 'staff@racine.test'],
             [
                 'name' => 'Staff RACINE',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('Staff123!'),
                 'role_id' => 3,
                 'role' => 'staff',
                 'staff_role' => null,
@@ -79,7 +79,7 @@ class TestUsersSeeder extends Seeder
         echo "✅ Staff créé : {$staff->email}\n";
 
         // 4. STAFF VENDEUR
-        $vendeur = User::updateOrCreate(
+        $vendeur = User::withTrashed()->updateOrCreate(
             ['email' => 'vendeur@racine.cm'],
             [
                 'name' => 'Vendeur RACINE',
@@ -97,7 +97,7 @@ class TestUsersSeeder extends Seeder
         echo "✅ Staff Vendeur créé : {$vendeur->email}\n";
 
         // 5. STAFF CAISSIER
-        $caissier = User::updateOrCreate(
+        $caissier = User::withTrashed()->updateOrCreate(
             ['email' => 'caissier@racine.cm'],
             [
                 'name' => 'Caissier RACINE',
@@ -115,7 +115,7 @@ class TestUsersSeeder extends Seeder
         echo "✅ Staff Caissier créé : {$caissier->email}\n";
 
         // 6. STAFF GESTIONNAIRE STOCK
-        $stock = User::updateOrCreate(
+        $stock = User::withTrashed()->updateOrCreate(
             ['email' => 'stock@racine.cm'],
             [
                 'name' => 'Gestionnaire Stock RACINE',
@@ -133,7 +133,7 @@ class TestUsersSeeder extends Seeder
         echo "✅ Staff Gestionnaire Stock créé : {$stock->email}\n";
 
         // 7. STAFF COMPTABLE
-        $comptable = User::updateOrCreate(
+        $comptable = User::withTrashed()->updateOrCreate(
             ['email' => 'comptable@racine.cm'],
             [
                 'name' => 'Comptable RACINE',
@@ -151,7 +151,7 @@ class TestUsersSeeder extends Seeder
         echo "✅ Staff Comptable créé : {$comptable->email}\n";
 
         // 8. CRÉATEUR ACTIF
-        $createur = User::updateOrCreate(
+        $createur = User::withTrashed()->updateOrCreate(
             ['email' => 'createur@racine.cm'],
             [
                 'name' => 'Créateur Test',
@@ -181,7 +181,7 @@ class TestUsersSeeder extends Seeder
         echo "✅ Créateur actif créé : {$createur->email}\n";
 
         // 9. CRÉATEUR EN ATTENTE
-        $createurPending = User::updateOrCreate(
+        $createurPending = User::withTrashed()->updateOrCreate(
             ['email' => 'createur.pending@racine.cm'],
             [
                 'name' => 'Créateur Pending',
@@ -211,7 +211,7 @@ class TestUsersSeeder extends Seeder
         echo "✅ Créateur pending créé : {$createurPending->email}\n";
 
         // 10. CRÉATEUR SUSPENDU
-        $createurSuspended = User::updateOrCreate(
+        $createurSuspended = User::withTrashed()->updateOrCreate(
             ['email' => 'createur.suspended@racine.cm'],
             [
                 'name' => 'Créateur Suspended',
@@ -257,7 +257,7 @@ class TestUsersSeeder extends Seeder
         ];
 
         foreach ($clients as $clientData) {
-            $client = User::updateOrCreate(
+            $client = User::withTrashed()->updateOrCreate(
                 ['email' => $clientData['email']],
                 [
                     'name' => $clientData['name'],
@@ -275,7 +275,7 @@ class TestUsersSeeder extends Seeder
         }
 
         echo "\n🎉 Tous les comptes de test ont été créés avec succès !\n";
-        echo "📝 Mot de passe pour tous les comptes : password\n";
+        echo "📝 Mots de passe : admin@racine.test -> Admin123! | staff@racine.test -> Staff123! | autres comptes -> password\n";
     }
 
     /**
@@ -287,6 +287,8 @@ class TestUsersSeeder extends Seeder
             'superadmin@racine.cm',
             'admin@racine.cm',
             'staff@racine.cm',
+            'admin@racine.test',
+            'staff@racine.test',
             'vendeur@racine.cm',
             'caissier@racine.cm',
             'stock@racine.cm',
@@ -306,7 +308,7 @@ class TestUsersSeeder extends Seeder
         ];
 
         // Supprimer les profils créateurs associés
-        $oldUsers = User::whereIn('email', $testEmails)->get();
+        $oldUsers = User::withTrashed()->whereIn('email', $testEmails)->get();
         foreach ($oldUsers as $user) {
             if ($user->creatorProfile) {
                 $user->creatorProfile->delete();
@@ -314,11 +316,10 @@ class TestUsersSeeder extends Seeder
         }
 
         // Supprimer les utilisateurs
-        $deleted = User::whereIn('email', $testEmails)->delete();
+        $deleted = User::withTrashed()->whereIn('email', $testEmails)->forceDelete();
         
         if ($deleted > 0) {
             echo "🗑️  {$deleted} ancien(s) compte(s) de test supprimé(s)\n";
         }
     }
 }
-

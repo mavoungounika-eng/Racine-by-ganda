@@ -145,7 +145,7 @@ class SocialAuthController extends Controller
 
         try {
             // Récupérer l'utilisateur du provider
-            $providerUser = Socialite::driver($provider)->user();
+            $providerUser = Socialite::driver($provider)->stateless()->user();
         } catch (\Exception $e) {
             Log::error("OAuth {$provider} callback error", [
                 'error' => $e->getMessage(),

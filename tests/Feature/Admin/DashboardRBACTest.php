@@ -32,7 +32,7 @@ class DashboardRBACTest extends TestCase
      */
     public function test_staff_cannot_see_analytics_kpi(): void
     {
-        $user = User::where('email', 'staff@racine.cm')->first();
+        $user = User::where('email', 'staff@racine.test')->first();
 
         $response = $this->actingAs($user)->get('/staff/dashboard');
 
@@ -46,7 +46,7 @@ class DashboardRBACTest extends TestCase
      */
     public function test_staff_cannot_see_users_kpi(): void
     {
-        $user = User::where('email', 'staff@racine.cm')->first();
+        $user = User::where('email', 'staff@racine.test')->first();
 
         $response = $this->actingAs($user)->get('/staff/dashboard');
 
@@ -60,7 +60,7 @@ class DashboardRBACTest extends TestCase
      */
     public function test_staff_cannot_see_sales_chart(): void
     {
-        $user = User::where('email', 'staff@racine.cm')->first();
+        $user = User::where('email', 'staff@racine.test')->first();
 
         $response = $this->actingAs($user)->get('/staff/dashboard');
 
@@ -74,7 +74,7 @@ class DashboardRBACTest extends TestCase
      */
     public function test_staff_cannot_see_new_users_section(): void
     {
-        $user = User::where('email', 'staff@racine.cm')->first();
+        $user = User::where('email', 'staff@racine.test')->first();
 
         $response = $this->actingAs($user)->get('/staff/dashboard');
 
@@ -88,7 +88,7 @@ class DashboardRBACTest extends TestCase
      */
     public function test_admin_can_see_all_dashboard_sections(): void
     {
-        $user = User::where('email', 'admin@racine.cm')->first();
+        $user = User::where('email', 'admin@racine.test')->first();
 
         $response = $this->actingAs($user)->get('/staff/dashboard');
 

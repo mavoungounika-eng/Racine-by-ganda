@@ -121,7 +121,7 @@
 
     <div class="footer">
         <p>
-            <strong>RACINE BY GANDA</strong><br>
+            <strong>{{ config('app.company.name') }}</strong><br>
             Monitoring & Alerts System<br>
             This is an automated alert. Please do not reply to this email.
         </p>

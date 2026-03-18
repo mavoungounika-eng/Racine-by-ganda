@@ -6,7 +6,12 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
+use App\Models\Product;
+use App\Models\PosSale;
+use App\Models\PosSession;
+use App\Models\PosOfflineQueue;
 use App\Services\Pos\PosOfflineService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 
 /**
@@ -33,6 +38,20 @@ class PosOfflineSyncTest extends TestCase
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
         $this->machineId = Str::uuid()->toString();
+
+        Event::fake([
+            \App\Events\PosSessionClosed::class,
+            \App\Events\PosCardPaymentConfirmed::class,
+            \App\Events\PosMobilePaymentConfirmed::class,
+        ]);
+
+        PosSession::create([
+            'machine_id' => $this->machineId,
+            'opened_by' => $this->user->id,
+            'status' => 'open',
+            'opening_balance' => 0,
+            'opened_at' => now(),
+        ]);
     }
 
     #[Test]
@@ -199,5 +218,173 @@ class PosOfflineSyncTest extends TestCase
 
         $this->assertTrue($this->offlineService->isOffline($machineA));
         $this->assertFalse($this->offlineService->isOffline($machineB));
+    }
+
+    // =========================================================================
+    // NOUVEAUX TESTS (OFFLINE SYNC & CONFLICTS)
+    // =========================================================================
+
+    #[Test]
+    public function test_sync_reussie_n_ventes(): void
+    {
+        $product = Product::factory()->create([
+            'stock' => 10,
+            'price' => 50,
+            'product_type' => 'brand'
+        ]);
+
+        $uuid1 = Str::uuid()->toString();
+        $uuid2 = Str::uuid()->toString();
+
+        $sales = [
+            [
+                'uuid' => $uuid1,
+                'items' => [['product_id' => $product->id, 'quantity' => 1, 'price' => 50.00]],
+                'total_amount' => 50.00,
+                'payment_method' => 'cash',
+            ],
+            [
+                'uuid' => $uuid2,
+                'items' => [['product_id' => $product->id, 'quantity' => 2, 'price' => 50.00]],
+                'total_amount' => 100.00,
+                'payment_method' => 'cash',
+            ]
+        ];
+
+        $res = $this->offlineService->syncPendingSales($this->machineId, $sales, $this->user->id);
+
+        $this->assertEquals(2, $res['synced']);
+        $this->assertEquals(0, $res['failed']);
+        $this->assertCount(0, $res['conflicts']);
+        $this->assertDatabaseHas('pos_sales', ['uuid' => $uuid1]);
+        $this->assertDatabaseHas('pos_sales', ['uuid' => $uuid2]);
+    }
+
+    #[Test]
+    public function test_detection_conflit_stock(): void
+    {
+        $product = Product::factory()->create(['stock' => 1]);
+
+        $uuid = Str::uuid()->toString();
+        $sales = [
+            [
+                'uuid' => $uuid,
+                'items' => [['product_id' => $product->id, 'quantity' => 2, 'price' => 50.00]],
+                'total_amount' => 100.00,
+                'payment_method' => 'cash',
+            ]
+        ];
+
+        $res = $this->offlineService->syncPendingSales($this->machineId, $sales, $this->user->id);
+
+        $this->assertEquals(0, $res['synced']);
+        $this->assertCount(1, $res['conflicts']);
+        $this->assertDatabaseHas('pos_offline_queue', [
+            'status' => 'conflict',
+            'error_message' => 'SYNC_CONFLICT_STOCK'
+        ]);
+        
+        // La vente n'a pas été créée
+        $this->assertDatabaseMissing('pos_sales', ['uuid' => $uuid]);
+    }
+
+    #[Test]
+    public function test_idempotence_double_sync(): void
+    {
+        $product = Product::factory()->create(['stock' => 10]);
+        $uuid = Str::uuid()->toString();
+        $sales = [
+            [
+                'uuid' => $uuid,
+                'items' => [['product_id' => $product->id, 'quantity' => 1, 'price' => 50.00]],
+                'total_amount' => 50.00,
+                'payment_method' => 'cash',
+            ]
+        ];
+
+        // 1ere sync
+        $res1 = $this->offlineService->syncPendingSales($this->machineId, $sales, $this->user->id);
+        $this->assertEquals(1, $res1['synced']);
+
+        // 2eme sync involontaire
+        $res2 = $this->offlineService->syncPendingSales($this->machineId, $sales, $this->user->id);
+        
+        $this->assertEquals(1, $res2['synced']); // Indique qu'elle est "traitée" (déjà sync)
+        
+        // Mais 1 seul enregistrement en BD
+        $this->assertEquals(1, PosSale::where('uuid', $uuid)->count());
+    }
+
+    #[Test]
+    public function test_expiration_24h(): void
+    {
+        // Forcer la création avec une date ancienne
+        PosOfflineQueue::create([
+            'machine_id' => $this->machineId,
+            'sale_data' => '{}',
+            'status' => 'pending',
+            'queued_at' => now()->subHours(25),
+        ]);
+
+        $expired = $this->offlineService->expireOldSales();
+
+        $this->assertEquals(1, $expired);
+        $this->assertDatabaseHas('pos_offline_queue', ['status' => 'expired']);
+    }
+
+    #[Test]
+    public function test_resolution_force_apply(): void
+    {
+        $product = Product::factory()->create(['stock' => 0]); // Conflit dès le départ
+        $uuid = Str::uuid()->toString();
+        
+        $sales = [
+            [
+                'uuid' => $uuid,
+                'items' => [['product_id' => $product->id, 'quantity' => 1, 'price' => 50.00]],
+                'total_amount' => 50.00,
+                'payment_method' => 'cash',
+            ]
+        ];
+
+        // Provoque le conflit
+        $this->offlineService->syncPendingSales($this->machineId, $sales, $this->user->id);
+        
+        // Résolution conflict : force_apply
+        $success = $this->offlineService->resolveConflict($uuid, 'force_apply', $this->user->id);
+        
+        $this->assertTrue($success);
+        $this->assertDatabaseHas('pos_sales', ['uuid' => $uuid]);
+        $this->assertDatabaseHas('pos_offline_queue', [
+            'status' => 'synced'
+        ]);
+    }
+
+    #[Test]
+    public function test_resolution_discard(): void
+    {
+        $product = Product::factory()->create(['stock' => 0]); 
+        $uuid = Str::uuid()->toString();
+        
+        $sales = [
+            [
+                'uuid' => $uuid,
+                'items' => [['product_id' => $product->id, 'quantity' => 1, 'price' => 50.00]],
+                'total_amount' => 50.00,
+                'payment_method' => 'cash',
+            ]
+        ];
+
+        // Provoque le conflit
+        $this->offlineService->syncPendingSales($this->machineId, $sales, $this->user->id);
+        
+        // Résolution conflict : discard
+        $success = $this->offlineService->resolveConflict($uuid, 'discard', $this->user->id);
+        
+        $this->assertTrue($success);
+        $this->assertDatabaseMissing('pos_sales', ['uuid' => $uuid]); // annulée
+        $this->assertDatabaseHas('pos_offline_queue', [
+            'status' => 'discarded'
+        ]);
     }
 }

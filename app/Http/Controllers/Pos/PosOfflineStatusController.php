@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pos;
 
 use App\Services\Pos\PosOfflineService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * PosOfflineStatusController - Statut offline pour UI
@@ -11,7 +12,7 @@ use Illuminate\Http\JsonResponse;
  * Endpoint pour que UI détecte mode offline
  * et affiche notification utilisateur
  */
-class PosOfflineStatusController
+class PosOfflineStatusController extends PosApiController
 {
     public function __construct(
         protected PosOfflineService $offlineService
@@ -22,13 +23,19 @@ class PosOfflineStatusController
      *
      * GET /pos/offline-status
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $isOffline = $this->offlineService->isOffline();
-        $status = $this->offlineService->getOfflineStatus();
+        return $this->index($request);
+    }
+
+    public function index(Request $request): JsonResponse
+    {
+        $machineId = $request->machineId ?? '';
+        $isOffline = $this->offlineService->isOffline($machineId);
+        $status = $this->offlineService->getOfflineStatus($machineId);
         $queueCount = $this->offlineService->getOfflineQueueCount();
 
-        return response()->json([
+        return $this->success([
             'offline' => $isOffline,
             'reason' => $status['reason'] ?? null,
             'marked_at' => $status['marked_at'] ?? null,

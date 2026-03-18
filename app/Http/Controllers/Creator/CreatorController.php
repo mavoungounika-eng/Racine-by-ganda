@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
+use App\Services\Cms\BannerService;
+
 class CreatorController extends Controller
 {
     use \App\Http\Controllers\Auth\Traits\HandlesAuthRedirect;
@@ -91,10 +93,13 @@ class CreatorController extends Controller
         $productsCount = $creatorProfile->products()->where('is_active', true)->count();
         $collectionsCount = $creatorProfile->collections()->where('is_active', true)->count();
 
+        $cmsBanners = app(BannerService::class)->getActiveBanners('category_top');
+
         return view('frontend.creator-profile', compact(
             'creatorProfile',
             'productsCount',
-            'collectionsCount'
+            'collectionsCount',
+            'cmsBanners'
         ));
     }
 }

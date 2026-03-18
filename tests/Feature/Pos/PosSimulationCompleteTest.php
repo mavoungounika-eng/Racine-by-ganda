@@ -4,16 +4,16 @@ namespace Tests\Feature\Pos;
 
 use PHPUnit\Framework\Attributes\Test;
 /**
- * SIMULATION POS COMPLÃˆTE - OPTION A
+ * SIMULATION POS COMPLÊTE - OPTION A
  * 
- * Objectif: Prouver l'intÃ©gritÃ© du systÃ¨me POS en conditions rÃ©elles
+ * Objectif: Prouver l'intégrité du système POS en conditions réelles
  * 
- * ScÃ©nario:
+ * Scénario:
  * 1. Ouverture session
  * 2. 7 ventes (4 cash, 2 carte, 1 mobile)
- * 3. Incident simulÃ©
- * 4. ClÃ´ture diffÃ©rÃ©e avec autoritÃ©
- * 5. VÃ©rifications SQL
+ * 3. Incident simulé
+ * 4. Clôture différée avec autorité
+ * 5. Vérifications SQL
  */
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -69,7 +69,7 @@ class PosSimulationCompleteTest extends TestCase
     #[Test]
     public function simulation_complete_pos_avec_incident()
     {
-        echo "\n\n=== DÃ‰BUT SIMULATION POS ===\n\n";
+        echo "\n\n=== DÉBUT SIMULATION POS ===\n\n";
 
         // ========================================
         // PHASE 1: OUVERTURE SESSION
@@ -89,9 +89,9 @@ class PosSimulationCompleteTest extends TestCase
         $this->assertEquals(1, $session->opened_by);
         $this->assertEquals(50000, $session->opening_cash);
 
-        echo "âœ… Session crÃ©Ã©e: ID {$session->id}\n";
+        echo "âœ… Session créée: ID {$session->id}\n";
         echo "âœ… Status: {$session->status}\n";
-        echo "âœ… Opening cash movement crÃ©Ã©\n\n";
+        echo "âœ… Opening cash movement créé\n\n";
 
         // ========================================
         // PHASE 2: VENTES
@@ -108,7 +108,7 @@ class PosSimulationCompleteTest extends TestCase
             'cash',
             $this->alice->id
         );
-        echo "âœ… Vente crÃ©Ã©e - Payment status: pending\n\n";
+        echo "âœ… Vente créée - Payment status: pending\n\n";
 
         // Vente #2 - CASH 3,000
         echo "Vente #2 - CASH 3,000 XAF\n";
@@ -118,7 +118,7 @@ class PosSimulationCompleteTest extends TestCase
             'cash',
             $this->alice->id
         );
-        echo "âœ… Vente crÃ©Ã©e - Payment status: pending\n\n";
+        echo "âœ… Vente créée - Payment status: pending\n\n";
 
         // Vente #3 - CARTE 15,000
         echo "Vente #3 - CARTE 15,000 XAF\n";
@@ -133,8 +133,8 @@ class PosSimulationCompleteTest extends TestCase
         // Confirmer paiement carte
         $cardPayment = $cardSale->payments->first();
         $this->saleService->confirmCardPayment($cardPayment, $this->alice->id, 'TPE-TXN-001');
-        echo "âœ… Vente crÃ©Ã©e - Payment confirmÃ© par TPE\n";
-        echo "âœ… PosCardPaymentConfirmed event dispatchÃ©\n\n";
+        echo "âœ… Vente créée - Payment confirmé par TPE\n";
+        echo "âœ… PosCardPaymentConfirmed event dispatché\n\n";
 
         // Vente #4 - CASH 4,000
         echo "Vente #4 - CASH 4,000 XAF\n";
@@ -144,7 +144,7 @@ class PosSimulationCompleteTest extends TestCase
             'cash',
             $this->alice->id
         );
-        echo "âœ… Vente crÃ©Ã©e - Payment status: pending\n\n";
+        echo "âœ… Vente créée - Payment status: pending\n\n";
 
         // Vente #5 - CASH 5,000
         echo "Vente #5 - CASH 5,000 XAF\n";
@@ -154,7 +154,7 @@ class PosSimulationCompleteTest extends TestCase
             'cash',
             $this->alice->id
         );
-        echo "âœ… Vente crÃ©Ã©e - Payment status: pending\n\n";
+        echo "âœ… Vente créée - Payment status: pending\n\n";
 
         // Vente #6 - CARTE 20,000
         echo "Vente #6 - CARTE 20,000 XAF\n";
@@ -168,7 +168,7 @@ class PosSimulationCompleteTest extends TestCase
         
         $cardPayment2 = $cardSale2->payments->first();
         $this->saleService->confirmCardPayment($cardPayment2, $this->alice->id, 'TPE-TXN-002');
-        echo "âœ… Vente crÃ©Ã©e - Payment confirmÃ© par TPE\n\n";
+        echo "âœ… Vente créée - Payment confirmé par TPE\n\n";
 
         // Vente #7 - MOBILE 8,000
         echo "Vente #7 - MOBILE 8,000 XAF\n";
@@ -182,45 +182,45 @@ class PosSimulationCompleteTest extends TestCase
         
         $mobilePayment = $mobileSale->payments->first();
         $this->saleService->confirmMobilePayment($mobilePayment, 'MONETBIL-TXN-001');
-        echo "âœ… Vente crÃ©Ã©e - Payment confirmÃ© par Monetbil\n\n";
+        echo "âœ… Vente créée - Payment confirmé par Monetbil\n\n";
 
-        echo "RÃ‰SUMÃ‰ VENTES:\n";
+        echo "RÉSUMÉ VENTES:\n";
         echo "- Total ventes: 7\n";
         echo "- Cash (pending): 17,000 XAF (4 ventes)\n";
         echo "- Carte (confirmed): 35,000 XAF (2 ventes)\n";
         echo "- Mobile (confirmed): 8,000 XAF (1 vente)\n";
         echo "- TOTAL: 60,000 XAF\n\n";
 
-        // VÃ©rifications intermÃ©diaires
+        // Vérifications intermédiaires
         $pendingCash = PosPayment::where('method', 'cash')
             ->where('status', 'pending')
             ->whereIn('pos_sale_id', collect($sales)->pluck('id'))
             ->count();
         
-        $this->assertEquals(4, $pendingCash, "4 paiements cash doivent Ãªtre pending");
-        echo "âœ… VÃ©rification: 4 paiements cash en pending\n\n";
+        $this->assertEquals(4, $pendingCash, "4 paiements cash doivent être pending");
+        echo "âœ… Vérification: 4 paiements cash en pending\n\n";
 
         // ========================================
-        // PHASE 3: INCIDENT SIMULÃ‰
+        // PHASE 3: INCIDENT SIMULÉ
         // ========================================
-        echo "PHASE 3: INCIDENT SIMULÃ‰\n";
-        echo "Simulation: Queue bloquÃ©e / Redis down\n";
-        echo "Action: Alice tente clÃ´ture â†’ doit rester OPEN\n\n";
+        echo "PHASE 3: INCIDENT SIMULÉ\n";
+        echo "Simulation: Queue bloquée / Redis down\n";
+        echo "Action: Alice tente clôture â†’ doit rester OPEN\n\n";
 
         $session->refresh();
         $this->assertEquals(PosSession::STATUS_OPEN, $session->status);
-        echo "âœ… Session toujours OPEN (incident simulÃ©)\n";
-        echo "âœ… Aucune Ã©criture comptable crÃ©Ã©e\n\n";
+        echo "âœ… Session toujours OPEN (incident simulé)\n";
+        echo "âœ… Aucune écriture comptable créée\n\n";
 
         // ========================================
-        // PHASE 4: CLÃ”TURE DIFFÃ‰RÃ‰E
+        // PHASE 4: CLÔTURE DIFFÉRÉE
         // ========================================
-        echo "PHASE 4: CLÃ”TURE DIFFÃ‰RÃ‰E AVEC AUTORITÃ‰\n";
+        echo "PHASE 4: CLÔTURE DIFFÉRÉE AVEC AUTORITÉ\n";
         echo "Acteur: Bob (Supervisor, ID: 5)\n";
-        echo "Cash comptÃ©: 67,000 XAF\n";
+        echo "Cash compté: 67,000 XAF\n";
         echo "Expected: 50,000 + 17,000 = 67,000 XAF\n\n";
 
-        $notes = "[INCIDENT] Simulation Redis down 2026-01-06 23:35 â€” clÃ´ture diffÃ©rÃ©e validÃ©e par supervisor #5";
+        $notes = "[INCIDENT] Simulation Redis down 2026-01-06 23:35 — clôture différée validée par supervisor #5";
         
         $closedSession = $this->sessionService->closeSession(
             $session,
@@ -239,21 +239,21 @@ class PosSimulationCompleteTest extends TestCase
         echo "âœ… Session CLOSED\n";
         echo "âœ… Closed by: Bob (ID: 5)\n";
         echo "âœ… Cash difference: 0 XAF\n";
-        echo "âœ… Note [INCIDENT] prÃ©sente\n\n";
+        echo "âœ… Note [INCIDENT] présente\n\n";
 
-        // Simuler exÃ©cution du listener (en production, c'est le queue worker)
-        echo "SIMULATION QUEUE WORKER: ExÃ©cution PosSessionClosedListener\n";
+        // Simuler exécution du listener (en production, c'est le queue worker)
+        echo "SIMULATION QUEUE WORKER: Exécution PosSessionClosedListener\n";
         $listener = app(\App\Listeners\PosSessionClosedListener::class);
         $event = new \App\Events\PosSessionClosed($closedSession);
         $listener->handle($event);
-        echo "âœ… Listener exÃ©cutÃ©\n\n";
+        echo "âœ… Listener exécuté\n\n";
 
         // ========================================
-        // PHASE 5: VÃ‰RIFICATIONS SQL
+        // PHASE 5: VÉRIFICATIONS SQL
         // ========================================
-        echo "PHASE 5: VÃ‰RIFICATIONS SQL CRITIQUES\n\n";
+        echo "PHASE 5: VÉRIFICATIONS SQL CRITIQUES\n\n";
 
-        // VÃ©rification 1: FinancialIntent crÃ©Ã©
+        // Vérification 1: FinancialIntent créé
         $intent = FinancialIntent::where('reference_type', 'pos_session')
             ->where('reference_id', $closedSession->id)
             ->first();
@@ -263,72 +263,72 @@ class PosSimulationCompleteTest extends TestCase
         $this->assertEquals('committed', $intent->status);
         $this->assertEquals(17000, $intent->amount);
 
-        echo "âœ… FinancialIntent crÃ©Ã©\n";
+        echo "âœ… FinancialIntent créé\n";
         echo "   - Type: {$intent->intent_type}\n";
         echo "   - Status: {$intent->status}\n";
         echo "   - Amount: {$intent->amount} XAF\n\n";
 
-        // VÃ©rification 2: AccountingEntry unique
+        // Vérification 2: AccountingEntry unique
         $entryCount = DB::table('accounting_entries')
             ->where('reference_type', 'pos_session')
             ->where('reference_id', $closedSession->id)
             ->count();
 
-        $this->assertEquals(1, $entryCount, "Une seule Ã©criture comptable doit exister");
-        echo "âœ… Ã‰criture comptable unique (count: {$entryCount})\n\n";
+        $this->assertEquals(1, $entryCount, "Une seule écriture comptable doit exister");
+        echo "âœ… Écriture comptable unique (count: {$entryCount})\n\n";
 
-        // VÃ©rification 3: CohÃ©rence temporelle
+        // Vérification 3: Cohérence temporelle
         $entry = DB::table('accounting_entries')
             ->where('reference_type', 'pos_session')
             ->where('reference_id', $closedSession->id)
             ->first();
 
-        $this->assertNotNull($entry, "L'Ã©criture comptable de session doit exister");
+        $this->assertNotNull($entry, "L'écriture comptable de session doit exister");
         $temporalCheck = Carbon::parse($entry->created_at)->greaterThanOrEqualTo(Carbon::parse($closedSession->closed_at))
             ? 'OK'
             : 'VIOLATION';
-        $this->assertEquals('OK', $temporalCheck, "Accounting doit Ãªtre APRÃˆS closure");
-        echo "âœ… CohÃ©rence temporelle: {$temporalCheck}\n";
+        $this->assertEquals('OK', $temporalCheck, "Accounting doit être APRÊS closure");
+        echo "âœ… Cohérence temporelle: {$temporalCheck}\n";
         echo "   - Session closed: {$closedSession->closed_at}\n";
         echo "   - Accounting created: {$entry->created_at}\n\n";
 
-        // VÃ©rification 4: Tous paiements cash confirmÃ©s
+        // Vérification 4: Tous paiements cash confirmés
         $pendingAfterClose = PosPayment::where('method', 'cash')
             ->where('status', 'pending')
             ->whereIn('pos_sale_id', collect($sales)->pluck('id'))
             ->count();
 
         $this->assertEquals(0, $pendingAfterClose, "Aucun paiement cash ne doit rester pending");
-        echo "âœ… Tous paiements cash confirmÃ©s (pending: {$pendingAfterClose})\n\n";
+        echo "âœ… Tous paiements cash confirmés (pending: {$pendingAfterClose})\n\n";
 
-        // VÃ©rification 5: Cash movements complets
+        // Vérification 5: Cash movements complets
         $movements = PosCashMovement::where('session_id', $closedSession->id)->get();
         $this->assertGreaterThan(0, $movements->count());
-        echo "âœ… Cash movements tracÃ©s: {$movements->count()} mouvements\n\n";
+        echo "âœ… Cash movements tracés: {$movements->count()} mouvements\n\n";
 
         // ========================================
         // PHASE 6: INVARIANTS
         // ========================================
-        echo "PHASE 6: VÃ‰RIFICATION INVARIANTS\n\n";
+        echo "PHASE 6: VÉRIFICATION INVARIANTS\n\n";
 
         $invariants = [
             '1. Aucune vente sans session ouverte' => true,
-            '2. Aucun cash confirmÃ© avant clÃ´ture' => true,
-            '3. POS â‰  autoritÃ© comptable' => true,
+            '2. Aucun cash confirmé avant clôture' => true,
+            '3. POS â‰  autorité comptable' => true,
             '4. Session a un responsable' => $closedSession->opened_by !== null,
-            '5. Anomalie traÃ§able' => str_contains($closedSession->notes, '[INCIDENT]'),
+            '5. Anomalie traçable' => str_contains($closedSession->notes, '[INCIDENT]'),
             '6. Offline-safe (idempotence)' => $intent !== null,
-            '7. Fait terrain â‰  Ã©criture comptable' => $entryCount === 1,
+            '7. Fait terrain â‰  écriture comptable' => $entryCount === 1,
         ];
 
         foreach ($invariants as $invariant => $status) {
             $symbol = $status ? 'âœ…' : 'âŒ';
             echo "{$symbol} {$invariant}\n";
-            $this->assertTrue($status, "Invariant violÃ©: {$invariant}");
+            $this->assertTrue($status, "Invariant violé: {$invariant}");
         }
 
         echo "\n=== FIN SIMULATION POS ===\n\n";
-        echo "VERDICT: SIMULATION RÃ‰USSIE\n";
+        echo "VERDICT: SIMULATION RÉUSSIE\n";
         echo "RECOMMANDATION: GO PILOTE TERRAIN\n\n";
     }
 }

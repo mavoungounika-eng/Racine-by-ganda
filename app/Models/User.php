@@ -8,10 +8,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Log;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * CRITICAL SECURITY: Auto-increment auth_version on security changes
@@ -96,6 +97,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'trusted_device_token',
         'trusted_device_expires_at',
         'locale',
+        'preferred_currency',
     ];
 
     protected $hidden = [
@@ -378,19 +380,29 @@ class User extends Authenticatable implements MustVerifyEmail
 
 
     /**
-     * Get the user's loyalty points.
+     * Segments CRM du client.
      */
-    public function loyaltyPoints()
+    public function segments()
     {
-        return $this->hasOne(LoyaltyPoint::class);
+        return $this->belongsToMany(CustomerSegment::class, 'customer_segment_members', 'customer_id', 'segment_id')
+            ->withTimestamps();
     }
 
     /**
-     * Get the user's loyalty transactions.
+     * Tags CRM du client.
      */
-    public function loyaltyTransactions()
+    public function tags()
     {
-        return $this->hasMany(LoyaltyTransaction::class);
+        return $this->belongsToMany(CustomerTag::class, 'customer_tag_members', 'customer_id', 'tag_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Points de fidélité (grand livre).
+     */
+    public function loyaltyPoints()
+    {
+        return $this->hasMany(LoyaltyPoint::class, 'customer_id');
     }
 
     /**

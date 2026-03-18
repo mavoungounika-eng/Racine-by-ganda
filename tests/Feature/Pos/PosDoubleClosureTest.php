@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Tests\Traits\SeedsAccounting;
 
 /**
- * Test critique: EmpÃƒÂªcher double clÃƒÂ´ture de session
+ * Test critique: Empêcher double clôture de session
  * 
  * CORRECTION 1: Verrou transactionnel
  */
@@ -36,19 +36,19 @@ class PosDoubleClosureTest extends TestCase
     #[Test]
     public function it_prevents_double_session_closure()
     {
-        // CrÃƒÂ©er et ouvrir une session
+        // Créer et ouvrir une session
         $session = $this->service->openSession(
             Str::uuid()->toString(),
             $this->user->id,
             50000
         );
 
-        // PremiÃƒÂ¨re clÃƒÂ´ture (OK)
+        // Première clôture (OK)
         $closedSession = $this->service->closeSession($session, 100000, $this->user->id);
         
         $this->assertEquals(PosSession::STATUS_CLOSED, $closedSession->status);
 
-        // DeuxiÃƒÂ¨me clÃƒÂ´ture (DOIT ÃƒÂ©chouer)
+        // Deuxième clôture (DOIT échouer)
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('Session already closed');
 
@@ -63,14 +63,14 @@ class PosDoubleClosureTest extends TestCase
             50000
         );
 
-        // Simuler tentative concurrente en rafraÃƒÂ®chissant la session
+        // Simuler tentative concurrente en rafraîchissant la session
         $session1 = PosSession::find($session->id);
         $session2 = PosSession::find($session->id);
 
-        // PremiÃƒÂ¨re clÃƒÂ´ture rÃƒÂ©ussit
+        // Première clôture réussit
         $this->service->closeSession($session1, 100000, $this->user->id);
 
-        // DeuxiÃƒÂ¨me clÃƒÂ´ture ÃƒÂ©choue (session dÃƒÂ©jÃƒÂ  fermÃƒÂ©e)
+        // Deuxième clôture échoue (session déjà fermée)
         $this->expectException(\DomainException::class);
         $this->service->closeSession($session2, 100000, $this->user->id);
     }

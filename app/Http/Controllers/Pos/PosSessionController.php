@@ -1,13 +1,12 @@
 <?php
 
 namespace App\Http\Controllers\Pos;
-
-use App\Http\Controllers\Controller;
 use App\Models\PosSession;
 use App\Services\Pos\PosSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 /**
  * PosSessionController - Gestion des sessions de caisse
@@ -17,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
  * - opening_cash requis à l'ouverture
  * - closing_cash requis pour fermeture
  */
-class PosSessionController extends Controller
+class PosSessionController extends PosApiController
 {
     public function __construct(
         protected PosSessionService $sessionService
@@ -30,21 +29,36 @@ class PosSessionController extends Controller
      */
     public function open(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'machine_id' => 'required|uuid',
-            'opening_cash' => 'required|numeric|min:0',
-        ]);
+        $machineId = $request->machineId ?? $request->input('machine_id');
+        $userId = $request->posUserId ?? Auth::id();
+
+        if (!$machineId) {
+            $validated = $request->validate([
+                'machine_id' => 'required|uuid',
+                'opening_cash' => 'required|numeric|min:0',
+            ]);
+            $machineId = $validated['machine_id'];
+        } else {
+            $request->validate([
+                'opening_cash' => 'required|numeric|min:0',
+            ]);
+            if (!Str::isUuid($machineId)) {
+                return $this->error('INVALID_MACHINE_ID', 'machine_id must be a valid UUID');
+            }
+        }
+
+        if (!$userId) {
+            return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
+        }
 
         try {
             $session = $this->sessionService->openSession(
-                $validated['machine_id'],
-                Auth::id(),
-                $validated['opening_cash']
+                $machineId,
+                $userId,
+                (float) $request->input('opening_cash')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Session de caisse ouverte',
+            return $this->success([
                 'session' => [
                     'id' => $session->id,
                     'machine_id' => $session->machine_id,
@@ -52,12 +66,9 @@ class PosSessionController extends Controller
                     'opening_cash' => $session->opening_cash,
                     'status' => $session->status,
                 ],
-            ], 201);
+            ], 'Session de caisse ouverte', 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 409);
+            return $this->error('SESSION_OPEN_FAILED', $e->getMessage(), null, 409);
         }
     }
 
@@ -68,22 +79,25 @@ class PosSessionController extends Controller
      */
     public function current(Request $request): JsonResponse
     {
-        $request->validate([
-            'machine_id' => 'required|uuid',
-        ]);
+        $machineId = $request->machineId ?? $request->input('machine_id');
+        if (!$machineId) {
+            $validated = $request->validate([
+                'machine_id' => 'required|uuid',
+            ]);
+            $machineId = $validated['machine_id'];
+        } elseif (!Str::isUuid($machineId)) {
+            return $this->error('INVALID_MACHINE_ID', 'machine_id must be a valid UUID');
+        }
 
-        $session = $this->sessionService->getOpenSession($request->machine_id);
+        $session = $this->sessionService->getOpenSession($machineId);
 
         if (!$session) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Aucune session ouverte',
+            return $this->error('SESSION_NOT_FOUND', 'Aucune session ouverte', [
                 'has_open_session' => false,
             ], 404);
         }
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'has_open_session' => true,
             'session' => [
                 'id' => $session->id,
@@ -105,25 +119,20 @@ class PosSessionController extends Controller
      */
     public function prepareClose(PosSession $session): JsonResponse
     {
+        if ($this->isMachineMismatch($session->machine_id)) {
+            return $this->error('MACHINE_MISMATCH', 'Session does not belong to this device', null, 403);
+        }
+
         if (!$session->canClose()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cette session ne peut pas être clôturée',
-            ], 400);
+            return $this->error('SESSION_NOT_CLOSABLE', 'Cette session ne peut pas être clôturée');
         }
 
         try {
             $data = $this->sessionService->prepareClose($session);
 
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-            ]);
+            return $this->success($data);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->error('SESSION_PRE_CLOSE_FAILED', $e->getMessage());
         }
     }
 
@@ -139,17 +148,24 @@ class PosSessionController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        if ($this->isMachineMismatch($session->machine_id)) {
+            return $this->error('MACHINE_MISMATCH', 'Session does not belong to this device', null, 403);
+        }
+
+        $userId = $request->posUserId ?? Auth::id();
+        if (!$userId) {
+            return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
+        }
+
         try {
             $closedSession = $this->sessionService->closeSession(
                 $session,
                 $validated['closing_cash'],
-                Auth::id(),
+                $userId,
                 $validated['notes'] ?? null
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Session clôturée avec succès',
+            return $this->success([
                 'session' => [
                     'id' => $closedSession->id,
                     'status' => $closedSession->status,
@@ -160,12 +176,9 @@ class PosSessionController extends Controller
                     'closed_at' => $closedSession->closed_at->toIso8601String(),
                 ],
                 'z_report_url' => route('pos.sessions.z-report', $closedSession),
-            ]);
+            ], 'Session clôturée avec succès');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->error('SESSION_CLOSE_FAILED', $e->getMessage());
         }
     }
 
@@ -176,18 +189,18 @@ class PosSessionController extends Controller
      */
     public function zReport(PosSession $session): JsonResponse
     {
+        if ($this->isMachineMismatch($session->machine_id)) {
+            return $this->error('MACHINE_MISMATCH', 'Session does not belong to this device', null, 403);
+        }
+
         if (!$session->isClosed()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Z-Report disponible uniquement pour les sessions fermées',
-            ], 400);
+            return $this->error('Z_REPORT_UNAVAILABLE', 'Z-Report disponible uniquement pour les sessions fermées');
         }
 
         $sales = $session->sales()->with('payments')->get();
         $movements = $session->cashMovements;
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'z_report' => [
                 'session_id' => $session->id,
                 'machine_id' => $session->machine_id,
@@ -233,18 +246,25 @@ class PosSessionController extends Controller
             'reason' => 'required|string|max:500',
         ]);
 
+        if ($this->isMachineMismatch($session->machine_id)) {
+            return $this->error('MACHINE_MISMATCH', 'Session does not belong to this device', null, 403);
+        }
+
+        $userId = $request->posUserId ?? Auth::id();
+        if (!$userId) {
+            return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
+        }
+
         try {
             $movement = $this->sessionService->createAdjustment(
                 $session,
                 $validated['amount'],
                 $validated['direction'],
                 $validated['reason'],
-                Auth::id()
+                $userId
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Ajustement enregistré',
+            return $this->success([
                 'movement' => [
                     'id' => $movement->id,
                     'type' => $movement->type,
@@ -252,12 +272,16 @@ class PosSessionController extends Controller
                     'direction' => $movement->direction,
                     'reason' => $movement->reason,
                 ],
-            ], 201);
+            ], 'Ajustement enregistré', 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->error('ADJUSTMENT_FAILED', $e->getMessage());
         }
+    }
+
+    private function isMachineMismatch(string $machineId): bool
+    {
+        $requestMachineId = request()->machineId ?? null;
+
+        return $requestMachineId !== null && $requestMachineId !== $machineId;
     }
 }

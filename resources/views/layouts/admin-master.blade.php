@@ -345,7 +345,7 @@
             </a>
 
             <div class="admin-nav-section-title">Outils</div>
-            <a href="{{ route('admin.pos.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+            <a href="{{ route('pos.interface.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
                 <i class="fas fa-cash-register"></i>
                 <span>Point de Vente (POS)</span>
             </a>

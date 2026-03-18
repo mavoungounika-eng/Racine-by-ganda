@@ -3,7 +3,11 @@
 namespace App\Services\Pos;
 
 use App\Models\PosSession;
+use App\Models\PosSale;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 /**
  * PosReportsService - Rapports et analytics POS
@@ -193,5 +197,180 @@ class PosReportsService
                 'notes' => $session->notes,
             ];
         })->toArray();
+    }
+
+    /**
+     * API: Get Daily Summary for a specific machine
+     */
+    public function getDailySummary(string $machineId, Carbon $date): array
+    {
+        $sessions = PosSession::where('machine_id', $machineId)
+            ->whereDate('opened_at', $date)
+            ->with(['sales' => function ($query) {
+                $query->where('status', PosSale::STATUS_FINALIZED);
+            }])
+            ->get();
+
+        $activeSession = $sessions->firstWhere('status', PosSession::STATUS_OPEN);
+        $sales = $sessions->flatMap->sales;
+        $cancelledCount = PosSale::whereIn('session_id', $sessions->pluck('id'))
+            ->where('status', PosSale::STATUS_CANCELLED)
+            ->count();
+
+        $totalRevenue = $sales->sum('total_amount');
+        $transactionCount = $sales->count();
+
+        return [
+            'total_revenue' => (float) $totalRevenue,
+            'transaction_count' => $transactionCount,
+            'average_basket' => $transactionCount > 0 ? (float) ($totalRevenue / $transactionCount) : 0.0,
+            'cash_total' => (float) $sales->where('payment_method', PosSale::PAYMENT_CASH)->sum('total_amount'),
+            'card_total' => (float) $sales->where('payment_method', PosSale::PAYMENT_CARD)->sum('total_amount'),
+            'mobile_total' => (float) $sales->where('payment_method', PosSale::PAYMENT_MOBILE)->sum('total_amount'),
+            'cancelled_count' => $cancelledCount,
+            'active_session' => $activeSession !== null,
+        ];
+    }
+
+    /**
+     * API: Get all currently open sessions
+     */
+    public function getActiveSessions(): \Illuminate\Support\Collection
+    {
+        $sessions = PosSession::where('status', PosSession::STATUS_OPEN)
+            ->with(['opener', 'sales' => function ($query) {
+                $query->where('status', PosSale::STATUS_FINALIZED);
+            }])
+            ->get();
+
+        return $sessions->map(function ($session) {
+            $sales = $session->sales;
+            return [
+                'session_id' => $session->id,
+                'machine_id' => $session->machine_id,
+                'operator_name' => $session->opener?->name ?? 'Unknown',
+                'opened_at' => $session->opened_at->toIso8601String(),
+                'duration_minutes' => $session->opened_at->diffInMinutes(now()),
+                'sales_count' => $sales->count(),
+                'revenue_so_far' => (float) $sales->sum('total_amount'),
+            ];
+        });
+    }
+
+    /**
+     * API: Get Top Products by revenue and quantity
+     */
+    public function getTopProducts(?string $machineId = null, ?Carbon $from = null, ?Carbon $to = null, int $limit = 10): \Illuminate\Support\Collection
+    {
+        $query = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('pos_sales', 'orders.id', '=', 'pos_sales.order_id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('pos_sales.status', PosSale::STATUS_FINALIZED)
+            ->select(
+                'products.id',
+                'products.title as name',
+                DB::raw('SUM(order_items.quantity) as quantity_sold'),
+                DB::raw('SUM(order_items.quantity * order_items.price) as revenue'),
+                DB::raw('COUNT(DISTINCT pos_sales.id) as transaction_count')
+            )
+            ->groupBy('products.id', 'products.title');
+
+        if ($machineId) {
+            $query->where('pos_sales.machine_id', $machineId);
+        }
+        if ($from) {
+            $query->where('pos_sales.created_at', '>=', $from);
+        }
+        if ($to) {
+            $query->where('pos_sales.created_at', '<=', $to);
+        }
+
+        return $query->orderByDesc('revenue')->limit($limit)->get()->map(function ($item) {
+            return [
+                'product_id' => $item->id,
+                'name' => $item->name,
+                'quantity_sold' => (int) $item->quantity_sold,
+                'revenue' => (float) $item->revenue,
+                'transaction_count' => (int) $item->transaction_count,
+            ];
+        });
+    }
+
+    /**
+     * API: Get Low Stock Alerts
+     */
+    public function getLowStockAlerts(int $threshold = 5): \Illuminate\Support\Collection
+    {
+        // Assuming products table has 'stock' and 'sku' columns.
+        // Also assuming 'last_sold_at' can be derived or is updated. If not, we join with latest sale.
+        return DB::table('products')
+            ->where('stock', '<=', $threshold)
+            ->where('is_active', true) // assuming active products only
+            ->select('id as product_id', 'title as name', 'stock', DB::raw("$threshold as threshold"))
+            ->get()
+            ->map(function ($product) {
+                // To get last_sold_at, we do a subquery or separate query (for performance, doing it per item or with a join is possible, but simple approach here)
+                $lastSale = DB::table('order_items')
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->join('pos_sales', 'orders.id', '=', 'pos_sales.order_id')
+                    ->where('order_items.product_id', $product->product_id)
+                    ->where('pos_sales.status', PosSale::STATUS_FINALIZED)
+                    ->orderByDesc('pos_sales.created_at')
+                    ->first(['pos_sales.created_at']);
+                
+                return [
+                    'product_id' => $product->product_id,
+                    'name' => $product->name,
+                    'sku' => $product->sku ?? null,
+                    'stock' => (int) $product->stock,
+                    'threshold' => (int) $product->threshold,
+                    'last_sold_at' => $lastSale ? Carbon::parse($lastSale->created_at)->toIso8601String() : null,
+                ];
+            });
+    }
+
+    /**
+     * API: Get Period Report (extended for API)
+     */
+    public function getApiPeriodReport(?string $machineId = null, Carbon $from, Carbon $to, string $groupBy = 'day'): array
+    {
+        $query = PosSession::whereBetween('opened_at', [$from, $to])
+            ->where('status', 'closed')
+            ->with(['sales' => function ($q) {
+                $q->where('status', PosSale::STATUS_FINALIZED);
+            }]);
+
+        if ($machineId) {
+            $query->where('machine_id', $machineId);
+        }
+
+        $sessions = $query->get();
+        $sales = $sessions->flatMap->sales;
+
+        // Grouping data
+        $revenueByPeriod = [];
+        $dateFormat = $groupBy === 'month' ? 'Y-m' : ($groupBy === 'week' ? 'Y-\WW' : 'Y-m-d');
+
+        foreach ($sales as $sale) {
+            $dateKey = Carbon::parse($sale->created_at)->format($dateFormat);
+            if (!isset($revenueByPeriod[$dateKey])) {
+                $revenueByPeriod[$dateKey] = 0;
+            }
+            $revenueByPeriod[$dateKey] += $sale->total_amount;
+        }
+
+        return [
+            'total_revenue' => (float) $sales->sum('total_amount'),
+            'total_transactions' => $sales->count(),
+            'revenue_by_period' => $revenueByPeriod,
+            'payment_method_breakdown' => [
+                'cash' => (float) $sales->where('payment_method', PosSale::PAYMENT_CASH)->sum('total_amount'),
+                'card' => (float) $sales->where('payment_method', PosSale::PAYMENT_CARD)->sum('total_amount'),
+                'mobile_money' => (float) $sales->where('payment_method', PosSale::PAYMENT_MOBILE)->sum('total_amount'),
+                'mixed' => (float) $sales->where('payment_method', PosSale::PAYMENT_MIXED)->sum('total_amount'),
+            ],
+            'grouped_sales_data' => $revenueByPeriod, // Alias for API response consistency
+        ];
     }
 }

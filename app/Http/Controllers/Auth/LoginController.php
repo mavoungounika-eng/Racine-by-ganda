@@ -51,6 +51,12 @@ class LoginController extends Controller
      */
     public function showLoginForm(Request $request): View|RedirectResponse
     {
+        // Si un intended est fourni en query, le stocker pour la redirection post-login
+        $intended = $request->query('intended');
+        if (is_string($intended) && $intended !== '' && str_starts_with($intended, '/') && !str_starts_with($intended, '//')) {
+            session(['url.intended' => $intended]);
+        }
+
         // Si déjà connecté, rediriger selon le rôle
         if (Auth::check()) {
             $user = Auth::user();

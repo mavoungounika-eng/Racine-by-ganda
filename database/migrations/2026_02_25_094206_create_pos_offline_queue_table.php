@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('machine_id', 36)->index();
             $table->json('sale_data');
-            $table->enum('status', ['pending', 'synced', 'failed'])->default('pending')->index();
+            $table->enum('status', ['pending', 'synced', 'failed', 'conflict', 'expired', 'discarded'])->default('pending')->index();
             $table->timestamp('queued_at');
             $table->timestamp('synced_at')->nullable();
             $table->timestamps();

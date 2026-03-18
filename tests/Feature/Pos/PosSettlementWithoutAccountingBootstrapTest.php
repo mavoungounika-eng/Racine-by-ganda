@@ -13,9 +13,9 @@ use App\Exceptions\Accounting\AccountingNotBootstrappedException;
 use Illuminate\Support\Str;
 
 /**
- * Test critique: EmpÃªcher settlement POS sans bootstrap comptable
+ * Test critique: Empêcher settlement POS sans bootstrap comptable
  * 
- * RÃˆGLE: Aucune clÃ´ture ne doit crÃ©er d'intent si l'environnement comptable n'est pas prÃªt
+ * RÊGLE: Aucune clôture ne doit créer d'intent si l'environnement comptable n'est pas prêt
  */
 class PosSettlementWithoutAccountingBootstrapTest extends TestCase
 {
@@ -28,8 +28,8 @@ class PosSettlementWithoutAccountingBootstrapTest extends TestCase
     {
         parent::setUp();
 
-        // NE PAS seed les donnÃ©es comptables (c'est le test)
-        // CrÃ©er uniquement l'utilisateur
+        // NE PAS seed les données comptables (c'est le test)
+        // Créer uniquement l'utilisateur
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
         $this->sessionService = app(PosSessionService::class);
@@ -46,7 +46,7 @@ class PosSettlementWithoutAccountingBootstrapTest extends TestCase
 
         $this->assertEquals(PosSession::STATUS_OPEN, $session->status);
 
-        // Tenter clÃ´ture (doit Ã©chouer)
+        // Tenter clôture (doit échouer)
         $this->expectException(AccountingNotBootstrappedException::class);
         $this->expectExceptionMessage('Accounting environment not bootstrapped. POS settlement blocked');
 
@@ -67,7 +67,7 @@ class PosSettlementWithoutAccountingBootstrapTest extends TestCase
             // Exception attendue
         }
 
-        // VÃ©rifier que session est toujours OPEN
+        // Vérifier que session est toujours OPEN
         $session->refresh();
         $this->assertEquals(PosSession::STATUS_OPEN, $session->status);
     }
@@ -86,12 +86,12 @@ class PosSettlementWithoutAccountingBootstrapTest extends TestCase
             // Exception attendue
         }
 
-        // VÃ©rifier qu'aucun intent n'a Ã©tÃ© crÃ©Ã©
+        // Vérifier qu'aucun intent n'a été créé
         $intentCount = FinancialIntent::where('reference_type', 'pos_session')
             ->where('reference_id', $session->id)
             ->count();
 
-        $this->assertEquals(0, $intentCount, 'Aucun FinancialIntent ne doit Ãªtre crÃ©Ã© sans bootstrap');
+        $this->assertEquals(0, $intentCount, 'Aucun FinancialIntent ne doit être créé sans bootstrap');
     }
 }
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Tableau de Bord Admin - RACINE BY GANDA')</title>
+    <title>@yield('title', 'Tableau de Bord Admin - ' . config('app.company.name'))</title>
 
     {{-- Fonts & Icons --}}
     <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -302,7 +302,7 @@
         <div class="admin-sidebar-header">
             <div class="admin-sidebar-title">Espace Admin</div>
             <div class="admin-sidebar-subtitle">
-                RACINE BY GANDA
+                {{ config('app.company.name') }}
             </div>
         </div>
 
@@ -372,7 +372,7 @@
             </a>
 
             <div class="admin-nav-section-title">Outils</div>
-            <a href="{{ route('admin.pos.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+            <a href="{{ route('pos.interface.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
                 <i class="fas fa-cash-register"></i>
                 <span>Point de Vente (POS)</span>
             </a>
@@ -422,7 +422,7 @@
 
         <div class="admin-sidebar-footer">
             <div><strong>Admin</strong></div>
-            <div class="admin-user-email">{{ auth()->user()->email ?? 'admin@racine.cm' }}</div>
+            <div class="admin-user-email">{{ auth()->user()->email ?? 'admin@racinebyganda.com' }}</div>
             <form action="{{ route('logout') }}" method="POST" class="mt-1">
                 @csrf
                 <button type="submit" class="admin-logout-btn">
@@ -439,7 +439,7 @@
         <header class="admin-topbar">
             <div class="admin-topbar-left">
                 <h1>@yield('page-title', 'Tableau de bord')</h1>
-                <span>@yield('page-subtitle', "Vue d'ensemble de l'activité RACINE")</span>
+                <span>@yield('page-subtitle', "Vue d'ensemble de l'activité " . config('app.company.name'))</span>
             </div>
             <div class="admin-topbar-right">
                 <div class="admin-badge-env">

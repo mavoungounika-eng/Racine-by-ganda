@@ -227,8 +227,12 @@ class OrderObserver
 
             // Attribuer des points de fidélité
             try {
-                $loyaltyService = app(\App\Services\LoyaltyService::class);
-                $loyaltyService->awardPointsForOrder($order);
+                // AVANT d'appeler awardPoints
+                $customer = $order->user ?? null;
+                if ($customer && $customer->id) {
+                    $loyaltyService = app(\App\Services\Crm\LoyaltyService::class);
+                    $loyaltyService->awardPointsForOrder($order);
+                }
             } catch (\Throwable $e) {
                 \Log::error('Loyalty points award failed for order', [
                     'order_id' => $order->id,

@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Http\Controllers\Pos;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use App\Http\Responses\PosApiResponse;
+use App\Traits\AuditsPosOperations;
+
+class PosAuthController extends Controller
+{
+    use AuditsPosOperations;
+    /**
+     * Operator login using email/password + PosApiResponse envelope.
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return PosApiResponse::unauthorized('Invalid credentials');
+        }
+
+        // Check if user is allowed to access POS
+        if (!$user->isTeamMember()) {
+            return PosApiResponse::error('FORBIDDEN', 'Role not allowed for POS', [], 403);
+        }
+
+        // Revoke existing POS tokens for this user
+        $user->tokens()->where('name', 'pos-operator')->delete();
+
+        // Create new Sanctum token
+        $token = $user->createToken('pos-operator', ['pos:operate'])->plainTextToken;
+
+        self::logPosAction('OPERATOR_LOGIN', [
+            'operator_id' => $user->id,
+            'email' => $user->email,
+        ], $user->id);
+
+        return PosApiResponse::success([
+            'operator' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->getRoleSlug(),
+            ],
+            'token' => $token,
+        ], 'Login successful');
+    }
+
+    /**
+     * Operator logout (revokes token).
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        if ($request->user()) {
+            $user = $request->user();
+            $user->currentAccessToken()->delete();
+
+            self::logPosAction('OPERATOR_LOGOUT', [
+                'operator_id' => $user->id,
+                'email' => $user->email,
+                'reason' => 'regular_logout'
+            ], $user->id);
+        }
+
+        return PosApiResponse::success(['message' => 'Logged out'], 'Logged out');
+    }
+
+    /**
+     * Get current operator info.
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        return PosApiResponse::success([
+            'operator' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->getRoleSlug(),
+            ]
+        ], 'Operator profile retrieved');
+    }
+}

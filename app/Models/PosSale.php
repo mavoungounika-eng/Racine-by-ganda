@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use App\Traits\AuditsPosOperations;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * PosSale - Vente POS liée à une session
@@ -32,8 +35,11 @@ use Illuminate\Support\Str;
  */
 class PosSale extends Model
 {
+    use AuditsPosOperations, HasFactory;
+
     protected $fillable = [
         'uuid',
+        'idempotency_key',
         'order_id',
         'machine_id',
         'session_id',
@@ -45,13 +51,26 @@ class PosSale extends Model
         'cancelled_by',
         'cancellation_reason',
         'created_by',
+        'customer_id',
+        'currency',
+        'amount_eur',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'finalized_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'customer_id' => 'integer',
+        'amount_eur' => 'decimal:2',
     ];
+
+    /**
+     * Client lié à la vente
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
     // Statuts
     public const STATUS_PENDING = 'pending';
@@ -65,13 +84,34 @@ class PosSale extends Model
     public const PAYMENT_MIXED = 'mixed';
 
     /**
-     * Boot method - auto-generate UUID
+     * Boot method - auto-generate UUID and audit
      */
     protected static function booted(): void
     {
         static::creating(function (PosSale $sale) {
             if (empty($sale->uuid)) {
                 $sale->uuid = Str::uuid()->toString();
+            }
+        });
+
+        static::created(function (PosSale $sale) {
+            self::logPosAction(PosOperatorAuditLog::ACTION_SALE_CREATED, [
+                'sale_id' => $sale->id,
+                'session_id' => $sale->session_id,
+                'total_amount' => $sale->total_amount,
+                'payment_method' => $sale->payment_method,
+            ], $sale->created_by);
+        });
+
+        static::updated(function (PosSale $sale) {
+            if ($sale->wasChanged('status')) {
+                if ($sale->status === self::STATUS_CANCELLED) {
+                    self::logPosAction(PosOperatorAuditLog::ACTION_SALE_CANCELLED, [
+                        'sale_id' => $sale->id,
+                        'session_id' => $sale->session_id,
+                        'reason' => $sale->cancellation_reason,
+                    ], $sale->cancelled_by);
+                } 
             }
         });
     }
@@ -194,7 +234,7 @@ class PosSale extends Model
     /**
      * Annuler la vente
      */
-    public function cancel(int $cancelledBy, string $reason): void
+    public function cancel(?int $cancelledBy = null, string $reason = 'timeout'): void
     {
         $this->update([
             'status' => self::STATUS_CANCELLED,
@@ -202,5 +242,11 @@ class PosSale extends Model
             'cancelled_by' => $cancelledBy,
             'cancellation_reason' => $reason,
         ]);
+
+        // Annuler les paiements pending liés (si appel système)
+        $this->payments()
+            ->where('status', PosPayment::STATUS_PENDING)
+            ->get()
+            ->each(fn (PosPayment $payment) => $payment->cancel($reason));
     }
 }

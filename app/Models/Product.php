@@ -25,11 +25,16 @@ class Product extends Model
         'stock',
         'is_active',
         'main_image',
+        'ai_description',
+        'ai_price_suggestion',
+        'ai_last_analyzed_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'price' => 'decimal:2',
+        'ai_price_suggestion' => 'decimal:2',
+        'ai_last_analyzed_at' => 'datetime',
     ];
 
     /**

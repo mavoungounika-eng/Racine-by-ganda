@@ -65,7 +65,11 @@ class PosSessionService
             ]);
 
             // 📋 AUDIT TRAIL
-            self::auditSessionOpen($session->id, $openingCash, $userId);
+            self::logPosAction(\App\Models\PosOperatorAuditLog::ACTION_SESSION_OPEN, [
+                'session_id' => $session->id,
+                'opening_cash' => $openingCash,
+                'notes' => 'Ouverture session via service',
+            ], $userId);
 
             return $session;
         });
@@ -173,8 +177,8 @@ class PosSessionService
                 ->firstOrFail();
 
             // ✅ Vérification status AVANT toute modification
-            if ($session->status !== PosSession::STATUS_OPEN) {
-                throw new \DomainException("Session already closed or closing (status: {$session->status})");
+            if (!in_array($session->status, [PosSession::STATUS_OPEN, PosSession::STATUS_CLOSING], true)) {
+                throw new \DomainException("Session already closed (status: {$session->status})");
             }
 
             // Calculer expected_cash si nécessaire
@@ -219,14 +223,13 @@ class PosSessionService
             ]);
 
             // 📋 AUDIT TRAIL
-            self::auditSessionClose(
-                $session->id,
-                $expectedCash,
-                $closingCash,
-                $cashDifference,
-                $notes,
-                $userId
-            );
+            self::logPosAction(\App\Models\PosOperatorAuditLog::ACTION_SESSION_CLOSE, [
+                'session_id' => $session->id,
+                'expected_cash' => $expectedCash,
+                'closing_cash' => $closingCash,
+                'difference' => $cashDifference,
+                'notes' => $notes ?? 'Clôture session via service',
+            ], $userId);
 
             // Dispatcher l'événement de clôture
             event(new PosSessionClosed($session));

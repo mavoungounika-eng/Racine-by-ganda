@@ -10,9 +10,13 @@ use App\Models\PosCashMovement;
 use App\Models\Product;
 use App\Events\PosCardPaymentConfirmed;
 use App\Events\PosMobilePaymentConfirmed;
+use App\Events\StockDecremented;
+use App\Events\StockLowAlert;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+
+use App\Traits\AuditsPosOperations;
 
 /**
  * PosSaleService - Création et gestion des ventes POS
@@ -25,6 +29,8 @@ use Illuminate\Support\Str;
  */
 class PosSaleService
 {
+    use AuditsPosOperations;
+
     public function __construct(
         protected PosSessionService $sessionService
     ) {}
@@ -37,6 +43,7 @@ class PosSaleService
      * @param string $paymentMethod cash|card|mobile_money
      * @param int $userId
      * @param array $options Options supplémentaires (customer_name, customer_phone, etc.)
+     * @param string|null $idempotencyKey Clé d'idempotence (optionnelle)
      * @return PosSale
      * @throws \Exception Si pas de session ouverte
      */
@@ -45,11 +52,21 @@ class PosSaleService
         array $items,
         string $paymentMethod,
         int $userId,
-        array $options = []
+        array $options = [],
+        ?string $idempotencyKey = null
     ): PosSale {
-        return DB::transaction(function () use ($machineId, $items, $paymentMethod, $userId, $options) {
+        return DB::transaction(function () use ($machineId, $items, $paymentMethod, $userId, $options, $idempotencyKey) {
             // 1. Vérifier session ouverte (INVARIANT)
             $session = $this->sessionService->requireOpenSession($machineId);
+
+            if ($idempotencyKey !== null) {
+                $existing = PosSale::where('session_id', $session->id)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+                if ($existing) {
+                    return $existing->load(['order', 'payments', 'session']);
+                }
+            }
 
             // 2. Calculer total et valider items
             $total = 0;
@@ -71,7 +88,7 @@ class PosSaleService
                 }
 
                 // Vérifier stock (Verrouillé)
-                if ($product->stock < $quantity) {
+                if (empty($options['force_stock']) && $product->stock < $quantity) {
                     throw new \Exception("Stock insuffisant pour {$product->title}");
                 }
                 
@@ -97,7 +114,21 @@ class PosSaleService
                 'customer_address' => 'Boutique physique',
             ]);
 
-            // 4. Créer les items de commande
+            // 4. Créer la vente POS
+            $sale = PosSale::create([
+                'uuid' => $options['uuid'] ?? Str::uuid()->toString(),
+                'idempotency_key' => $idempotencyKey,
+                'order_id' => $order->id,
+                'customer_id' => $options['customer_id'] ?? null,
+                'machine_id' => $machineId,
+                'session_id' => $session->id,
+                'total_amount' => $total,
+                'payment_method' => $paymentMethod,
+                'status' => PosSale::STATUS_PENDING,
+                'created_by' => $userId,
+            ]);
+
+            // 5. Créer les items de commande
             foreach ($orderItems as $item) {
                 $order->items()->create([
                     'product_id' => $item['product']->id,
@@ -107,19 +138,46 @@ class PosSaleService
                 ]);
             }
 
-            // 5. Créer la vente POS
-            $sale = PosSale::create([
-                'uuid' => Str::uuid()->toString(),
-                'order_id' => $order->id,
-                'machine_id' => $machineId,
-                'session_id' => $session->id,
-                'total_amount' => $total,
-                'payment_method' => $paymentMethod,
-                'status' => PosSale::STATUS_PENDING,
-                'created_by' => $userId,
-            ]);
+            // ── 5b. Décrément stock POS (synchrone, dans la transaction) ──
+            foreach ($orderItems as $orderItem) {
+                /** @var Product $product */
+                $product = $orderItem['product'];
 
-            // 6. Créer le paiement POS (TOUJOURS pending)
+                // Respecter track_stock
+                if (isset($product->track_stock) && !$product->track_stock) {
+                    continue;
+                }
+
+                $stockBefore = $product->stock;
+                $product->decrement('stock', $orderItem['quantity']);
+                $stockAfter = $product->fresh()->stock;
+
+                try {
+                    event(new StockDecremented(
+                        product_id:   $product->id,
+                        qty_removed:  $orderItem['quantity'],
+                        stock_before: $stockBefore,
+                        stock_after:  $stockAfter,
+                        source:       'pos_sale',
+                        reference_id: $sale->id,
+                    ));
+
+                    $threshold = $product->low_stock_threshold ?? config('erp.low_stock_threshold', 5);
+                    if ($stockAfter <= $threshold) {
+                        event(new StockLowAlert(
+                            product_id:    $product->id,
+                            product_name:  $product->title,
+                            current_stock: $stockAfter,
+                            threshold:     $threshold,
+                            source:        'pos_sale',
+                        ));
+                    }
+                } catch (\Throwable $e) {
+                    // Jamais bloquer une vente à cause d'une notification
+                    Log::error("PosSaleService: stock event failed for product #{$product->id}: " . $e->getMessage());
+                }
+            }
+
             $payment = PosPayment::create([
                 'pos_sale_id' => $sale->id,
                 'method' => $paymentMethod,
@@ -132,6 +190,15 @@ class PosSaleService
             if ($paymentMethod === 'cash') {
                 PosCashMovement::createSale($sale, $total, $userId);
             }
+
+            self::logPosAction(\App\Models\PosOperatorAuditLog::ACTION_SALE_CREATED, [
+                'sale_id' => $sale->id,
+                'session_id' => $session->id,
+                'total_amount' => $total,
+                'payment_method' => $paymentMethod,
+                'items_count' => count($items),
+                'notes' => 'Vente créée via service',
+            ], $userId);
 
             Log::info('POS sale created', [
                 'sale_id' => $sale->id,
@@ -261,6 +328,15 @@ class PosSaleService
                 'sale_id' => $sale->id,
                 'order_id' => $sale->order_id,
             ]);
+
+            // Attribuer points de fidélité
+            try {
+                if ($sale->customer_id) {
+                    app(\App\Services\Crm\LoyaltyService::class)->awardPointsForPosSale($sale);
+                }
+            } catch (\Throwable $e) {
+                Log::error("PosSaleService: Loyalty awarding failed for sale #{$sale->id}: " . $e->getMessage());
+            }
         }
     }
 
@@ -288,6 +364,13 @@ class PosSaleService
             $sale->order->update([
                 'status' => 'cancelled',
             ]);
+
+            self::logPosAction(\App\Models\PosOperatorAuditLog::ACTION_SALE_CANCELLED, [
+                'sale_id' => $sale->id,
+                'session_id' => $sale->session_id,
+                'reason' => $reason,
+                'notes' => 'Vente annulée via service',
+            ], $userId);
 
             Log::info('POS sale cancelled', [
                 'sale_id' => $sale->id,

@@ -57,9 +57,9 @@
           <h2 class="ftco-heading-2">Vous avez une question ?</h2>
           <div class="block-23 mb-3">
             <ul>
-              <li><span class="icon icon-map-marker"></span><span class="text">Pointe-Noire, Congo-Brazzaville</span></li>
-              <li><a href="#"><span class="icon icon-phone"></span><span class="text">+242 06 6XX XX XX</span></a></li>
-              <li><a href="mailto:contact@racinebyganda.com"><span class="icon icon-envelope"></span><span class="text">contact@racinebyganda.com</span></a></li>
+              <li><span class="icon icon-map-marker"></span><span class="text">Centre ville, Galerie NF, Pointe-Noire</span></li>
+              <li><a href="tel:{{ str_replace(' ', '', config('app.company.phone')) }}"><span class="icon icon-phone"></span><span class="text">{{ config('app.company.phone') }}</span></a></li>
+              <li><a href="mailto:{{ config('app.company.email') }}"><span class="icon icon-envelope"></span><span class="text">{{ config('app.company.email') }}</span></a></li>
             </ul>
           </div>
         </div>

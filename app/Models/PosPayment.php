@@ -32,6 +32,7 @@ class PosPayment extends Model
         'method',
         'amount',
         'status',
+        'cancel_reason',
         'confirmed_at',
         'confirmed_by',
         'external_reference',
@@ -154,10 +155,11 @@ class PosPayment extends Model
     /**
      * Annuler le paiement
      */
-    public function cancel(): void
+    public function cancel(string $reason = 'timeout'): void
     {
         $this->update([
             'status' => self::STATUS_CANCELLED,
+            'cancel_reason' => $reason,
         ]);
     }
 }

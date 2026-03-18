@@ -34,6 +34,8 @@ class Order extends Model
         'expected_delivery_date',
         'prepared_at',
         'shipped_at',
+        'currency',
+        'amount_eur',
     ];
 
     protected $casts = [
@@ -43,6 +45,7 @@ class Order extends Model
         'expected_delivery_date' => 'datetime',
         'prepared_at' => 'datetime',
         'shipped_at' => 'datetime',
+        'amount_eur' => 'decimal:2',
     ];
 
     protected static function booted(): void

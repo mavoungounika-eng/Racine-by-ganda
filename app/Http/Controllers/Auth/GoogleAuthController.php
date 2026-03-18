@@ -127,7 +127,7 @@ class GoogleAuthController extends Controller
 
         try {
             // Récupérer l'utilisateur Google
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Exception $e) {
             return redirect()->route('login')
                 ->with('error', 'Erreur lors de la connexion avec Google. Veuillez réessayer.');
@@ -259,7 +259,10 @@ class GoogleAuthController extends Controller
                             'google_id' => $googleId, // PHASE 1.3 : Stocker le google_id
                             'password' => Hash::make(Str::random(32)), // Mot de passe généré (l'utilisateur pourra le changer)
                             'role_id' => $role->id,
-                            'email_verified_at' => now(), // Email vérifié via Google
+                            'role' => $requestedRoleSlug, // Expliciter le champ role pour la cohérence de domaine
+                            'email_verified_at' => now(),
+                            'status' => 'active',
+                            'auth_version' => 1,
                         ]);
                         
                         // PHASE 3.1 : Si rôle créateur, créer le profil créateur avec statut pending
@@ -276,6 +279,11 @@ class GoogleAuthController extends Controller
                         return $user;
                     });
                 } catch (\Exception $e) {
+                    \Log::error('Google Auth Creation Error: ' . $e->getMessage(), [
+                        'exception' => $e,
+                        'email' => $email,
+                        'role' => $requestedRoleSlug
+                    ]);
                     // PHASE 3.1 : Rollback automatique en cas d'erreur
                     return redirect()->route('login')
                         ->with('error', 'Erreur lors de la création de votre compte. Veuillez réessayer.');

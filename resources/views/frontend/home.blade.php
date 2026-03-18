@@ -4,57 +4,57 @@
 
 @section('content')
 <!-- HERO SECTION -->
-<section class="hero">
-    <div class="hero-bg-pattern"></div>
-    <div class="container">
-        <div class="hero-content">
-            <div class="hero-text">
-                @php
-                    $heroSection = $cmsPage?->section('hero');
-                    $heroData = $heroSection?->data ?? [];
-                @endphp
-                <span class="hero-badge">{{ $heroData['badge'] ?? 'Nouvelle Collection 2025' }}</span>
-                <h1 class="hero-title">
-                    {!! $heroData['title'] ?? "L'Élégance<br><span class=\"highlight\">Africaine</span><br>Réinventée" !!}
-                </h1>
-                <p class="hero-description">
-                    {{ $heroData['description'] ?? "Découvrez des créations uniques qui célèbrent notre héritage. Des pièces artisanales confectionnées par les meilleurs créateurs africains." }}
-                </p>
-                <div class="hero-cta">
-                    <a href="{{ route('frontend.shop') }}" class="btn-primary-custom">
-                        <i class="fas fa-shopping-bag"></i>
-                        Explorer la boutique
-                    </a>
-                    <a href="{{ route('frontend.creators') }}" class="btn-outline-custom">
-                        <i class="fas fa-palette"></i>
-                        Nos créateurs
-                    </a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=1000&fit=crop" alt="Mode Africaine" class="hero-image-main">
-                <div class="hero-image-float hero-float-1">
-                    <div class="hero-float-content">
-                        <div class="hero-float-icon"><i class="fas fa-truck"></i></div>
-                        <div class="hero-float-text">
-                            <h4>Livraison Express</h4>
-                            <span>Partout en France</span>
-                        </div>
+@if(!empty($cmsHeroBanners) && $cmsHeroBanners->count())
+    <x-cms.banner-slider :banners="$cmsHeroBanners" :autoplay="true" />
+@else
+    <section class="hero">
+        <div class="hero-bg-pattern"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <span class="hero-badge">Nouvelle Collection 2025</span>
+                    <h1 class="hero-title">
+                        L'Élégance<br><span class="highlight">Africaine</span><br>Réinventée
+                    </h1>
+                    <p class="hero-description">
+                        Découvrez des créations uniques qui célèbrent notre héritage. Des pièces artisanales confectionnées par les meilleurs créateurs africains.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="{{ route('frontend.shop') }}" class="btn-primary-custom">
+                            <i class="fas fa-shopping-bag"></i>
+                            Explorer la boutique
+                        </a>
+                        <a href="{{ route('frontend.creators') }}" class="btn-outline-custom">
+                            <i class="fas fa-palette"></i>
+                            Nos créateurs
+                        </a>
                     </div>
                 </div>
-                <div class="hero-image-float hero-float-2">
-                    <div class="hero-float-content">
-                        <div class="hero-float-icon"><i class="fas fa-award"></i></div>
-                        <div class="hero-float-text">
-                            <h4>100% Authentique</h4>
-                            <span>Fait main en Afrique</span>
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=1000&fit=crop" alt="Mode Africaine" class="hero-image-main">
+                    <div class="hero-image-float hero-float-1">
+                        <div class="hero-float-content">
+                            <div class="hero-float-icon"><i class="fas fa-truck"></i></div>
+                            <div class="hero-float-text">
+                                <h4>Livraison Express</h4>
+                                <span>Partout en France</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-image-float hero-float-2">
+                        <div class="hero-float-content">
+                            <div class="hero-float-icon"><i class="fas fa-award"></i></div>
+                            <div class="hero-float-text">
+                                <h4>100% Authentique</h4>
+                                <span>Fait main en Afrique</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+@endif
 
 <!-- FEATURES BAR -->
 <section class="features-bar">
@@ -214,51 +214,72 @@
     </div>
 </section>
 
-<!-- ABOUT SECTION -->
-<section class="about-section">
+@php
+  $introBlock = $cmsBlocks['home_intro'] ?? null;
+  $ctaBlock   = $cmsBlocks['home_cta']   ?? null;
+@endphp
+
+@if($introBlock && $introBlock->is_active)
+  <section class="home-intro">
     <div class="container">
-        <div class="about-grid">
-            <div class="about-images">
-                <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop" alt="Mode Africaine">
-                </div>
-                <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Création">
-                </div>
-                <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Vêtement">
-                </div>
-            </div>
-            <div class="about-content">
-                <span class="section-tag">Notre Histoire</span>
-                <h2 class="section-title">L'Art de la Mode Africaine</h2>
-                <p class="about-text">
-                    RACINE BY GANDA est née d'une passion pour l'artisanat africain et le désir de 
-                    connecter les talents du continent avec le monde. Chaque pièce raconte une histoire, 
-                    celle d'un créateur, d'un savoir-faire ancestral sublimé par une vision contemporaine.
-                </p>
-                <p class="about-text">
-                    Nous collaborons avec plus de 50 artisans et créateurs à travers l'Afrique, 
-                    garantissant des conditions de travail équitables et la préservation des techniques traditionnelles.
-                </p>
-                <div class="about-stats">
-                    <div class="stat-item">
-                        <h3>50+</h3>
-                        <span>Créateurs partenaires</span>
+      {!! $introBlock->content !!}
+    </div>
+  </section>
+@else
+    <!-- ABOUT SECTION (Fallback) -->
+    <section class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-images">
+                    <div class="about-img">
+                        <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop" alt="Mode Africaine">
                     </div>
-                    <div class="stat-item">
-                        <h3>15</h3>
-                        <span>Pays représentés</span>
+                    <div class="about-img">
+                        <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Création">
                     </div>
-                    <div class="stat-item">
-                        <h3>5000+</h3>
-                        <span>Clients satisfaits</span>
+                    <div class="about-img">
+                        <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Vêtement">
+                    </div>
+                </div>
+                <div class="about-content">
+                    <span class="section-tag">Notre Histoire</span>
+                    <h2 class="section-title">L'Art de la Mode Africaine</h2>
+                    <p class="about-text">
+                        RACINE BY GANDA est née d'une passion pour l'artisanat africain et le désir de 
+                        connecter les talents du continent avec le monde. Chaque pièce raconte une histoire, 
+                        celle d'un créateur, d'un savoir-faire ancestral sublimé par une vision contemporaine.
+                    </p>
+                    <p class="about-text">
+                        Nous collaborons avec plus de 50 artisans et créateurs à travers l'Afrique, 
+                        garantissant des conditions de travail équitables et la préservation des techniques traditionnelles.
+                    </p>
+                    <div class="about-stats">
+                        <div class="stat-item">
+                            <h3>50+</h3>
+                            <span>Créateurs partenaires</span>
+                        </div>
+                        <div class="stat-item">
+                            <h3>15</h3>
+                            <span>Pays représentés</span>
+                        </div>
+                        <div class="stat-item">
+                            <h3>5000+</h3>
+                            <span>Clients satisfaits</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+@endif
+
+@if($ctaBlock && $ctaBlock->is_active)
+  <section class="home-cta">
+    <div class="container">
+      {!! $ctaBlock->content !!}
     </div>
-</section>
+  </section>
+@endif
 
 <!-- CREATORS SECTION -->
 <section class="creators-section">

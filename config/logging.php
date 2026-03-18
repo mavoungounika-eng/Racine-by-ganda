@@ -151,6 +151,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Channel dédié POS Audit
+        'pos' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/pos/pos-audit.log'),
+            'level' => 'info',
+            'days' => 90,
+            'replace_placeholders' => true,
+        ],
+
         // ✅ Module 8 : Canaux dédiés pour observabilité
         'webhooks' => [
             'driver' => 'daily',
@@ -181,6 +190,15 @@ return [
             'path' => storage_path('logs/errors.log'),
             'level' => 'error', // Uniquement errors et critical
             'days' => env('LOG_ERRORS_DAYS', 90), // Conserver 90 jours pour diagnostic
+            'replace_placeholders' => true,
+        ],
+
+        // ── ERP : Anomalies de stock ──────────────────────────────────────────
+        'erp_stock' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/erp/stock-anomaly.log'),
+            'level'  => 'warning',
+            'days'   => 90,
             'replace_placeholders' => true,
         ],
 

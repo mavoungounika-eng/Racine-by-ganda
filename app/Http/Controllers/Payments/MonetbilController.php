@@ -109,6 +109,10 @@ class MonetbilController extends Controller
                 }
             }
 
+            // ✅ MULTI-DEVISE : Détecter la devise par téléphone (XAF/XOF)
+            $currencyService = app(\App\Services\Currency\CurrencyService::class);
+            $detectedCurrency = $currencyService->detectCurrencyFromPhone($lockedOrder->customer_phone);
+
             // Créer ou mettre à jour la transaction en pending
             $transaction = PaymentTransaction::updateOrCreate(
                 [
@@ -118,7 +122,7 @@ class MonetbilController extends Controller
                 [
                     'provider' => 'monetbil',
                     'amount' => $lockedOrder->total_amount,
-                    'currency' => config('services.monetbil.currency', 'XAF'),
+                    'currency' => $detectedCurrency,
                     'status' => 'pending',
                     'raw_payload' => [],
                 ]
@@ -138,6 +142,7 @@ class MonetbilController extends Controller
             $payload = [
                 'amount' => $lockedOrder->total_amount,
                 'phone' => $lockedOrder->customer_phone,
+                'currency' => $detectedCurrency,
                 'payment_ref' => $paymentRef,
                 'user_id' => $lockedOrder->user_id, // Metadata utile
                 'email' => $lockedOrder->customer_email,

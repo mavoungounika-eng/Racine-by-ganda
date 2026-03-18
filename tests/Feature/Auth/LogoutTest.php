@@ -58,7 +58,7 @@ class LogoutTest extends TestCase
      */
     public function test_admin_logout_redirects_to_login(): void
     {
-        $user = User::where('email', 'admin@racine.cm')->first();
+        $user = User::where('email', 'admin@racine.test')->first();
 
         $response = $this->actingAs($user)->post('/admin/logout');
 
@@ -71,7 +71,7 @@ class LogoutTest extends TestCase
      */
     public function test_staff_logout_redirects_to_login(): void
     {
-        $user = User::where('email', 'staff@racine.cm')->first();
+        $user = User::where('email', 'staff@racine.test')->first();
 
         $response = $this->actingAs($user)->post('/admin/logout');
 

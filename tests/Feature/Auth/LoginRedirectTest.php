@@ -89,12 +89,12 @@ class LoginRedirectTest extends TestCase
     public function test_admin_redirects_to_admin_dashboard(): void
     {
         $response = $this->post('/admin/login', [
-            'email' => 'admin@racine.cm',
-            'password' => 'password',
+            'email' => 'admin@racine.test',
+            'password' => 'Admin123!',
         ]);
 
         $response->assertRedirect('/admin/dashboard');
-        $this->assertAuthenticatedAs(User::where('email', 'admin@racine.cm')->first());
+        $this->assertAuthenticatedAs(User::where('email', 'admin@racine.test')->first());
     }
 
     /**
@@ -117,11 +117,11 @@ class LoginRedirectTest extends TestCase
     public function test_staff_redirects_to_staff_dashboard(): void
     {
         $response = $this->post('/admin/login', [
-            'email' => 'staff@racine.cm',
-            'password' => 'password',
+            'email' => 'staff@racine.test',
+            'password' => 'Staff123!',
         ]);
 
         $response->assertRedirect('/staff/dashboard');
-        $this->assertAuthenticatedAs(User::where('email', 'staff@racine.cm')->first());
+        $this->assertAuthenticatedAs(User::where('email', 'staff@racine.test')->first());
     }
 }
