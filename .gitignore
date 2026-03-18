@@ -43,3 +43,9 @@ yarn-debug.log*
 yarn-error.log*
 # Legacy frontend (excluded from Laravel backend)
 Racine by GANDA/
+
+# POS Electron build artifacts
+/racine-pos-electron/dist/
+/racine-pos-electron/release/
+/racine-pos-electron/.vite/
+/racine-pos-electron/*.log

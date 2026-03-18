@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://127.0.0.1:8000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 // Sale endpoints that should be queued locally when offline
 const SALE_ENDPOINTS = ['/api/pos/sales'];
@@ -68,7 +68,7 @@ export class PosApiClient {
         return this.request(method, path, data, idempotencyKey, false, params);
       }
 
-      // Network error (no response) — check if this is a sale POST that can be queued
+      // Network error (no response) - check if this is a sale POST that can be queued
       if (!err.response) {
         this.onOffline?.(true);
         err.isOffline = true;
@@ -79,10 +79,7 @@ export class PosApiClient {
             const { useOfflineStore } = await import('../stores/offline.js');
             const offlineStore = useOfflineStore();
             const uuid = data.uuid || generateUUID();
-            await offlineStore.queueSale(
-              { ...data, uuid },
-              idempotencyKey || uuid,
-            );
+            await offlineStore.queueSale({ ...data, uuid }, idempotencyKey || uuid);
             // Return a response shape that callers can handle
             return {
               success: true,
@@ -130,4 +127,3 @@ export class PosApiClient {
     return this.request('delete', path);
   }
 }
-

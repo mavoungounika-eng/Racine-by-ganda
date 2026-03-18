@@ -1,9 +1,12 @@
 export default {
   login: {
     title: 'POS Login',
-    device: 'Register device',
     operator: 'Operator',
+    email: 'Email',
+    password: 'Password',
     button: 'Enter',
+    initializing: 'Initializing terminal...',
+    ready: 'Terminal ready',
   },
   session: {
     open: 'Open session',

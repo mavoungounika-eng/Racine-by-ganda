@@ -96,6 +96,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
         Route::get('/dashboard', [\App\Http\Controllers\Api\Admin\PosReportsController::class, 'dashboard'])->name('api.admin.pos.reports.dashboard');
     });
 
+    // POS Device activation
+    Route::post('/pos/devices/{device}/activate', [\App\Http\Controllers\Api\Admin\PosDeviceController::class, 'activate'])
+        ->name('api.admin.pos.devices.activate');
+
     // CRM Management
     Route::prefix('crm')->group(function () {
         Route::get('/segments', [\App\Http\Controllers\Api\Admin\CrmController::class, 'segments'])->name('api.admin.crm.segments');
@@ -222,3 +226,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
     });
 });
+

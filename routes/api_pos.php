@@ -17,11 +17,9 @@ Route::prefix('auth')->middleware(['throttle:5,1'])->group(function () {
 });
 
 Route::middleware(['pos.auth', 'throttle:pos_device'])->group(function () {
-    // POS Operator nested endpoints
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/auth/operator/logout', [PosAuthController::class, 'logout']);
-        Route::get('/auth/operator/me', [PosAuthController::class, 'me']);
-    });
+    // Operator endpoints protected by device JWT + X-Operator-Token
+    Route::post('/auth/operator/logout', [PosAuthController::class, 'logout']);
+    Route::get('/auth/operator/me', [PosAuthController::class, 'me']);
 
     // Offline status
     Route::get('/offline-status', [PosOfflineStatusController::class, 'index']);

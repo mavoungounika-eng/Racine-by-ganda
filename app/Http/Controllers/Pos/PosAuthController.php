@@ -13,6 +13,7 @@ use App\Traits\AuditsPosOperations;
 class PosAuthController extends Controller
 {
     use AuditsPosOperations;
+
     /**
      * Operator login using email/password + PosApiResponse envelope.
      */
@@ -61,16 +62,24 @@ class PosAuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        if ($request->user()) {
-            $user = $request->user();
-            $user->currentAccessToken()->delete();
+        $user = $request->posOperator ?? $request->user();
 
-            self::logPosAction('OPERATOR_LOGOUT', [
-                'operator_id' => $user->id,
-                'email' => $user->email,
-                'reason' => 'regular_logout'
-            ], $user->id);
+        if (!$user) {
+            return PosApiResponse::unauthorized('Invalid operator token');
         }
+
+        // Revoke current operator token from X-Operator-Token.
+        if ($request->header('X-Operator-Token')) {
+            $user->tokens()->where('tokenable_type', User::class)->where('tokenable_id', $user->id)->where('name', 'pos-operator')->delete();
+        } elseif ($user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
+        self::logPosAction('OPERATOR_LOGOUT', [
+            'operator_id' => $user->id,
+            'email' => $user->email,
+            'reason' => 'regular_logout',
+        ], $user->id);
 
         return PosApiResponse::success(['message' => 'Logged out'], 'Logged out');
     }
@@ -80,15 +89,19 @@ class PosAuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user();
-        
+        $user = $request->posOperator ?? $request->user();
+
+        if (!$user) {
+            return PosApiResponse::unauthorized('Invalid operator token');
+        }
+
         return PosApiResponse::success([
             'operator' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->getRoleSlug(),
-            ]
+            ],
         ], 'Operator profile retrieved');
     }
 }

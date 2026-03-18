@@ -16,14 +16,12 @@ const i18n = createI18n({
   messages: { fr, en },
 });
 
-import { useStockStore } from './stores/stock';
-
 const app = createApp(App);
 app.use(pinia);
 app.use(router);
 app.use(i18n);
 
-// Initialisation Stock (si déjà connecté)
+// Stock bootstrap when a POS device token already exists.
 const stockStore = useStockStore();
 if (localStorage.getItem('pos_token')) {
   stockStore.init();

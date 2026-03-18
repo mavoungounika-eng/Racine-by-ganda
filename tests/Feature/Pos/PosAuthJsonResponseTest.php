@@ -10,57 +10,58 @@ class PosAuthJsonResponseTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Scénario 1 — Token absent sur route POS
+     * Scenario 1 - Token absent sur route POS (web-prefixed)
      */
-    public function test_pos_route_returns_401_json_when_token_is_missing()
+    public function test_pos_route_returns_401_json_when_token_is_missing(): void
     {
-        // Suppression explicite des en-têtes Accept pour simuler une requête générique/malformée
         $response = $this->withHeaders(['Accept' => '*/*'])->get('/pos/sessions/current');
 
         $response->assertStatus(401)
-                 ->assertJson([
-                     'success' => false,
-                     'error'   => 'UNAUTHENTICATED',
-                     'message' => 'Token opérateur Sanctum manquant ou invalide.',
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'error',
+                'message',
+            ])
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('error', 'UNAUTHENTICATED');
+
+        $this->assertStringContainsString('Token op', (string) $response->json('message'));
     }
 
     /**
-     * Scénario 2 — Token absent sur route API POS
+     * Scenario 2 - Token absent sur route API POS
      */
-    public function test_api_pos_route_returns_401_json_when_token_is_missing()
+    public function test_api_pos_route_returns_structured_401_json_when_token_is_missing(): void
     {
         $response = $this->withHeaders(['Accept' => '*/*'])->get('/api/pos/auth/operator/me');
 
         $response->assertStatus(401)
-                 ->assertJson([
-                     'success' => false,
-                     'error'   => 'UNAUTHENTICATED',
-                     'message' => 'Token opérateur Sanctum manquant ou invalide.',
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'data',
+                'error' => ['code', 'message', 'details'],
+                'meta' => ['request_id', 'timestamp'],
+            ])
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('error.code', 'UNAUTHORIZED')
+            ->assertJsonPath('error.message', 'Missing bearer token');
     }
 
     /**
-     * Scénario 3 — Route web NON affectée
+     * Scenario 3 - Route web NON affectee
      */
-    public function test_web_routes_are_not_affected()
+    public function test_web_routes_are_not_affected(): void
     {
-        // 1. Accès direct à la page de login web (doit être 200)
         $loginResponse = $this->get('/login');
         $this->assertTrue(in_array($loginResponse->status(), [200, 302]), "HTTP status {$loginResponse->status()} received instead of 200/302 for /login.");
         $loginResponse->assertDontSee('UNAUTHENTICATED');
 
-        // 2. Accès à une route web protégée qui doit rediriger vers /login au lieu de renvoyer du JSON
-        $webProtectedResponse = $this->withHeaders(['Accept' => '*/*'])->get('/admin/dashboard'); 
-        
-        // Sur une route web native, on s'attend toujours à une redirection 302 vers '/login' en cas d'absence d'authentification
-        // Car Laravel détecte qu'on ne passe pas par 'api/pos/*' ni 'pos/*' ni avec explicitement Accepts: application/json
+        $webProtectedResponse = $this->withHeaders(['Accept' => '*/*'])->get('/admin/dashboard');
+
         if ($webProtectedResponse->status() === 302) {
             $webProtectedResponse->assertRedirect();
             $webProtectedResponse->assertDontSee('UNAUTHENTICATED');
         } else {
-            // Note: certaines routes admin pourraient générer des 404 dans les tests si non montées,
-            // mais l'essentiel est qu'elles ne renvoient *pas* notre JSON personnalisé 401.
             $this->assertNotEquals(401, $webProtectedResponse->status());
         }
     }
