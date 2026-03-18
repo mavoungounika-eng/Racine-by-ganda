@@ -35,14 +35,14 @@ abstract class TestCase extends BaseTestCase
         // Store in instance for later use
         $this->currentUserContext = $context->toArray();
         
-        // Store in session using test helper to ensure persistence across request
+        // Authenticate user FIRST (actingAs resets session)
+        parent::actingAs($user, $guard);
+        // Store in session AFTER actingAs
         $this->withSession([
             'user_context' => $this->currentUserContext,
             '2fa_verified' => true,
         ]);
-        
-        // Authenticate user
-        return parent::actingAs($user, $guard);
+        return $this;
     }
 
     /**
