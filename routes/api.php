@@ -210,7 +210,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/chat/conversations/{id}', [\App\Http\Controllers\Api\Ai\ChatAiController::class, 'deleteConversation']);
 
         // Admin AI (Guard checks should be added in controller or middleware)
-        Route::prefix('admin')->group(function () {
+        Route::middleware(['role:admin'])->prefix('admin')->group(function () {
             Route::get('/summary/daily', [\App\Http\Controllers\Api\Ai\AdminAiController::class, 'dailySummary']);
             Route::get('/crm/insights', [\App\Http\Controllers\Api\Ai\AdminAiController::class, 'crmInsights']);
             Route::get('/stock/anomalies', [\App\Http\Controllers\Api\Ai\AdminAiController::class, 'stockAnomalies']);

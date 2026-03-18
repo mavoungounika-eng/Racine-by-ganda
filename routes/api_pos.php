@@ -12,7 +12,7 @@ use App\Http\Controllers\Pos\PosAnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 // POS Operator Auth (no device JWT required)
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->middleware(['throttle:5,1'])->group(function () {
     Route::post('/operator/login', [PosAuthController::class, 'login']);
 });
 
