@@ -6,7 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\AiConversation;
 use App\Models\AiUsageLog;
-use App\Jobs\Ai\GenerateProductDescription;
+use App\Jobs\AI\GenerateProductDescription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use OpenAI\Laravel\Facades\OpenAI;

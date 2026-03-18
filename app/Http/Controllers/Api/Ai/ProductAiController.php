@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Ai;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\Ai\ProductAiService;
-use App\Jobs\Ai\GenerateProductDescription;
+use App\Jobs\AI\GenerateProductDescription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
