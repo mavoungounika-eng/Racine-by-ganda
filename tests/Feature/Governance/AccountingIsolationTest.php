@@ -96,7 +96,7 @@ class AccountingIsolationTest extends TestCase
         $this->seedAccounting();
         
         $this->assertDatabaseCount('accounting_fiscal_years', 1);
-        $this->assertDatabaseCount('accounting_journals', 4);
+        $this->assertDatabaseCount('accounting_journals', 5);
     }
     #[Test]
     public function accounting_test_seeder_creates_minimum_required_accounts(): void
