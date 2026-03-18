@@ -27,7 +27,7 @@ class DecisionIntelligenceControllerTest extends TestCase
         parent::setUp();
         
         // CrÃ©er un utilisateur admin
-        $this->adminUser = User::factory()->create();
+        $this->adminUser = User::factory()->admin()->create();
         // TODO: Ajouter le rÃ´le admin si nÃ©cessaire
     }
     #[Test]
