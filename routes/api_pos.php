@@ -11,6 +11,9 @@ use App\Http\Controllers\Pos\PosAuthController;
 use App\Http\Controllers\Pos\PosAnalyticsController;
 use Illuminate\Support\Facades\Route;
 
+// POS Terminal Registration (no auth required)
+Route::post('/register', [PosAuthController::class, 'registerTerminal']);
+
 // POS Operator Auth (no device JWT required)
 Route::prefix('auth')->middleware(['throttle:5,1'])->group(function () {
     Route::post('/operator/login', [PosAuthController::class, 'login']);

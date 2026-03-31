@@ -15,6 +15,11 @@ use App\Http\Controllers\AppearanceController;
 // Toutes les routes d'authentification sont maintenant dans routes/auth.php
 require __DIR__.'/auth.php';
 
+// TEMPORARY: Test route
+Route::post('/test-api', function () {
+    return response()->json(['message' => 'Test API works']);
+});
+
 // ============================================
 // AUTH CRÉATEUR (Espace Créateur / Vendeur)
 // ============================================

@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'webhooks/*',
             'api/webhooks/*',
             'payment/monetbil/notify',
+            'api/pos/register', // POS terminal registration
         ]);
 
         // Enregistrer les middlewares personnalisés

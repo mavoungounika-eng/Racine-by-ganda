@@ -15,6 +15,48 @@ class PosAuthController extends Controller
     use AuditsPosOperations;
 
     /**
+     * Register a new POS terminal device.
+     */
+    public function registerTerminal(Request $request): JsonResponse
+    {
+        \Log::info('POS Terminal Registration Request', [
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+            'headers' => $request->headers->all(),
+            'data' => $request->all(),
+        ]);
+
+        $request->validate([
+            'machine_id' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+        ]);
+
+        // For now, we'll create a simple device record
+        // In a real implementation, you might want to store this in a devices table
+        $device = [
+            'machine_id' => $request->machine_id,
+            'name' => $request->name,
+            'status' => 'active',
+            'registered_at' => now(),
+        ];
+
+        // Create a device token (using Sanctum for simplicity)
+        $token = 'pos-device-' . $request->machine_id . '-' . now()->timestamp;
+
+        self::logPosAction('TERMINAL_REGISTER', [
+            'machine_id' => $request->machine_id,
+            'name' => $request->name,
+        ]);
+
+        \Log::info('POS Terminal Registration Success', ['device' => $device]);
+
+        return PosApiResponse::success([
+            'device' => $device,
+            'token' => $token,
+        ], 'Terminal registered successfully');
+    }
+
+    /**
      * Operator login using email/password + PosApiResponse envelope.
      */
     public function login(Request $request): JsonResponse

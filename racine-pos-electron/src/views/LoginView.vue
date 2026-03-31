@@ -114,7 +114,8 @@ const login = async () => {
 
 <style scoped>
 .login-shell {
-  height: 100dvh;
+  height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-rows: 72px 1fr 72px;
   background:

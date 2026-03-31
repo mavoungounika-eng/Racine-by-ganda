@@ -17,6 +17,13 @@ class PosDeviceAuth
 
     public function handle(Request $request, Closure $next): Response
     {
+        \Log::info('PosDeviceAuth middleware triggered', [
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+            'bearer_token' => $request->bearerToken() ? 'present' : 'missing',
+            'headers' => $request->headers->all(),
+        ]);
+
         $token = $request->bearerToken();
 
         if (!$token) {

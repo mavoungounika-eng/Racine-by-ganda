@@ -295,6 +295,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Check if the user is part of the team (super_admin, admin, staff).
+     * POS access is restricted to RACINE internal team only.
      */
     public function isTeamMember(): bool
     {

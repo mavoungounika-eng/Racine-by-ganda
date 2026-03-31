@@ -5,19 +5,6 @@ const STORAGE_TOKEN = 'pos_token';
 const STORAGE_DEVICE = 'pos_device';
 const STORAGE_OPERATOR = 'pos_operator';
 const STORAGE_OPERATOR_TOKEN = 'pos_operator_token';
-const STORAGE_MACHINE_ID = 'pos_machine_id';
-const STORAGE_TERMINAL_NAME = 'pos_terminal_name';
-
-function generateMachineId() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -32,15 +19,9 @@ export const useAuthStore = defineStore('auth', {
     client() {
       return new PosApiClient(
         () => this.token,
-        (t) => {
-          this.token = t;
-          this.isAuthenticated = !!t;
-          this.persist();
-        },
-        (offline) => {
-          this.offline = offline;
-        },
-        () => this.operatorToken,
+        (t) => { this.token = t; this.isAuthenticated = !!t; this.persist(); },
+        (offline) => { this.offline = offline; },
+        () => this.operatorToken
       );
     },
     loadFromStorage() {
@@ -60,66 +41,30 @@ export const useAuthStore = defineStore('auth', {
       if (this.operator) localStorage.setItem(STORAGE_OPERATOR, JSON.stringify(this.operator));
       if (this.operatorToken) localStorage.setItem(STORAGE_OPERATOR_TOKEN, this.operatorToken);
     },
-    getOrCreateMachineId() {
-      let machineId = localStorage.getItem(STORAGE_MACHINE_ID);
-      if (!machineId) {
-        machineId = generateMachineId();
-        localStorage.setItem(STORAGE_MACHINE_ID, machineId);
-      }
-      return machineId;
-    },
-    getOrCreateTerminalName(machineId) {
-      let terminalName = localStorage.getItem(STORAGE_TERMINAL_NAME);
-      if (!terminalName) {
-        terminalName = `POS-${machineId.slice(0, 8)}`;
-        localStorage.setItem(STORAGE_TERMINAL_NAME, terminalName);
-      }
-      return terminalName;
-    },
-    async ensureTerminalRegistered() {
-      if (this.token) return { success: true, alreadyRegistered: true };
-
-      let machineId = this.getOrCreateMachineId();
-      let terminalName = this.getOrCreateTerminalName(machineId);
-
-      try {
-        return await this.register(machineId, terminalName);
-      } catch (e) {
-        const status = e?.response?.status;
-
-        // If machine_id already exists but token was lost, regenerate once.
-        if (status === 422) {
-          machineId = generateMachineId();
-          terminalName = `POS-${machineId.slice(0, 8)}`;
-          localStorage.setItem(STORAGE_MACHINE_ID, machineId);
-          localStorage.setItem(STORAGE_TERMINAL_NAME, terminalName);
-          return await this.register(machineId, terminalName);
-        }
-
-        throw e;
-      }
-    },
     async register(machineId, name) {
       const res = await this.client().post('/api/pos/register', { machine_id: machineId, name });
-      this.token = res.data?.token || res.token || null;
-      this.device = res.data || { machine_id: machineId, name };
+      this.token = res.data?.token || res.token;
+      this.device = res.data?.device || res.device || { machine_id: machineId, name };
       this.isAuthenticated = !!this.token;
       this.persist();
       return res;
     },
     async login(email, password) {
-      const res = await this.client().post('/api/pos/auth/operator/login', { email, password });
-
-      // PosApiClient returns the API envelope body directly
-      // shape: { success: true, data: { operator, token }, ... }
-      if (res.success && res.data?.operator && res.data?.token) {
-        this.operator = res.data.operator;
-        this.operatorToken = res.data.token;
-        this.persist();
-        return res;
+      try {
+        // Use PosApiClient to ensure correct headers (Accept: application/json)
+        // This prevents Laravel from treating it as a web request and redirecting to /login
+        const res = await this.client().post('/api/pos/auth/operator/login', { email, password });
+        if (res.data?.success) {
+          this.operator = res.data.data.operator;
+          this.operatorToken = res.data.data.token;
+          this.persist();
+          return res.data;
+        }
+        throw new Error(res.data?.error?.message || 'Login failed');
+      } catch (e) {
+        console.error('Operator login error:', e);
+        throw e;
       }
-
-      throw new Error(res.error?.message || 'Login failed');
     },
     async logout() {
       if (this.operatorToken) {
@@ -142,6 +87,22 @@ export const useAuthStore = defineStore('auth', {
     },
     async refreshToken() {
       return this.client().refreshToken();
+    },
+    async ensureTerminalRegistered() {
+      // If we already have a device token, we're registered
+      if (this.token && this.device) {
+        return this.device;
+      }
+
+      // Try to register a new terminal
+      try {
+        const machineId = `pos-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const device = await this.register(machineId, 'POS Terminal');
+        return device;
+      } catch (error) {
+        console.error('Terminal registration failed:', error);
+        throw error;
+      }
     },
   },
 });

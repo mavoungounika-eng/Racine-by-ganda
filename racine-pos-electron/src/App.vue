@@ -1,9 +1,11 @@
 <template>
   <div class="app">
     <OfflineBanner />
-    <ErrorBoundary>
-      <router-view />
-    </ErrorBoundary>
+    <div class="app-content">
+      <ErrorBoundary>
+        <router-view />
+      </ErrorBoundary>
+    </div>
   </div>
 </template>
 
@@ -58,7 +60,14 @@ body {
 
 .app {
   height: 100dvh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+}
+
+.app-content {
+  flex: 1;
+  min-height: 0;
 }
 
 button,
