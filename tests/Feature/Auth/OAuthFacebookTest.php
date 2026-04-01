@@ -26,6 +26,7 @@ class OAuthFacebookTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
         
         // Créer les rôles nécessaires
         Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client', 'is_active' => true]);
@@ -126,6 +127,7 @@ class OAuthFacebookTest extends TestCase
         $facebookUser->shouldReceive('getAvatar')->andReturn(null);
         $facebookUser->shouldReceive('getRaw')->andReturn([]);
 
+        Socialite::shouldReceive('stateless')->andReturnSelf();
         Socialite::shouldReceive('driver')
             ->with('facebook')
             ->andReturnSelf();

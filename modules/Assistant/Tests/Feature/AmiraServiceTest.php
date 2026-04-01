@@ -23,6 +23,7 @@ class AmiraServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
         $this->amira = new AmiraService();
     }
 

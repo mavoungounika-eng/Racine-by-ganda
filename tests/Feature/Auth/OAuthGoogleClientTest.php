@@ -28,6 +28,7 @@ class OAuthGoogleClientTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
         
         // Créer les rôles nécessaires
         Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client', 'is_active' => true]);
@@ -103,7 +104,6 @@ class OAuthGoogleClientTest extends TestCase
     public function google_oauth_creator_is_redirected_to_pending(): void
     {
         $role = Role::where('slug', 'createur')->first();
-        
         $user = User::factory()->create([
             'role_id' => $role->id,
             'email' => 'creator@gmail.com',
@@ -203,6 +203,7 @@ class OAuthGoogleClientTest extends TestCase
         $googleUser->shouldReceive('getRaw')->andReturn(['sub' => $googleId]);
         $googleUser->shouldReceive('token')->andReturn('access-token');
 
+        Socialite::shouldReceive('stateless')->andReturnSelf();
         Socialite::shouldReceive('driver')
             ->with('google')
             ->andReturnSelf();

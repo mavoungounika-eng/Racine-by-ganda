@@ -31,7 +31,8 @@ class User extends Authenticatable implements MustVerifyEmail
             // SYNC LEGACY ROLE STRING -> ROLE_ID
             // If 'role' (string) is changing
             if ($user->isDirty('role')) {
-                // If role_id is NOT explicitly set to a valid ID (it's either not dirty, or dirty but null)
+                // Only sync role_id from role slug when role_id is absent or null.
+                // If an explicit role_id is provided, preserve it.
                 if (!$user->isDirty('role_id') || $user->role_id === null) {
                     $slug = $user->role;
                     $roleModel = Role::where('slug', $slug)->first();
@@ -265,7 +266,20 @@ class User extends Authenticatable implements MustVerifyEmail
         }
         
         // Priority 2: direct role attribute
-        return $this->attributes['role'] ?? null;
+        if (!empty($this->attributes['role'])) {
+            return $this->attributes['role'];
+        }
+
+        // Priority 3: infer creator role from a creator profile if present
+        if ($this->relationLoaded('creatorProfile')) {
+            return $this->creatorProfile ? 'createur' : null;
+        }
+
+        if ($this->creatorProfile()->exists()) {
+            return 'createur';
+        }
+
+        return null;
     }
 
     /**

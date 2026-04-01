@@ -32,13 +32,25 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role_id' => $clientRoleId,
             'role' => 'client',
+            'role_id' => $clientRoleId,
             'phone' => fake()->optional()->phoneNumber(),
             'is_admin' => false,
             'status' => 'active',
             'auth_version' => 1, // Default auth_version
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterMaking(function (\App\Models\User $user) {
+            if (!empty($user->role) && $user->role !== 'client') {
+                $role = \App\Models\Role::where('slug', $user->role)->first();
+                if ($role) {
+                    $user->role_id = $role->id;
+                }
+            }
+        });
     }
 
     /**

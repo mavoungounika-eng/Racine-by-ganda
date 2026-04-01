@@ -22,17 +22,29 @@ class CreatorStripeController extends Controller
 
     public function connect(): RedirectResponse
     {
-        return redirect()->route('creator.settings.payment-preferences.index')
-            ->with('info', 'Le mode de connexion Stripe a changé. Veuillez désormais configurer vos propres clés API.');
+        $creatorProfile = Auth::user()->creatorProfile;
+
+        $stripeAccount = $this->stripeService->createAccount($creatorProfile);
+        $onboardingUrl = $this->stripeService->createOnboardingLink($stripeAccount);
+
+        return redirect()->away($onboardingUrl);
     }
 
     public function return(): RedirectResponse
     {
-        return redirect()->route('creator.settings.payment-preferences.index');
+        $creatorProfile = Auth::user()->creatorProfile;
+        $stripeAccount = $creatorProfile->stripeAccount;
+
+        if ($stripeAccount) {
+            $this->stripeService->syncAccountStatus($stripeAccount->stripe_account_id);
+        }
+
+        return redirect()->route('creator.settings.payment')
+            ->with('success', 'Statut Stripe synchronisé avec succès.');
     }
 
     public function refresh(): RedirectResponse
     {
-        return redirect()->route('creator.settings.payment-preferences.index');
+        return redirect()->route('creator.settings.payment');
     }
 }

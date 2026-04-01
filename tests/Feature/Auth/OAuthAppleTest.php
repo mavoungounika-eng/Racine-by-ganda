@@ -113,6 +113,7 @@ class OAuthAppleTest extends TestCase
         $appleUser->shouldReceive('getAvatar')->andReturn(null);
         $appleUser->shouldReceive('getRaw')->andReturn([]);
 
+        Socialite::shouldReceive('stateless')->andReturnSelf();
         Socialite::shouldReceive('driver')
             ->with('apple')
             ->andReturnSelf();

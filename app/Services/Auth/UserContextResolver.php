@@ -93,6 +93,7 @@ class UserContextResolver
             }
         }
 
+
         // Final fallback: infer from is_admin flag
         if (!empty($user->is_admin)) {
             return Role::ADMIN;

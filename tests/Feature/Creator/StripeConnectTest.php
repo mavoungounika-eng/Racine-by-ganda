@@ -18,6 +18,7 @@ class StripeConnectTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
         
         // Mock StripeConnectService
         $this->instance(
