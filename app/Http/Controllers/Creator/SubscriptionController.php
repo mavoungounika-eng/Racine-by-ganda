@@ -357,32 +357,43 @@ class SubscriptionController extends Controller
      */
     public function handleMobileMoneyPayment(Request $request, CreatorPlan $plan): RedirectResponse
     {
-        // SÉCURITÉ P0.3 : Désactiver en production
-        if (app()->environment('production')) {
-            \Illuminate\Support\Facades\Log::warning('Tentative d\'utilisation Mobile Money pour abonnement en production (désactivé)', [
-                'user_id' => Auth::id(),
-                'plan_id' => $plan->id,
-                'ip' => $request->ip(),
-            ]);
-            return redirect()->route('creator.subscription.upgrade')
-                ->with('error', 'Le paiement Mobile Money pour les abonnements n\'est pas encore disponible. Veuillez utiliser la carte bancaire.');
-        }
-
-        // En développement uniquement : simulation
-        $user = Auth::user();
-        
-        \Illuminate\Support\Facades\Log::info('Mobile Money abonnement (mode développement uniquement)', [
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|min:9|max:15',
         ]);
 
-        // TODO: Implémenter la vérification complète avant activation
-        // 1. Vérifier la signature du callback
-        // 2. Vérifier le statut du paiement auprès du provider
-        // 3. Créer l'abonnement UNIQUEMENT après vérification
-        
-        return redirect()->route('creator.subscription.upgrade')
-            ->with('error', 'Mobile Money pour abonnements : en cours de développement.');
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $user = Auth::user();
+
+        try {
+            $monetbil = app(\App\Services\Payments\MonetbilService::class);
+
+            $paymentUrl = $monetbil->createPaymentUrl([
+                'amount'     => $plan->price,
+                'currency'   => 'XAF',
+                'phone'      => $request->input('phone'),
+                'reference'  => 'SUB-' . $user->id . '-' . $plan->id . '-' . time(),
+                'return_url' => route('creator.subscription.checkout.success', $plan),
+                'notify_url' => route('payment.monetbil.notify'),
+            ]);
+
+            Log::info('Monetbil subscription payment initiated via SubscriptionController', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
+
+            return redirect()->away($paymentUrl);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur paiement Monetbil abonnement : ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
+            return redirect()->back()
+                ->with('error', 'Impossible d\'initier le paiement Mobile Money. Veuillez réessayer.');
+        }
     }
 
 

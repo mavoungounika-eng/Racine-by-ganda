@@ -568,7 +568,13 @@ class MobileMoneyPaymentService
 
         if ($response->successful()) {
             $data = $response->json();
-            return $data['access_token'] ?? '';
+            $token = $data['access_token'] ?? null;
+
+            if (empty($token)) {
+                throw new \Exception('Token absent de la réponse API');
+            }
+
+            return $token;
         }
 
         throw new \Exception('Impossible d\'obtenir le token MTN MoMo');
@@ -594,7 +600,13 @@ class MobileMoneyPaymentService
 
         if ($response->successful()) {
             $data = $response->json();
-            return $data['access_token'] ?? '';
+            $token = $data['access_token'] ?? null;
+
+            if (empty($token)) {
+                throw new \Exception('Token absent de la réponse API');
+            }
+
+            return $token;
         }
 
         throw new \Exception('Impossible d\'obtenir le token Airtel Money');

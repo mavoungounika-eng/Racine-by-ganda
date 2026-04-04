@@ -331,6 +331,9 @@ Route::middleware(['auth', 'ensure:client'])->group(function () {
     });
 });
 
+Route::get('/profile/professional-email/confirm', [\App\Http\Controllers\ProfileController::class, 'confirmProfessionalEmail'])
+    ->name('profile.professional-email.confirm');
+
 // ============================================
 // FRONTEND ROUTES
 // ============================================

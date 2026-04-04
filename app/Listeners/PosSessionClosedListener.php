@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Log;
  */
 class PosSessionClosedListener implements ShouldQueue
 {
+    public int $tries = 2;
+    public int $timeout = 60;
+
     public function __construct(
         protected PosFinanceIntegrationService $financeService
     ) {}

@@ -28,6 +28,10 @@ class CleanupAbandonedOrders implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 3;
+    public int $timeout = 120;
+    public array $backoff = [30, 60, 120];
+
     /**
      * Délais en heures/jours selon la méthode de paiement
      */

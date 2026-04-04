@@ -97,7 +97,11 @@ class AdminCategoryController extends AdminController
                 ->with('error', 'Impossible de supprimer cette catégorie car elle contient des sous-catégories.');
         }
 
-        // TODO: Vérifier s'il y a des produits liés quand le module Produit sera là
+        if ($category->products()->count() > 0) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('error', 'Impossible de supprimer cette catégorie car elle contient des produits.');
+        }
 
         $category->delete();
 

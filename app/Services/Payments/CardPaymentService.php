@@ -243,7 +243,8 @@ class CardPaymentService
             // Pour cette phase, on fait confiance au payload si on trouve l'order_id valide 
             // MAIS on garde la sécurité pour les ventes RACINE.
             if ($order->creator_id === null) {
-                if (empty($signature) || empty($webhookSecret)) {
+                $webhookSecret = config("services.stripe.webhook_secret");
+            if (empty($signature) || empty($webhookSecret)) {
                      throw new SignatureVerificationException('Missing signature for Brand order', 0);
                 }
                 $event = Webhook::constructEvent($payload, $signature, $webhookSecret);

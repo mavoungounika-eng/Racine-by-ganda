@@ -19,6 +19,7 @@ class CreatorSubscription extends Model
         'stripe_subscription_id',
         'stripe_customer_id',
         'stripe_price_id',
+        'payment_provider',
         'status',
         'current_period_start',
         'current_period_end',

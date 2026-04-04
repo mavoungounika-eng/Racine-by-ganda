@@ -3,271 +3,159 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
-use PHPUnit\Framework\Attributes\Group;
 
 /**
- * ⚠️ TESTS OBSOLÈTES — ARCHITECTURE RBAC CHANGÉE
- * 
- * Ces tests supposent un système de cache RBAC qui n'existe plus.
- * L'architecture actuelle utilise:
- * - roleRelation->slug pour déterminer le rôle (pas le champ legacy 'role')
- * - auth_version pour invalider les sessions (pas le cache)
- * - UserContext gelé en session
- * 
- * TODO: Réécrire ces tests pour valider l'architecture auth_version actuelle
+ * Tests d'intégrité RBAC avec auth_version
+ *
+ * Valide que l'architecture auth_version actuelle fonctionne correctement:
+ * - auth_version s'incrémente sur changements de rôle/permissions
+ * - Les sessions sont invalidées via auth_version
+ * - Pas de cache RBAC (architecture simplifiée)
  */
-#[Group('skip')]
 class RbacCacheIntegrityTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->markTestSkipped('Tests obsolètes: architecture RBAC utilise auth_version, pas de cache. Voir docblock.');
+
+        Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client', 'description' => 'Client role', 'is_active' => true]);
+        Role::firstOrCreate(['slug' => 'admin'], ['name' => 'Admin', 'description' => 'Admin role', 'is_active' => true]);
+        Role::firstOrCreate(['slug' => 'staff'], ['name' => 'Staff', 'description' => 'Staff role', 'is_active' => true]);
+
+        $clientRole = Role::where('slug', 'client')->first();
+        $this->user = User::factory()->create([
+            'role_id' => $clientRole->id,
+            'auth_version' => 1,
+            'status' => 'active',
+        ]);
     }
 
     /**
-     * Test que le cache de permissions est invalidé après changement de rôle
+     * Test que auth_version s'incrémente après changement de rôle
      */
-    public function test_permission_cache_invalidated_after_role_change(): void
+    public function test_auth_version_increments_after_role_change(): void
     {
-        $user = User::factory()->create([
-            'role' => 'client',
-        ]);
+        $oldVersion = $this->user->auth_version;
 
-        $this->actingAs($user);
+        $adminRole = Role::where('slug', 'admin')->first();
+        $this->user->update(['role_id' => $adminRole->id]);
 
-        // Vérifier l'accès initial (client)
-        $response = $this->get(route('admin.dashboard'));
-        $response->assertStatus(403);
-
-        // Mettre en cache les permissions (simuler comportement app)
-        Cache::put("user.{$user->id}.permissions", ['client'], 3600);
-
-        // Changer le rôle vers admin
-        $user->update(['role' => 'admin']);
-
-        // Vérifier que le cache est invalidé et l'accès est accordé
-        $response = $this->get(route('admin.dashboard'));
-        $response->assertStatus(200);
-
-        // Vérifier que le cache a été mis à jour
-        $cachedPermissions = Cache::get("user.{$user->id}.permissions");
-        $this->assertNotEquals(['client'], $cachedPermissions);
+        $this->user->refresh();
+        $this->assertGreaterThan($oldVersion, $this->user->auth_version);
     }
 
     /**
-     * Test qu'une permission ajoutée invalide le cache immédiatement
+     * Test que auth_version s'incrémente après activation 2FA
      */
-    public function test_added_permission_invalidates_cache_immediately(): void
+    public function test_auth_version_increments_after_2fa_enabled(): void
     {
-        $user = User::factory()->create([
-            'role' => 'staff',
+        $oldVersion = $this->user->auth_version;
+
+        $this->user->update([
+            'two_factor_secret' => 'secret',
+            'two_factor_confirmed_at' => now(),
         ]);
 
-        $this->actingAs($user);
-
-        // Accès initial refusé (pas de permission payments.view)
-        $response = $this->get(route('admin.payments.index'));
-        $response->assertStatus(403);
-
-        // Ajouter la permission
-        $user->givePermissionTo('payments.view');
-
-        // Vérifier que l'accès est accordé immédiatement
-        $response = $this->get(route('admin.payments.index'));
-        $response->assertStatus(200);
+        $this->user->refresh();
+        $this->assertGreaterThan($oldVersion, $this->user->auth_version);
     }
 
     /**
-     * Test qu'une permission révoquée invalide le cache immédiatement
+     * Test que auth_version s'incrémente après changement de mot de passe
      */
-    public function test_revoked_permission_invalidates_cache_immediately(): void
+    public function test_auth_version_increments_after_password_change(): void
     {
-        $user = User::factory()->create([
-            'role' => 'admin',
-        ]);
+        $oldVersion = $this->user->auth_version;
 
-        // Donner une permission spécifique
-        $user->givePermissionTo('orders.delete');
+        $this->user->update(['password' => bcrypt('newpassword')]);
 
-        $this->actingAs($user);
-
-        // Accès initial accordé
-        $response = $this->delete(route('admin.orders.destroy', ['order' => 1]));
-        // Note: peut retourner 404 si order n'existe pas, mais pas 403
-
-        // Révoquer la permission
-        $user->revokePermissionTo('orders.delete');
-
-        // Vérifier que l'accès est refusé immédiatement
-        $response = $this->delete(route('admin.orders.destroy', ['order' => 1]));
-        $response->assertStatus(403);
+        $this->user->refresh();
+        $this->assertGreaterThan($oldVersion, $this->user->auth_version);
     }
 
     /**
-     * Test qu'un cache stale ne permet pas d'élévation de privilèges
+     * Test que auth_version s'incrémente après changement de statut
      */
-    public function test_stale_cache_does_not_allow_privilege_escalation(): void
+    public function test_auth_version_increments_after_status_change(): void
     {
-        $user = User::factory()->create([
-            'role' => 'admin',
-        ]);
+        $oldVersion = $this->user->auth_version;
 
-        // Mettre en cache les permissions admin
-        Cache::put("user.{$user->id}.role", 'admin', 3600);
-        Cache::put("user.{$user->id}.permissions", ['admin.full'], 3600);
+        $this->user->update(['status' => 'suspended']);
 
-        $this->actingAs($user);
-
-        // Vérifier l'accès admin initial
-        $response = $this->get(route('admin.dashboard'));
-        $response->assertStatus(200);
-
-        // Downgrade vers client
-        $user->update(['role' => 'client']);
-
-        // Vérifier que le cache stale ne permet PAS l'accès admin
-        $response = $this->get(route('admin.dashboard'));
-        $response->assertStatus(403);
+        $this->user->refresh();
+        $this->assertGreaterThan($oldVersion, $this->user->auth_version);
     }
 
     /**
-     * Test que le cache est invalidé après suppression d'utilisateur
+     * Test que auth_version reste stable pour changements non-sécurisés
      */
-    public function test_cache_invalidated_after_user_deletion(): void
+    public function test_auth_version_stable_for_non_security_changes(): void
     {
-        $user = User::factory()->create([
-            'role' => 'client',
-        ]);
+        $oldVersion = $this->user->auth_version;
 
-        // Mettre en cache
-        Cache::put("user.{$user->id}.permissions", ['client'], 3600);
+        $this->user->update(['name' => 'New Name']);
 
-        // Supprimer l'utilisateur (soft delete)
-        $user->delete();
-
-        // Vérifier que le cache est invalidé
-        $this->assertNull(Cache::get("user.{$user->id}.permissions"));
+        $this->user->refresh();
+        $this->assertEquals($oldVersion, $this->user->auth_version);
     }
 
     /**
-     * Test que les changements de permissions en batch invalident tous les caches
+     * Test que auth_version est unique par utilisateur
      */
-    public function test_batch_permission_changes_invalidate_all_caches(): void
+    public function test_auth_version_unique_per_user(): void
     {
-        $users = User::factory()->count(3)->create([
-            'role' => 'staff',
+        $user2 = User::factory()->create([
+            'auth_version' => 1,
+            'status' => 'active',
         ]);
 
-        // Mettre en cache pour tous les utilisateurs
-        foreach ($users as $user) {
-            Cache::put("user.{$user->id}.role", 'staff', 3600);
-        }
+        // Changer user1
+        $this->user->update(['role_id' => Role::where('slug', 'admin')->first()->id]);
+        $user1Version = $this->user->fresh()->auth_version;
 
-        // Changer tous les rôles en batch
-        User::whereIn('id', $users->pluck('id'))->update(['role' => 'client']);
+        // Changer user2
+        $user2->update(['role_id' => Role::where('slug', 'staff')->first()->id]);
+        $user2Version = $user2->fresh()->auth_version;
 
-        // Vérifier que tous les caches sont invalidés
-        foreach ($users as $user) {
-            $cachedRole = Cache::get("user.{$user->id}.role");
-            // Le cache doit être soit null, soit mis à jour avec 'client'
-            $this->assertNotEquals('staff', $cachedRole);
-        }
+        // Versions peuvent être identiques car indépendantes
+        // Mais chaque user a sa propre séquence
+        $this->assertIsInt($user1Version);
+        $this->assertIsInt($user2Version);
+        $this->assertGreaterThan(1, $user1Version);
+        $this->assertGreaterThan(1, $user2Version);
     }
 
     /**
-     * Test que le cache de permissions ne persiste pas après logout
+     * Test que auth_version commence à 1 pour nouveaux utilisateurs
      */
-    public function test_permission_cache_cleared_after_logout(): void
+    public function test_auth_version_starts_at_one_for_new_users(): void
     {
-        $user = User::factory()->create([
-            'role' => 'admin',
-        ]);
+        $newUser = User::factory()->create(['status' => 'active']);
 
-        $this->actingAs($user);
-
-        // Mettre en cache
-        Cache::put("user.{$user->id}.permissions", ['admin.full'], 3600);
-
-        // Se déconnecter
-        $this->post(route('logout'));
-
-        // Vérifier que le cache est nettoyé
-        $this->assertNull(Cache::get("user.{$user->id}.permissions"));
+        $this->assertEquals(1, $newUser->auth_version);
     }
 
     /**
-     * Test que le cache RBAC respecte le TTL configuré
+     * Test que auth_version s'incrémente de 1 à chaque changement
      */
-    public function test_rbac_cache_respects_configured_ttl(): void
+    public function test_auth_version_increments_by_one(): void
     {
-        $user = User::factory()->create([
-            'role' => 'admin',
-        ]);
+        $initial = $this->user->auth_version;
 
-        // Mettre en cache avec TTL court (1 seconde)
-        Cache::put("user.{$user->id}.permissions", ['admin'], 1);
+        $this->user->update(['name' => 'Change 1']);
+        $this->assertEquals($initial, $this->user->fresh()->auth_version); // Pas de changement
 
-        // Vérifier que le cache existe
-        $this->assertNotNull(Cache::get("user.{$user->id}.permissions"));
+        $this->user->update(['role_id' => Role::where('slug', 'admin')->first()->id]);
+        $this->assertEquals($initial + 1, $this->user->fresh()->auth_version);
 
-        // Attendre expiration
-        sleep(2);
-
-        // Vérifier que le cache a expiré
-        $this->assertNull(Cache::get("user.{$user->id}.permissions"));
-    }
-
-    /**
-     * Test que les permissions héritées sont correctement mises en cache
-     */
-    public function test_inherited_permissions_correctly_cached(): void
-    {
-        $admin = User::factory()->create([
-            'role' => 'admin',
-        ]);
-
-        $this->actingAs($admin);
-
-        // Admin hérite de toutes les permissions
-        $response = $this->get(route('admin.users.index'));
-        $response->assertStatus(200);
-
-        // Downgrade vers staff (permissions limitées)
-        $admin->update(['role' => 'staff']);
-
-        // Vérifier que les permissions héritées sont mises à jour
-        $response = $this->get(route('admin.users.index'));
-        $response->assertStatus(403);
-    }
-
-    /**
-     * Test que le cache ne cause pas de race condition sur changements simultanés
-     */
-    public function test_cache_no_race_condition_on_simultaneous_changes(): void
-    {
-        $user = User::factory()->create([
-            'role' => 'client',
-        ]);
-
-        $this->actingAs($user);
-
-        // Simuler changements simultanés
-        $user->update(['role' => 'admin']);
-        Cache::put("user.{$user->id}.role", 'admin', 3600);
-
-        $user->update(['role' => 'client']);
-        Cache::put("user.{$user->id}.role", 'client', 3600);
-
-        // Vérifier que le dernier changement prime
-        $response = $this->get(route('admin.dashboard'));
-        $response->assertStatus(403);
-
-        $this->assertEquals('client', $user->fresh()->role);
+        $this->user->update(['two_factor_secret' => 'secret']);
+        $this->assertEquals($initial + 2, $this->user->fresh()->auth_version);
     }
 }

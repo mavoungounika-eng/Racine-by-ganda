@@ -127,4 +127,9 @@ return [
         'skip_for_testing' => env('RECAPTCHA_SKIP_FOR_TESTING', false),
     ],
 
+    'exchange_rate' => [
+        'api_key' => env('EXCHANGE_RATE_API_KEY'),
+        'url'     => env('EXCHANGE_RATE_URL', 'https://v6.exchangerate-api.com/v6'),
+    ],
+
 ];

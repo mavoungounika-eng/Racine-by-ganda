@@ -23,11 +23,9 @@ class DecrementStockForOrder implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /** @var int Nombre de tentatives maximum */
     public int $tries = 3;
-
-    /** @var array|int[] Délais entre les tentatives (secondes) */
-    public array $backoff = [5, 30, 120];
+    public int $timeout = 30;
+    public array $backoff = [5, 15, 30];
 
     public function __construct(
         public readonly Order $order,

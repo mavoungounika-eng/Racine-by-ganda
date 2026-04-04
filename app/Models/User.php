@@ -50,8 +50,11 @@ class User extends Authenticatable implements MustVerifyEmail
             $roleChanged = array_key_exists('role_id', $changes) || array_key_exists('role', $changes);
             $statusChanged = array_key_exists('status', $changes);
             $passwordChanged = array_key_exists('password', $changes);
+            $twoFactorChanged = array_key_exists('two_factor_secret', $changes)
+                || array_key_exists('two_factor_confirmed_at', $changes)
+                || array_key_exists('two_factor_required', $changes);
 
-            if ($roleChanged || $statusChanged || $passwordChanged) {
+            if ($roleChanged || $statusChanged || $passwordChanged || $twoFactorChanged) {
                 // Use raw DB update to avoid triggering events
                 \DB::table('users')
                     ->where('id', $user->id)
@@ -80,6 +83,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'professional_email',
         'professional_email_verified',
         'professional_email_verified_at',
+        'professional_email_token',
         'email_preferences',
         'email_notifications_enabled',
         'email_messaging_enabled',

@@ -198,9 +198,65 @@ class AuthOrchestratorService
      */
     private function validateCaptcha(Request $request): bool
     {
-        // TODO: Implement actual CAPTCHA validation (reCAPTCHA, hCaptcha, etc.)
-        // For now, just check if captcha field is present
-        return $request->filled('captcha_token');
+        $config = config('services.recaptcha');
+
+        // reCAPTCHA désactivé globalement
+        if (empty($config['enabled'])) {
+            return true;
+        }
+
+        // Skip en environnement de test
+        if (!empty($config['skip_for_testing']) && app()->environment('testing', 'local')) {
+            return true;
+        }
+
+        $token = $request->input('captcha_token');
+        if (empty($token)) {
+            return false;
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::asForm()->post($config['verify_url'], [
+                'secret'   => $config['secret_key'],
+                'response' => $token,
+                'remoteip' => $request->ip(),
+            ]);
+
+            if (!$response->successful()) {
+                \Illuminate\Support\Facades\Log::warning('reCAPTCHA verify request failed', [
+                    'status' => $response->status(),
+                ]);
+                return false;
+            }
+
+            $data = $response->json();
+
+            if (!($data['success'] ?? false)) {
+                \Illuminate\Support\Facades\Log::warning('reCAPTCHA token invalid', [
+                    'errors' => $data['error-codes'] ?? [],
+                ]);
+                return false;
+            }
+
+            $score = $data['score'] ?? 0.0;
+            $threshold = $config['threshold'] ?? 0.5;
+
+            if ($score < $threshold) {
+                \Illuminate\Support\Facades\Log::warning('reCAPTCHA score too low', [
+                    'score'     => $score,
+                    'threshold' => $threshold,
+                    'ip'        => $request->ip(),
+                ]);
+                return false;
+            }
+
+            return true;
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('reCAPTCHA validation exception: ' . $e->getMessage());
+            // Fail open en cas d'erreur réseau pour ne pas bloquer les utilisateurs légitimes
+            return true;
+        }
     }
 
     /**

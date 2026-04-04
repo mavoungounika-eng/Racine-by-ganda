@@ -14,14 +14,10 @@ use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * âš ï¸ TESTS EN ATTENTE â€” PERMISSIONS ADMIN REQUISES
+ * Tests du Dashboard Financier Admin
  * 
- * Ces tests nÃ©cessitent des permissions admin spÃ©cifiques pour accÃ©der
- * aux routes /admin/financial/*. Le rÃ´le 'admin' seul ne suffit pas.
- * 
- * TODO: Configurer les permissions RBAC appropriÃ©es pour les tests
+ * Tests des métriques financières, calculs MRR/ARR, taux de churn, et exports BI.
  */
-#[Group('skip')]
 class AdminFinancialDashboardTest extends TestCase
 {
     use RefreshDatabase;
@@ -32,8 +28,24 @@ class AdminFinancialDashboardTest extends TestCase
     {
         parent::setUp();
         
-        // Skip tous les tests de cette classe
-        $this->markTestSkipped('Permissions admin spÃ©cifiques requises. Voir docblock de la classe.');
+        // Créer un utilisateur admin avec 2FA activé
+        $adminRole = \App\Models\Role::firstOrCreate(
+            ['slug' => 'admin'],
+            ['name' => 'Admin', 'description' => 'Admin role', 'is_active' => true]
+        );
+        $this->adminUser = User::firstOrCreate(
+            ['email' => 'admin-financial@test.com'],
+            [
+                'name' => 'Admin Financial Test',
+                'password' => bcrypt('password'),
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
+                'auth_version' => 1,
+                'status' => 'active',
+            ]
+        );
     }
     #[Test]
     public function it_returns_dashboard_metrics_for_admin()
@@ -42,7 +54,11 @@ class AdminFinancialDashboardTest extends TestCase
         $this->createTestData();
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -97,7 +113,11 @@ class AdminFinancialDashboardTest extends TestCase
     public function it_handles_empty_database()
     {
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200)
             ->assertJson([
@@ -136,7 +156,11 @@ class AdminFinancialDashboardTest extends TestCase
         }
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200)
             ->assertJson([
@@ -175,7 +199,11 @@ class AdminFinancialDashboardTest extends TestCase
         }
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200);
         $data = $response->json();
@@ -190,7 +218,11 @@ class AdminFinancialDashboardTest extends TestCase
         $this->createTestData();
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/snapshot?period=month');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.snapshot', ['period' => 'month']));
 
         $response->assertStatus(200)
             ->assertJsonStructure([

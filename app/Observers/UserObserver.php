@@ -16,40 +16,12 @@ class UserObserver
 {
     /**
      * Handle the User "updating" event.
-     * 
-     * Increment auth_version when critical fields change.
+     *
+     * auth_version is now managed exclusively by the User::boot() saved hook
+     * to avoid double-increment conflicts. See User.php boot() method.
      */
     public function updating(User $user): void
     {
-        // Check if any critical field is changing
-        if ($this->hasCriticalChanges($user)) {
-            $user->auth_version = ($user->auth_version ?? 1) + 1;
-            
-            \Log::info('User auth_version incremented due to critical changes', [
-                'user_id' => $user->id,
-                'new_version' => $user->auth_version,
-                'changed_fields' => array_keys($user->getDirty()),
-            ]);
-        }
-    }
-
-    /**
-     * Check if user has critical changes that require session invalidation
-     */
-    private function hasCriticalChanges(User $user): bool
-    {
-        $criticalFields = [
-            'role_id',                    // Role change
-            'two_factor_required',        // 2FA requirement change
-            'two_factor_confirmed_at',    // 2FA activation/deactivation
-        ];
-
-        foreach ($criticalFields as $field) {
-            if ($user->isDirty($field)) {
-                return true;
-            }
-        }
-
-        return false;
+        // No-op: auth_version handled in User::boot() saved hook
     }
 }

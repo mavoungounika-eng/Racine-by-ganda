@@ -27,6 +27,18 @@ class SecurityTest extends TestCase
         $this->clientRoleId = $clientRole->id;
     }
 
+    protected function createCreatorUser(): User
+    {
+        $createurRole = Role::firstOrCreate(
+            ['slug' => 'createur'],
+            ['name' => 'Créateur', 'description' => 'Creator role', 'is_active' => true]
+        );
+        return User::factory()->create([
+            'role_id' => $createurRole->id,
+            'role' => 'createur',
+        ]);
+    }
+
     protected function createClientUser(): User
     {
         return User::factory()->create([
@@ -170,6 +182,14 @@ class SecurityTest extends TestCase
     #[Test]
     public function rate_limiting_is_configured_on_checkout(): void
     {
-        $this->markTestIncomplete('Rate limiting to be configured');
+        $creator = $this->createCreatorUser();
+
+        // Make multiple requests to trigger rate limiting
+        for ($i = 0; $i < 55; $i++) { // Exceed the 50 requests per minute limit
+            $response = $this->actingAs($creator)->get('/createur/subscription/plans');
+        }
+
+        // The last request should be rate limited (429 status)
+        $response->assertStatus(429);
     }
 }

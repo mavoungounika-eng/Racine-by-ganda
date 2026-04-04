@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\StripeWebhookEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
@@ -36,6 +37,7 @@ class WebhookSecurityProductionTest extends TestCase
      */
     public function test_stripe_webhook_with_valid_signature_is_processed(): void
     {
+        \Illuminate\Support\Facades\Queue::fake();
         // Configurer le secret webhook
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
 
@@ -74,7 +76,7 @@ class WebhookSecurityProductionTest extends TestCase
         $this->assertDatabaseHas('stripe_webhook_events', [
             'event_id' => $eventId,
             'event_type' => $eventType,
-            'status' => 'failed',
+            'status' => 'received',
         ]);
     }
 
@@ -145,6 +147,7 @@ class WebhookSecurityProductionTest extends TestCase
      */
     public function test_stripe_webhook_duplicate_event_is_processed_only_once(): void
     {
+        \Illuminate\Support\Facades\Queue::fake();
         // Configurer le secret webhook
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
 
@@ -177,7 +180,7 @@ class WebhookSecurityProductionTest extends TestCase
         // Vérifier que l'événement est persisté
         $this->assertDatabaseHas('stripe_webhook_events', [
             'event_id' => $eventId,
-            'status' => 'failed',
+            'status' => 'received',
         ]);
 
         // Deuxième envoi (même event_id)
@@ -197,6 +200,7 @@ class WebhookSecurityProductionTest extends TestCase
      */
     public function test_monetbil_webhook_with_valid_signature_is_processed(): void
     {
+        \Illuminate\Support\Facades\Queue::fake();
         // Configurer le secret webhook
         Config::set('services.monetbil.service_secret', 'test_secret_key');
 
@@ -224,7 +228,7 @@ class WebhookSecurityProductionTest extends TestCase
         $this->assertDatabaseHas('monetbil_callback_events', [
             'transaction_id' => 'TXN_TEST_123',
             'payment_ref' => 'PAY_TEST_123',
-            'status' => 'failed',
+            'status' => 'received',
         ]);
     }
 

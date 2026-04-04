@@ -33,8 +33,7 @@ class AdminMobileMoneyController extends Controller
         }
 
         if ($request->has('provider')) {
-            // TODO: Ajouter un champ provider dans la table subscriptions
-            // Pour l'instant, on ne peut pas filtrer par provider
+            $query->where('payment_provider', $request->get('provider'));
         }
 
         if ($request->has('search')) {

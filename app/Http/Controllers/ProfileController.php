@@ -7,6 +7,8 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -298,13 +300,46 @@ class ProfileController extends Controller
             return back()->withErrors(['professional_email' => 'Aucun email professionnel configuré.']);
         }
 
-        // TODO: Envoyer un email de vérification avec un token
-        // Pour l'instant, on simule la vérification
-        // Dans un vrai système, vous enverriez un email avec un lien de vérification
+        if ($user->professional_email_verified) {
+            return back()->with('info', 'Cet email est déjà vérifié.');
+        }
 
-        $user->verifyProfessionalEmail();
+        $token = \Illuminate\Support\Str::random(64);
 
-        return back()->with('success', 'Email professionnel vérifié avec succès !');
+        $user->update(['professional_email_token' => hash('sha256', $token)]);
+
+        $user->notify(new \App\Notifications\ProfessionalEmailVerification(
+            $token,
+            $user->professional_email
+        ));
+
+        return back()->with('success', 'Un email de vérification a été envoyé à ' . $user->professional_email . '.');
+    }
+
+    public function confirmProfessionalEmail(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'email' => 'required|email',
+        ]);
+
+        $user = \App\Models\User::where('professional_email', $request->email)
+            ->whereNotNull('professional_email_token')
+            ->first();
+
+        if (!$user || !hash_equals($user->professional_email_token, hash('sha256', $request->token))) {
+            return redirect()->route('profile.edit')
+                ->with('error', 'Lien de vérification invalide ou expiré.');
+        }
+
+        $user->update([
+            'professional_email_verified'    => true,
+            'professional_email_verified_at' => now(),
+            'professional_email_token'       => null,
+        ]);
+
+        return redirect()->route('profile.edit')
+            ->with('success', 'Email professionnel vérifié avec succès !');
     }
 }
 

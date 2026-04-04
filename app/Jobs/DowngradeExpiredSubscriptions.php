@@ -26,6 +26,10 @@ class DowngradeExpiredSubscriptions implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 3;
+    public int $timeout = 120;
+    public array $backoff = [30, 60, 120];
+
     protected bool $dryRun;
 
     public function __construct(bool $dryRun = false)
