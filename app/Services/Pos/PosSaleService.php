@@ -360,6 +360,9 @@ class PosSaleService
                 }
             }
 
+            // Restaurer le stock
+            $this->restoreStockForSale($sale);
+
             // Annuler la commande
             $sale->order->update([
                 'status' => 'cancelled',
@@ -380,6 +383,26 @@ class PosSaleService
 
             return $sale->fresh();
         });
+    }
+
+    /**
+     * Restaurer le stock pour une vente annulée ou remboursée
+     */
+    protected function restoreStockForSale(PosSale $sale): void
+    {
+        $order = $sale->order->load('items.product');
+
+        try {
+            app(\Modules\ERP\Services\StockService::class)->restockFromOrder($order);
+        } catch (\Throwable $e) {
+            // Fallback: increment manuel si StockService indisponible
+            foreach ($order->items as $item) {
+                if ($item->product && (!isset($item->product->track_stock) || $item->product->track_stock)) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
+            Log::warning("PosSaleService: StockService fallback used for sale #{$sale->id}: " . $e->getMessage());
+        }
     }
 
     /**

@@ -304,8 +304,34 @@ class PosInvariantsTest extends TestCase
         // POS orders have user_id = null to distinguish from e-commerce
         $this->assertNull($sale->order->user_id);
     }
+
+    #[Test]
+    public function cancel_sale_restores_stock()
+    {
+        $session = $this->sessionService->openSession(
+            $this->machineId,
+            $this->user->id,
+            50000
+        );
+
+        $initialStock = $this->product->stock;
+
+        $sale = $this->saleService->createSale(
+            $this->machineId,
+            [['product_id' => $this->product->id, 'quantity' => 3, 'price' => 1000]],
+            'cash',
+            $this->user->id
+        );
+
+        // Stock should be decremented after sale
+        $this->product->refresh();
+        $this->assertEquals($initialStock - 3, $this->product->stock);
+
+        // Cancel the sale
+        $this->saleService->cancelSale($sale, $this->user->id, 'Test cancellation');
+
+        // Stock should be restored
+        $this->product->refresh();
+        $this->assertEquals($initialStock, $this->product->stock);
+    }
 }
-
-
-
-

@@ -50,6 +50,10 @@ class PosSale extends Model
         'cancelled_at',
         'cancelled_by',
         'cancellation_reason',
+        'refunded_at',
+        'refunded_by',
+        'refund_amount',
+        'refund_reason',
         'created_by',
         'customer_id',
         'currency',
@@ -60,6 +64,8 @@ class PosSale extends Model
         'total_amount' => 'decimal:2',
         'finalized_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'refunded_at' => 'datetime',
+        'refund_amount' => 'decimal:2',
         'customer_id' => 'integer',
         'amount_eur' => 'decimal:2',
     ];
@@ -76,6 +82,7 @@ class PosSale extends Model
     public const STATUS_PENDING = 'pending';
     public const STATUS_FINALIZED = 'finalized';
     public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_REFUNDED = 'refunded';
 
     // Méthodes de paiement
     public const PAYMENT_CASH = 'cash';
@@ -221,6 +228,14 @@ class PosSale extends Model
     }
 
     /**
+     * Vérifier si la vente est remboursée
+     */
+    public function isRefunded(): bool
+    {
+        return $this->status === self::STATUS_REFUNDED;
+    }
+
+    /**
      * Finaliser la vente (tous paiements confirmés)
      */
     public function finalize(): void
@@ -248,5 +263,19 @@ class PosSale extends Model
             ->where('status', PosPayment::STATUS_PENDING)
             ->get()
             ->each(fn (PosPayment $payment) => $payment->cancel($reason));
+    }
+
+    /**
+     * Rembourser la vente
+     */
+    public function refund(int $refundedBy, float $refundAmount, string $reason): void
+    {
+        $this->update([
+            'status' => self::STATUS_REFUNDED,
+            'refunded_at' => now(),
+            'refunded_by' => $refundedBy,
+            'refund_amount' => $refundAmount,
+            'refund_reason' => $reason,
+        ]);
     }
 }

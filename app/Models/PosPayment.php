@@ -38,6 +38,7 @@ class PosPayment extends Model
         'external_reference',
         'provider',
         'metadata',
+        'refund_external_reference',
     ];
 
     protected $casts = [
@@ -50,6 +51,7 @@ class PosPayment extends Model
     public const STATUS_PENDING = 'pending';
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_REFUNDED = 'refunded';
 
     // Méthodes
     public const METHOD_CASH = 'cash';
@@ -160,6 +162,17 @@ class PosPayment extends Model
         $this->update([
             'status' => self::STATUS_CANCELLED,
             'cancel_reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Marquer le paiement comme remboursé
+     */
+    public function markRefunded(?string $externalReference = null): void
+    {
+        $this->update([
+            'status' => self::STATUS_REFUNDED,
+            'refund_external_reference' => $externalReference,
         ]);
     }
 }

@@ -43,6 +43,7 @@ class PosOperatorAuditLog extends Model
     public const ACTION_SALE_CREATED = 'SALE_CREATED';
     public const ACTION_SALE_CANCELLED = 'SALE_CANCELLED';
     public const ACTION_CASH_ADJUSTMENT = 'CASH_ADJUSTMENT';
+    public const ACTION_SALE_REFUNDED = 'SALE_REFUNDED';
     public const ACTION_INCIDENT = 'INCIDENT';
 
     /**
