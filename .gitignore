@@ -49,3 +49,7 @@ Racine by GANDA/
 /racine-pos-electron/release/
 /racine-pos-electron/.vite/
 /racine-pos-electron/*.log
+
+# Ajouté automatiquement
+.env.production.local
+tests_backup_*/

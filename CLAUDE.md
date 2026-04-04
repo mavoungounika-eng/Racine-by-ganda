@@ -1,4 +1,217 @@
-﻿# Racine by Ganda — Instructions Claude Code
+# Racine by Ganda — Instructions Claude Code
+
+## RÈGLE 0 — PLANIFICATION OBLIGATOIRE AVANT TOUTE TÂCHE
+
+Avant de commencer n'importe quelle tâche, affiche TOUJOURS :
+ESTIMATION :
+
+Fichiers à lire    : [liste]
+Fichiers à écrire  : [liste]
+Opérations totales : [N]
+Complexité         : SMALL (<5 fichiers) / MEDIUM (5-15) / LARGE (15+)
+Contexte suffisant : OUI / NON
+
+
+Si LARGE ou NON → découpe en sous-tâches numérotées et attends confirmation.
+Ne commence JAMAIS sans avoir affiché cette estimation.
+
+---
+
+## RÈGLE 1 — PÉRIMÈTRE FERMÉ
+
+- 1 suite de tests à la fois maximum
+- 1 groupe fonctionnel cohérent maximum
+- STOP après chaque unité — ne pas enchaîner sans confirmation explicite
+- Si une tâche touche plus de 10 fichiers → demander un découpage manuel
+
+---
+
+## RÈGLE 2 — ÉDITION FICHIERS PHP
+
+- Toujours lire le fichier complet avant de modifier
+- Fichiers > 200 lignes → lire par tranches de 50 lignes
+- Toujours utiliser Python pour les éditions multi-lignes (sed échoue sur UTF-8 WSL)
+- Toujours vérifier `php -l FICHIER` après chaque écriture
+- Ne jamais fermer une classe prématurément — vérifier les accolades ouvrantes/fermantes
+- Ne jamais assumer le contenu d'un fichier sans l'avoir lu
+
+---
+
+## RÈGLE 3 — VÉRIFICATION OBLIGATOIRE APRÈS CHAQUE MODIFICATION
+
+Dans cet ordre exact :
+1. `php -l FICHIER_MODIFIE`
+2. `./vendor/bin/phpunit --filter NomDeLaSuite --testdox 2>&1 | tail -15`
+3. `./vendor/bin/phpunit 2>&1 | tail -3` (vérification régression globale)
+
+Si régression détectée → STOP immédiat, signaler, ne pas continuer.
+
+---
+
+## RÈGLE 4 — FICHIERS PROTÉGÉS (NE JAMAIS MODIFIER)
+
+- tests/Feature/Ai/
+- tests/Feature/Pos/
+- tests/Feature/Erp/
+- tests/Feature/SaaSPur/
+- tests/Feature/ERPProduction/
+- tests/Feature/Currency/
+- tests/Feature/Crm/
+- tests/Feature/Auth/LogoutTest.php
+- tests/Feature/Auth/LoginRedirectTest.php
+- tests/Feature/Auth/DashboardAccessTest.php
+
+---
+
+## RÈGLE 5 — DÉFINITION DE "TERMINÉ"
+
+Une tâche n'est JAMAIS terminée tant que ces critères ne sont pas tous validés :
+- [ ] php -l sur tous les fichiers modifiés → 0 erreurs syntaxe
+- [ ] Run ciblé PHPUnit → 0 failures, skipped stables ou en baisse
+- [ ] Run global PHPUnit → pas de régression vs référence (894 tests, 0 failures)
+- [ ] Aucun TODO / markTestSkipped ajouté sans justification écrite
+- [ ] Aucun fichier protégé touché
+- [ ] Commit proposé avec message conventionnel
+
+Si un seul critère manque → la tâche est EN COURS, pas terminée.
+
+---
+
+## RÈGLE 6 — QUAND ÇA ÉCHOUE
+
+Si une modification casse quelque chose :
+1. STOP immédiat — ne pas continuer sur d'autres fichiers
+2. Lire l'erreur complète avant de proposer un fix
+3. Proposer UNE seule solution, pas plusieurs options
+4. Si 2 tentatives échouent → expliquer pourquoi et demander une décision humaine
+
+Ne jamais :
+- Supprimer un test pour faire passer le build
+- Commenter du code pour masquer une erreur
+- Ajouter markTestSkipped sans expliquer la raison exacte
+- Enchaîner des fixes sans vérifier chaque étape
+
+---
+
+## RÈGLE 7 — SPÉCIFICITÉS WSL / ENVIRONNEMENT
+
+- Heredocs bash instables → toujours utiliser Python pour écrire des fichiers
+- Fichiers > 300 lignes → lire par tranches, ne jamais assumer le contenu
+- Si une commande ne retourne rien → WSL peut être bloqué, signaler immédiatement
+- Chemin projet : /home/nika/projects/racine-backend
+- Ne jamais utiliser wsl.localhost paths dans les commandes bash
+- Toujours utiliser des chemins relatifs depuis la racine projet
+- Queue : Redis en prod, sync en test (QUEUE_CONNECTION=sync dans .env.testing)
+
+---
+
+## RÈGLE 8 — MÉMOIRE DE SESSION
+
+Au début de chaque session, exécuter et afficher :
+```bash
+git log --oneline -5
+./vendor/bin/phpunit 2>&1 | tail -3
+git status --short
+```
+
+Cela permet de savoir exactement où on en est AVANT de toucher quoi que ce soit.
+Ne pas sauter cette étape même si la tâche semble simple.
+
+---
+
+## RÈGLE 9 — COMMITS
+
+Après chaque groupe de tâches terminé (RÈGLE 5 entièrement validée) :
+- Proposer un message de commit au format conventionnel :
+  - `fix(tests): débloquer AdminDashboardGlobalTest session 2FA`
+  - `feat(payments): implémenter validateCaptcha reCAPTCHA v3`
+  - `refactor(jobs): ajouter tries/timeout sur 11 jobs/listeners`
+- Ne jamais commiter si PHPUnit retourne des failures
+- Grouper les fichiers liés dans un seul commit cohérent
+
+---
+
+## RÈGLE 10 — MODIFICATION DU CLAUDE.md
+
+Ne JAMAIS remplacer `CLAUDE.md` entièrement.
+Toujours FUSIONNER — ajouter les nouvelles sections sans supprimer le contenu existant.
+
+Procédure :
+1. Lire le fichier actuel complet
+2. Identifier ce qui manque
+3. Ajouter uniquement les sections nouvelles
+4. Vérifier que rien n'a été perdu
+
+---
+
+## SKILL — LECTURE FICHIER AVANT MODIFICATION
+
+Pour tout fichier à modifier, suivre cet ordre :
+1. `wc -l FICHIER` → connaître la taille totale
+2. `head -30 FICHIER` → voir namespace, imports, déclaration de classe
+3. `grep -n "function\|class\|TODO\|markTestSkipped" FICHIER` → carte du fichier
+4. Lire uniquement les sections concernées par la tâche
+
+Ne jamais modifier sans avoir fait les étapes 1 à 3.
+
+---
+
+## SKILL — DÉBLOQUER UN TEST SKIPPED
+
+Suivre cet ordre exact :
+1. Lire le markTestSkipped et comprendre la raison précise
+2. Identifier le pattern de fix selon la catégorie :
+
+| Raison du skip | Fix à appliquer |
+|---|---|
+| Session 2FA manquante | `withSession(["2fa_verified" => true, "auth_version" => $user->auth_version])` |
+| Model manquant | Créer model + migration + factory minimal, puis php artisan migrate |
+| Route inexistante | Vérifier `php artisan route:list` avant d'asserter quoi que ce soit |
+| Architecture obsolète | Réécrire le test selon l'architecture actuelle, documenter le changement |
+| SoftDeletes manquant | Adapter le test sans SoftDeletes, ne pas modifier le modèle User |
+| Job s'exécute en sync | Ajouter `Queue::fake()` au début du test |
+| Permissions insuffisantes | Utiliser `Role::firstOrCreate()` + seed minimal dans setUp() |
+
+3. Appliquer le fix
+4. `php -l FICHIER`
+5. Run ciblé PHPUnit
+6. Run global PHPUnit
+7. STOP — ne pas enchaîner sur le test suivant sans confirmation
+
+---
+
+## SKILL — PATTERN D'ÉDITION PYTHON (WSL-SAFE)
+
+Pour remplacer du contenu dans un fichier PHP :
+```python
+python3 -c "
+lines = open('FICHIER.php').readlines()
+# Inspecter les lignes cibles
+for i, l in enumerate(lines[N-3:N+3], N-2):
+    print(i, repr(l))
+"
+
+# Puis modifier
+python3 -c "
+lines = open('FICHIER.php').readlines()
+lines[INDEX] = '    nouveau contenu\n'
+open('FICHIER.php', 'w').writelines(lines)
+print('OK')
+"
+```
+
+Pour écrire un fichier entier :
+```python
+python3 << 'PYEOF'
+from pathlib import Path
+Path('FICHIER.php').write_text('''<?php
+// contenu complet ici
+''')
+print('OK')
+PYEOF
+```
+
+---
 
 ## Présentation du projet
 
@@ -6,92 +219,124 @@ Plateforme e-commerce multi-rôles (marketplace, POS, gestion stock).
 Statut : ~95% complet — phase stabilisation et dette technique.
 Objectif immédiat : rendre le projet fonctionnel et prêt pour la mise en production publique.
 
+---
+
 ## Stack technique
 
-- **Backend** : PHP 8.2 · Laravel 12 · MySQL · Redis
-- **Frontend** : Vue 3 · Vite 7 · Bootstrap 5 · Laravel Echo (WebSockets via Reverb)
-- **POS** : Electron 28 (application de caisse desktop)
-- **Auth** : Laravel Sanctum · Socialite (OAuth) · pragmarx/google2fa (2FA TOTP)
-- **Paiements** : Stripe PHP SDK v19
-- **IA** : openai-php/laravel (service Amira)
-- **Tests** : PHPUnit 11 · Cypress 15 (E2E)
-- **Monitoring** : Sentry Laravel
-- **Temps réel** : Laravel Reverb · Pusher JS
-- **Exports** : Maatwebsite Excel
-- **QR** : bacon/bacon-qr-code · simplesoftwareio/simple-qrcode
+- Backend  : PHP 8.3.6 · Laravel 12 · MySQL 8.0.45 · Redis
+- Frontend : Vue 3 · Vite 7 · Bootstrap 5 · Laravel Echo (WebSockets via Reverb)
+- POS      : Electron 28 (application de caisse desktop)
+- Auth     : Laravel Sanctum · Socialite (OAuth) · pragmarx/google2fa (2FA TOTP)
+- Paiements: Stripe PHP SDK v19 · Monetbil (Mobile Money XAF)
+- IA       : openai-php/laravel (service Amira) · Anthropic
+- Tests    : PHPUnit 11.5.51 · Cypress 15 (E2E)
+- Monitoring: Sentry Laravel
+- Temps réel: Laravel Reverb · Pusher JS
+- Exports  : Maatwebsite Excel
+- QR       : bacon/bacon-qr-code · simplesoftwareio/simple-qrcode
+
+---
 
 ## Architecture
-
-`
 app/
-  Http/Controllers/     — contrôleurs Laravel
-  Models/               — modèles Eloquent
-  Services/             — logique métier (dont AmiraService)
-  Helpers/              — SettingsHelper, AuthHelper, helpers.php
+Http/Controllers/     — contrôleurs Laravel
+Models/               — modèles Eloquent
+Services/             — logique métier
+Notifications/        — notifications mail/queue
 modules/                — modules Laravel autonomes (PSR-4: Modules\)
 resources/js/           — composants Vue 3
 database/
-  migrations/
-  seeders/
-  factories/
+migrations/
+seeders/
+factories/
 tests/
-  Unit/
-  Feature/
-`
+Unit/
+Feature/
+
+---
 
 ## Conventions de code
 
 - PSR-12 strict (Laravel Pint configuré)
-- Composants Vue 3 en Composition API avec <script setup>
+- Composants Vue 3 en Composition API avec script setup
 - Nommage : camelCase JS/Vue · snake_case PHP · kebab-case fichiers Vue
 - Pas de logique métier dans les contrôleurs — tout passe par les Services
-- Toujours valider les requêtes via Form Requests dédiées
-- Utiliser les ressources API (JsonResource) pour toutes les réponses JSON
+- Toujours valider via Form Requests dédiées
+- Utiliser JsonResource pour toutes les réponses JSON
+
+---
 
 ## Commandes essentielles
+```bash
+composer run dev      # Démarrage complet (server + queue + logs + vite)
+composer run test     # Tests uniquement
+php artisan test      # Alias tests
+npm run build         # Build production
+./vendor/bin/pint     # Linting PHP
+composer run setup    # Setup initial
+```
 
-`
-# Démarrage complet (server + queue + logs + vite)
-composer run dev
+---
 
-# Tests uniquement
-composer run test
-# ou
-php artisan test
+## État tests — RÉFÉRENCE (4 avril 2026)
+Tests: 894 | Failures: 0 | Skipped: 19 | Incomplete: 0
 
-# Build production
-npm run build
+Commande de vérification rapide :
+```bash
+./vendor/bin/phpunit 2>&1 | tail -3
+```
 
-# Linting PHP
-./vendor/bin/pint
+Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 
-# Setup initial
-composer run setup
-`
+---
+
+## Ce qui reste à faire
+
+### Priorité haute
+1. EXCHANGE_RATE_API_KEY — obtenir sur exchangerate-api.com (free tier)
+2. URLs Monetbil prod — MONETBIL_NOTIFY_URL et MONETBIL_RETURN_URL avec vrai domaine
+3. RECAPTCHA_SITE_KEY + RECAPTCHA_SECRET_KEY — Google reCAPTCHA v3
+4. webhook updatePaymentAndOrder — implémentation manquante
+5. Commit du travail actuel
+
+### Tests skipped légitimes (ne pas forcer)
+- CreatorPayoutAccountingTest — architecture SaaS pur, hors scope
+- AuthPrivilegeEscalationTest:200 — SoftDeletes non implémenté sur User
+
+### Priorité moyenne
+- Audit Trail — non implémenté
+- Sentry — SENTRY_LARAVEL_DSN à configurer
+- CI/CD GitHub Actions — à compléter
+
+---
+
+## Règles de sécurité
+
+- TOUJOURS vérifier les variables d'environnement avant tout test Stripe ou OAuth
+- Ne JAMAIS commiter de clés API, secrets ou credentials dans le code
+- Les webhooks Stripe doivent être vérifiés avec Stripe\Webhook::constructEvent
+- Le service Amira utilise openai-php/laravel — vérifier config/openai.php
+- Laravel Reverb gère les WebSockets — ne pas utiliser Pusher en production
+- Les modules dans modules/ suivent le namespace Modules\ (PSR-4)
+
+---
 
 ## Modules critiques — état actuel
 
 | Module | Statut | Priorité |
-|--------|--------|----------|
+|---|---|---|
 | Auth 2FA (TOTP) | Tests en échec | CRITIQUE |
 | OAuth providers (Socialite) | Tests en échec | CRITIQUE |
 | Stripe / paiements | Tests en échec | CRITIQUE |
 | Service Amira (IA) | Tests en échec | CRITIQUE |
 | POS Electron | À stabiliser | HAUTE |
 
-## Règles importantes
-
-- TOUJOURS vérifier les variables d'environnement avant tout test Stripe ou OAuth
-- Ne JAMAIS commiter de clés API, secrets ou credentials dans le code
-- Les webhooks Stripe doivent être vérifiés avec Stripe\Webhook::constructEvent
-- Le service Amira utilise openai-php/laravel — vérifier la config config/openai.php
-- Laravel Reverb gère les WebSockets — ne pas utiliser Pusher en production
-- Les modules dans modules/ suivent le namespace Modules\ (PSR-4)
+---
 
 ## Informations découvertes par CODEX
 
-> Cette section a été remplie automatiquement par CODEX lors de la création de ce fichier.
-> Elle reflète l'état réel du projet au moment de la configuration.
+> Cette section a été reconstruite par CODEX depuis l'état actuel du dépôt.
+> Elle sert de carte rapide du projet pour éviter une ré-exploration complète à chaque session.
 
 ### Services détectés dans app/Services/
 - app/Services/Action/ActionExecutionService.php
@@ -186,9 +431,9 @@ composer run setup
 - app/Services/Pos/PosSaleService.php
 - app/Services/Pos/PosSessionService.php
 - app/Services/ProductCodeService.php
+- app/Services/ProductSearchService.php
 - app/Services/Production/ProductionCostingService.php
 - app/Services/Production/ProductionService.php
-- app/Services/ProductSearchService.php
 - app/Services/ProfileCompletionService.php
 - app/Services/Queue/QueueCircuitBreaker.php
 - app/Services/Queue/QueueMonitor.php
@@ -197,7 +442,6 @@ composer run setup
 - app/Services/SaaSCheckoutService.php
 - app/Services/SessionSecurityService.php
 - app/Services/SocialAuthService.php
-- app/Services/SocialAuthService.php.example
 - app/Services/Stock/StockService.php
 - app/Services/StockReservationService.php
 - app/Services/StockValidationService.php
@@ -269,15 +513,15 @@ composer run setup
 - tests/Feature/Crm/CrmSegmentationTest.php
 - tests/Feature/Currency/CurrencyTest.php
 - tests/Feature/DecisionIntelligenceControllerTest.php
-- tests/Feature/Erp/StockBroadcastTest.php
-- tests/Feature/Erp/StockSyncTest.php
-- tests/Feature/ErpGlobalTest.php
-- tests/Feature/ErpPerformanceTest.php
 - tests/Feature/ERPProduction/CostingFlowTest.php
 - tests/Feature/ERPProduction/ProductionOrderTest.php
 - tests/Feature/ERPProduction/QualityControlTest.php
 - tests/Feature/ERPProduction/StockFlowTest.php
 - tests/Feature/ERPProduction/WipFlowTest.php
+- tests/Feature/Erp/StockBroadcastTest.php
+- tests/Feature/Erp/StockSyncTest.php
+- tests/Feature/ErpGlobalTest.php
+- tests/Feature/ErpPerformanceTest.php
 - tests/Feature/ExampleTest.php
 - tests/Feature/FinancialBIServiceTest.php
 - tests/Feature/GoogleAuthTest.php
@@ -295,14 +539,14 @@ composer run setup
 - tests/Feature/Order/StockConcurrencyTest.php
 - tests/Feature/OrderTest.php
 - tests/Feature/PaymentGlobalTest.php
+- tests/Feature/PaymentTest.php
+- tests/Feature/PaymentWebhookSecurityTest.php
 - tests/Feature/Payments/MonetbilWebhookPaymentMappingTest.php
 - tests/Feature/Payments/OutOfOrderEventsTest.php
 - tests/Feature/Payments/PaymentStateConsistencyTest.php
 - tests/Feature/Payments/StripeWebhookPaymentMappingTest.php
 - tests/Feature/Payments/StripeWebhookPaymentNotFoundTest.php
 - tests/Feature/PaymentsHubRbacTest.php
-- tests/Feature/PaymentTest.php
-- tests/Feature/PaymentWebhookSecurityTest.php
 - tests/Feature/Performance/NPlusOneRegressionTest.php
 - tests/Feature/Pos/PosAnalyticsTest.php
 - tests/Feature/Pos/PosAuditTrailTest.php
@@ -345,12 +589,12 @@ composer run setup
 - tests/Feature/WebhookRateLimitingTest.php
 - tests/Feature/WebhookRequeueGuardTest.php
 - tests/Feature/WebhookRetentionTest.php
+- tests/Feature/WebhookSecurityProductionTest.php
+- tests/Feature/WebhookSecurityTest.php
 - tests/Feature/Webhooks/MonetbilWebhookResilienceTest.php
 - tests/Feature/Webhooks/StripeBillingWebhookDeduplicationTest.php
 - tests/Feature/Webhooks/WebhookMonitoringTest.php
 - tests/Feature/Webhooks/WebhookObservabilityTest.php
-- tests/Feature/WebhookSecurityProductionTest.php
-- tests/Feature/WebhookSecurityTest.php
 
 #### tests/Unit/
 - tests/Unit/Accounting/LedgerServiceTest.php
@@ -398,19 +642,12 @@ composer run setup
 - tests/Unit/Support/MetricsRecorderTest.php
 
 ### Autres observations
-- Le dossier modules/ est présent à la racine.
-- Le dossier POS desktop est présent sous acine-pos-electron/ (pas electron/ à la racine).
-- Les fichiers de configuration environnement existent : .env, .env.example, .env.testing, .env.production, .env.production.local.
-- Les dépendances sont déjà installées (endor/ et 
-ode_modules/ présents).
-- Un dossier de sauvegarde de tests est présent : 	ests_backup_20260126_120336/.
-- Plusieurs entrées de fichiers inattendues sont présentes à la racine (CREATE, USE, id,, 1, 	rue,, -, Admin Test,, Super Admin Test,, dmin@test.com],, superadmin@test.com],, ase32secret,).
+- Le dossier `modules/` est présent à la racine.
+- Le code POS desktop est dans `racine-pos-electron/` (dossier séparé à la racine du projet).
+- Les fichiers de configuration environnement présents incluent `.env`, `.env.example`, `.env.testing`, `.env.production` et `.env.production.local`.
+- Les dépendances sont déjà installées (`vendor/` et `node_modules/` présents).
+- Un dossier de sauvegarde de tests est présent : `tests_backup_20260126_120336/`.
 
-## Contexte de session
-
-Quand je travaille sur un module spécifique, je fournirai :
-1. Le fichier concerné (contrôleur, service, test)
-2. Le message d'erreur exact
-3. Le comportement attendu
-
-Traite chaque session comme isolée — ne suppose pas l'état d'autres modules.
+### Points à corriger avant mise en production
+- Dossier `tests_backup_20260126_120336/` à supprimer ou à ignorer explicitement dans `.gitignore`.
+- Vérifier que `.env.production.local` est bien ignoré dans `.gitignore`.
