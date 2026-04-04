@@ -151,9 +151,9 @@ class FinancialBIServiceTest extends TestCase
                 'stripe_customer_id' => "cus_test_{$i}",
                 'stripe_price_id' => 'price_test_1',
                 'status' => 'active',
-                'current_period_start' => now()->subMonth(),
+                'current_period_start' => now()->subDays(15),
                 'current_period_end' => now()->addMonth(),
-                'started_at' => now()->subMonth(),
+                'started_at' => now()->subDays(15),
                 'ends_at' => now()->addMonth(),
             ]);
         }
