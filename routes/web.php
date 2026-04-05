@@ -245,51 +245,7 @@ Route::middleware(['auth', 'ensure:client'])->group(function () {
     // Dashboard Client - Route principale (utiliser celle-ci uniquement)
     Route::get('/compte', [\App\Http\Controllers\Account\ClientAccountController::class, 'index'])
         ->name('account.dashboard');
-    
-    // Routes Profil (Phase 7) - Unifiées pour tous les rôles
-    // Utilise 'ensure' sans rôles spécifiques pour autoriser tous les rôles authentifiés avec contexte valide
-    Route::middleware('ensure')->group(function () {
-        Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
-        Route::get('/profil/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-        Route::put('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
-        Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
-    });
-    Route::get('/profil/commandes', [\App\Http\Controllers\ProfileController::class, 'orders'])->name('profile.orders');
-    Route::get('/profil/commandes/{order}', [\App\Http\Controllers\ProfileController::class, 'showOrder'])->name('profile.orders.show');
-    Route::get('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'addresses'])->name('profile.addresses');
-    Route::post('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
-    Route::delete('/profil/adresses/{address}', [\App\Http\Controllers\ProfileController::class, 'deleteAddress'])->name('profile.addresses.delete');
-    Route::get('/profil/fidelite', [\App\Http\Controllers\ProfileController::class, 'loyalty'])->name('profile.loyalty');
-    Route::post('/profil/verify-email', [\App\Http\Controllers\ProfileController::class, 'verifyProfessionalEmail'])->name('profile.verify-email');
-    
-    // Favoris
-    Route::get('/profil/favoris', [\App\Http\Controllers\Profile\WishlistController::class, 'index'])->name('profile.wishlist');
-    Route::post('/profil/favoris/add', [\App\Http\Controllers\Profile\WishlistController::class, 'add'])->name('profile.wishlist.add');
-    Route::delete('/profil/favoris/remove/{id}', [\App\Http\Controllers\Profile\WishlistController::class, 'remove'])->name('profile.wishlist.remove');
-    Route::post('/profil/favoris/toggle', [\App\Http\Controllers\Profile\WishlistController::class, 'toggle'])->name('profile.wishlist.toggle');
-    Route::post('/profil/favoris/clear', [\App\Http\Controllers\Profile\WishlistController::class, 'clear'])->name('profile.wishlist.clear');
 
-    // Reviews (Profile)
-    Route::get('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'index'])->name('profile.reviews');
-    Route::get('/profil/commandes/{order}/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'create'])->name('profile.reviews.create');
-    Route::post('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'store'])->name('profile.reviews.store');
-    Route::get('/profil/avis/{review}/edit', [\App\Http\Controllers\Profile\ReviewController::class, 'edit'])->name('profile.reviews.edit');
-    Route::put('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'update'])->name('profile.reviews.update');
-    Route::delete('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'destroy'])->name('profile.reviews.destroy');
-    
-    // Reviews (Frontend - depuis produit)
-    Route::post('/products/{product}/reviews', [\App\Http\Controllers\Front\ReviewController::class, 'store'])->name('reviews.store');
-    
-    // Factures
-    Route::get('/profil/commandes/{order}/facture', [\App\Http\Controllers\Profile\InvoiceController::class, 'show'])->name('profile.invoice.show');
-    Route::get('/profil/commandes/{order}/facture/download', [\App\Http\Controllers\Profile\InvoiceController::class, 'download'])->name('profile.invoice.download');
-    Route::get('/profil/commandes/{order}/facture/print', [\App\Http\Controllers\Profile\InvoiceController::class, 'print'])->name('profile.invoice.print');
-    
-    // Export Données RGPD
-    Route::get('/profil/export-donnees', [\App\Http\Controllers\Profile\DataExportController::class, 'export'])->name('profile.data.export');
-    Route::get('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'showDeleteAccount'])->name('profile.delete-account');
-    Route::delete('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'deleteAccount'])->name('profile.delete-account.destroy');
-    
     // Routes Apparence
     Route::get('/appearance/settings', [AppearanceController::class, 'index'])->name('appearance.settings');
     Route::post('/appearance/update', [AppearanceController::class, 'update'])->name('appearance.update');
@@ -307,6 +263,50 @@ Route::middleware(['auth', 'ensure:client'])->group(function () {
         Route::delete('/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
         Route::delete('/clear/read', [\App\Http\Controllers\NotificationController::class, 'deleteRead'])->name('delete-read');
     });
+});
+
+// Routes Profil & Messagerie — accessibles à tous les rôles authentifiés
+Route::middleware(['auth'])->group(function () {
+    // Routes Profil (Phase 7) - Unifiées pour tous les rôles
+    Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    Route::get('/profil/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/profil/commandes', [\App\Http\Controllers\ProfileController::class, 'orders'])->name('profile.orders');
+    Route::get('/profil/commandes/{order}', [\App\Http\Controllers\ProfileController::class, 'showOrder'])->name('profile.orders.show');
+    Route::get('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'addresses'])->name('profile.addresses');
+    Route::post('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
+    Route::delete('/profil/adresses/{address}', [\App\Http\Controllers\ProfileController::class, 'deleteAddress'])->name('profile.addresses.delete');
+    Route::get('/profil/fidelite', [\App\Http\Controllers\ProfileController::class, 'loyalty'])->name('profile.loyalty');
+    Route::post('/profil/verify-email', [\App\Http\Controllers\ProfileController::class, 'verifyProfessionalEmail'])->name('profile.verify-email');
+
+    // Favoris
+    Route::get('/profil/favoris', [\App\Http\Controllers\Profile\WishlistController::class, 'index'])->name('profile.wishlist');
+    Route::post('/profil/favoris/add', [\App\Http\Controllers\Profile\WishlistController::class, 'add'])->name('profile.wishlist.add');
+    Route::delete('/profil/favoris/remove/{id}', [\App\Http\Controllers\Profile\WishlistController::class, 'remove'])->name('profile.wishlist.remove');
+    Route::post('/profil/favoris/toggle', [\App\Http\Controllers\Profile\WishlistController::class, 'toggle'])->name('profile.wishlist.toggle');
+    Route::post('/profil/favoris/clear', [\App\Http\Controllers\Profile\WishlistController::class, 'clear'])->name('profile.wishlist.clear');
+
+    // Reviews (Profile)
+    Route::get('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'index'])->name('profile.reviews');
+    Route::get('/profil/commandes/{order}/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'create'])->name('profile.reviews.create');
+    Route::post('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'store'])->name('profile.reviews.store');
+    Route::get('/profil/avis/{review}/edit', [\App\Http\Controllers\Profile\ReviewController::class, 'edit'])->name('profile.reviews.edit');
+    Route::put('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'update'])->name('profile.reviews.update');
+    Route::delete('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'destroy'])->name('profile.reviews.destroy');
+
+    // Reviews (Frontend - depuis produit)
+    Route::post('/products/{product}/reviews', [\App\Http\Controllers\Front\ReviewController::class, 'store'])->name('reviews.store');
+
+    // Factures
+    Route::get('/profil/commandes/{order}/facture', [\App\Http\Controllers\Profile\InvoiceController::class, 'show'])->name('profile.invoice.show');
+    Route::get('/profil/commandes/{order}/facture/download', [\App\Http\Controllers\Profile\InvoiceController::class, 'download'])->name('profile.invoice.download');
+    Route::get('/profil/commandes/{order}/facture/print', [\App\Http\Controllers\Profile\InvoiceController::class, 'print'])->name('profile.invoice.print');
+
+    // Export Données RGPD
+    Route::get('/profil/export-donnees', [\App\Http\Controllers\Profile\DataExportController::class, 'export'])->name('profile.data.export');
+    Route::get('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'showDeleteAccount'])->name('profile.delete-account');
+    Route::delete('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'deleteAccount'])->name('profile.delete-account.destroy');
 
     // Messagerie
     Route::prefix('messages')->name('messages.')->group(function () {
@@ -318,9 +318,9 @@ Route::middleware(['auth', 'ensure:client'])->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\MessageController::class, 'show'])->name('show');
         Route::get('/{id}/messages', [\App\Http\Controllers\MessageController::class, 'getMessages'])->name('get-messages');
         // Rate limiting: 10 messages par minute
-    Route::post('/{id}/send', [\App\Http\Controllers\MessageController::class, 'sendMessage'])
-        ->middleware('throttle:10,1')
-        ->name('send');
+        Route::post('/{id}/send', [\App\Http\Controllers\MessageController::class, 'sendMessage'])
+            ->middleware('throttle:10,1')
+            ->name('send');
         Route::put('/{id}/archive', [\App\Http\Controllers\MessageController::class, 'archive'])->name('archive');
         Route::put('/{id}/unarchive', [\App\Http\Controllers\MessageController::class, 'unarchive'])->name('unarchive');
         Route::put('/message/{messageId}/edit', [\App\Http\Controllers\MessageController::class, 'editMessage'])->name('edit-message');
