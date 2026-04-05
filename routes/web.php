@@ -266,7 +266,7 @@ Route::middleware(['auth', 'ensure:client'])->group(function () {
 });
 
 // Routes Profil & Messagerie — accessibles à tous les rôles authentifiés
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'ensure'])->group(function () {
     // Routes Profil (Phase 7) - Unifiées pour tous les rôles
     Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profil/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
