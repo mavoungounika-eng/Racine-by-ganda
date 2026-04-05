@@ -115,6 +115,23 @@ class FrontendController extends Controller
     public function showroom() { return view('frontend.showroom'); }
     public function atelier() { return view('frontend.atelier'); }
     public function contact() { return view('frontend.contact'); }
+
+    public function contactSubmit(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:50',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        \App\Models\ContactMessage::create($validated);
+
+        return redirect()->route('frontend.contact')
+            ->with('success', 'Votre message a été envoyé avec succès. Nous vous répondrons dans les 24 heures.');
+    }
     public function creators() 
     { 
         $creators = \App\Models\CreatorProfile::active()

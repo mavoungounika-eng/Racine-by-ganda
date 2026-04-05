@@ -388,8 +388,14 @@
                     <h2>Envoyez-nous un message</h2>
                     <p>Nous vous répondrons dans les 24 heures</p>
                 </div>
-                
-                <form action="#" method="POST">
+
+                @if(session('success'))
+                    <div class="alert alert-success" style="background:#d4edda;color:#155724;padding:15px;border-radius:8px;margin-bottom:20px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('frontend.contact.submit') }}" method="POST">
                     @csrf
                     <div class="form-row">
                         <div class="form-group">

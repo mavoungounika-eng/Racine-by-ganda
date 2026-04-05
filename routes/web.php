@@ -359,6 +359,7 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/showroom', [FrontendController::class, 'showroom'])->name('showroom');
     Route::get('/atelier', [FrontendController::class, 'atelier'])->name('atelier');
     Route::get('/contact', [FrontendController::class, 'contact'])->name('contact');
+    Route::post('/contact', [FrontendController::class, 'contactSubmit'])->name('contact.submit');
     Route::get('/produit/{id}', [FrontendController::class, 'product'])->name('product');
     Route::get('/createurs', [FrontendController::class, 'creators'])->name('creators');
     Route::get('/marketplace', [FrontendController::class, 'marketplace'])->name('marketplace');
