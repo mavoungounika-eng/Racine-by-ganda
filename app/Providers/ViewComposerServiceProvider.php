@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\Cart\DatabaseCartService;
 use App\Services\Cart\SessionCartService;
 use Illuminate\Support\Facades\Auth;
+use App\Http\View\Composers\CmsPageComposer;
 use App\Http\View\Composers\CmsViewComposer;
 use App\Http\View\Composers\HomeComposer;
 use Illuminate\Support\Facades\View;
@@ -51,6 +52,12 @@ class ViewComposerServiceProvider extends ServiceProvider
         View::composer(
             'layouts.frontend',
             CmsViewComposer::class
+        );
+
+        // CMS page — injecter $cmsPage dans toutes les vues frontend
+        View::composer(
+            'frontend.*',
+            CmsPageComposer::class
         );
 
         // CMS homepage
