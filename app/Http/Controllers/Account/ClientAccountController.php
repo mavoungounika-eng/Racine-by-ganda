@@ -65,10 +65,8 @@ class ClientAccountController extends Controller
         // Points de fidélité (si le modèle existe)
         $loyalty = null;
         if (class_exists(\App\Models\LoyaltyPoint::class)) {
-            $loyalty = \App\Models\LoyaltyPoint::firstOrCreate(
-                ['user_id' => $user->id],
-                ['points' => 0, 'tier' => 'bronze']
-            );
+            $balance = \App\Models\LoyaltyPoint::getBalanceFor($user->id);
+            $loyalty = (object) ['points' => $balance];
         }
 
         // Compteur de notifications non lues
