@@ -295,12 +295,16 @@ composer run setup    # Setup initial
 
 ---
 
-## État tests — RÉFÉRENCE (4 avril 2026)
-Tests: 894 | Failures: 0 | Skipped: 19 | Incomplete: 0
+## État tests — RÉFÉRENCE (5 avril 2026)
+Tests: 895 | Failures: 0 (stable) | Skipped: 19 | Flaky Redis: 0-4 par run
+
+⚠️ Tests flaky Redis : QueueCircuitBreaker et QueueRateLimiter utilisent Redis::
+directement. L'état s'accumule entre les tests. Toujours exécuter `redis-cli FLUSHDB`
+avant un run de suite complète pour un résultat fiable.
 
 Commande de vérification rapide :
 ```bash
-./vendor/bin/phpunit 2>&1 | tail -3
+redis-cli FLUSHDB && ./vendor/bin/phpunit 2>&1 | tail -3
 ```
 
 Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
@@ -313,17 +317,24 @@ Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 1. EXCHANGE_RATE_API_KEY — obtenir sur exchangerate-api.com (free tier)
 2. URLs Monetbil prod — MONETBIL_NOTIFY_URL et MONETBIL_RETURN_URL avec vrai domaine
 3. RECAPTCHA_SITE_KEY + RECAPTCHA_SECRET_KEY — Google reCAPTCHA v3
-4. webhook updatePaymentAndOrder — implémentation manquante
-5. Commit du travail actuel
+
+### Priorité moyenne — Code
+- Refactorer QueueCircuitBreaker/QueueRateLimiter : utiliser Cache:: au lieu de Redis::
+  pour respecter CACHE_STORE=array en tests (fix flaky tests)
+- Audit Trail — non implémenté
+- Sentry — SENTRY_LARAVEL_DSN à configurer
+- CI/CD GitHub Actions — à compléter
+
+### Terminé (ne plus refaire)
+- ✅ webhook updatePaymentAndOrder — implémenté dans PaymentEventMapperService
+- ✅ POS refund (statut refunded + restauration stock)
+- ✅ Audit P1/P2/P3 (paiements, tests, queue, auth_version)
+- ✅ Namespace AI jobs (Ai → AI)
+- ✅ Frontend CreatorProfile::active()
 
 ### Tests skipped légitimes (ne pas forcer)
 - CreatorPayoutAccountingTest — architecture SaaS pur, hors scope
 - AuthPrivilegeEscalationTest:200 — SoftDeletes non implémenté sur User
-
-### Priorité moyenne
-- Audit Trail — non implémenté
-- Sentry — SENTRY_LARAVEL_DSN à configurer
-- CI/CD GitHub Actions — à compléter
 
 ---
 
