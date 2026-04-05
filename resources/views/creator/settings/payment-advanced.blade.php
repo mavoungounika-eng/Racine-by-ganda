@@ -4,7 +4,7 @@
 @section('page-title', 'Paramètres Avancés')
 
 @push('styles')
-<parameter name="link" rel="stylesheet" href="{{ asset('css/creator/payment-preferences.css') }}">
+<link rel="stylesheet" href="{{ asset('css/creator/payment-preferences.css') }}">
 @endpush
 
 @section('content')

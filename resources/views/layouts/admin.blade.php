@@ -292,6 +292,9 @@
         }
     </style>
 
+    {{-- Vite assets --}}
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
     @stack('styles')
 </head>
 <body>
