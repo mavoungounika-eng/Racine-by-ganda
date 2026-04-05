@@ -110,13 +110,36 @@ class FrontendController extends Controller
 
         return view('frontend.creators', compact('creators', 'totalProducts')); 
     }
-    public function marketplace() { return view('frontend.marketplace'); }
+    public function marketplace(Request $request)
+    {
+        $products = \App\Models\Product::where('is_active', true)
+            ->when($request->filled('search'), fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
+            ->when($request->filled('category'), function ($q) use ($request) {
+                $cat = \App\Models\Category::where('slug', $request->category)->first();
+                return $cat ? $q->where('category_id', $cat->id) : $q;
+            })
+            ->with('creator', 'category')
+            ->orderBy('created_at', 'desc')
+            ->paginate(24)
+            ->withQueryString();
+
+        return view('frontend.marketplace', compact('products'));
+    }
+
     public function creatorShop(string $slug)
     {
         $creator = \App\Models\CreatorProfile::where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
-        return view('frontend.creator-shop', compact('creator'));
+
+        $products = \App\Models\Product::where('is_active', true)
+            ->where('user_id', $creator->user_id)
+            ->with('category')
+            ->orderBy('created_at', 'desc')
+            ->paginate(24)
+            ->withQueryString();
+
+        return view('frontend.creator-shop', compact('creator', 'products'));
     }
     public function events() { return view('frontend.events'); }
     public function portfolio() { return view('frontend.portfolio'); }
