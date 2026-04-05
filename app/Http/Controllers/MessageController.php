@@ -591,7 +591,7 @@ class MessageController extends Controller
             'createur' => 'layouts.creator',
             'admin', 'super_admin' => 'layouts.admin',
             'staff' => 'layouts.admin', // Staff utilise layout admin
-            default => 'layouts.app', // Client et autres
+            default => 'layouts.frontend', // Client et autres
         };
     }
 }
