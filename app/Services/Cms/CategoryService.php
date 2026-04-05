@@ -13,7 +13,7 @@ class CategoryService
      */
     public function getTree(): array
     {
-        return Cache::tags(['cms', 'categories'])->remember('cms_category_tree', 3600, function () {
+        return Cache::remember('cms_category_tree', 3600, function () {
             return Category::active()->roots()
                 ->with(['children' => function ($query) {
                     $query->active();
@@ -47,7 +47,7 @@ class CategoryService
      */
     public function getFlatList(): Collection
     {
-        return Cache::tags(['cms', 'categories'])->remember('cms_category_flat', 3600, function () {
+        return Cache::remember('cms_category_flat', 3600, function () {
             return Category::active()
                 ->orderBy('path')
                 ->orderBy('sort_order')
@@ -96,10 +96,5 @@ class CategoryService
     {
         Cache::forget('cms_category_tree');
         Cache::forget('cms_category_flat');
-        
-        try {
-            Cache::tags(['cms', 'categories'])->flush();
-        } catch (\BadMethodCallException $e) {
-        }
     }
 }

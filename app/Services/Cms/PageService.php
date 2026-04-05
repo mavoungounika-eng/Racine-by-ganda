@@ -13,7 +13,7 @@ class PageService
      */
     public function getPublishedPage(string $slug): ?Page
     {
-        return Cache::tags(['cms', 'pages'])->remember("cms_page:{$slug}", 1800, function () use ($slug) {
+        return Cache::remember("cms_page:{$slug}", 1800, function () use ($slug) {
             return Page::published()->where('slug', $slug)->first();
         });
     }
@@ -23,7 +23,7 @@ class PageService
      */
     public function getFooterPages(): Collection
     {
-        return Cache::tags(['cms', 'pages'])->remember('cms_footer_pages', 3600, function () {
+        return Cache::remember('cms_footer_pages', 3600, function () {
             return Page::published()->forFooter()->get();
         });
     }
@@ -33,7 +33,7 @@ class PageService
      */
     public function getHeaderPages(): Collection
     {
-        return Cache::tags(['cms', 'pages'])->remember('cms_header_pages', 3600, function () {
+        return Cache::remember('cms_header_pages', 3600, function () {
             return Page::published()->forHeader()->get();
         });
     }
@@ -46,15 +46,8 @@ class PageService
         if ($page) {
             Cache::forget("cms_page:{$page->slug}");
         }
-        
+
         Cache::forget('cms_footer_pages');
         Cache::forget('cms_header_pages');
-        
-        // If driver supports tags, we can also flush by tag
-        try {
-            Cache::tags(['cms', 'pages'])->flush();
-        } catch (\BadMethodCallException $e) {
-            // Memory/File driver doesn't support tags
-        }
     }
 }

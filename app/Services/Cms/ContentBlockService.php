@@ -12,7 +12,7 @@ class ContentBlockService
      */
     public function getBlock(string $key): ?ContentBlock
     {
-        return Cache::tags(['cms', 'blocks'])->remember("cms_block:{$key}", 3600, function () use ($key) {
+        return Cache::remember("cms_block:{$key}", 3600, function () use ($key) {
             return ContentBlock::active()->where('key', $key)->first();
         });
     }
@@ -40,10 +40,5 @@ class ContentBlockService
         ]);
         
         Cache::forget("cms_block:{$key}");
-        
-        try {
-            Cache::tags(['cms', 'blocks'])->flush();
-        } catch (\BadMethodCallException $e) {
-        }
     }
 }

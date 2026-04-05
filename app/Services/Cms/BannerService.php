@@ -14,7 +14,7 @@ class BannerService
      */
     public function getActiveBanners(string $position): Collection
     {
-        return Cache::tags(['cms', 'banners'])->remember("cms_banners:{$position}", 900, function () use ($position) {
+        return Cache::remember("cms_banners:{$position}", 900, function () use ($position) {
             return Banner::active()->forPosition($position)
                 ->orderBy('sort_order')
                 ->get();
@@ -43,13 +43,9 @@ class BannerService
      */
     public function invalidateBannerCache(): void
     {
-        // Since we don't know all positions, we might need a way to clear all pattern matching keys 
-        // OR use tags if supported.
-        try {
-            Cache::tags(['cms', 'banners'])->flush();
-        } catch (\BadMethodCallException $e) {
-            // For file/database driver, we can't easily clear by prefix without custom logic
-            // But usually Redis is used in production for RACINE
-        }
+        Cache::forget('cms_banners:homepage_hero');
+        Cache::forget('cms_banners:homepage_promo');
+        Cache::forget('cms_banners:shop_sidebar');
+        Cache::forget('cms_banners:shop_top');
     }
 }

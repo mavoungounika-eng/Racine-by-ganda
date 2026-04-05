@@ -72,7 +72,7 @@ class CmsTest extends TestCase
     /** @test */
     public function page_caching_works()
     {
-        Cache::tags(['cms', 'pages'])->flush();
+        Cache::flush();
 
         $page = Page::create([
             'title' => 'Cache Page',
@@ -84,11 +84,11 @@ class CmsTest extends TestCase
 
         // First call - should cache
         $this->get(route('frontend.page.show', $page->slug));
-        $this->assertTrue(Cache::tags(['cms', 'pages'])->has("cms_page:{$page->slug}"));
+        $this->assertTrue(Cache::has("cms_page:{$page->slug}"));
 
         // Update page - should clear cache (via Observer)
         $page->update(['title' => 'Updated Cache Page']);
-        $this->assertFalse(Cache::tags(['cms', 'pages'])->has("cms_page:{$page->slug}"));
+        $this->assertFalse(Cache::has("cms_page:{$page->slug}"));
     }
 
     /** @test */
