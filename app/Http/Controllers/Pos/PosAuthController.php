@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Responses\PosApiResponse;
 use App\Traits\AuditsPosOperations;
+use Modules\POSSync\Models\PosDevice;
+use Modules\POSSync\Services\DeviceAuthService;
 
 class PosAuthController extends Controller
 {
@@ -16,42 +18,46 @@ class PosAuthController extends Controller
 
     /**
      * Register a new POS terminal device.
+     *
+     * Idempotent: if machine_id already exists, returns the existing device + fresh JWT.
      */
     public function registerTerminal(Request $request): JsonResponse
     {
-        \Log::info('POS Terminal Registration Request', [
-            'url' => $request->fullUrl(),
-            'method' => $request->method(),
-            'headers' => $request->headers->all(),
-            'data' => $request->all(),
-        ]);
-
         $request->validate([
             'machine_id' => 'required|string|max:255',
             'name' => 'required|string|max:255',
         ]);
 
-        // For now, we'll create a simple device record
-        // In a real implementation, you might want to store this in a devices table
-        $device = [
-            'machine_id' => $request->machine_id,
-            'name' => $request->name,
-            'status' => 'active',
-            'registered_at' => now(),
-        ];
+        $deviceAuthService = app(DeviceAuthService::class);
 
-        // Create a device token (using Sanctum for simplicity)
-        $token = 'pos-device-' . $request->machine_id . '-' . now()->timestamp;
+        $device = PosDevice::where('machine_id', $request->machine_id)->first();
+
+        if (!$device) {
+            $machineSecret = bin2hex(random_bytes(32));
+
+            $device = PosDevice::create([
+                'machine_id' => $request->machine_id,
+                'name' => $request->name,
+                'machine_secret' => $machineSecret,
+                'status' => 'active',
+            ]);
+        }
+
+        $token = $deviceAuthService->generateToken($device->machine_id);
 
         self::logPosAction('TERMINAL_REGISTER', [
-            'machine_id' => $request->machine_id,
-            'name' => $request->name,
+            'machine_id' => $device->machine_id,
+            'name' => $device->name,
+            'status' => $device->status,
         ]);
 
-        \Log::info('POS Terminal Registration Success', ['device' => $device]);
-
         return PosApiResponse::success([
-            'device' => $device,
+            'device' => [
+                'id' => $device->id,
+                'machine_id' => $device->machine_id,
+                'name' => $device->name,
+                'status' => $device->status,
+            ],
             'token' => $token,
         ], 'Terminal registered successfully');
     }

@@ -38,7 +38,7 @@ class PosPaymentController extends PosApiController
                 return $this->error('MACHINE_MISMATCH', 'Payment does not belong to this device', null, 403);
             }
 
-            $userId = $request->posUserId ?? Auth::id();
+            $userId = $request->posUserId ?? $request->posOperator?->id ?? Auth::id();
             if (!$userId) {
                 return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
             }

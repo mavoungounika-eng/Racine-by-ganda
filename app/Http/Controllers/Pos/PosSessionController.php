@@ -30,7 +30,7 @@ class PosSessionController extends PosApiController
     public function open(Request $request): JsonResponse
     {
         $machineId = $request->machineId ?? $request->input('machine_id');
-        $userId = $request->posUserId ?? Auth::id();
+        $userId = $request->posUserId ?? $request->posOperator?->id ?? Auth::id();
 
         if (!$machineId) {
             $validated = $request->validate([
@@ -152,7 +152,7 @@ class PosSessionController extends PosApiController
             return $this->error('MACHINE_MISMATCH', 'Session does not belong to this device', null, 403);
         }
 
-        $userId = $request->posUserId ?? Auth::id();
+        $userId = $request->posUserId ?? $request->posOperator?->id ?? Auth::id();
         if (!$userId) {
             return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
         }
@@ -250,7 +250,7 @@ class PosSessionController extends PosApiController
             return $this->error('MACHINE_MISMATCH', 'Session does not belong to this device', null, 403);
         }
 
-        $userId = $request->posUserId ?? Auth::id();
+        $userId = $request->posUserId ?? $request->posOperator?->id ?? Auth::id();
         if (!$userId) {
             return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
         }

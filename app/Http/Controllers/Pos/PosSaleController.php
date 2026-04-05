@@ -54,7 +54,7 @@ class PosSaleController extends PosApiController
                 return $this->error('INVALID_MACHINE_ID', 'machine_id must be a valid UUID');
             }
 
-            $userId = $request->posUserId ?? Auth::id();
+            $userId = $request->posUserId ?? $request->posOperator?->id ?? Auth::id();
             if (!$userId) {
                 return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
             }
@@ -154,7 +154,7 @@ class PosSaleController extends PosApiController
                 return $this->error('MACHINE_MISMATCH', 'Sale does not belong to this device', null, 403);
             }
 
-            $userId = $request->posUserId ?? Auth::id();
+            $userId = $request->posUserId ?? $request->posOperator?->id ?? Auth::id();
             if (!$userId) {
                 return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
             }
