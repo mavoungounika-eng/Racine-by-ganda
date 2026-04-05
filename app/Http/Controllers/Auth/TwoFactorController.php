@@ -287,8 +287,8 @@ class TwoFactorController extends Controller
         return match($roleSlug) {
             'super_admin' => redirect()->route('admin.dashboard'),
             'admin' => redirect()->route('admin.dashboard'),
-            'staff' => redirect()->route('dashboard.staff'),
-            'createur' => redirect()->route('dashboard.createur'),
+            'staff' => redirect()->route('staff.dashboard'),
+            'createur' => redirect()->route('creator.dashboard'),
             'client' => redirect()->route('account.dashboard'),
             default => redirect()->route('frontend.home'),
         };
