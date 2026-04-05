@@ -143,7 +143,14 @@ class FrontendController extends Controller
         $creators = \App\Models\User::whereHas('creatorProfile', fn($q) => $q->where('is_active', true))->get();
         $creatorsCount = $creators->count();
 
-        return view('frontend.marketplace', compact('products', 'creators', 'creatorsCount'));
+        $categories = \App\Models\Category::whereNull('parent_id')
+            ->where('is_active', true)
+            ->withCount(['products' => fn($q) => $q->where('is_active', true)
+                ->where('product_type', 'marketplace')])
+            ->orderBy('display_order')
+            ->get();
+
+        return view('frontend.marketplace', compact('products', 'creators', 'creatorsCount', 'categories'));
     }
 
     public function creatorShop(string $slug)
