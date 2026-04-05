@@ -144,6 +144,23 @@ Procédure :
 
 ---
 
+## RÈGLE 11 — GESTION DU CONTEXTE
+
+Quand le contexte approche la limite :
+1. STOP sur la tâche en cours
+2. Résumer l'état dans ce format exact :
+
+---CHECKPOINT---
+Tâche : [nom]
+Fichiers modifiés : [liste]
+Tests avant : [N failures, N skipped]
+Tests après : [N failures, N skipped]
+Prochaine étape : [action précise]
+Commit à faire : oui/non
+---FIN CHECKPOINT---
+
+3. Attendre confirmation avant de continuer
+
 ## SKILL — LECTURE FICHIER AVANT MODIFICATION
 
 Pour tout fichier à modifier, suivre cet ordre :
