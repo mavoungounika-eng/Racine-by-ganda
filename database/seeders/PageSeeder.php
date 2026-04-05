@@ -209,6 +209,17 @@ class PageSeeder extends Seeder
                 'published_at' => now(),
             ],
             [
+                'title' => 'Politique de Cookies',
+                'slug' => 'cookies',
+                'meta_title' => 'Cookies - RACINE BY GANDA',
+                'meta_description' => 'Politique de cookies du site RACINE BY GANDA.',
+                'status' => 'published',
+                'template' => 'default',
+                'show_in_header' => false,
+                'show_in_footer' => true,
+                'published_at' => now(),
+            ],
+            [
                 'title' => 'FAQ',
                 'slug' => 'faq',
                 'meta_title' => 'FAQ - RACINE BY GANDA',

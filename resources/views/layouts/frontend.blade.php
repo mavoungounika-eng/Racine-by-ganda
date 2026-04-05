@@ -412,7 +412,7 @@
                             @else
                                 <li><a href="{{ route('frontend.terms') }}"><i class="fas fa-chevron-right"></i> Conditions Générales</a></li>
                                 <li><a href="{{ route('frontend.privacy') }}"><i class="fas fa-chevron-right"></i> Confidentialité</a></li>
-                                <li><a href="#"><i class="fas fa-chevron-right"></i> Cookies</a></li>
+                                <li><a href="{{ route('frontend.cookies') }}"><i class="fas fa-chevron-right"></i> Cookies</a></li>
                             @endif
                         </ul>
                     </div>
@@ -473,7 +473,7 @@
                         <span>•</span>
                         <a href="{{ route('frontend.privacy') }}">Confidentialité</a>
                         <span>•</span>
-                        <a href="#">Cookies</a>
+                        <a href="{{ route('frontend.cookies') }}">Cookies</a>
                     </div>
                     <div class="payment-methods">
                         <span>Paiement sécurisé</span>

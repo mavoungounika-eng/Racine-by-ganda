@@ -178,6 +178,7 @@ class FrontendController extends Controller
     public function returns() { return view('frontend.returns'); }
     public function terms() { return view('frontend.terms'); }
     public function privacy() { return view('frontend.privacy'); }
+    public function cookies() { return redirect()->route('frontend.page.show', 'cookies'); }
     public function about() { return redirect()->route('frontend.page.show', 'a-propos'); }
     public function becomeCreator()
     {

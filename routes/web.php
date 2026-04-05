@@ -379,6 +379,7 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/cgv', [FrontendController::class, 'terms'])->name('terms');
     Route::get('/confidentialite', [FrontendController::class, 'privacy'])->name('privacy');
     Route::get('/a-propos', [FrontendController::class, 'about'])->name('about');
+    Route::get('/cookies', [FrontendController::class, 'cookies'])->name('cookies');
     Route::get('/devenir-createur', [FrontendController::class, 'becomeCreator'])->name('become-creator');
 
     // ✅ NOUVEAU: Routes CMS dynamiques
