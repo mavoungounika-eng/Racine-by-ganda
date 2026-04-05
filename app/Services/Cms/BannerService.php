@@ -45,7 +45,7 @@ class BannerService
     {
         Cache::forget('cms_banners:homepage_hero');
         Cache::forget('cms_banners:homepage_promo');
-        Cache::forget('cms_banners:shop_sidebar');
-        Cache::forget('cms_banners:shop_top');
+        Cache::forget('cms_banners:sidebar');
+        Cache::forget('cms_banners:category_top');
     }
 }

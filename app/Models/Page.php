@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\URL;
 
@@ -87,5 +88,29 @@ class Page extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * CMS sections associated with this page (via slug).
+     */
+    public function sections(): HasMany
+    {
+        return $this->hasMany(CmsSection::class, 'page_slug', 'slug');
+    }
+
+    /**
+     * Get a specific section by key.
+     */
+    public function section(string $key): ?CmsSection
+    {
+        return $this->sections()->where('key', $key)->where('is_active', true)->first();
+    }
+
+    /**
+     * Accessor: seo_title falls back to meta_title.
+     */
+    public function getSeoTitleAttribute(): ?string
+    {
+        return $this->meta_title;
     }
 }
