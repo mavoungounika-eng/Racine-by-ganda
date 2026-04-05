@@ -179,7 +179,11 @@ class FrontendController extends Controller
     public function terms() { return view('frontend.terms'); }
     public function privacy() { return view('frontend.privacy'); }
     public function about() { return redirect()->route('frontend.page.show', 'a-propos'); }
-    public function becomeCreator() { return view('frontend.become-creator'); }
+    public function becomeCreator()
+    {
+        $plans = \App\Models\CreatorPlan::where('is_active', true)->orderBy('price')->get();
+        return view('frontend.become-creator', compact('plans'));
+    }
 
     public function product($id)
     {
