@@ -102,14 +102,17 @@ class CreatorCapabilityService
         $cacheKey = 'creator_plan_free';
 
         return Cache::remember($cacheKey, now()->addHours(24), function () {
-            $plan = CreatorPlan::where('code', 'free')->first();
-            
-            if (!$plan) {
-                Log::error('Plan FREE non trouvé dans la base de données');
-                throw new \RuntimeException('Plan FREE non trouvé. Exécutez les seeders.');
-            }
-
-            return $plan;
+            return CreatorPlan::firstOrCreate(
+                ['code' => 'free'],
+                [
+                    'name' => 'Gratuit',
+                    'price' => 0,
+                    'billing_cycle' => 'monthly',
+                    'is_active' => true,
+                    'description' => 'Plan gratuit pour démarrer votre activité de créateur',
+                    'features' => ['Jusqu\'à 5 produits', 'Dashboard basique', 'Gestion des commandes'],
+                ]
+            );
         });
     }
 
