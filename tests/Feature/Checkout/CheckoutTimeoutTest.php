@@ -37,7 +37,7 @@ class CheckoutTimeoutTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(35), // 35 minutes ago
         ]);
 
@@ -47,12 +47,12 @@ class CheckoutTimeoutTest extends TestCase
             'price' => 100.00,
         ]);
 
-        // Simuler le job de cleanup (normalement exécuté par scheduler)
-        $this->artisan('orders:cleanup-abandoned');
+        // Simuler le job de cleanup
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
-        // Vérifier que la commande est expirée
+        // Vérifier que la commande est annulée (statut terminal pour abandon)
         $order->refresh();
-        $this->assertEquals('expired', $order->status);
+        $this->assertEquals('cancelled', $order->status);
     }
 
     /**
@@ -72,7 +72,7 @@ class CheckoutTimeoutTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 200.00,
+            'total_amount' => 200.00,
             'created_at' => now()->subMinutes(35),
         ]);
 
@@ -87,7 +87,7 @@ class CheckoutTimeoutTest extends TestCase
         $this->assertEquals($initialStock - 2, $product->fresh()->stock);
 
         // Exécuter le cleanup
-        $this->artisan('orders:cleanup-abandoned');
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
         // Vérifier que le stock est restauré
         $product->refresh();
@@ -108,19 +108,19 @@ class CheckoutTimeoutTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(35),
         ]);
 
         // Exécuter le cleanup
-        $this->artisan('orders:cleanup-abandoned');
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
         // Vérifier qu'aucun paiement n'existe pour cette commande
         $this->assertEquals(0, Payment::where('order_id', $order->id)->count());
 
-        // Vérifier que la commande est expirée
+        // Vérifier que la commande est annulée
         $order->refresh();
-        $this->assertEquals('expired', $order->status);
+        $this->assertEquals('cancelled', $order->status);
     }
 
     /**
@@ -138,7 +138,7 @@ class CheckoutTimeoutTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(10),
         ]);
 
@@ -149,7 +149,7 @@ class CheckoutTimeoutTest extends TestCase
         ]);
 
         // Exécuter le cleanup
-        $this->artisan('orders:cleanup-abandoned');
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
         // Vérifier que la commande reste pending
         $order->refresh();
@@ -170,7 +170,7 @@ class CheckoutTimeoutTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(35),
         ]);
 
@@ -185,7 +185,7 @@ class CheckoutTimeoutTest extends TestCase
         ]);
 
         // Exécuter le cleanup
-        $this->artisan('orders:cleanup-abandoned');
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
         // Vérifier que la commande reste pending (paiement en cours)
         $order->refresh();
@@ -206,8 +206,8 @@ class CheckoutTimeoutTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'payment_method' => 'cash',
-            'total' => 100.00,
+            'payment_method' => 'cash_on_delivery',
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(35),
         ]);
 
@@ -218,7 +218,7 @@ class CheckoutTimeoutTest extends TestCase
         ]);
 
         // Exécuter le cleanup
-        $this->artisan('orders:cleanup-abandoned');
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
         // Vérifier que la commande reste pending (cash on delivery)
         $order->refresh();
@@ -240,7 +240,7 @@ class CheckoutTimeoutTest extends TestCase
         $expiredOrders = Order::factory()->count(3)->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(35),
         ]);
 
@@ -248,17 +248,17 @@ class CheckoutTimeoutTest extends TestCase
         $recentOrders = Order::factory()->count(2)->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(10),
         ]);
 
         // Exécuter le cleanup
-        $this->artisan('orders:cleanup-abandoned');
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
         // Vérifier que les commandes expirées sont bien expirées
         foreach ($expiredOrders as $order) {
             $order->refresh();
-            $this->assertEquals('expired', $order->status);
+            $this->assertEquals('cancelled', $order->status);
         }
 
         // Vérifier que les commandes récentes restent pending
@@ -282,19 +282,19 @@ class CheckoutTimeoutTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
             'created_at' => now()->subMinutes(35),
         ]);
 
         // Exécuter le cleanup
-        $this->artisan('orders:cleanup-abandoned');
+        \App\Jobs\CleanupExpiredStockReservations::dispatchSync();
 
         // Vérifier qu'un log d'audit existe
         // (Adapter selon votre système de logging)
         $this->assertDatabaseHas('order_status_history', [
             'order_id' => $order->id,
             'old_status' => 'pending',
-            'new_status' => 'expired',
+            'new_status' => 'cancelled',
             'reason' => 'checkout_timeout',
         ]);
     }

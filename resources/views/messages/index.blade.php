@@ -1,4 +1,4 @@
-@extends('layouts.frontend')
+@extends($layout ?? 'layouts.app')
 
 @section('title', 'Messagerie - RACINE BY GANDA')
 @section('page-title', 'Messagerie')

@@ -70,7 +70,7 @@ class ProductionFinishedListener implements ShouldQueue
             'fiscal_year_id' => $fiscalYear->id,
             'entry_date' => now()->toDateString(),
             'description' => "Fin production {$order->order_number} - {$order->product->name}",
-            'reference_type' => 'production_order',
+            'reference_type' => 'production_order_finished',
             'reference_id' => $order->id,
         ]);
 

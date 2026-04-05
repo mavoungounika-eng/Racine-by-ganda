@@ -151,7 +151,7 @@ class CheckoutControllerTest extends TestCase
      * Vérifie que le flux card :
      * - Crée une commande avec payment_method = 'card'
      * - Redirige vers checkout.card.pay
-     * - Ne décrémente PAS le stock immédiatement (attente paiement)
+     * - Décrémente le stock immédiatement
      */
     #[Test]
     public function it_creates_order_with_card_payment_and_redirects_to_card_payment(): void
@@ -192,17 +192,20 @@ class CheckoutControllerTest extends TestCase
         $this->assertEquals('pending', $order->payment_status);
         $this->assertEquals('pending', $order->status);
 
-        // Vérifier que le stock N'A PAS été décrémenté immédiatement (attente paiement)
+        // Vérifier que le stock a été décrémenté immédiatement
         $this->product->refresh();
-        $this->assertEquals($initialStock, $this->product->stock, 'Stock should NOT be decremented before payment confirmation');
+        $this->assertEquals($initialStock - 1, $this->product->stock, 'Stock should be decremented immediately');
 
-        // Vérifier qu'aucun mouvement de stock n'a été créé (attente paiement)
-        $stockMovement = ErpStockMovement::where('product_id', $this->product->id)
+        // Vérifier qu'un mouvement de stock a été créé
+        $stockMovement = ErpStockMovement::where('stockable_type', Product::class)
+            ->where('stockable_id', $this->product->id)
             ->where('reference_type', Order::class)
             ->where('reference_id', $order->id)
+            ->where('type', 'out')
             ->first();
         
-        $this->assertNull($stockMovement, 'Stock movement should NOT be created before payment confirmation');
+        $this->assertNotNull($stockMovement, 'Stock movement should be created for card checkout');
+        $this->assertEquals(1, $stockMovement->quantity);
 
         // Vérifier que le panier est vidé
         $this->assertTrue($this->cartService->getItems()->isEmpty(), 'Cart should be empty after order creation');
@@ -214,7 +217,7 @@ class CheckoutControllerTest extends TestCase
      * Vérifie que le flux mobile_money :
      * - Crée une commande avec payment_method = 'mobile_money'
      * - Redirige vers checkout.mobile-money.form
-     * - Ne décrémente PAS le stock immédiatement (attente paiement)
+     * - Décrémente le stock immédiatement
      */
     #[Test]
     public function it_creates_order_with_mobile_money_payment_and_redirects_to_mobile_money_form(): void
@@ -259,17 +262,20 @@ class CheckoutControllerTest extends TestCase
         $this->assertEquals('pending', $order->payment_status);
         $this->assertEquals('pending', $order->status);
 
-        // Vérifier que le stock N'A PAS été décrémenté immédiatement (attente paiement)
+        // Vérifier que le stock a été décrémenté immédiatement
         $this->product->refresh();
-        $this->assertEquals($initialStock, $this->product->stock, 'Stock should NOT be decremented before payment confirmation');
+        $this->assertEquals($initialStock - 1, $this->product->stock, 'Stock should be decremented immediately');
 
-        // Vérifier qu'aucun mouvement de stock n'a été créé (attente paiement)
-        $stockMovement = ErpStockMovement::where('product_id', $this->product->id)
+        // Vérifier qu'un mouvement de stock a été créé
+        $stockMovement = ErpStockMovement::where('stockable_type', Product::class)
+            ->where('stockable_id', $this->product->id)
             ->where('reference_type', Order::class)
             ->where('reference_id', $order->id)
+            ->where('type', 'out')
             ->first();
         
-        $this->assertNull($stockMovement, 'Stock movement should NOT be created before payment confirmation');
+        $this->assertNotNull($stockMovement, 'Stock movement should be created for mobile money checkout');
+        $this->assertEquals(1, $stockMovement->quantity);
 
         // Vérifier que le panier est vidé
         $this->assertTrue($this->cartService->getItems()->isEmpty(), 'Cart should be empty after order creation');
@@ -340,7 +346,6 @@ class CheckoutControllerTest extends TestCase
         $response->assertRedirect(route('cart.index'));
         $response->assertSessionHas('error', 'Votre panier est vide.');
     }
-
     #[Test]
     public function it_redirects_to_cart_when_cart_is_empty_on_post_checkout(): void
     {
@@ -429,4 +434,3 @@ class CheckoutControllerTest extends TestCase
         $this->assertEquals(37000, $order->total_amount, 'Total amount should be 37000 (35000 + 2000 shipping)');
     }
 }
-

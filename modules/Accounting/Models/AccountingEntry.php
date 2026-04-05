@@ -120,20 +120,39 @@ class AccountingEntry extends Model
     }
 
     /**
-     * Empêcher modification si posté
+     * Empêcher modification si posté + création directe
+     * 
+     * GUARDS:
+     * 1. creating: Bloque AccountingEntry::create() hors LedgerService
+     * 2. updating: Bloque modification d'écriture postée
+     * 3. deleting: Bloque suppression d'écriture postée
      */
     protected static function booted()
     {
+        // GUARD 1: Interdire création directe (doit passer par LedgerService)
+        static::creating(function ($entry) {
+            if (!app()->bound('ledger.creating.allowed')) {
+                throw new \Modules\Accounting\Exceptions\ForbiddenCreationException(
+                    "AccountingEntry::create() interdit. Utiliser LedgerService."
+                );
+            }
+        });
+
+        // GUARD 2: Interdire modification si posté
         static::updating(function ($entry) {
-            if ($entry->is_posted && $entry->isDirty() && !$entry->isDirty('updated_at')) {
+            $wasPosted = $entry->getOriginal('is_posted');
+            
+            if ($wasPosted && $entry->isDirty() && !$entry->isDirty('updated_at')) {
                 throw new \Exception("Écriture {$entry->entry_number} est postée (irréversible)");
             }
         });
 
+        // GUARD 3: Interdire suppression si posté
         static::deleting(function ($entry) {
             if ($entry->is_posted) {
                 throw new \Exception("Écriture {$entry->entry_number} est postée (irréversible)");
             }
         });
     }
+
 }

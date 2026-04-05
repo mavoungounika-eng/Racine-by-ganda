@@ -717,16 +717,3 @@
 ])
 @endsection
 
-@push('scripts')
-<script>
-function updateQty(btn, delta) {
-    const form = btn.closest('form');
-    const input = form.querySelector('.qty-input');
-    let val = parseInt(input.value) + delta;
-    if (val < 1) val = 1;
-    if (val > 99) val = 99;
-    input.value = val;
-    form.submit();
-}
-</script>
-@endpush

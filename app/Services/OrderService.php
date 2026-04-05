@@ -7,11 +7,13 @@ use App\Exceptions\OrderException;
 use App\Exceptions\StockException;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\IdempotencyKey;
 use App\Services\Cart\DatabaseCartService;
 use App\Services\Cart\SessionCartService;
 use App\Services\StockReservationService;
 use App\Services\StockValidationService;
 use Illuminate\Support\Collection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -65,7 +67,7 @@ class OrderService
      * @throws StockException Si le stock est insuffisant
      * @throws \Throwable En cas d'erreur lors de la création
      */
-    public function createOrderFromCart(array $formData, Collection $cartItems, int $userId, ?string $checkoutToken = null): Order
+    public function createOrderFromCart(array $formData, Collection $cartItems, int $userId, ?string $idempotencyKey = null, ?string $checkoutToken = null): Order
     {
         if ($cartItems->isEmpty()) {
             throw new OrderException(
@@ -73,6 +75,37 @@ class OrderService
                 400,
                 'Votre panier est vide.'
             );
+        }
+
+        $idempotencyKey = $idempotencyKey ?: ($checkoutToken ? "checkout:{$userId}:{$checkoutToken}" : null);
+        if ($idempotencyKey) {
+            try {
+                IdempotencyKey::create([
+                    'key' => $idempotencyKey,
+                    'status' => 'processing',
+                ]);
+            } catch (QueryException $e) {
+                $existing = IdempotencyKey::where('key', $idempotencyKey)->first();
+                if ($existing && $existing->status === 'completed' && $existing->response) {
+                    $payload = json_decode($existing->response, true);
+                    if (is_array($payload) && isset($payload['order_id'])) {
+                        $order = Order::find($payload['order_id']);
+                        if ($order) {
+                            Log::info('OrderService: Idempotent replay detected, returning existing order', [
+                                'order_id' => $order->id,
+                                'user_id' => $userId,
+                            ]);
+                            return $order;
+                        }
+                    }
+                }
+
+                throw new OrderException(
+                    'Commande en cours',
+                    409,
+                    'Votre commande est déjà en cours de traitement. Veuillez patienter.'
+                );
+            }
         }
 
         // ✅ FINAL HARDENING - Idempotence : Vérifier commande existante pour ce checkout_token
@@ -117,91 +150,98 @@ class OrderService
 
         // 3) Création de la commande et des items dans une transaction
         // RBG-P0-020 : Validation stock + verrouillage dans la transaction pour anti-oversell
-        return DB::transaction(function () use ($formData, $cartItems, $userId, $amounts) {
-            // 1) Validation du stock avec verrouillage (dans la transaction pour lockForUpdate)
-            try {
-                $stockValidation = $this->stockValidationService->validateStockForCart($cartItems);
-                $lockedProducts = $stockValidation['locked_products'];
-            } catch (\Throwable $e) {
-                Log::error('OrderService: Stock validation failed', [
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                ]);
-                throw $e;
-            }
-            
-            // Générer order_number et qr_token avant création
-            $orderNumberService = app(\App\Services\OrderNumberService::class);
-            $orderNumber = $orderNumberService->generateOrderNumber();
-            $qrToken = Order::generateUniqueQrToken();
-            
-            // Créer la commande sans déclencher les observers (pour créer les items d'abord)
-            $order = Order::withoutEvents(function () use ($formData, $userId, $amounts, $orderNumber, $qrToken) {
-                return Order::create([
+        try {
+            $order = DB::transaction(function () use ($formData, $cartItems, $userId, $amounts) {
+                // 1) Validation du stock avec verrouillage (dans la transaction pour lockForUpdate)
+                try {
+                    $stockValidation = $this->stockValidationService->validateStockForCart($cartItems);
+                    $lockedProducts = $stockValidation['locked_products'];
+                } catch (\Throwable $e) {
+                    Log::error('OrderService: Stock validation failed', [
+                        'error' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                    ]);
+                    throw $e;
+                }
+                
+                // Générer order_number et qr_token avant création
+                $orderNumberService = app(\App\Services\OrderNumberService::class);
+                $orderNumber = $orderNumberService->generateOrderNumber();
+                $qrToken = Order::generateUniqueQrToken();
+                
+                // Déterminer le creator_id (Propriétaire des produits)
+                // On prend le user_id du premier produit car validateCartIntegrity garantit l'unicité du propriétaire
+                $firstProduct = $lockedProducts->first();
+                $creatorId = ($firstProduct && $firstProduct->product_type === 'marketplace') 
+                    ? $firstProduct->user_id 
+                    : null;
+
+                // Créer la commande sans déclencher les observers (pour créer les items d'abord)
+                $order = Order::withoutEvents(function () use ($formData, $userId, $amounts, $orderNumber, $qrToken, $creatorId) {
+                    return Order::create([
+                        'user_id' => $userId,
+                        'creator_id' => $creatorId,
+                        'customer_name' => $formData['full_name'],
+                        'customer_email' => $formData['email'],
+                        'customer_phone' => $formData['phone'],
+                        'customer_address' => $this->formatAddress($formData),
+                        'shipping_method' => $formData['shipping_method'],
+                        'shipping_cost' => $amounts['shipping'],
+                        'payment_method' => $formData['payment_method'],
+                        'payment_status' => 'pending',
+                        'status' => 'pending',
+                        'total_amount' => $amounts['total'],
+                        'order_number' => $orderNumber,
+                        'qr_token' => $qrToken,
+                    ]);
+                });
+
+                // 🧪 TEST ROLLBACK FORCÉ (Étape A4)
+                if (config('app.env') === 'testing' && request()->header('X-Force-Rollback')) {
+                    Log::warning('OrderService: Forcing transactional rollback for verification (Step A4)');
+                    throw new \Exception('FORCED_ROLLBACK_TEST');
+                }
+
+                // Créer les items de commande
+                $this->createOrderItems($order, $cartItems, $lockedProducts);
+                
+                // ✅ RBG-P0-01 : DÉCRÉMENT ATOMIQUE
+                // Le décrément est maintenant géré uniquement par StockService via l'Observer (ci-dessous)
+                // pour éviter le double décrément (Reservation + Stock decrement).
+                
+                // Charger les items et déclencher manuellement l'Observer created() avec les items disponibles
+                $order->load('items');
+                $observer = app(\App\Observers\OrderObserver::class);
+                $observer->created($order);
+
+                Log::info('Order created from cart', [
+                    'order_id' => $order->id,
                     'user_id' => $userId,
-                    'customer_name' => $formData['full_name'],
-                    'customer_email' => $formData['email'],
-                    'customer_phone' => $formData['phone'],
-                    'customer_address' => $this->formatAddress($formData),
-                    'shipping_method' => $formData['shipping_method'],
-                    'shipping_cost' => $amounts['shipping'],
                     'payment_method' => $formData['payment_method'],
-                    'payment_status' => 'pending',
-                    'status' => 'pending',
                     'total_amount' => $amounts['total'],
-                    'order_number' => $orderNumber,
-                    'qr_token' => $qrToken,
                 ]);
+
+                // Phase 3 : Émettre l'event OrderPlaced pour le monitoring (après Observer)
+                event(new OrderPlaced($order));
+
+                return $order;
             });
 
-            // Créer les items de commande
-            $this->createOrderItems($order, $cartItems, $lockedProducts);
-            
-            // ✅ RÉSERVER LE STOCK (anti-survente)
-            // Préparer les items pour réservation
-            $itemsToReserve = $cartItems->map(function ($item) {
-                return [
-                    'product_id' => is_object($item) ? $item->product_id : $item['product_id'],
-                    'quantity' => is_object($item) ? $item->quantity : $item['quantity'],
-                ];
-            })->toArray();
-            
-            try {
-                $this->stockReservationService->reserve($itemsToReserve);
-                Log::info('Stock reserved for order', [
-                    'order_id' => $order->id,
-                    'items_count' => count($itemsToReserve),
+            if ($idempotencyKey) {
+                IdempotencyKey::where('key', $idempotencyKey)->update([
+                    'status' => 'completed',
+                    'response' => json_encode(['order_id' => $order->id]),
                 ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to reserve stock', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage(),
-                ]);
-                throw new StockException(
-                    'Échec réservation stock',
-                    500,
-                    'Impossible de réserver le stock. Veuillez réessayer.'
-                );
             }
-            
-            // Charger les items et déclencher manuellement l'Observer created() avec les items disponibles
-            $order->load('items');
-            $observer = app(\App\Observers\OrderObserver::class);
-            $observer->created($order);
-
-            Log::info('Order created from cart', [
-                'order_id' => $order->id,
-                'user_id' => $userId,
-                'payment_method' => $formData['payment_method'],
-                'total_amount' => $amounts['total'],
-            ]);
-
-            // Phase 3 : Émettre l'event OrderPlaced pour le monitoring (après Observer)
-            event(new OrderPlaced($order));
 
             return $order;
-        });
+        } catch (\Throwable $e) {
+            if ($idempotencyKey) {
+                IdempotencyKey::where('key', $idempotencyKey)->delete();
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -278,4 +318,3 @@ class OrderService
         }
     }
 }
-

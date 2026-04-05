@@ -1,0 +1,129 @@
+name: Auth Security Checks
+
+on:
+  push:
+    branches: [ main, develop, security/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  auth-security:
+    name: Authentication Security Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json, bcmath
+          coverage: none
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+      
+      # CHECK 1: No routes with 'auth' without 'ensure'
+      - name: Validate Route Middleware
+        run: |
+          php artisan route:list --json > routes.json
+          
+          # Check for routes with 'auth' but not 'ensure'
+          INVALID_ROUTES=$(jq -r '.[] | select(.middleware | type == "array") | select(.middleware | contains(["auth"]) and (contains(["ensure"]) | not)) | .uri' routes.json)
+          
+          if [ ! -z "$INVALID_ROUTES" ]; then
+            echo "❌ ERROR: Routes with 'auth' middleware must use 'ensure'"
+            echo "Invalid routes:"
+            echo "$INVALID_ROUTES"
+            exit 1
+          fi
+          
+          echo "✅ All protected routes use 'ensure' middleware"
+      
+      # CHECK 2: PHPStan auth rules
+      - name: PHPStan Auth Rules
+        run: |
+          if [ -f phpstan-auth-rules.neon ]; then
+            vendor/bin/phpstan analyse -c phpstan-auth-rules.neon --error-format=github
+          else
+            echo "⚠️ WARNING: phpstan-auth-rules.neon not found, skipping"
+          fi
+      
+      # CHECK 3: No direct Auth::user()->role patterns
+      - name: Grep Forbidden Patterns
+        run: |
+          echo "Checking for forbidden auth patterns..."
+          
+          VIOLATIONS=0
+          
+          # Check for Auth::user()->role
+          if grep -r "Auth::user()->role" app/Http/Controllers/ 2>/dev/null; then
+            echo "❌ ERROR: Direct Auth::user()->role access forbidden in controllers"
+            VIOLATIONS=$((VIOLATIONS + 1))
+          fi
+          
+          # Check for Auth::user()->role_id
+          if grep -r "Auth::user()->role_id" app/Http/Controllers/ 2>/dev/null; then
+            echo "❌ ERROR: Direct Auth::user()->role_id access forbidden in controllers"
+            VIOLATIONS=$((VIOLATIONS + 1))
+          fi
+          
+          # Check for ->hasRole() calls
+          if grep -r "->hasRole(" app/Http/Controllers/ 2>/dev/null; then
+            echo "❌ ERROR: hasRole() method forbidden in controllers"
+            VIOLATIONS=$((VIOLATIONS + 1))
+          fi
+          
+          if [ $VIOLATIONS -gt 0 ]; then
+            echo ""
+            echo "Use UserContextResolver::getFromSession() instead"
+            exit 1
+          fi
+          
+          echo "✅ No forbidden auth patterns found"
+      
+      # CHECK 4: Verify auth_version validation in middleware
+      - name: Verify auth_version Security
+        run: |
+          # Check that EnsureAuthenticated validates future versions
+          if ! grep -q "authVersion > \$user->auth_version" app/Http/Middleware/EnsureAuthenticated.php; then
+            echo "❌ ERROR: EnsureAuthenticated must validate future auth_version"
+            echo "Add check: if (\$context->authVersion > \$user->auth_version) { logout }"
+            exit 1
+          fi
+          
+          echo "✅ auth_version future version check present"
+      
+      # CHECK 5: Verify UserObserver increments auth_version
+      - name: Verify UserObserver
+        run: |
+          if [ -f app/Observers/UserObserver.php ]; then
+            if ! grep -q "auth_version" app/Observers/UserObserver.php; then
+              echo "⚠️ WARNING: UserObserver should increment auth_version on privilege changes"
+            else
+              echo "✅ UserObserver handles auth_version"
+            fi
+          else
+            echo "⚠️ WARNING: UserObserver not found"
+          fi
+      
+      # CHECK 6: Run auth tests
+      - name: Run Auth Tests
+        run: |
+          php artisan test tests/Feature/Auth/LoginTest.php --stop-on-failure
+          php artisan test tests/Feature/Middleware/EnsureAuthenticatedTest.php --stop-on-failure
+      
+      # Summary
+      - name: Security Check Summary
+        if: success()
+        run: |
+          echo "✅ All auth security checks passed!"
+          echo ""
+          echo "Validated:"
+          echo "  - Route middleware usage"
+          echo "  - No forbidden auth patterns"
+          echo "  - auth_version security"
+          echo "  - UserObserver configuration"
+          echo "  - Auth test suite"

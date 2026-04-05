@@ -104,6 +104,48 @@
     </div>
     @endif
 
+    {{-- ✅ C3: SCORE WIDGET (nouveau) --}}
+    @if($creatorProfile && $creatorProfile->overall_score !== null)
+    <div class="creator-card mb-6" style="background: linear-gradient(135deg, rgba(237, 95, 30, 0.05) 0%, rgba(255, 184, 0, 0.05) 100%); border: 2px solid rgba(237, 95, 30, 0.2);">
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);">
+                <i class="fas fa-star" style="color: white; font-size: 1.5rem;"></i>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #2C1810; font-weight: 700;">
+                    <i class="fas fa-chart-line text-[#ED5F1E] mr-2"></i>
+                    Votre Score Créateur
+                </h3>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2rem; font-weight: 700; color: #ED5F1E;">
+                        {{ number_format($creatorProfile->overall_score, 0) }}<span style="font-size: 1rem; color: #8B7355;">/100</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="height: 8px; background: #E5DDD3; border-radius: 10px; overflow: hidden;">
+                            <div style="width: {{ $creatorProfile->overall_score }}%; height: 100%; background: linear-gradient(90deg, #ED5F1E, #FFB800); border-radius: 10px; transition: width 0.3s;"></div>
+                        </div>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #8B7355;">
+                            @if($creatorProfile->overall_score >= 80)
+                                <i class="fas fa-check-circle text-green-600"></i> Excellent ! Votre profil est très attractif
+                            @elseif($creatorProfile->overall_score >= 50)
+                                <i class="fas fa-info-circle text-yellow-600"></i> Bon score, continuez à améliorer votre profil
+                            @else
+                                <i class="fas fa-exclamation-circle text-orange-600"></i> Complétez votre profil pour augmenter votre visibilité
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 12px; margin-top: 1rem;">
+            <p style="margin: 0; font-size: 0.9rem; color: #2C1810;">
+                <strong>💡 Pourquoi c'est important ?</strong> Votre score influence votre visibilité sur la marketplace. 
+                Un score élevé = plus de clients potentiels.
+            </p>
+        </div>
+    </div>
+    @endif
+
     {{-- ONBOARDING WIDGET (V1.5) --}}
     @php
         $hasLogo = !empty($creatorProfile->logo_path);

@@ -12,12 +12,17 @@
     {{-- Bootstrap 4 --}}
     <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
     
-    {{-- RACINE Design System --}}
+    {{-- RACINE Design System (Consolidé AXE D) --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/creator-design-system.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system-base.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system-creator.css') }}">
     
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {{-- Core JavaScript (AXE E - Cleanup) --}}
+    <script src="{{ asset('js/core/utilities.js') }}" defer></script>
+    <script src="{{ asset('js/core/ajax.js') }}" defer></script>
     
     <style>
         /* =============================================
@@ -415,8 +420,8 @@
                 <i class="fas fa-shopping-bag"></i>
                 <span>Commandes</span>
             </a>
-            <a href="{{ route('creator.messages.index') }}" 
-               class="creator-sidebar-link {{ request()->routeIs('creator.messages.*') ? 'active' : '' }}">
+            <a href="{{ route('messages.index') }}" 
+               class="creator-sidebar-link {{ request()->routeIs('messages.*') ? 'active' : '' }}">
                 <i class="fas fa-comment-alt"></i>
                 <span>Messages Clients</span>
                 @php
@@ -438,7 +443,7 @@
             </a>
             
             {{-- Section Données --}}
-            <div class="creator-sidebar-section">Données +</div>
+            <div class="creator-sidebar-section">Performance</div>
             <a href="{{ route('creator.analytics.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.analytics.*') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar"></i>

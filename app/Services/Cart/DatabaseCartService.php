@@ -21,7 +21,7 @@ class DatabaseCartService
     public function getItems(): Collection
     {
         $cart = $this->getCart();
-        return $cart ? $cart->items()->with('product')->get() : collect();
+        return $cart ? $cart->items()->with(['product.category', 'product.creator', 'product.mainImage'])->get() : collect();
     }
 
     public function add(Product $product, int $quantity = 1): void

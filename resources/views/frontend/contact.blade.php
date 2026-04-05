@@ -348,7 +348,7 @@
                     <div class="info-content">
                         <h3>Email</h3>
                         <p>Pour toute question générale</p>
-                        <a href="mailto:contact@racine-ganda.com">contact@racine-ganda.com</a>
+                        <a href="mailto:{{ config('app.company.email') }}">{{ config('app.company.email') }}</a>
                     </div>
                 </div>
                 
@@ -357,7 +357,7 @@
                     <div class="info-content">
                         <h3>Téléphone</h3>
                         <p>Du lundi au vendredi, 9h-18h</p>
-                        <a href="tel:+33123456789">+33 1 23 45 67 89</a>
+                        <a href="tel:{{ str_replace(' ', '', config('app.company.phone')) }}">{{ config('app.company.phone') }}</a>
                     </div>
                 </div>
                 
@@ -366,7 +366,7 @@
                     <div class="info-content">
                         <h3>Showroom</h3>
                         <p>Sur rendez-vous uniquement</p>
-                        <span>15 Rue de la Mode, 75003 Paris</span>
+                        <span>République du Congo, Pointe-Noire, Galerie NF</span>
                     </div>
                 </div>
                 

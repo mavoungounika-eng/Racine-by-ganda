@@ -62,6 +62,21 @@ class CreatorProfileObserver
             $oldStatus = $creatorProfile->getOriginal('status');
             $newStatus = $creatorProfile->status;
             
+            // CRITICAL: Increment user's auth_version to invalidate sessions
+            $user = $creatorProfile->user;
+            if ($user) {
+                $user->auth_version = ($user->auth_version ?? 1) + 1;
+                $user->saveQuietly(); // Save without triggering events
+                
+                \Log::info('User auth_version incremented due to creator status change', [
+                    'user_id' => $user->id,
+                    'creator_profile_id' => $creatorProfile->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'new_version' => $user->auth_version,
+                ]);
+            }
+            
             $this->notificationService->notifyStatusChange(
                 $creatorProfile,
                 $oldStatus,

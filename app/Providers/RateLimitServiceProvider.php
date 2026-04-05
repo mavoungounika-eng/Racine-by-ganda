@@ -33,9 +33,9 @@ class RateLimitServiceProvider extends ServiceProvider
                 });
         });
 
-        // Rate limiting pour webhooks (100 requêtes par minute par IP)
+        // Rate limiting pour webhooks (60 requêtes par minute par IP)
         RateLimiter::for('webhooks', function (Request $request) {
-            return Limit::perMinute(100)
+            return Limit::perMinute(60)
                 ->by($request->ip())
                 ->response(function () {
                     return response()->json([
@@ -48,6 +48,13 @@ class RateLimitServiceProvider extends ServiceProvider
         RateLimiter::for('api-checkout', function (Request $request) {
             return Limit::perMinute(20)
                 ->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiting par device POS
+        RateLimiter::for('pos_device', function (Request $request) {
+            $deviceId = $request->posDevice?->id ?? $request->ip();
+
+            return Limit::perMinute(300)->by('pos_device_' . $deviceId);
         });
     }
 }

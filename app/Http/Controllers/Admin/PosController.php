@@ -44,15 +44,16 @@ class PosController extends Controller
 
         $code = trim($request->code);
 
-        // Rechercher par code-barres
-        $product = Product::whereHas('erpDetails', function ($query) use ($code) {
-            $query->where('barcode', $code)
-                  ->orWhere('sku', $code);
-        })->with('erpDetails', 'category')->first();
+        // Rechercher par code-barres (Restreint aux produits BRAND)
+        $product = Product::brand()
+            ->whereHas('erpDetails', function ($query) use ($code) {
+                $query->where('barcode', $code)
+                    ->orWhere('sku', $code);
+            })->with('erpDetails', 'category')->first();
 
-        // Si pas trouvé, essayer par ID
+        // Si pas trouvé, essayer par ID (Restreint aux produits BRAND)
         if (!$product && is_numeric($code)) {
-            $product = Product::with('erpDetails', 'category')->find($code);
+            $product = Product::brand()->with('erpDetails', 'category')->find($code);
         }
 
         if (!$product) {
@@ -121,6 +122,16 @@ class PosController extends Controller
 
             foreach ($request->items as $itemData) {
                 $product = Product::findOrFail($itemData['product_id']);
+                
+                // ✅ SAAS PUR : Le POS est réservé aux produits de la marque (RACINE)
+                if (!$product->isBrand()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Le produit {$product->title} n'est pas autorisé pour la vente directe POS (Produit Marketplace).",
+                    ], 403);
+                }
+
                 $quantity = $itemData['quantity'];
 
                 // Vérifier le stock
@@ -459,7 +470,7 @@ class PosController extends Controller
 
                 // Attribuer des points de fidélité
                 try {
-                    $loyaltyService = app(\App\Services\LoyaltyService::class);
+                    $loyaltyService = app(\App\Services\Crm\LoyaltyService::class);
                     $loyaltyService->awardPointsForOrder($order);
 
                     // Notifier le client
@@ -576,6 +587,76 @@ class PosController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la confirmation: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+    /**
+     * Valider physiquement le retrait d'une commande (Analytique)
+     * 
+     * Appelé lorsqu'un client vient chercher une commande payée d'un créateur.
+     */
+    public function validatePickup(Request $request, Order $order): JsonResponse
+    {
+        $this->authorize('update', $order);
+
+        if ($order->payment_status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Impossible de remettre une commande non payée.',
+            ], 400);
+        }
+
+        if ($order->status === 'completed' || $order->status === 'fulfilled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette commande a déjà été récupérée.',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Si c'est une commande créateur, enregistrer l'événement analytique
+            if ($order->creator_id) {
+                $orderEventService = app(\App\Services\CreatorOrderEventService::class);
+                $orderEventService->recordFulfilledByPos($order, Auth::id());
+            }
+
+            // Marquer la commande comme traitée (fulfilled)
+            $order->update([
+                'status' => 'fulfilled',
+                'fulfilled_at' => now(),
+                'fulfilled_by' => Auth::id(),
+            ]);
+
+            // Mouvements de stock (ERP)
+            foreach ($order->items as $item) {
+                \Modules\ERP\Models\ErpStockMovement::create([
+                    'stockable_type' => Product::class,
+                    'stockable_id' => $item->product_id,
+                    'type' => 'out',
+                    'quantity' => $item->quantity,
+                    'reason' => 'Retrait POS (Validation physique)',
+                    'reference_type' => Order::class,
+                    'reference_id' => $order->id,
+                    'user_id' => Auth::id(),
+                    'from_location' => 'Boutique (Hébergement)',
+                    'to_location' => 'Client',
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Retrait validé avec succès (Analytique enregistrée).',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la validation du retrait : ' . $e->getMessage(),
             ], 500);
         }
     }

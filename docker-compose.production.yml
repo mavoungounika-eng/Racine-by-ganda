@@ -1,0 +1,499 @@
+# ═══════════════════════════════════════════════════════════════
+# DOCKER COMPOSE - PRODUCTION HARDENED
+# ═══════════════════════════════════════════════════════════════
+#
+# Stack: Laravel + MySQL + Redis + Nginx + Horizon
+# Sécurité: Réseau isolé, user non-root, volumes persistants
+# Monitoring: Logs centralisés, health checks
+# Backup: Volumes persistants avec stratégie de sauvegarde
+#
+# Usage:
+#   docker-compose -f docker-compose.production.yml up -d
+#   docker-compose -f docker-compose.production.yml logs -f
+#   docker-compose -f docker-compose.production.yml down
+#
+# ═══════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────
+# NETWORKS - Isolation réseau
+# ───────────────────────────────────────────────────────────────
+networks:
+  # Réseau backend (MySQL, Redis, App)
+  backend:
+    driver: bridge
+    internal: true # Pas d'accès internet direct (sécurité)
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+  # Réseau frontend (Nginx uniquement)
+  frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+# ───────────────────────────────────────────────────────────────
+# VOLUMES - Persistence des données
+# ───────────────────────────────────────────────────────────────
+volumes:
+  # MySQL - Base de données
+  mysql_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:\docker\volumes\racine_mysql_data
+
+  # Redis - Cache et queues
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:\docker\volumes\racine_redis_data
+
+  # Application - Storage Laravel
+  app_storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:\docker\volumes\racine_app_storage
+
+  # Logs - Centralisés
+  app_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:\docker\logs\racine
+
+  # Backups - Sauvegardes
+  backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:\docker\backups\racine
+
+# ───────────────────────────────────────────────────────────────
+# SERVICES
+# ───────────────────────────────────────────────────────────────
+services:
+
+  # ═════════════════════════════════════════════════════════════
+  # MYSQL - Base de données
+  # ═════════════════════════════════════════════════════════════
+  mysql:
+    image: mysql:8.0
+    container_name: racine_mysql
+
+    # Restart policy (toujours redémarrer sauf arrêt manuel)
+    restart: unless-stopped
+
+    # Sécurité: User non-root
+    user: "999:999" # mysql:mysql
+
+    # Variables d'environnement
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-ChangeThisRootPassword123!}
+
+      # Optimisations MySQL
+      MYSQL_INNODB_BUFFER_POOL_SIZE: 1G
+      MYSQL_MAX_CONNECTIONS: 200
+      MYSQL_QUERY_CACHE_SIZE: 0
+      MYSQL_QUERY_CACHE_TYPE: 0
+
+      # Sécurité MySQL
+      MYSQL_SKIP_NAME_RESOLVE: 1
+      MYSQL_LOCAL_INFILE: 0
+
+    # Volumes persistants
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d:ro
+      - backups:/backups
+      - app_logs:/var/log/mysql
+
+    # Configuration MySQL custom
+    command: >
+      --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_allowed_packet=256M --innodb_buffer_pool_size=1G --innodb_log_file_size=256M --innodb_flush_log_at_trx_commit=2 --innodb_flush_method=O_DIRECT --slow_query_log=1 --slow_query_log_file=/var/log/mysql/slow.log --long_query_time=2 --log_error=/var/log/mysql/error.log --general_log=0
+
+    # Health check
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-ChangeThisRootPassword123!}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    # Réseaux
+    networks:
+      - backend
+
+    # Limites ressources
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=mysql,env=production"
+
+  # ═════════════════════════════════════════════════════════════
+  # REDIS - Cache, Sessions, Queues
+  # ═════════════════════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: racine_redis
+
+    restart: unless-stopped
+
+    # Sécurité: User non-root
+    user: "999:999" # redis:redis
+
+    # Configuration Redis
+    command: >
+      redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --appendfsync everysec --save 900 1 --save 300 10 --save 60 10000 --maxmemory 512mb --maxmemory-policy allkeys-lru --tcp-backlog 511 --timeout 300 --tcp-keepalive 60 --databases 16 --loglevel warning --logfile "" --dir /data --protected-mode yes --bind 0.0.0.0 --port 6379
+
+    # Volumes
+    volumes:
+      - redis_data:/data
+      - app_logs:/var/log/redis
+
+    # Health check
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+    networks:
+      - backend
+
+    # Limites ressources
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=redis,env=production"
+
+  # ═════════════════════════════════════════════════════════════
+  # APPLICATION - Laravel PHP-FPM
+  # ═════════════════════════════════════════════════════════════
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      args:
+        PHP_VERSION: 8.2
+        COMPOSER_VERSION: 2
+
+    # Note: container_name removed (incompatible with replicas)
+    restart: unless-stopped
+
+    # Sécurité: User non-root
+    user: "1000:1000" # www-data
+
+    # Variables d'environnement
+    env_file:
+      - .env.production.local
+
+    environment:
+      # PHP Configuration
+      PHP_MEMORY_LIMIT: 256M
+      PHP_MAX_EXECUTION_TIME: 60
+      PHP_UPLOAD_MAX_FILESIZE: 20M
+      PHP_POST_MAX_SIZE: 20M
+
+      # OPcache
+      PHP_OPCACHE_ENABLE: 1
+      PHP_OPCACHE_MEMORY_CONSUMPTION: 256
+      PHP_OPCACHE_MAX_ACCELERATED_FILES: 20000
+      PHP_OPCACHE_VALIDATE_TIMESTAMPS: 0
+
+      # Sécurité PHP
+      PHP_EXPOSE_PHP: 0
+      PHP_DISPLAY_ERRORS: 0
+      PHP_LOG_ERRORS: 1
+
+    # Volumes
+    volumes:
+      - ./:/var/www/html:delegated
+      - app_storage:/var/www/html/storage
+      - app_logs:/var/www/html/storage/logs
+      - ./docker/app/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+
+    # Dépendances
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    # Health check
+    healthcheck:
+      test: [ "CMD-SHELL", "SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 2>/dev/null | grep -q 'pool:'" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    networks:
+      - backend
+      - frontend
+
+    # Limites ressources
+    deploy:
+      replicas: 2 # 2 instances pour haute disponibilité
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "service=app,env=production"
+
+  # ═════════════════════════════════════════════════════════════
+  # HORIZON - Queue Worker & Dashboard
+  # ═════════════════════════════════════════════════════════════
+  horizon:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      args:
+        PHP_VERSION: 8.2
+
+    # Note: container_name removed (incompatible with replicas)
+    restart: unless-stopped
+
+    user: "1000:1000"
+
+    env_file:
+      - .env.production
+
+    # Commande Horizon
+    command: php artisan horizon
+
+    volumes:
+      - ./:/var/www/html:delegated
+      - app_storage:/var/www/html/storage
+      - app_logs:/var/www/html/storage/logs
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+
+    # Health check (vérifier processus Horizon)
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "horizon:status" ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+    networks:
+      - backend
+
+    deploy:
+      replicas: 1 # 1 seule instance Horizon
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "service=horizon,env=production"
+
+  # ═════════════════════════════════════════════════════════════
+  # NGINX - Reverse Proxy & Web Server
+  # ═════════════════════════════════════════════════════════════
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: racine_nginx
+    restart: unless-stopped
+
+    # Ports exposés (seul service exposé publiquement)
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+
+    # Configuration Nginx
+    volumes:
+      - ./:/var/www/html:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - app_logs:/var/log/nginx
+
+    depends_on:
+      app:
+        condition: service_healthy
+
+    # Health check
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    networks:
+      - frontend
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "service=nginx,env=production"
+
+  # ═════════════════════════════════════════════════════════════
+  # BACKUP - Service de sauvegarde automatique
+  # ═════════════════════════════════════════════════════════════
+  backup:
+    build:
+      context: ./docker/backup
+      dockerfile: Dockerfile
+
+    container_name: racine_backup
+    restart: unless-stopped
+
+    env_file:
+      - .env.production
+
+    environment:
+      BACKUP_SCHEDULE: "0 2 * * *" # Tous les jours à 2h du matin
+      BACKUP_RETENTION_DAYS: 30
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      S3_BUCKET: ${BACKUP_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+
+    volumes:
+      - backups:/backups
+      - app_logs:/var/log/backup
+      - ./docker/backup/scripts:/scripts:ro
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - backend
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=backup,env=production"
+
+# ═══════════════════════════════════════════════════════════════
+# FIN DOCKER COMPOSE
+# ═══════════════════════════════════════════════════════════════
+#
+# ✅ COMMANDES UTILES:
+#
+# Démarrer:
+#   docker-compose -f docker-compose.production.yml up -d
+#
+# Logs:
+#   docker-compose -f docker-compose.production.yml logs -f [service]
+#
+# Arrêter:
+#   docker-compose -f docker-compose.production.yml down
+#
+# Rebuild:
+#   docker-compose -f docker-compose.production.yml build --no-cache
+#
+# Scaling:
+#   docker-compose -f docker-compose.production.yml up -d --scale app=3
+#
+# Health:
+#   docker-compose -f docker-compose.production.yml ps
+#
+# Backup manuel:
+#   docker-compose -f docker-compose.production.yml exec backup /scripts/backup.sh
+#
+# Restore:
+#   docker-compose -f docker-compose.production.yml exec backup /scripts/restore.sh
+#
+# ═══════════════════════════════════════════════════════════════

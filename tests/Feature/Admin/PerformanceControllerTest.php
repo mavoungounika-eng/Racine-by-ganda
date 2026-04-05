@@ -21,14 +21,22 @@ class PerformanceControllerTest extends TestCase
     {
         parent::setUp();
 
+        // Seed roles
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
+
         // Créer un admin
+        $adminRole = \App\Models\Role::where('slug', 'admin')->first();
         $this->admin = User::factory()->create([
-            'role' => 'admin',
+            'role_id' => $adminRole->id,
+            'two_factor_secret' => 'base32secret',
+            'two_factor_confirmed_at' => now(),
+            'is_admin' => true,
         ]);
 
         // Créer un utilisateur non-admin
+        $clientRole = \App\Models\Role::where('slug', 'client')->first();
         $this->nonAdmin = User::factory()->create([
-            'role' => 'client',
+            'role_id' => $clientRole->id,
         ]);
 
         // Créer quelques métriques de test
@@ -98,7 +106,7 @@ class PerformanceControllerTest extends TestCase
         $response = $this->actingAs($this->nonAdmin)
             ->get(route('admin.performance.index'));
 
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -109,7 +117,7 @@ class PerformanceControllerTest extends TestCase
         $response = $this->actingAs($this->nonAdmin)
             ->get(route('admin.performance.routes'));
 
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**
@@ -120,7 +128,7 @@ class PerformanceControllerTest extends TestCase
         $response = $this->actingAs($this->nonAdmin)
             ->get(route('admin.performance.alerts'));
 
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     /**

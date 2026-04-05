@@ -188,7 +188,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 // Afficher les suggestions (à implémenter avec un dropdown)
-                                console.log('Suggestions:', data);
+                                // TODO: Implement autocomplete dropdown
                             });
                     }, 300);
                 }

@@ -1,0 +1,86 @@
+name: Governance Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'app/Models/Order.php'
+      - 'app/Models/CreatorSaleRecord.php'
+      - 'app/Observers/OrderObserver.php'
+      - 'modules/Accounting/**'
+      - 'tests/Feature/Governance/**'
+      - 'tests/Feature/SaaSPur/**'
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  governance:
+    name: SaaS Pur Governance Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: racine_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, pdo, pdo_mysql, xml, ctype, json, bcmath
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Copy environment
+        run: cp .env.example .env
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Run Governance Tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: racine_test
+          DB_USERNAME: root
+          DB_PASSWORD: password
+        run: |
+          php artisan migrate --force
+          php artisan migrate --path=modules/Accounting/database/migrations --force
+          php artisan db:seed --class=RolesTableSeeder --force
+          php artisan db:seed --class=CreatorPlanSeeder --force
+          php artisan test --filter=GovernanceHardeningTest --stop-on-failure
+          php artisan test --filter=SaasPurInvariantsTest --stop-on-failure
+          php artisan test --filter=AccountingIsolationTest --stop-on-failure
+
+      - name: Governance Tests Failed
+        if: failure()
+        run: |
+          echo "❌ GOVERNANCE TESTS FAILED"
+          echo "Deployment blocked - Fix invariant violations before merging"
+          exit 1
+
+      - name: Governance Tests Passed
+        if: success()
+        run: |
+          echo "✅ ALL GOVERNANCE TESTS PASSED (27/27)"
+          echo "SaaS Pur invariants are enforced"

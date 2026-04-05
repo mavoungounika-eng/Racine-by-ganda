@@ -18,6 +18,8 @@ class CreatorOrderController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Order::class);
+
         $user = Auth::user();
         
         // Récupérer les commandes qui contiennent au moins un produit du créateur

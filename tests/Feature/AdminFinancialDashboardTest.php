@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -10,11 +11,12 @@ use App\Models\CreatorSubscriptionInvoice;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests Feature - Dashboard Financier Admin
+ * Tests du Dashboard Financier Admin
  * 
- * Phase 6.1 - Tests d'intégration du dashboard financier
+ * Tests des métriques financières, calculs MRR/ARR, taux de churn, et exports BI.
  */
 class AdminFinancialDashboardTest extends TestCase
 {
@@ -26,19 +28,37 @@ class AdminFinancialDashboardTest extends TestCase
     {
         parent::setUp();
         
-        // Créer un utilisateur admin
-        $this->adminUser = User::factory()->create();
-        // TODO: Ajouter le rôle admin si nécessaire
+        // Créer un utilisateur admin avec 2FA activé
+        $adminRole = \App\Models\Role::firstOrCreate(
+            ['slug' => 'admin'],
+            ['name' => 'Admin', 'description' => 'Admin role', 'is_active' => true]
+        );
+        $this->adminUser = User::firstOrCreate(
+            ['email' => 'admin-financial@test.com'],
+            [
+                'name' => 'Admin Financial Test',
+                'password' => bcrypt('password'),
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
+                'auth_version' => 1,
+                'status' => 'active',
+            ]
+        );
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_dashboard_metrics_for_admin()
     {
-        // Créer des données de test
+        // CrÃ©er des donnÃ©es de test
         $this->createTestData();
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -89,12 +109,15 @@ class AdminFinancialDashboardTest extends TestCase
                 'alerts',
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_empty_database()
     {
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200)
             ->assertJson([
@@ -113,17 +136,16 @@ class AdminFinancialDashboardTest extends TestCase
                 ],
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_mrr_correctly()
     {
-        // Créer un plan OFFICIEL à 5000 XAF
+        // CrÃ©er un plan OFFICIEL Ã  5000 XAF
         $plan = CreatorPlan::factory()->create([
             'code' => 'official',
             'price' => 5000,
         ]);
 
-        // Créer 3 abonnements actifs
+        // CrÃ©er 3 abonnements actifs
         for ($i = 0; $i < 3; $i++) {
             $creator = CreatorProfile::factory()->create();
             CreatorSubscription::factory()->create([
@@ -134,20 +156,23 @@ class AdminFinancialDashboardTest extends TestCase
         }
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200)
             ->assertJson([
                 'revenue' => [
-                    'mrr' => 15000.0, // 3 × 5000
+                    'mrr' => 15000.0, // 3 Ã— 5000
                 ],
             ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_churn_rate_correctly()
     {
-        // Créer des abonnements actifs et annulés
+        // CrÃ©er des abonnements actifs et annulÃ©s
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
 
         // 10 abonnements actifs
@@ -161,7 +186,7 @@ class AdminFinancialDashboardTest extends TestCase
             ]);
         }
 
-        // 2 abonnements annulés le mois dernier
+        // 2 abonnements annulÃ©s le mois dernier
         for ($i = 0; $i < 2; $i++) {
             $creator = CreatorProfile::factory()->create();
             CreatorSubscription::factory()->create([
@@ -174,7 +199,11 @@ class AdminFinancialDashboardTest extends TestCase
         }
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/dashboard');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.dashboard'));
 
         $response->assertStatus(200);
         $data = $response->json();
@@ -183,14 +212,17 @@ class AdminFinancialDashboardTest extends TestCase
         $this->assertGreaterThanOrEqual(15, $data['advanced_kpis']['churn_rate_month']);
         $this->assertLessThanOrEqual(25, $data['advanced_kpis']['churn_rate_month']);
     }
-
-    /** @test */
+    #[Test]
     public function it_returns_snapshot_for_bi_export()
     {
         $this->createTestData();
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson('/admin/financial/snapshot?period=month');
+            ->withSession([
+                'auth_version' => $this->adminUser->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->getJson(route('admin.financial.snapshot', ['period' => 'month']));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -207,7 +239,7 @@ class AdminFinancialDashboardTest extends TestCase
     }
 
     /**
-     * Créer des données de test
+     * CrÃ©er des donnÃ©es de test
      */
     private function createTestData(): void
     {
@@ -216,7 +248,7 @@ class AdminFinancialDashboardTest extends TestCase
             'price' => 5000,
         ]);
 
-        // Créer 5 créateurs avec abonnements actifs
+        // CrÃ©er 5 crÃ©ateurs avec abonnements actifs
         for ($i = 0; $i < 5; $i++) {
             $user = User::factory()->create();
             $creator = CreatorProfile::factory()->create([
@@ -241,7 +273,7 @@ class AdminFinancialDashboardTest extends TestCase
             ]);
         }
 
-        // Créer quelques factures payées
+        // CrÃ©er quelques factures payÃ©es
         $subscription = CreatorSubscription::first();
         CreatorSubscriptionInvoice::factory()->create([
             'creator_subscription_id' => $subscription->id,
@@ -251,6 +283,11 @@ class AdminFinancialDashboardTest extends TestCase
         ]);
     }
 }
+
+
+
+
+
 
 
 

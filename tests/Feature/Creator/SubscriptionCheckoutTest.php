@@ -18,8 +18,8 @@ class SubscriptionCheckoutTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
     }
-
     #[Test]
     public function it_displays_available_plans()
     {
@@ -53,7 +53,6 @@ class SubscriptionCheckoutTest extends TestCase
         $response->assertSee('Plan Basic');
         $response->assertSee('Plan Premium');
     }
-
     #[Test]
     public function it_redirects_to_stripe_checkout()
     {
@@ -87,7 +86,6 @@ class SubscriptionCheckoutTest extends TestCase
 
         $response->assertRedirect('https://checkout.stripe.com/test');
     }
-
     #[Test]
     public function it_handles_successful_checkout_return()
     {
@@ -113,10 +111,9 @@ class SubscriptionCheckoutTest extends TestCase
             'session_id' => 'cs_test_123',
         ]));
 
-        $response->assertRedirect(route('creator.dashboard'));
-        $response->assertSessionHas('success');
+        $response->assertOk();
+        $response->assertViewIs('creator.subscriptions.success');
     }
-
     #[Test]
     public function it_handles_checkout_cancellation()
     {

@@ -69,7 +69,7 @@ class ProductionScrappedListener implements ShouldQueue
             'fiscal_year_id' => $fiscalYear->id,
             'entry_date' => now()->toDateString(),
             'description' => "Rebut production {$order->order_number} - {$reason}",
-            'reference_type' => 'production_order',
+            'reference_type' => 'production_order_scrapped',
             'reference_id' => $order->id,
         ]);
 

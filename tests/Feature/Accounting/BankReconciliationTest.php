@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Accounting;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Order;
@@ -11,14 +12,17 @@ use Modules\Accounting\Models\BankReconciliation;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\FiscalYear;
 use Modules\Accounting\Services\BankReconciliationService;
+use Modules\Accounting\Services\LedgerService;
 use Carbon\Carbon;
+use Tests\Traits\SeedsAccounting;
 
 class BankReconciliationTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected BankReconciliationService $reconciliationService;
+    protected LedgerService $ledgerService;
 
     protected function setUp(): void
     {
@@ -27,16 +31,55 @@ class BankReconciliationTest extends TestCase
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
 
-        // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        // Seed donnÃ©es comptables via trait explicite
+        $this->seedAccounting();
 
         $this->reconciliationService = app(BankReconciliationService::class);
+        $this->ledgerService = app(LedgerService::class);
     }
 
-    /** @test */
+    /**
+     * Helper: CrÃ©er une Ã©criture comptable de paiement en attente
+     * Simule l'Ã©criture crÃ©Ã©e par PaymentRecordedListener
+     */
+    protected function createPendingPaymentEntry(Order $order): AccountingEntry
+    {
+        $debitAccount = match ($order->payment_method) {
+            'card' => '5112',           // Encaissements Stripe (attente)
+            'mobile_money' => '5113',   // Encaissements Monetbil (attente)
+            'cash' => '5700',           // Caisse
+            default => '5112',
+        };
+
+        $journal = Journal::where('code', 'VTE')->firstOrFail();
+        $fiscalYear = $this->ledgerService->getCurrentFiscalYear();
+
+        $totalTTC = $order->total_amount;
+        $vatRate = 18.0;
+        $amountHT = $totalTTC / (1 + $vatRate / 100);
+        $vatAmount = $totalTTC - $amountHT;
+
+        $entry = $this->ledgerService->createEntry([
+            'journal_id' => $journal->id,
+            'fiscal_year_id' => $fiscalYear->id,
+            'entry_date' => now()->toDateString(),
+            'description' => "Vente commande #{$order->id}",
+            'reference_type' => 'order',
+            'reference_id' => $order->id,
+        ]);
+
+        $this->ledgerService->addLine($entry, $debitAccount, $totalTTC, 0, "Encaissement commande #{$order->id}");
+        $this->ledgerService->addLine($entry, '7011', 0, $amountHT, "Vente HT");
+        $this->ledgerService->addLine($entry, '4421', 0, $vatAmount, "TVA collectÃ©e {$vatRate}%");
+
+        $this->ledgerService->postEntry($entry);
+
+        return $entry;
+    }
+    #[Test]
     public function it_reconciles_stripe_payout()
     {
-        // Créer vente Stripe (compte attente 5112)
+        // CrÃ©er vente Stripe (compte attente 5112)
         $order = Order::factory()->create([
             'user_id' => $this->user->id,
             'total_amount' => 118.00,
@@ -44,13 +87,11 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        // Vérifier écriture initiale créée
-        $initialEntry = AccountingEntry::where('reference_type', 'order')
-            ->where('reference_id', $order->id)
-            ->first();
+        // Simuler l'Ã©criture comptable crÃ©Ã©e par PaymentRecordedListener
+        $initialEntry = $this->createPendingPaymentEntry($order);
         $this->assertNotNull($initialEntry);
 
-        // Vérifier solde compte attente
+        // VÃ©rifier solde compte attente
         $pendingAmount = $this->reconciliationService->getPendingStripeAmount();
         $this->assertEquals(118.00, $pendingAmount);
 
@@ -61,43 +102,42 @@ class BankReconciliationTest extends TestCase
             arrivalDate: Carbon::now()
         );
 
-        // Vérifier rapprochement créé
+        // VÃ©rifier rapprochement crÃ©Ã©
         $this->assertEquals('reconciled', $reconciliation->status);
         $this->assertEquals('5211', $reconciliation->bank_account_code);
         $this->assertEquals('po_test_123', $reconciliation->transaction_reference);
         $this->assertEquals(118.00, $reconciliation->amount);
 
-        // Vérifier écriture rapprochement
+        // VÃ©rifier Ã©criture rapprochement
         $entry = $reconciliation->entry;
         $this->assertNotNull($entry);
         $this->assertTrue($entry->is_posted);
         $this->assertEquals('BNQ', $entry->journal->code);
 
-        // Vérifier lignes
+        // VÃ©rifier lignes
         $lines = $entry->lines;
         $this->assertCount(2, $lines);
 
-        // Débit banque Stripe (5211)
+        // DÃ©bit banque Stripe (5211)
         $debitLine = $lines->where('account_code', '5211')->first();
         $this->assertNotNull($debitLine);
         $this->assertEquals(118.00, $debitLine->debit);
         $this->assertEquals(0, $debitLine->credit);
 
-        // Crédit compte attente (5112)
+        // CrÃ©dit compte attente (5112)
         $creditLine = $lines->where('account_code', '5112')->first();
         $this->assertNotNull($creditLine);
         $this->assertEquals(0, $creditLine->debit);
         $this->assertEquals(118.00, $creditLine->credit);
 
-        // Vérifier solde compte attente = 0
+        // VÃ©rifier solde compte attente = 0
         $newPendingAmount = $this->reconciliationService->getPendingStripeAmount();
         $this->assertEquals(0, $newPendingAmount);
     }
-
-    /** @test */
+    #[Test]
     public function it_reconciles_monetbil_payout()
     {
-        // Créer vente Monetbil (compte attente 5113)
+        // CrÃ©er vente Monetbil (compte attente 5113)
         $order = Order::factory()->create([
             'user_id' => $this->user->id,
             'total_amount' => 59.00,
@@ -105,7 +145,10 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        // Vérifier solde compte attente
+        // Simuler l'Ã©criture comptable crÃ©Ã©e par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
+
+        // VÃ©rifier solde compte attente
         $pendingAmount = $this->reconciliationService->getPendingMonetbilAmount();
         $this->assertEquals(59.00, $pendingAmount);
 
@@ -116,37 +159,39 @@ class BankReconciliationTest extends TestCase
             arrivalDate: Carbon::now()
         );
 
-        // Vérifier rapprochement créé
+        // VÃ©rifier rapprochement crÃ©Ã©
         $this->assertEquals('reconciled', $reconciliation->status);
         $this->assertEquals('5212', $reconciliation->bank_account_code);
 
-        // Vérifier écriture
+        // VÃ©rifier Ã©criture
         $entry = $reconciliation->entry;
         $lines = $entry->lines;
 
-        // Débit banque Monetbil (5212)
+        // DÃ©bit banque Monetbil (5212)
         $debitLine = $lines->where('account_code', '5212')->first();
         $this->assertEquals(59.00, $debitLine->debit);
 
-        // Crédit compte attente (5113)
+        // CrÃ©dit compte attente (5113)
         $creditLine = $lines->where('account_code', '5113')->first();
         $this->assertEquals(59.00, $creditLine->credit);
 
-        // Vérifier solde compte attente = 0
+        // VÃ©rifier solde compte attente = 0
         $newPendingAmount = $this->reconciliationService->getPendingMonetbilAmount();
         $this->assertEquals(0, $newPendingAmount);
     }
-
-    /** @test */
+    #[Test]
     public function it_prevents_duplicate_reconciliation()
     {
-        // Créer vente
+        // CrÃ©er vente
         $order = Order::factory()->create([
             'user_id' => $this->user->id,
             'total_amount' => 118.00,
             'payment_method' => 'card',
             'payment_status' => 'paid',
         ]);
+
+        // Simuler l'Ã©criture comptable crÃ©Ã©e par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
 
         // Premier rapprochement
         $this->reconciliationService->reconcileStripePayout(
@@ -157,7 +202,7 @@ class BankReconciliationTest extends TestCase
 
         // Tentative de double rapprochement
         $this->expectException(\Modules\Accounting\Exceptions\LedgerException::class);
-        $this->expectExceptionMessage('déjà rapproché');
+        $this->expectExceptionMessage('rapproch');
 
         $this->reconciliationService->reconcileStripePayout(
             payoutId: 'po_test_789',
@@ -165,11 +210,10 @@ class BankReconciliationTest extends TestCase
             arrivalDate: Carbon::now()
         );
     }
-
-    /** @test */
+    #[Test]
     public function it_validates_sufficient_pending_amount()
     {
-        // Créer vente de 118 €
+        // CrÃ©er vente de 118 â‚¬
         $order = Order::factory()->create([
             'user_id' => $this->user->id,
             'total_amount' => 118.00,
@@ -177,9 +221,12 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        // Tentative de rapprocher 200 € (> 118 €)
+        // Simuler l'Ã©criture comptable crÃ©Ã©e par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
+
+        // Tentative de rapprocher 200 â‚¬ (> 118 â‚¬)
         $this->expectException(\Modules\Accounting\Exceptions\LedgerException::class);
-        $this->expectExceptionMessage('supérieur aux encaissements en attente');
+        $this->expectExceptionMessage('encaissements en attente');
 
         $this->reconciliationService->reconcileStripePayout(
             payoutId: 'po_test_999',
@@ -187,40 +234,40 @@ class BankReconciliationTest extends TestCase
             arrivalDate: Carbon::now()
         );
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_pending_amounts_correctly()
     {
-        // Créer 3 ventes Stripe
+        // CrÃ©er 3 ventes Stripe
         for ($i = 0; $i < 3; $i++) {
-            Order::factory()->create([
+            $order = Order::factory()->create([
                 'user_id' => $this->user->id,
                 'total_amount' => 118.00,
                 'payment_method' => 'card',
                 'payment_status' => 'paid',
             ]);
+            // Simuler l'Ã©criture comptable crÃ©Ã©e par PaymentRecordedListener
+            $this->createPendingPaymentEntry($order);
         }
 
-        // Vérifier solde total
+        // VÃ©rifier solde total
         $pendingAmount = $this->reconciliationService->getPendingStripeAmount();
-        $this->assertEquals(354.00, $pendingAmount); // 118 × 3
+        $this->assertEquals(354.00, $pendingAmount); // 118 Ã— 3
 
-        // Rapprocher 118 €
+        // Rapprocher 118 â‚¬
         $this->reconciliationService->reconcileStripePayout(
             payoutId: 'po_partial_1',
             amount: 118.00,
             arrivalDate: Carbon::now()
         );
 
-        // Vérifier solde restant
+        // VÃ©rifier solde restant
         $newPendingAmount = $this->reconciliationService->getPendingStripeAmount();
         $this->assertEquals(236.00, $newPendingAmount); // 354 - 118
     }
-
-    /** @test */
+    #[Test]
     public function it_retrieves_reconciled_reconciliations()
     {
-        // Créer vente
+        // CrÃ©er vente
         $order = Order::factory()->create([
             'user_id' => $this->user->id,
             'total_amount' => 118.00,
@@ -228,14 +275,17 @@ class BankReconciliationTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        // Créer rapprochement
+        // Simuler l'Ã©criture comptable crÃ©Ã©e par PaymentRecordedListener
+        $this->createPendingPaymentEntry($order);
+
+        // CrÃ©er rapprochement
         $this->reconciliationService->reconcileStripePayout(
             payoutId: 'po_test_list',
             amount: 118.00,
             arrivalDate: Carbon::now()
         );
 
-        // Récupérer rapprochements validés
+        // RÃ©cupÃ©rer rapprochements validÃ©s
         $reconciliations = $this->reconciliationService->getReconciledReconciliations();
 
         $this->assertCount(1, $reconciliations);

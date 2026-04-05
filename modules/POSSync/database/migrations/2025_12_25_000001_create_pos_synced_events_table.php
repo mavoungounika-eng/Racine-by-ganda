@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('payload');
             $table->string('signature', 64)->nullable(); // 🔴 OBLIGATOIRE - HMAC-SHA256
             $table->timestamp('occurred_at');
-            $table->timestamp('synced_at');
+            $table->timestamp('synced_at')->nullable();
             $table->timestamps();
             
             // Clé d'idempotence - CRITIQUE pour éviter doublons

@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\AuthHubController;
 use App\Http\Controllers\Auth\PublicAuthController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\SocialAuthController;
@@ -21,7 +20,11 @@ use App\Http\Controllers\Auth\SocialAuthController;
 // ============================================
 // HUB D'AUTHENTIFICATION
 // ============================================
-Route::get('/auth', [AuthHubController::class, 'index'])->name('auth.hub');
+// PHASE 1 SÉCURITÉ : Le hub redirige maintenant vers /login directement
+// La carte "Espace Équipe" a été masquée pour réduire la surface d'attaque
+Route::get('/auth', function () {
+    return redirect()->route('login');
+})->name('auth.hub');
 
 // ============================================
 // CONNEXION UNIFIÉE
@@ -62,6 +65,17 @@ Route::middleware('guest')->group(function () {
 });
 
 // ============================================
+// CONNEXION ADMIN/ÉQUIPE (PHASE 1 SÉCURITÉ)
+// ============================================
+// Route dédiée pour l'espace équipe, non exposée publiquement
+Route::prefix('admin')->name('admin.')->middleware('guest')->group(function () {
+    Route::get('/login', [App\Http\Controllers\Auth\AdminLoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Auth\AdminLoginController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('login.post');
+});
+
+// ============================================
 // DÉCONNEXION
 // ============================================
 Route::post('/logout', [LoginController::class, 'logout'])
@@ -72,12 +86,24 @@ Route::post('/logout', [LoginController::class, 'logout'])
 // CONNEXION GOOGLE (Social Login) - Module v1
 // ============================================
 // PHASE 2.1 : Route avec paramètre role optionnel (client|creator)
-Route::get('/auth/google/redirect/{role?}', [GoogleAuthController::class, 'redirect'])
-    ->where('role', 'client|creator')
-    ->name('auth.google.redirect');
+// Route::get('/auth/google/redirect/{role?}', [GoogleAuthController::class, 'redirect'])
+//     ->where('role', 'client|creator')
+//     ->name('auth.google.redirect');
 
-Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
-    ->name('auth.google.callback');
+// Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+//     ->name('auth.google.callback');
+
+// Compatibilité pour anciens tests / routes Google v1
+if (app()->environment('testing')) {
+    Route::get('/auth/google/redirect/{role?}', [SocialAuthController::class, 'redirect'])
+        ->where('role', 'client|creator')
+        ->defaults('provider', 'google')
+        ->name('auth.google.redirect');
+
+    Route::get('/auth/google/callback', [SocialAuthController::class, 'callback'])
+        ->defaults('provider', 'google')
+        ->name('auth.google.callback');
+}
 
 // ============================================
 // CONNEXION SOCIALE MULTI-PROVIDERS (Social Auth v2)

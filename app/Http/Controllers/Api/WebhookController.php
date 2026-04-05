@@ -7,6 +7,8 @@ use App\Jobs\ProcessMonetbilCallbackEventJob;
 use App\Jobs\ProcessStripeWebhookEventJob;
 use App\Models\MonetbilCallbackEvent;
 use App\Models\StripeWebhookEvent;
+use App\Services\Webhooks\CircuitBreakerService;
+use App\Services\Webhooks\WebhookDeduplicationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +37,7 @@ class WebhookController extends Controller
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
         $webhookSecret = config('services.stripe.webhook_secret') ?? '';
-        $isProduction = app()->environment('production');
+        $isProduction = app()->environment('production') || config('app.env') === 'production';
 
         // Log safe (début de méthode) - Ne jamais logger payload brut ni headers sensibles
         $signatureHeaderPresent = !empty($signature);
@@ -122,12 +124,12 @@ class WebhookController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            Log::error('Stripe webhook: Verification error', [
+            Log::error('Stripe webhook: Verification failed', [
                 'ip' => $request->ip(),
                 'error' => mb_substr($e->getMessage(), 0, 200),
                 'exception_class' => get_class($e),
             ]);
-            return response()->json(['error' => 'Verification failed'], 400);
+            return response()->json(['error' => 'Verification failed'], 401); // Rejet strict 401
         }
 
         // Extraire event_id et event_type
@@ -302,20 +304,57 @@ class WebhookController extends Controller
      */
     public function monetbil(Request $request): JsonResponse
     {
+        // ✅ CIRCUIT BREAKER: Check if Monetbil is failing
+        $circuitBreaker = app(CircuitBreakerService::class);
+        if (!$circuitBreaker->isAvailable('monetbil')) {
+            Log::warning('❌ Monetbil Circuit Breaker OPEN - rejecting webhook');
+            return response()->json([
+                'status' => 'circuit_open',
+                'message' => 'Service temporarily unavailable'
+            ], 503);
+        }
+
         $payload = $request->all();
         $webhookSecret = config('services.monetbil.service_secret') ?? '';
-        $isProduction = app()->environment('production');
+        $isProduction = app()->environment('production') || config('app.env') === 'production';
+
+        $deduplicationService = app(WebhookDeduplicationService::class);
+        
+        // Generate unique external ID from transaction or event
+        $externalId = $payload['transaction_uuid'] ?? $payload['transaction_id'] ?? $payload['event_key'] ?? null;
+        
+        // Check for duplicate (return 200 silently to prevent retries)
+        if ($externalId && $deduplicationService->isDuplicate('monetbil', $externalId)) {
+            Log::info('⏭️ Duplicate Monetbil webhook skipped', [
+                'external_id' => $externalId,
+                'event_type' => $payload['event_type'] ?? $payload['status'] ?? null,
+            ]);
+            $circuitBreaker->recordSuccess('monetbil');
+            return response()->json(['status' => 'duplicate_skipped']);
+        }
 
         // 1. VERIFY signature/auth (OBLIGATOIRE en production)
-        $signature = $request->header('X-Signature') 
+        $signature = $request->header('X-Monetbil-Signature') 
+                  ?? $request->header('X-Signature') 
                   ?? $request->header('X-Callback-Signature');
         
         if ($isProduction) {
-            // En production : signature OBLIGATOIRE
+            // Filtrage IP (Configurable via services.monetbil.allowed_ips)
+            $allowedIps = config('services.monetbil.allowed_ips');
+            if (!empty($allowedIps)) {
+                $ips = array_map('trim', explode(',', $allowedIps));
+                if (!in_array($request->ip(), $ips)) {
+                    Log::warning('Monetbil callback: Rejected unauthorized IP', [
+                        'ip' => $request->ip(),
+                        'allowed_ips' => $allowedIps
+                    ]);
+                    return response()->json(['error' => 'Unauthorized IP'], 403);
+                }
+            }
+
             if (empty($webhookSecret)) {
                 Log::error('Monetbil callback: Webhook secret not configured', [
                     'ip' => $request->ip(),
-                    'reason' => 'missing_secret',
                 ]);
                 return response()->json(['error' => 'Configuration error'], 500);
             }
@@ -323,21 +362,19 @@ class WebhookController extends Controller
             if (empty($signature)) {
                 Log::error('Monetbil callback: Missing signature in production', [
                     'ip' => $request->ip(),
-                    'user_agent' => substr($request->userAgent() ?? '', 0, 100),
-                    'reason' => 'missing_signature',
                 ]);
                 return response()->json(['error' => 'Missing signature'], 401);
             }
 
-            // Vérifier la signature avec hash_equals (timing-safe)
+            // Vérifier la signature Monetbil (Pattern HMAC-SHA256)
             $payloadString = $request->getContent();
             $expectedSignature = hash_hmac('sha256', $payloadString, $webhookSecret);
             
             if (!hash_equals($expectedSignature, $signature)) {
                 Log::error('Monetbil callback: Invalid signature in production', [
                     'ip' => $request->ip(),
-                    'user_agent' => substr($request->userAgent() ?? '', 0, 100),
-                    'reason' => 'invalid_signature',
+                    'expected' => substr($expectedSignature, 0, 10), // Safe trace limited
+                    'received' => substr($signature, 0, 10),
                 ]);
                 return response()->json(['error' => 'Invalid signature'], 401);
             }
@@ -346,29 +383,11 @@ class WebhookController extends Controller
                 'ip' => $request->ip(),
             ]);
         } else {
-            // En développement : signature optionnelle mais recommandée
-            if ($signature && $webhookSecret) {
-                $payloadString = $request->getContent();
-                $expectedSignature = hash_hmac('sha256', $payloadString, $webhookSecret);
-                
-                if (!hash_equals($expectedSignature, $signature)) {
-                    Log::warning('Monetbil callback: Invalid signature in development (continuing)', [
-                        'ip' => $request->ip(),
-                        'reason' => 'invalid_signature_dev',
-                    ]);
-                    // En développement, continuer avec warning
-                } else {
-                    Log::info('Monetbil callback: Signature verified (development)', [
-                        'ip' => $request->ip(),
-                    ]);
-                }
-            } else {
-                Log::info('Monetbil callback: Processing without signature verification (development)', [
-                    'ip' => $request->ip(),
-                    'has_signature' => !empty($signature),
-                    'has_secret' => !empty($webhookSecret),
-                ]);
-            }
+            // Développement : Warning si signature manquante/invalide
+            Log::info('Monetbil callback: Dev mode processing', [
+                'has_signature' => !empty($signature),
+                'ip' => $request->ip()
+            ]);
         }
 
         // Générer event_key unique (hash stable pour idempotence)
@@ -461,6 +480,18 @@ class WebhookController extends Controller
             }
 
         } catch (\Exception $e) {
+            // Record failure for retry later
+            if ($externalId) {
+                $deduplicationService->recordFailure(
+                    'monetbil',
+                    $payload['event_type'] ?? $payload['status'] ?? 'unknown',
+                    $externalId,
+                    $payload,
+                    $signature ?? '',
+                    $e->getMessage()
+                );
+            }
+
             Log::error('Monetbil callback: Failed to persist event', [
                 'event_key' => $eventKey,
                 'error' => $e->getMessage(),
@@ -492,7 +523,27 @@ class WebhookController extends Controller
             }
         }
 
-        // 4. RETURN 200 vite
+        // 4. Mark as processed and RETURN 200 vite
+        try {
+            if ($externalId) {
+                // ✅ EXACTLY-ONCE GUARANTEE: Mark permanently as processed
+                $deduplicationService->markAsProcessedSuccess('monetbil', $externalId);
+
+                $failure = \App\Models\WebhookFailure::where('external_id', $externalId)->first();
+                if ($failure) {
+                    $deduplicationService->markAsProcessed($failure);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to mark Monetbil webhook as processed', [
+                'external_id' => $externalId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // ✅ Record success for circuit breaker
+        $circuitBreaker->recordSuccess('monetbil');
+
         return response()->json(['status' => 'received'], 200);
     }
 

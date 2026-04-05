@@ -145,7 +145,7 @@ class SocialAuthController extends Controller
 
         try {
             // Récupérer l'utilisateur du provider
-            $providerUser = Socialite::driver($provider)->user();
+            $providerUser = Socialite::driver($provider)->stateless()->user();
         } catch (\Exception $e) {
             Log::error("OAuth {$provider} callback error", [
                 'error' => $e->getMessage(),
@@ -157,7 +157,7 @@ class SocialAuthController extends Controller
 
         // Récupérer le contexte et le rôle depuis la session
         $context = session('social_login_context', 'boutique');
-        $requestedRole = session('oauth_role', 'client');
+        $requestedRole = session('oauth_role', $request->query('role', 'client'));
         session()->forget(['social_login_context', 'oauth_role']);
 
         // Normaliser le rôle
@@ -200,28 +200,17 @@ class SocialAuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        // Gérer l'onboarding créateur
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['createur', 'creator'])) {
-            $creatorProfile = $user->creatorProfile;
-            
-            if (!$creatorProfile) {
-                return redirect()->route('creator.register')
-                    ->with('info', 'Veuillez compléter votre profil créateur.');
-            }
-            
-            if ($creatorProfile->isPending()) {
-                return redirect()->route('creator.pending')
-                    ->with('status', 'Votre compte créateur est en attente de validation.');
-            }
-            
-            if ($creatorProfile->isSuspended()) {
-                return redirect()->route('creator.suspended')
-                    ->with('error', 'Votre compte créateur a été suspendu.');
-            }
-        }
+        // PHASE 2: Utiliser UserContextResolver et PostLoginDecisionEngine
+        $contextResolver = app(\App\Services\Auth\UserContextResolver::class);
+        $decisionEngine = app(\App\Services\Auth\PostLoginDecisionEngine::class);
 
-        // Rediriger selon le rôle
-        return redirect($this->getRedirectPath($user));
+        // Résoudre le contexte utilisateur
+        $context = $contextResolver->resolve($user);
+        $contextResolver->storeInSession($context);
+
+        // Déterminer la redirection via PostLoginDecisionEngine
+        $redirectUrl = $decisionEngine->determineRedirect($context);
+
+        return redirect($redirectUrl);
     }
 }

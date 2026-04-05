@@ -8,13 +8,13 @@
             <div class="icon mr-2 d-flex justify-content-center align-items-center">
               <span class="icon-phone2"></span>
             </div>
-            <span class="text">+242 06 6XX XX XX</span>
+            <span class="text">{{ config('app.company.phone') }}</span>
           </div>
           <div class="col-md pr-4 d-flex topper align-items-center">
             <div class="icon mr-2 d-flex justify-content-center align-items-center">
               <span class="icon-paper-plane"></span>
             </div>
-            <span class="text">contact@racinebyganda.com</span>
+            <span class="text">{{ config('app.company.email') }}</span>
           </div>
           <div class="col-md-5 pr-4 d-flex topper align-items-center text-lg-right">
             <span class="text">Livraison gratuite à Pointe-Noire &amp; Retours gratuits</span>

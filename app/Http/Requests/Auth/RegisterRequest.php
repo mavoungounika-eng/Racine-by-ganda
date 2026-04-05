@@ -35,6 +35,7 @@ class RegisterRequest extends FormRequest
             ],
             'account_type' => ['required', 'in:client,creator'],
             'terms' => ['required', 'accepted'],
+            'g-recaptcha-response' => ['required', new \App\Rules\Recaptcha('register_client')],
         ];
     }
 

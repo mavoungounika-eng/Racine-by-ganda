@@ -26,6 +26,7 @@ class OAuthFacebookTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
         
         // Créer les rôles nécessaires
         Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client', 'is_active' => true]);
@@ -56,9 +57,10 @@ class OAuthFacebookTest extends TestCase
         $redirectResponse->assertRedirect();
 
         // Simuler le callback OAuth
-        $callbackResponse = $this->get(route('auth.social.callback', ['provider' => 'facebook']), [
+        $callbackResponse = $this->get(route('auth.social.callback', [
+            'provider' => 'facebook',
             'state' => Session::get('oauth_state'),
-        ]);
+        ]));
 
         // Vérifications
         $this->assertDatabaseHas('users', [
@@ -100,7 +102,13 @@ class OAuthFacebookTest extends TestCase
 
         $this->mockFacebookUser('existing@facebook.com', 'facebook-456', 'Existing User');
 
-        $response = $this->get(route('auth.social.callback', ['provider' => 'facebook']));
+        $redirectResponse = $this->get(route('auth.social.redirect', ['provider' => 'facebook']));
+        $redirectResponse->assertRedirect();
+
+        $response = $this->get(route('auth.social.callback', [
+            'provider' => 'facebook',
+            'state' => Session::get('oauth_state'),
+        ]));
 
         // Vérifier qu'un seul user existe
         $this->assertDatabaseCount('users', 1);
@@ -117,9 +125,14 @@ class OAuthFacebookTest extends TestCase
         $facebookUser->shouldReceive('getId')->andReturn($facebookId);
         $facebookUser->shouldReceive('getName')->andReturn($name);
         $facebookUser->shouldReceive('getAvatar')->andReturn(null);
+        $facebookUser->shouldReceive('getRaw')->andReturn([]);
 
+        Socialite::shouldReceive('stateless')->andReturnSelf();
         Socialite::shouldReceive('driver')
             ->with('facebook')
+            ->andReturnSelf();
+
+        Socialite::shouldReceive('with')
             ->andReturnSelf();
             
         Socialite::shouldReceive('redirect')
@@ -131,4 +144,3 @@ class OAuthFacebookTest extends TestCase
         return $facebookUser;
     }
 }
-

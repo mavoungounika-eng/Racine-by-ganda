@@ -127,7 +127,7 @@ class GoogleAuthController extends Controller
 
         try {
             // Récupérer l'utilisateur Google
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Exception $e) {
             return redirect()->route('login')
                 ->with('error', 'Erreur lors de la connexion avec Google. Veuillez réessayer.');
@@ -259,7 +259,10 @@ class GoogleAuthController extends Controller
                             'google_id' => $googleId, // PHASE 1.3 : Stocker le google_id
                             'password' => Hash::make(Str::random(32)), // Mot de passe généré (l'utilisateur pourra le changer)
                             'role_id' => $role->id,
-                            'email_verified_at' => now(), // Email vérifié via Google
+                            'role' => $requestedRoleSlug, // Expliciter le champ role pour la cohérence de domaine
+                            'email_verified_at' => now(),
+                            'status' => 'active',
+                            'auth_version' => 1,
                         ]);
                         
                         // PHASE 3.1 : Si rôle créateur, créer le profil créateur avec statut pending
@@ -276,6 +279,11 @@ class GoogleAuthController extends Controller
                         return $user;
                     });
                 } catch (\Exception $e) {
+                    \Log::error('Google Auth Creation Error: ' . $e->getMessage(), [
+                        'exception' => $e,
+                        'email' => $email,
+                        'role' => $requestedRoleSlug
+                    ]);
                     // PHASE 3.1 : Rollback automatique en cas d'erreur
                     return redirect()->route('login')
                         ->with('error', 'Erreur lors de la création de votre compte. Veuillez réessayer.');
@@ -300,33 +308,18 @@ class GoogleAuthController extends Controller
         // Régénérer la session
         $request->session()->regenerate();
 
-        // PHASE 3.2 : Onboarding post-Google créateur (redirection obligatoire)
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['createur', 'creator'])) {
-            // Vérifier si le profil créateur existe et son statut
-            $creatorProfile = $user->creatorProfile;
-            
-            if (!$creatorProfile) {
-                // Pas de profil créateur → rediriger vers l'inscription créateur
-                return redirect()->route('creator.register')
-                    ->with('info', 'Veuillez compléter votre profil créateur.');
-            }
-            
-            if ($creatorProfile->isPending()) {
-                // Profil en attente de validation → rediriger vers la page pending
-                return redirect()->route('creator.pending')
-                    ->with('status', 'Votre compte créateur est en attente de validation par l\'équipe RACINE.');
-            }
-            
-            if ($creatorProfile->isSuspended()) {
-                // Profil suspendu → rediriger vers la page suspended
-                return redirect()->route('creator.suspended')
-                    ->with('error', 'Votre compte créateur a été suspendu. Veuillez contacter le support.');
-            }
-        }
+        // PHASE 2: Utiliser UserContextResolver et PostLoginDecisionEngine
+        $contextResolver = app(\App\Services\Auth\UserContextResolver::class);
+        $decisionEngine = app(\App\Services\Auth\PostLoginDecisionEngine::class);
 
-        // Rediriger selon le rôle via le trait HandlesAuthRedirect
-        return redirect($this->getRedirectPath($user));
+        // Résoudre le contexte utilisateur
+        $context = $contextResolver->resolve($user);
+        $contextResolver->storeInSession($context);
+
+        // Déterminer la redirection via PostLoginDecisionEngine
+        $redirectUrl = $decisionEngine->determineRedirect($context);
+
+        return redirect($redirectUrl);
     }
 }
 

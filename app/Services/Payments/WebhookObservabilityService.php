@@ -278,11 +278,23 @@ class WebhookObservabilityService
      */
     private function getStripeAverageLatency($windowStart): ?float
     {
-        $result = StripeWebhookEvent::where('created_at', '>=', $windowStart)
-            ->where('status', 'processed')
-            ->whereNotNull('processed_at')
-            ->selectRaw('AVG(UNIX_TIMESTAMP(processed_at) - UNIX_TIMESTAMP(created_at)) as avg_latency')
-            ->first();
+        $driver = \DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            // SQLite : utiliser julianday
+            $result = StripeWebhookEvent::where('created_at', '>=', $windowStart)
+                ->where('status', 'processed')
+                ->whereNotNull('processed_at')
+                ->selectRaw('AVG((julianday(processed_at) - julianday(created_at)) * 86400) as avg_latency')
+                ->first();
+        } else {
+            // MySQL/Postgres : UNIX_TIMESTAMP
+            $result = StripeWebhookEvent::where('created_at', '>=', $windowStart)
+                ->where('status', 'processed')
+                ->whereNotNull('processed_at')
+                ->selectRaw('AVG(UNIX_TIMESTAMP(processed_at) - UNIX_TIMESTAMP(created_at)) as avg_latency')
+                ->first();
+        }
 
         return $result && $result->avg_latency ? (float) $result->avg_latency : null;
     }
@@ -316,6 +328,11 @@ class WebhookObservabilityService
         return $result && $result->avg_latency ? (float) $result->avg_latency : null;
     }
 }
+
+
+
+
+
 
 
 

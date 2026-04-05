@@ -66,7 +66,7 @@ class ProductionStartedListener implements ShouldQueue
             'fiscal_year_id' => $fiscalYear->id,
             'entry_date' => now()->toDateString(),
             'description' => "Démarrage production {$order->order_number} - {$order->product->name}",
-            'reference_type' => 'production_order',
+            'reference_type' => 'production_order_started',
             'reference_id' => $order->id,
         ]);
 

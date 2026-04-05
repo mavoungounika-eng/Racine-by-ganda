@@ -8,6 +8,7 @@
 
 {{-- Statistiques principales --}}
 <div class="row g-4 mb-4">
+    @can('view-sales-analytics')
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
             'title' => 'Ventes totales',
@@ -17,6 +18,7 @@
             'trend' => isset($stats['monthly_sales_evolution']) && $stats['monthly_sales_evolution'] != 0 ? ['value' => '+' . abs($stats['monthly_sales_evolution']) . '% ce mois', 'direction' => 'up', 'color' => '#22C55E'] : null
         ])
     </div>
+    @endcan
 
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
@@ -28,6 +30,7 @@
         ])
     </div>
 
+    @can('view-users')
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
             'title' => 'Clients',
@@ -37,6 +40,7 @@
             'subtitle' => '+' . ($stats['new_clients_month'] ?? 0) . ' nouveaux ce mois'
         ])
     </div>
+    @endcan
 
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
@@ -51,6 +55,7 @@
 
 {{-- Graphiques --}}
 <div class="row g-4 mb-4">
+    @can('view-sales-analytics')
     <div class="col-lg-6">
         <div class="card card-racine h-100">
             <div class="card-header bg-transparent border-bottom-2 border-racine-beige d-flex justify-content-between align-items-center py-3">
@@ -67,6 +72,7 @@
             </div>
         </div>
     </div>
+    @endcan
 
     <div class="col-lg-6">
         <div class="card card-racine h-100">
@@ -163,6 +169,7 @@
                 </h5>
             </div>
             <div class="list-group list-group-flush">
+                @can('create-products')
                 <a href="{{ route('admin.products.create') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
                         <i class="fas fa-plus-circle text-success me-2"></i>
@@ -170,6 +177,8 @@
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @endcan
+                @can('edit-categories')
                 <a href="{{ route('admin.categories.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
                         <i class="fas fa-tags text-warning me-2"></i>
@@ -177,6 +186,7 @@
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @endcan
                 <a href="{{ route('admin.orders.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
                         <i class="fas fa-receipt text-primary me-2"></i>
@@ -197,6 +207,7 @@
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @can('view-users')
                 <a href="{{ route('admin.users.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
                         <i class="fas fa-users text-info me-2"></i>
@@ -204,6 +215,7 @@
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @endcan
             </div>
         </div>
     </div>
@@ -211,6 +223,7 @@
 
 {{-- Nouveaux clients et produits récents --}}
 <div class="row g-4">
+    @can('view-users')
     <div class="col-lg-6">
         <div class="card card-racine h-100">
             <div class="card-header bg-transparent border-bottom-2 border-racine-beige d-flex justify-content-between align-items-center py-3">
@@ -251,6 +264,7 @@
             </div>
         </div>
     </div>
+    @endcan
 
     <div class="col-lg-6">
         <div class="card card-racine h-100">
@@ -325,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gray: '#8B7355'
     };
 
+    @can('view-sales-analytics')
     // Graphique Ventes par Mois
     const salesCtx = document.getElementById('salesChart');
     if (salesCtx) {
@@ -365,6 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    @endcan
 
     // Graphique Commandes par Mois
     const ordersCtx = document.getElementById('ordersChart');

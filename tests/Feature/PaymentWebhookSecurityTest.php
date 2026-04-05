@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests de sécurité pour les webhooks Stripe (RBG-P0-010)
@@ -24,6 +25,7 @@ use Tests\TestCase;
 class PaymentWebhookSecurityTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAccounting;
 
     protected User $user;
     protected Product $product;
@@ -33,6 +35,7 @@ class PaymentWebhookSecurityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedAccounting();
 
         $this->user = User::factory()->create([
             'role' => 'client',
@@ -62,7 +65,6 @@ class PaymentWebhookSecurityTest extends TestCase
             'amount' => 10000,
         ]);
     }
-
     #[Test]
     public function it_rejects_webhook_without_signature_in_production(): void
     {
@@ -90,9 +92,8 @@ class PaymentWebhookSecurityTest extends TestCase
 
         // En production, doit retourner strictement 401 si signature absente
         $response->assertStatus(401);
-        $response->assertJson(['message' => 'Invalid signature']);
+        $response->assertJson(['error' => 'Missing signature']);
     }
-
     #[Test]
     public function it_rejects_webhook_with_invalid_signature(): void
     {
@@ -127,7 +128,6 @@ class PaymentWebhookSecurityTest extends TestCase
             'Webhook with invalid signature should be rejected'
         );
     }
-
     #[Test]
     public function it_logs_structured_information_on_webhook_failure(): void
     {
@@ -137,16 +137,7 @@ class PaymentWebhookSecurityTest extends TestCase
         // Mock du secret webhook
         config(['services.stripe.webhook_secret' => 'whsec_test_secret']);
         
-        // Mock des appels Log pour éviter les erreurs Mockery
-        Log::shouldReceive('error')
-            ->atLeast()->once()
-            ->andReturn(true);
-        Log::shouldReceive('warning')
-            ->zeroOrMoreTimes()
-            ->andReturn(true);
-        Log::shouldReceive('info')
-            ->zeroOrMoreTimes()
-            ->andReturn(true);
+        Log::spy();
 
         $payload = json_encode([
             'type' => 'checkout.session.completed',
@@ -168,16 +159,18 @@ class PaymentWebhookSecurityTest extends TestCase
             [401, 400],
             'Webhook with invalid signature should be rejected'
         );
-    }
 
+        Log::shouldHaveReceived('error')->atLeast()->once();
+    }
     #[Test]
-    public function it_allows_webhook_without_signature_in_development(): void
+    public function it_accepts_webhook_without_signature_in_local(): void
     {
-        // S'assurer qu'on est en développement
-        $this->app['env'] = 'local';
+        // En local, la signature est optionnelle pour faciliter les tests/intégrations.
         config(['app.env' => 'local']);
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
 
         $payload = json_encode([
+            'id' => 'evt_test_local_without_signature',
             'type' => 'checkout.session.completed',
             'data' => [
                 'object' => [
@@ -191,9 +184,8 @@ class PaymentWebhookSecurityTest extends TestCase
             'CONTENT_TYPE' => 'application/json',
         ], $payload);
 
-        // En développement, le webhook peut être traité sans signature (mais peut échouer si payload invalide)
-        // On vérifie juste que ce n'est pas un 401 strict (comme en production)
-        $this->assertNotEquals(401, $response->status(), 'Development mode should not strictly reject webhooks without signature');
+        $response->assertStatus(200);
+        $response->assertJson(['status' => 'received']);
     }
-}
 
+}

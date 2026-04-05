@@ -4,6 +4,7 @@ namespace Modules\ERP\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\AuditService;
 use Modules\ERP\Models\ErpStock;
 use Modules\ERP\Models\ErpStockMovement;
 use Modules\ERP\Http\Requests\StoreStockAdjustmentRequest;
@@ -63,7 +64,7 @@ class ErpStockController extends Controller
                 SELECT 
                     COUNT(*) as total,
                     SUM(CASE WHEN stock < 5 AND stock > 0 THEN 1 ELSE 0 END) as low,
-                    SUM(CASE WHEN stock <= 0 THEN 1 ELSE 0 END) as out,
+                    SUM(CASE WHEN stock <= 0 THEN 1 ELSE 0 END) as out_of_stock,
                     SUM(CASE WHEN stock >= 5 THEN 1 ELSE 0 END) as ok
                 FROM products
             ");
@@ -71,7 +72,7 @@ class ErpStockController extends Controller
             return [
                 'total' => (int) ($result->total ?? 0),
                 'low' => (int) ($result->low ?? 0),
-                'out' => (int) ($result->out ?? 0),
+                'out' => (int) ($result->out_of_stock ?? 0),
                 'ok' => (int) ($result->ok ?? 0),
             ];
         });
@@ -180,6 +181,22 @@ class ErpStockController extends Controller
             } else {
                 $product->decrement('stock', $validated['quantity']);
             }
+
+            // 3. Enregistrer dans le journal d'audit
+            $quantityChange = $validated['type'] === 'in' 
+                ? $validated['quantity'] 
+                : -$validated['quantity'];
+            
+            app(AuditService::class)->logStockAdjustment(
+                productId: $product->id,
+                quantityChange: $quantityChange,
+                reason: $validated['reason'],
+                user: Auth::user(),
+                additionalData: [
+                    'stock_type' => $validated['type'],
+                    'product_sku' => $product->erpDetails?->sku,
+                ]
+            );
         });
 
         return redirect()->route('erp.stocks.index')

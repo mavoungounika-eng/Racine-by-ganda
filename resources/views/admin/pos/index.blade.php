@@ -514,5 +514,41 @@ $('#success-modal').on('hidden.bs.modal', function() {
     barcodeInput.focus();
 });
 </script>
+
+{{-- Script mode offline --}}
+<script src="{{ asset('js/pos-offline.js') }}"></script>
+<script>
+// Intégrer offline manager avec le formulaire POS
+const originalSubmitHandler = document.getElementById('pos-form').onsubmit;
+
+document.getElementById('pos-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const orderData = {
+        products: cart.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+        })),
+        customer_name: formData.get('customer_name'),
+        customer_email: formData.get('customer_email'),
+        customer_phone: formData.get('customer_phone'),
+        payment_method: formData.get('payment_method'),
+        payment_reference: formData.get('payment_reference')
+    };
+
+    // Si offline, ajouter à la queue
+    if (!window.posOfflineManager.checkOnline()) {
+        const offlineId = window.posOfflineManager.addToQueue(orderData);
+        showAlert('warning', `Mode offline: Vente enregistrée localement (${offlineId}). Sera synchronisée automatiquement.`);
+        resetCart();
+        return;
+    }
+
+    // Si online, procéder normalement
+    submitOrder(orderData);
+});
+</script>
 @endpush
 

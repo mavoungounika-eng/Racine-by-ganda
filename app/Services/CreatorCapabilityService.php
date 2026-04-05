@@ -35,6 +35,21 @@ class CreatorCapabilityService
      */
     public function getActiveSubscription(User $creator): ?CreatorSubscription
     {
+        // ✅ OPTIMISATION N+1: Vérifier si la relation est déjà chargée
+        // Évite requête DB si eager loaded dans le controller
+        if ($creator->relationLoaded('creatorProfile') && 
+            $creator->creatorProfile?->relationLoaded('subscription')) {
+            $subscription = $creator->creatorProfile->subscription;
+            
+            // Vérifier que c'est bien un abonnement actif
+            if ($subscription && 
+                in_array($subscription->status, ['active', 'trialing']) &&
+                ($subscription->ends_at === null || $subscription->ends_at > now())) {
+                return $subscription;
+            }
+        }
+        
+        // Fallback vers cache si relation non chargée (compatibilité)
         $cacheKey = "creator_subscription_active_{$creator->id}";
 
         return Cache::remember($cacheKey, now()->addMinutes($this->cacheDuration), function () use ($creator) {

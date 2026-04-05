@@ -12,7 +12,6 @@ class CategoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Tous les utilisateurs authentifiés peuvent voir les catégories
         return true;
     }
 
@@ -21,7 +20,6 @@ class CategoryPolicy
      */
     public function view(User $user, Category $category): bool
     {
-        // Tous les utilisateurs authentifiés peuvent voir une catégorie
         return true;
     }
 
@@ -30,9 +28,7 @@ class CategoryPolicy
      */
     public function create(User $user): bool
     {
-        // Seuls admin et moderator peuvent créer
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
+        return $user->hasPermission('create-categories');
     }
 
     /**
@@ -40,9 +36,7 @@ class CategoryPolicy
      */
     public function update(User $user, Category $category): bool
     {
-        // Seuls admin et moderator peuvent modifier
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
+        return $user->hasPermission('edit-categories');
     }
 
     /**
@@ -50,9 +44,7 @@ class CategoryPolicy
      */
     public function delete(User $user, Category $category): bool
     {
-        // Seul admin peut supprimer
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'super_admin']);
+        return $user->hasPermission('delete-categories');
     }
 
     /**
@@ -60,9 +52,7 @@ class CategoryPolicy
      */
     public function restore(User $user, Category $category): bool
     {
-        // Seul admin peut restaurer
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'super_admin']);
+        return $user->hasPermission('access-system-config');
     }
 
     /**
@@ -70,8 +60,6 @@ class CategoryPolicy
      */
     public function forceDelete(User $user, Category $category): bool
     {
-        // Seul admin peut supprimer définitivement
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'super_admin']);
+        return $user->hasPermission('access-system-config');
     }
 }

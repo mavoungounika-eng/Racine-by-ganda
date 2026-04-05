@@ -14,12 +14,19 @@ class RecordPerformanceMetricsTest extends TestCase
 {
     use RefreshDatabase;
 
+    private string $metricsTestPath;
+
     protected function setUp(): void
     {
         parent::setUp();
         
         // S'assurer que debug est activé pour les tests
         Config::set('app.debug', true);
+
+        $this->metricsTestPath = '/__test/performance-metrics-' . uniqid();
+        $this->app['router']
+            ->middleware(\App\Http\Middleware\RecordPerformanceMetrics::class)
+            ->get($this->metricsTestPath, fn () => response('ok', 200));
     }
 
     /**
@@ -31,7 +38,7 @@ class RecordPerformanceMetricsTest extends TestCase
         $this->assertDatabaseCount('performance_metrics', 0);
 
         // Faire une requête simple
-        $response = $this->get('/');
+        $response = $this->get($this->metricsTestPath);
 
         // Vérifier qu'une métrique a été créée
         $this->assertDatabaseCount('performance_metrics', 1);
@@ -46,7 +53,7 @@ class RecordPerformanceMetricsTest extends TestCase
     public function test_metrics_are_numeric(): void
     {
         // Faire une requête
-        $this->get('/');
+        $this->get($this->metricsTestPath);
 
         // Récupérer la métrique
         $metric = PerformanceMetric::first();
@@ -64,7 +71,7 @@ class RecordPerformanceMetricsTest extends TestCase
     public function test_status_code_is_correct(): void
     {
         // Faire une requête qui retourne 200
-        $this->get('/');
+        $this->get($this->metricsTestPath);
 
         // Récupérer la métrique
         $metric = PerformanceMetric::first();
@@ -79,13 +86,13 @@ class RecordPerformanceMetricsTest extends TestCase
     public function test_route_is_recorded(): void
     {
         // Faire une requête
-        $this->get('/');
+        $this->get($this->metricsTestPath);
 
         // Récupérer la métrique
         $metric = PerformanceMetric::first();
 
         // Vérifier que la route est enregistrée
-        $this->assertNotNull($metric->route);
+        $this->assertEquals(ltrim($this->metricsTestPath, '/'), $metric->route);
     }
 
     /**
@@ -94,7 +101,7 @@ class RecordPerformanceMetricsTest extends TestCase
     public function test_http_method_is_recorded(): void
     {
         // Faire une requête GET
-        $this->get('/');
+        $this->get($this->metricsTestPath);
 
         // Récupérer la métrique
         $metric = PerformanceMetric::first();
@@ -112,7 +119,7 @@ class RecordPerformanceMetricsTest extends TestCase
         Config::set('app.debug', false);
 
         // Faire une requête
-        $this->get('/');
+        $this->get($this->metricsTestPath);
 
         // Vérifier qu'aucune métrique n'a été créée
         $this->assertDatabaseCount('performance_metrics', 0);
@@ -124,7 +131,7 @@ class RecordPerformanceMetricsTest extends TestCase
     public function test_query_count_is_positive(): void
     {
         // Faire une requête (qui va probablement faire des requêtes DB)
-        $this->get('/');
+        $this->get($this->metricsTestPath);
 
         // Récupérer la métrique
         $metric = PerformanceMetric::first();
@@ -139,7 +146,7 @@ class RecordPerformanceMetricsTest extends TestCase
     public function test_response_time_is_positive(): void
     {
         // Faire une requête
-        $this->get('/');
+        $this->get($this->metricsTestPath);
 
         // Récupérer la métrique
         $metric = PerformanceMetric::first();

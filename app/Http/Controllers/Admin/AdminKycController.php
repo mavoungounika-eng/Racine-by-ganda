@@ -27,6 +27,8 @@ class AdminKycController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', CreatorStripeAccount::class);
+
         $query = CreatorStripeAccount::with('creatorProfile.user');
 
         // Filtres
@@ -72,6 +74,10 @@ class AdminKycController extends Controller
         $creator->load('creatorProfile.stripeAccount');
         $stripeAccount = $creator->creatorProfile->stripeAccount;
 
+        if ($stripeAccount) {
+            $this->authorize('view', $stripeAccount);
+        }
+
         $kycStatus = null;
         if ($stripeAccount) {
             $kycStatus = [
@@ -97,6 +103,8 @@ class AdminKycController extends Controller
             return redirect()->back()
                 ->with('error', 'Ce créateur n\'a pas de compte Stripe Connect.');
         }
+
+        $this->authorize('sync', $stripeAccount);
 
         try {
             $this->stripeService->syncAccountStatus($stripeAccount);

@@ -95,8 +95,19 @@ return new class extends Migration
                 );
                 
                 return isset($indexes[0]) && $indexes[0]->count > 0;
+            } elseif ($driver === 'pgsql') {
+                // PostgreSQL: utiliser pg_indexes
+                $indexes = DB::select(
+                    "SELECT COUNT(*) as count 
+                     FROM pg_indexes 
+                     WHERE tablename = ? 
+                     AND indexname = ?",
+                    [$table, $indexName]
+                );
+                
+                return isset($indexes[0]) && $indexes[0]->count > 0;
             } else {
-                // MySQL/PostgreSQL: utiliser information_schema
+                // MySQL: utiliser information_schema.statistics
                 $databaseName = $connection->getDatabaseName();
                 
                 $indexes = DB::select(

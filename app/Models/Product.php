@@ -25,12 +25,33 @@ class Product extends Model
         'stock',
         'is_active',
         'main_image',
+        'ai_description',
+        'ai_price_suggestion',
+        'ai_last_analyzed_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'price' => 'decimal:2',
+        'ai_price_suggestion' => 'decimal:2',
+        'ai_last_analyzed_at' => 'datetime',
     ];
+
+    /**
+     * Backward compatibility alias: legacy code often reads/writes "name".
+     */
+    public function setNameAttribute(string $value): void
+    {
+        $this->attributes['title'] = $value;
+    }
+
+    /**
+     * Backward compatibility alias for legacy "name" reads.
+     */
+    public function getNameAttribute(): string
+    {
+        return (string) ($this->attributes['title'] ?? '');
+    }
 
     /**
      * Get the category that owns the product.
@@ -222,5 +243,12 @@ class Product extends Model
     {
         return $this->mainImage ?? $this->images->first();
     }
-}
 
+    /**
+     * Get the order items associated with the product.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+}

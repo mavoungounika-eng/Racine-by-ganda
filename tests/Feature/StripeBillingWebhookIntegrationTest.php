@@ -3,11 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\CreatorProfile;
-use App\Models\CreatorStripeAccount;
 use App\Models\CreatorSubscription;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 /**
@@ -19,11 +18,26 @@ class StripeBillingWebhookIntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected int $creatorRoleId;
+
     protected function setUp(): void
     {
         parent::setUp();
         config(['services.stripe.webhook_secret' => 'whsec_test_secret']);
-        Log::fake();
+
+        $creatorRole = Role::firstOrCreate(
+            ['slug' => 'createur'],
+            ['name' => 'Créateur', 'description' => 'Creator role', 'is_active' => true]
+        );
+        $this->creatorRoleId = $creatorRole->id;
+    }
+
+    private function createCreatorUser(): User
+    {
+        return User::factory()->create([
+            'role_id' => $this->creatorRoleId,
+            'role' => 'createur',
+        ]);
     }
 
     /**
@@ -56,7 +70,7 @@ class StripeBillingWebhookIntegrationTest extends TestCase
      */
     public function test_customer_subscription_created_creates_subscription(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $user = $this->createCreatorUser();
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -111,7 +125,7 @@ class StripeBillingWebhookIntegrationTest extends TestCase
      */
     public function test_customer_subscription_updated_updates_subscription(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $user = $this->createCreatorUser();
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -158,7 +172,7 @@ class StripeBillingWebhookIntegrationTest extends TestCase
      */
     public function test_invoice_payment_failed_updates_status(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $user = $this->createCreatorUser();
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -203,7 +217,7 @@ class StripeBillingWebhookIntegrationTest extends TestCase
      */
     public function test_invoice_paid_activates_subscription(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $user = $this->createCreatorUser();
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -247,7 +261,7 @@ class StripeBillingWebhookIntegrationTest extends TestCase
      */
     public function test_webhook_is_idempotent_for_same_event_id(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $user = $this->createCreatorUser();
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -302,4 +316,3 @@ class StripeBillingWebhookIntegrationTest extends TestCase
         $this->assertEquals(1, $count2);
     }
 }
-
