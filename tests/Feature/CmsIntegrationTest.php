@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Category;
 use App\Models\Banner;
 use App\Models\ContentBlock;
 use App\Models\Page;
@@ -28,18 +27,10 @@ class CmsIntegrationTest extends TestCase
             'published_at' => now()
         ]);
 
-        // Créer une catégorie de navigation
-        Category::create([
-            'name' => 'Vêtements',
-            'slug' => 'vetements',
-            'status' => 'active'
-        ]);
-
         $response = $this->get(route('frontend.home'));
 
         $response->assertStatus(200);
         $response->assertSee('Terms of Service');
-        $response->assertSee('Vêtements');
     }
 
     /**

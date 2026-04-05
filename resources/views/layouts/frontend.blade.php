@@ -105,16 +105,8 @@
                             Boutique <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 4px;"></i>
                         </button>
                         <div class="nav-dropdown-menu">
-                            @if(!empty($cmsNavCategories))
-                                @foreach($cmsNavCategories as $cat)
-                                    <a href="{{ route('frontend.shop', ['category' => $cat['slug']]) }}">
-                                        {{ $cat['name'] }}
-                                    </a>
-                                @endforeach
-                            @else
-                                <a href="{{ route('frontend.shop') }}"><i class="fas fa-store"></i> RACINE BY GANDA</a>
-                                <a href="{{ route('frontend.marketplace') }}"><i class="fas fa-shopping-bag"></i> Marketplace</a>
-                            @endif
+                            <a href="{{ route('frontend.shop') }}"><i class="fas fa-store"></i> RACINE BY GANDA</a>
+                            <a href="{{ route('frontend.marketplace') }}"><i class="fas fa-shopping-bag"></i> Marketplace</a>
                         </div>
                     </div>
                     

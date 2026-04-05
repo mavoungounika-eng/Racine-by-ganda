@@ -64,16 +64,31 @@ class FrontendController extends Controller
             ->when($request->filled('search'), fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
             ->when($request->filled('min_price'), fn($q) => $q->where('price', '>=', $request->min_price))
             ->when($request->filled('max_price'), fn($q) => $q->where('price', '<=', $request->max_price))
-            ->with('creator', 'category')
-            ->orderBy('created_at', 'desc')
-            ->paginate(24)
-            ->withQueryString();
+            ->when($request->stock_filter === 'in_stock', fn($q) => $q->where('stock', '>', 0))
+            ->when($request->stock_filter === 'low_stock', fn($q) => $q->where('stock', '>', 0)->where('stock', '<=', 10))
+            ->with('creator', 'category');
+
+        $products = match ($request->sort) {
+            'price_asc' => $products->orderBy('price', 'asc'),
+            'price_desc' => $products->orderBy('price', 'desc'),
+            'name' => $products->orderBy('title', 'asc'),
+            'stock' => $products->orderBy('stock', 'desc'),
+            default => $products->orderBy('created_at', 'desc'),
+        };
+
+        $products = $products->paginate(24)->withQueryString();
+
+        $categories = \App\Models\Category::whereNull('parent_id')
+            ->where('is_active', true)
+            ->withCount(['products' => fn($q) => $q->where('is_active', true)])
+            ->orderBy('display_order')
+            ->get();
 
         $breadcrumb = $category
             ? app(\App\Services\Cms\CategoryService::class)->getBreadcrumb($category)
             : [];
 
-        return view('frontend.shop', compact('products', 'category', 'breadcrumb'));
+        return view('frontend.shop', compact('products', 'category', 'categories', 'breadcrumb'));
     }
 
     /**
@@ -113,17 +128,22 @@ class FrontendController extends Controller
     public function marketplace(Request $request)
     {
         $products = \App\Models\Product::where('is_active', true)
+            ->where('product_type', 'marketplace')
             ->when($request->filled('search'), fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
             ->when($request->filled('category'), function ($q) use ($request) {
                 $cat = \App\Models\Category::where('slug', $request->category)->first();
                 return $cat ? $q->where('category_id', $cat->id) : $q;
             })
-            ->with('creator', 'category')
+            ->when($request->filled('creator'), fn($q) => $q->where('user_id', $request->creator))
+            ->with('creator.creatorProfile', 'category')
             ->orderBy('created_at', 'desc')
             ->paginate(24)
             ->withQueryString();
 
-        return view('frontend.marketplace', compact('products'));
+        $creators = \App\Models\User::whereHas('creatorProfile', fn($q) => $q->where('is_active', true))->get();
+        $creatorsCount = $creators->count();
+
+        return view('frontend.marketplace', compact('products', 'creators', 'creatorsCount'));
     }
 
     public function creatorShop(string $slug)
