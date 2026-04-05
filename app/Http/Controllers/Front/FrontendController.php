@@ -35,8 +35,8 @@ class FrontendController extends Controller
             ->limit(8)
             ->get();
 
-        $latestCreators = \App\Models\User::where('role', 'createur')
-            ->where('is_active', true)
+        $latestCreators = \App\Models\CreatorProfile::active()
+            ->with('user')
             ->latest()
             ->limit(6)
             ->get();
@@ -102,10 +102,13 @@ class FrontendController extends Controller
     public function contact() { return view('frontend.contact'); }
     public function creators() 
     { 
-        $creators = \App\Models\User::where('role', 'createur')
-            ->where('is_active', true)
+        $creators = \App\Models\CreatorProfile::active()
+            ->with('user')
             ->paginate(12);
-        return view('frontend.creators', compact('creators')); 
+
+        $totalProducts = \App\Models\Product::where('is_active', true)->count();
+
+        return view('frontend.creators', compact('creators', 'totalProducts')); 
     }
     public function marketplace() { return view('frontend.marketplace'); }
     public function creatorShop(string $slug)
@@ -151,4 +154,3 @@ class FrontendController extends Controller
         return $this->home();
     }
 }
-
