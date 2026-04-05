@@ -5,7 +5,7 @@ namespace App\Observers;
 use App\Models\Product;
 use App\Services\NotificationService;
 use App\Services\ProductCodeService;
-use App\Jobs\Ai\GenerateProductDescription;
+use App\Jobs\AI\GenerateProductDescription;
 use Illuminate\Support\Facades\Cache;
 
 class ProductObserver

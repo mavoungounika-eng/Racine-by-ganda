@@ -218,16 +218,16 @@ return Application::configure(basePath: dirname(__DIR__))
             ->description('Expire ventes offline > 24h');
 
         // AI Module Scheduled Jobs
-        $schedule->job(\App\Jobs\Ai\AnalyzeCreatorSales::class)
+        $schedule->job(\App\Jobs\AI\AnalyzeCreatorSales::class)
             ->dailyAt('06:00')
             ->description('IA: Analyse ventes créateurs');
 
-        $schedule->job(\App\Jobs\Ai\DetectStockAnomalies::class)
+        $schedule->job(\App\Jobs\AI\DetectStockAnomalies::class)
             ->everyFifteenMinutes()
             ->withoutOverlapping()
             ->description('IA: Détection anomalies stock');
 
-        $schedule->job(\App\Jobs\Ai\GenerateAdminSummary::class)
+        $schedule->job(\App\Jobs\AI\GenerateAdminSummary::class)
             ->dailyAt('07:00')
             ->description('IA: Résumé quotidien admin');
     })
