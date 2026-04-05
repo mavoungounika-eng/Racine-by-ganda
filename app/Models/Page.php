@@ -24,6 +24,7 @@ class Page extends Model
         'status',
         'template',
         'show_in_footer',
+        'footer_column',
         'show_in_header',
         'sort_order',
         'published_at',

@@ -382,8 +382,8 @@
                     <div class="footer-links-col">
                         <h4>Informations</h4>
                         <ul>
-                            @if(!empty($cmsFooterPages) && $cmsFooterPages->count())
-                                @foreach($cmsFooterPages as $fp)
+                            @if(!empty($cmsFooterPages) && $cmsFooterPages->where('footer_column', 'info')->count())
+                                @foreach($cmsFooterPages->where('footer_column', 'info') as $fp)
                                     <li>
                                         <a href="{{ route('frontend.page.show', $fp->slug) }}">
                                             <i class="fas fa-chevron-right"></i> {{ $fp->title }}
