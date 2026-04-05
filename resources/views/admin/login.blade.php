@@ -345,7 +345,7 @@
                     </div>
                 @endif
                 
-                <form method="POST" action="{{ route('login.post') }}">
+                <form method="POST" action="{{ route('admin.login.post') }}">
                     @csrf
                     <div class="form-group">
                         <label><i class="fas fa-chevron-right"></i> email</label>

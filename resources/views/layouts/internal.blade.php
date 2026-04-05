@@ -789,10 +789,10 @@
             @php
                 $role = Auth::user()->role ?? 'client';
                 $dashboardRoutes = [
-                    'super_admin' => 'dashboard.super-admin',
-                    'admin' => 'dashboard.admin',
-                    'staff' => 'dashboard.staff',
-                    'createur' => 'dashboard.createur',
+                    'super_admin' => 'admin.dashboard',
+                    'admin' => 'admin.dashboard',
+                    'staff' => 'staff.dashboard',
+                    'createur' => 'creator.dashboard',
                     'client' => 'account.dashboard',
                 ];
                 $dashboardRoute = $dashboardRoutes[$role] ?? 'account.dashboard';

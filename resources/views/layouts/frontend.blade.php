@@ -158,7 +158,13 @@
                                 <i class="fas fa-user" aria-hidden="true"></i>
                             </button>
                             <div class="nav-dropdown-menu nav-dropdown-menu-right">
-                                <a href="{{ route('account.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Mon compte</a>
+                                @if(auth()->user()->getRoleSlug() === 'createur')
+                                    <a href="{{ route('creator.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Espace créateur</a>
+                                @elseif(in_array(auth()->user()->getRoleSlug(), ['admin', 'super_admin', 'staff']))
+                                    <a href="{{ route('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Administration</a>
+                                @else
+                                    <a href="{{ route('account.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Mon compte</a>
+                                @endif
                                 <a href="{{ route('profile.edit') }}"><i class="fas fa-user-circle"></i> Mon profil</a>
                                 <a href="{{ route('profile.orders') }}"><i class="fas fa-shopping-bag"></i> Mes commandes</a>
                                 <div class="nav-dropdown-divider"></div>
