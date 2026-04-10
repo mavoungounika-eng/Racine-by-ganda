@@ -112,6 +112,7 @@ Au début de chaque session, exécuter et afficher :
 git log --oneline -5
 ./vendor/bin/phpunit 2>&1 | tail -3
 git status --short
+cat storage/logs/css-fix/progress.txt 2>/dev/null | grep -v "^#" || echo "Aucune correction CSS en cours"
 ```
 
 Cela permet de savoir exactement où on en est AVANT de toucher quoi que ce soit.
@@ -160,6 +161,28 @@ Commit à faire : oui/non
 ---FIN CHECKPOINT---
 
 3. Attendre confirmation avant de continuer
+
+---
+
+## RÈGLE 12 — REPRISE CSS APRÈS RESET DE QUOTA
+
+Au début de chaque session, après lecture de la RÈGLE 8, si `storage/logs/css-fix/progress.txt` existe et contient des batches non marqués DONE :
+- Reprendre automatiquement le prochain batch non terminé
+- Ne pas redemander confirmation pour les batches déjà marqués DONE
+- Ne pas réexpliquer ce qui a déjà été fait
+
+Ordre strict : Batch 1 → 2 → 3 → 4 → 5 → 6
+
+Charte graphique officielle — source de vérité absolue pour tout le CSS :
+- Noir   : #160D0C
+- Orange : #ED5F1E
+- Jaune  : #FFB800
+- Blanc  : #FFFFFF
+- Polices : Aleppo (titres/logo) · Coco Gothic (texte principal) · Aileron (texte accentué)
+
+Toute couleur hors charte détectée = bug critique à corriger dans le batch en cours.
+
+---
 
 ## SKILL — LECTURE FICHIER AVANT MODIFICATION
 
