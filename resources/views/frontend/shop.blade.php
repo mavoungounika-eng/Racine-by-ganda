@@ -218,7 +218,7 @@
                                             RACINE BY GANDA
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#F8F6F3] border-2 border-[#8B5A2B] text-[#8B5A2B] text-[10px] font-semibold uppercase tracking-wide">
+                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FFFFFF] border-2 border-[#160D0C] text-[#160D0C] text-[10px] font-semibold uppercase tracking-wide">
                                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                                             </svg>
@@ -366,16 +366,16 @@
     
     <!-- CMS INTRO SECTION (si disponible) -->
     @if(isset($introSection) && $introSection && $introSection->is_active)
-    <section class="shop-intro-section" style="padding: 3rem 0; background: white;">
+    <section class="shop-intro-section" style="padding: 3rem 0; background: #FFFFFF;">
         <div class="container">
             @php
                 $introData = $introSection->data ?? [];
             @endphp
             @if($introData['title'] ?? false)
-            <h2 class="text-center mb-3" style="font-family: 'Cormorant Garamond', serif; color: #2C1810;">{{ $introData['title'] }}</h2>
+            <h2 class="text-center mb-3" style="font-family: 'Aleppo', 'Aileron', serif; color: #160D0C;">{{ $introData['title'] }}</h2>
             @endif
             @if($introData['content'] ?? false)
-            <div class="text-center" style="max-width: 800px; margin: 0 auto; color: #8B7355;">
+            <div class="text-center" style="max-width: 800px; margin: 0 auto; color: #160D0C;">
                 {!! $introData['content'] !!}
             </div>
             @endif
@@ -385,7 +385,7 @@
     
     <!-- CMS FOOTER SECTION (si disponible) -->
     @if(isset($footerSection) && $footerSection && $footerSection->is_active)
-    <section class="shop-footer-section" style="padding: 2rem 0; background: #F8F6F3;">
+    <section class="shop-footer-section" style="padding: 2rem 0; background: #FFFFFF;">
         <div class="container">
             @php
                 $footerData = $footerSection->data ?? [];

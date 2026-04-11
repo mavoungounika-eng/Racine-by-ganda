@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     position: relative;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    background: linear-gradient(135deg, #160D0C 0%, #ED5F1E 100%);
     overflow: hidden;
 }
 
@@ -38,21 +38,21 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(212, 165, 116, 0.15);
-    border: 1px solid rgba(212, 165, 116, 0.3);
+    background: rgba(255, 184, 0, 0.15);
+    border: 1px solid rgba(255, 184, 0, 0.3);
     padding: 0.5rem 1.25rem;
     border-radius: 30px;
     font-size: 0.8rem;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #D4A574;
+    color: #FFB800;
     margin-bottom: 2rem;
 }
 
 .hero-badge::before {
     content: '';
     width: 8px; height: 8px;
-    background: #D4A574;
+    background: #FFB800;
     border-radius: 50%;
     animation: pulse 2s infinite;
 }
@@ -63,7 +63,7 @@
 }
 
 .hero-title {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Aleppo', 'Aileron', serif;
     font-size: 4.5rem;
     font-weight: 600;
     line-height: 1.1;
@@ -71,7 +71,7 @@
 }
 
 .hero-title .highlight {
-    color: #D4A574;
+    color: #FFB800;
     position: relative;
 }
 
@@ -93,8 +93,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    background: linear-gradient(135deg, #D4A574 0%, #B8956A 100%);
-    color: #1a1a1a;
+    background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
+    color: #160D0C;
     padding: 1rem 2rem;
     border-radius: 50px;
     font-weight: 600;
@@ -104,8 +104,8 @@
 
 .btn-primary-custom:hover {
     transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(212, 165, 116, 0.3);
-    color: #1a1a1a;
+    box-shadow: 0 15px 40px rgba(255, 184, 0, 0.3);
+    color: #160D0C;
 }
 
 .btn-outline-custom {
@@ -124,7 +124,7 @@
 
 .btn-outline-custom:hover {
     background: white;
-    color: #1a1a1a;
+    color: #160D0C;
     border-color: white;
 }
 
@@ -137,7 +137,7 @@
     height: 600px;
     object-fit: cover;
     border-radius: 24px;
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 40px 80px rgba(22, 13, 12, 0.4);
 }
 
 .hero-image-float {
@@ -145,7 +145,7 @@
     background: white;
     border-radius: 16px;
     padding: 1.25rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 40px rgba(22, 13, 12, 0.2);
     animation: float 4s ease-in-out infinite;
 }
 
@@ -174,7 +174,7 @@
 
 .hero-float-icon {
     width: 48px; height: 48px;
-    background: linear-gradient(135deg, #D4A574 0%, #B8956A 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -185,20 +185,20 @@
 
 .hero-float-text h4 {
     font-size: 0.9rem;
-    color: #1a1a1a;
+    color: #160D0C;
     margin: 0;
 }
 
 .hero-float-text span {
     font-size: 0.8rem;
-    color: #888;
+    color: #160D0C;
 }
 
 /* ===== FEATURES BAR ===== */
 .features-bar {
-    background: #F8F6F3;
+    background: #FFFFFF;
     padding: 2rem 0;
-    border-bottom: 1px solid #E5DDD3;
+    border-bottom: 1px solid #FFFFFF;
 }
 
 .features-grid {
@@ -220,21 +220,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #D4A574;
+    color: #FFB800;
     font-size: 1.25rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px rgba(22, 13, 12, 0.05);
 }
 
 .feature-text h4 {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #2C1810;
+    color: #160D0C;
     margin: 0 0 0.25rem 0;
 }
 
 .feature-text span {
     font-size: 0.85rem;
-    color: #8B7355;
+    color: #160D0C;
 }
 
 /* ===== CATEGORIES SECTION ===== */
@@ -250,8 +250,8 @@
 
 .section-tag {
     display: inline-block;
-    background: rgba(212, 165, 116, 0.1);
-    color: #8B5A2B;
+    background: rgba(255, 184, 0, 0.1);
+    color: #ED5F1E;
     padding: 0.5rem 1.5rem;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -262,16 +262,16 @@
 }
 
 .section-title {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Aleppo', 'Aileron', serif;
     font-size: 3rem;
     font-weight: 600;
-    color: #2C1810;
+    color: #160D0C;
     margin-bottom: 1rem;
 }
 
 .section-subtitle {
     font-size: 1.1rem;
-    color: #8B7355;
+    color: #160D0C;
     max-width: 600px;
     margin: 0 auto;
 }
@@ -310,12 +310,12 @@
     position: absolute;
     bottom: 0; left: 0; right: 0;
     padding: 2rem;
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+    background: linear-gradient(to top, rgba(22,13,12,0.8) 0%, transparent 100%);
     color: white;
 }
 
 .category-overlay h3 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Aleppo', 'Aileron', serif;
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
@@ -329,7 +329,7 @@
 /* ===== FEATURED PRODUCTS ===== */
 .products-section {
     padding: 6rem 0;
-    background: #F8F6F3;
+    background: #FFFFFF;
 }
 
 .products-header {
@@ -343,7 +343,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: #8B5A2B;
+    color: #ED5F1E;
     font-weight: 600;
     text-decoration: none;
     transition: gap 0.3s;
@@ -351,7 +351,7 @@
 
 .view-all-link:hover {
     gap: 1rem;
-    color: #6B4423;
+    color: #160D0C;
 }
 
 .products-grid {
@@ -371,7 +371,7 @@
 
 .product-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 25px 50px rgba(22, 13, 12, 0.1);
 }
 
 .product-image {
@@ -395,7 +395,7 @@
     position: absolute;
     top: 1rem;
     left: 1rem;
-    background: #D4A574;
+    background: #FFB800;
     color: white;
     padding: 0.35rem 0.75rem;
     border-radius: 6px;
@@ -418,7 +418,7 @@
     opacity: 0;
     transform: translateY(-10px);
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(22, 13, 12, 0.1);
 }
 
 .product-card:hover .product-wishlist {
@@ -427,7 +427,7 @@
 }
 
 .product-wishlist:hover {
-    background: #D4A574;
+    background: #FFB800;
     color: white;
 }
 
@@ -437,17 +437,17 @@
 
 .product-category {
     font-size: 0.8rem;
-    color: #8B7355;
+    color: #160D0C;
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 0.5rem;
 }
 
 .product-name {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Aleppo', 'Aileron', serif;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #2C1810;
+    color: #160D0C;
     margin-bottom: 0.75rem;
 }
 
@@ -460,19 +460,19 @@
 .product-price .current {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #8B5A2B;
+    color: #ED5F1E;
 }
 
 .product-price .original {
     font-size: 1rem;
-    color: #aaa;
+    color: #160D0C;
     text-decoration: line-through;
 }
 
 /* ===== ABOUT SECTION ===== */
 .about-section {
     padding: 6rem 0;
-    background: #2C1810;
+    background: #160D0C;
     color: white;
 }
 
@@ -506,7 +506,7 @@
 }
 
 .about-content .section-tag {
-    background: rgba(212, 165, 116, 0.2);
+    background: rgba(255, 184, 0, 0.2);
 }
 
 .about-content .section-title {
@@ -530,10 +530,10 @@
 }
 
 .stat-item h3 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Aleppo', 'Aileron', serif;
     font-size: 2.5rem;
     font-weight: 600;
-    color: #D4A574;
+    color: #FFB800;
     margin-bottom: 0.5rem;
 }
 
@@ -555,7 +555,7 @@
 }
 
 .creator-card {
-    background: #F8F6F3;
+    background: #FFFFFF;
     border-radius: 20px;
     padding: 2rem;
     text-align: center;
@@ -564,7 +564,7 @@
 
 .creator-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 40px rgba(22, 13, 12, 0.1);
 }
 
 .creator-avatar {
@@ -573,26 +573,26 @@
     object-fit: cover;
     margin-bottom: 1.5rem;
     border: 4px solid white;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px rgba(22, 13, 12, 0.1);
 }
 
 .creator-card h3 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Aleppo', 'Aileron', serif;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #2C1810;
+    color: #160D0C;
     margin-bottom: 0.5rem;
 }
 
 .creator-specialty {
-    color: #8B5A2B;
+    color: #ED5F1E;
     font-size: 0.9rem;
     font-weight: 500;
     margin-bottom: 1rem;
 }
 
 .creator-bio {
-    color: #8B7355;
+    color: #160D0C;
     font-size: 0.95rem;
     line-height: 1.6;
 }
