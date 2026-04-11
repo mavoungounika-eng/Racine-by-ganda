@@ -17,38 +17,38 @@
 .kpi-card .kpi-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #2d3748;
+    color: #160D0C;
 }
 .kpi-card .kpi-label {
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #718096;
+    color: #160D0C;
 }
 .kpi-card .kpi-trend {
     font-size: 0.85rem;
     font-weight: 600;
 }
-.kpi-card .kpi-trend.up { color: #38a169; }
-.kpi-card .kpi-trend.down { color: #e53e3e; }
+.kpi-card .kpi-trend.up { color: #FFB800; }
+.kpi-card .kpi-trend.down { color: #ED5F1E; }
 
 /* Data Tables */
 .admin-table thead th {
-    background: #f7fafc;
-    border-bottom: 2px solid #e2e8f0;
+    background: #FFFFFF;
+    border-bottom: 2px solid #160D0C;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #718096;
+    color: #160D0C;
     padding: 0.75rem 1rem;
 }
 .admin-table tbody td {
     padding: 0.75rem 1rem;
     vertical-align: middle;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid #160D0C;
 }
 .admin-table tbody tr:hover {
-    background: #f7fafc;
+    background: #FFFFFF;
 }
 
 /* Status Badges */
@@ -58,17 +58,17 @@
     font-size: 0.75rem;
     font-weight: 600;
 }
-.badge-status.active { background: #c6f6d5; color: #22543d; }
-.badge-status.pending { background: #fefcbf; color: #744210; }
-.badge-status.inactive { background: #fed7d7; color: #742a2a; }
-.badge-status.suspended { background: #e2e8f0; color: #4a5568; }
+.badge-status.active { background: #FFB800; color: #160D0C; }
+.badge-status.pending { background: #ED5F1E; color: #FFFFFF; }
+.badge-status.inactive { background: #160D0C; color: #FFFFFF; }
+.badge-status.suspended { background: #FFFFFF; color: #160D0C; }
 
 /* Admin Sidebar Enhancements */
 .admin-sidebar .nav-section-title {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #a0aec0;
+    color: #FFFFFF;
     padding: 1rem 1.25rem 0.5rem;
 }
 
@@ -79,7 +79,7 @@
     align-items: center;
     padding: 0.75rem 0;
     margin-bottom: 1rem;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid #160D0C;
 }
 
 /* Quick Stats Row */
@@ -92,7 +92,7 @@
 
 /* Charts Container */
 .chart-container {
-    background: #fff;
+    background: #FFFFFF;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);

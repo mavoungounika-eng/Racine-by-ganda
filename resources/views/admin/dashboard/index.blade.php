@@ -73,13 +73,24 @@
 
 @push('styles')
 <style>
+    :root {
+        --racine-black: #160D0C;
+        --racine-orange: #ED5F1E;
+        --racine-yellow: #FFB800;
+        --racine-white: #FFFFFF;
+        --racine-font-heading: 'Aleppo', 'Aileron', serif;
+        --racine-font-body: 'Coco Gothic', 'Aileron', 'Helvetica Neue', sans-serif;
+        --racine-font-accent: 'Aileron', 'Helvetica Neue', sans-serif;
+    }
+
     .dashboard-kpi-card {
-        background: white;
+        background: #FFFFFF;
         border-radius: 12px;
         padding: 1.5rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         text-align: center;
         transition: transform 0.2s;
+        font-family: var(--racine-font-body);
     }
     .dashboard-kpi-card:hover {
         transform: translateY(-2px);
@@ -89,20 +100,23 @@
         font-size: 2rem;
         font-weight: 700;
         margin: 0.5rem 0;
+        color: #160D0C;
+        font-family: var(--racine-font-heading);
     }
     .dashboard-kpi-label {
         font-size: 0.85rem;
-        color: #6c757d;
+        color: #160D0C;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        font-family: var(--racine-font-accent);
     }
     .dashboard-kpi-variation {
         font-size: 0.9rem;
         font-weight: 600;
         margin-top: 0.5rem;
     }
-    .dashboard-kpi-variation.positive { color: #22c55e; }
-    .dashboard-kpi-variation.negative { color: #ef4444; }
+    .dashboard-kpi-variation.positive { color: #FFB800; }
+    .dashboard-kpi-variation.negative { color: #ED5F1E; }
     .status-indicator {
         width: 12px;
         height: 12px;
@@ -110,15 +124,16 @@
         display: inline-block;
         margin-right: 0.5rem;
     }
-    .status-indicator.green { background: #22c55e; }
-    .status-indicator.orange { background: #f59e0b; }
-    .status-indicator.red { background: #ef4444; }
-    .status-indicator.neutral { background: #6c757d; }
+    .status-indicator.green { background: #FFB800; }
+    .status-indicator.orange { background: #ED5F1E; }
+    .status-indicator.red { background: #160D0C; }
+    .status-indicator.neutral { background: #FFFFFF; border: 1px solid #160D0C; }
     .dashboard-section {
-        background: white;
+        background: #FFFFFF;
         border-radius: 12px;
         padding: 1.5rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        font-family: var(--racine-font-body);
     }
     .section-title {
         font-size: 1.1rem;
@@ -126,6 +141,8 @@
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
+        color: #160D0C;
+        font-family: var(--racine-font-heading);
     }
 </style>
 @endpush
