@@ -50,7 +50,7 @@
         border: 2px solid #E5DDD3;
         border-radius: 12px;
         padding: 0.75rem 1rem;
-        color: #2C1810;
+        color: #160D0C;
         transition: all 0.3s;
     }
     
@@ -77,7 +77,7 @@
     {{-- Filtre période --}}
     <div class="premium-card mb-8">
         <form method="GET" class="flex items-center gap-4 flex-wrap">
-            <label class="text-sm font-semibold text-[#2C1810]">Période:</label>
+            <label class="text-sm font-semibold text-[#160D0C]">Période:</label>
             <select name="period" 
                     onchange="this.form.submit()"
                     class="premium-select">
@@ -170,7 +170,7 @@
 
     {{-- Graphique : Évolution des ventes --}}
     <div class="premium-card mb-8">
-        <h3 class="text-xl font-bold text-[#2C1810] mb-6" style="font-family: 'Libre Baskerville', serif;">
+        <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
             <i class="fas fa-chart-area text-[#ED5F1E] mr-2"></i>
             Évolution des ventes
         </h3>
@@ -183,7 +183,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {{-- Top produits --}}
         <div class="premium-card">
-            <h3 class="text-xl font-bold text-[#2C1810] mb-6" style="font-family: 'Libre Baskerville', serif;">
+            <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
                 <i class="fas fa-trophy text-[#ED5F1E] mr-2"></i>
                 Top produits (par CA)
             </h3>
@@ -197,7 +197,7 @@
                         <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#ED5F1E] to-[#FFB800] text-white font-bold text-sm">
                             {{ $index + 1 }}
                         </span>
-                        <span class="text-sm font-semibold text-[#2C1810]">{{ $product['name'] }}</span>
+                        <span class="text-sm font-semibold text-[#160D0C]">{{ $product['name'] }}</span>
                     </div>
                     <span class="text-sm font-bold text-[#ED5F1E]">{{ number_format($product['revenue'], 0, ',', ' ') }} F</span>
                 </div>
@@ -207,7 +207,7 @@
 
         {{-- Répartition statuts commandes --}}
         <div class="premium-card">
-            <h3 class="text-xl font-bold text-[#2C1810] mb-6" style="font-family: 'Libre Baskerville', serif;">
+            <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
                 <i class="fas fa-chart-pie text-[#ED5F1E] mr-2"></i>
                 Répartition des statuts
             </h3>

@@ -104,10 +104,15 @@
     font-size: 2.5rem;
     font-weight: 700;
     color: var(--racine-black);
-    font-family: 'Playfair Display', 'Libre Baskerville', serif;
+    font-family: var(--font-heading, 'Cormorant Garamond', 'Aileron', serif);
     line-height: 1.2;
     margin: 0.5rem 0;
 }
+
+/* Stat value color variants */
+.creator-stat-value--paid    { color: #2563EB; }
+.creator-stat-value--shipped { color: #7C3AED; }
+.creator-stat-value--done    { color: #0D9E88; }
 
 .creator-stat-label,
 .stat-label {
@@ -546,4 +551,109 @@
         padding: 0.75rem 1.5rem;
         font-size: 0.875rem;
     }
+}
+
+/* ===== STAT ICON (orders page) ===== */
+
+.creator-stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.creator-stat-icon--paid    { background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); }
+.creator-stat-icon--shipped { background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); }
+.creator-stat-icon--done    { background: linear-gradient(135deg, #0D9E88 0%, #047857 100%); }
+
+/* ===== TABLE TYPOGRAPHY HELPERS ===== */
+
+.creator-table-id {
+    font-weight: 700;
+    color: var(--racine-black);
+    margin: 0;
+}
+
+.creator-table-muted {
+    color: #6B5E55;
+    margin: 0;
+}
+
+.creator-table-name {
+    font-weight: 600;
+    color: var(--racine-black);
+    margin: 0;
+}
+
+.creator-table-amount {
+    font-weight: 700;
+    color: var(--racine-orange);
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+/* ===== EMPTY STATE MODIFIERS ===== */
+
+.creator-empty-state__icon {
+    font-size: 3rem;
+    color: #C9B8AD;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.creator-empty-state__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--racine-black);
+    margin-bottom: 0.25rem;
+}
+
+.creator-empty-state__text {
+    color: #6B5E55;
+    margin: 0;
+}
+
+/* ===== BUTTON MODIFIERS ===== */
+
+.creator-btn--muted {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.creator-btn--muted:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== FORM LABEL ===== */
+
+.creator-form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--racine-black);
+}
+
+/* ===== TABLE PAGINATION ===== */
+
+.creator-table-pagination {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(212, 165, 116, 0.2);
+    background: linear-gradient(90deg, #FAFAF9 0%, white 100%);
+}
+
+/* ===== ACTION BTN VARIANT ===== */
+
+.creator-action-btn--view {
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563EB;
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.creator-action-btn--view:hover {
+    background: rgba(37, 99, 235, 0.15);
+    color: #1D4ED8;
 }

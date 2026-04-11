@@ -24,7 +24,7 @@
     {{-- En-tête --}}
     <div class="d-flex align-items-start justify-content-between mb-3">
         <div>
-            <h3 class="mb-1" style="font-family: 'Playfair Display', serif; font-weight: 700; color: #2C1810; font-size: 1.5rem;">
+            <h3 class="mb-1" style="font-family: var(--font-heading, 'Cormorant Garamond', serif); font-weight: 700; color: #160D0C; font-size: 1.5rem;">
                 <i class="fas fa-rocket text-orange-500 me-2" style="color: var(--racine-orange);"></i>
                 Complétez votre profil
             </h3>
@@ -34,7 +34,7 @@
         </div>
         <div class="text-end">
             <div class="h2 mb-0 font-weight-bold" 
-                 style="font-family: 'Playfair Display', serif; color: {{ $levelColor }}; font-weight: 900;">
+                 style="font-family: var(--font-heading, 'Cormorant Garamond', serif); color: {{ $levelColor }}; font-weight: 900;">
                 {{ round($percentage) }}%
             </div>
             <span class="badge" style="background-color: {{ $levelColor }}; color: white; font-size: 0.7rem; text-transform: uppercase;">
@@ -62,7 +62,7 @@
                 <div class="d-flex align-items-start gap-3 p-3 rounded-3 mb-3" style="background-color: {{ $alertBg }}; border: 1px solid {{ $alertColor }}44;">
                     <span class="h4 mb-0 me-3">{{ $alert['icon'] }}</span>
                     <div class="flex-grow-1">
-                        <h5 class="mb-1 font-weight-bold" style="color: #2C1810; font-size: 1rem;">{{ $alert['title'] }}</h5>
+                        <h5 class="mb-1 font-weight-bold" style="color: #160D0C; font-size: 1rem;">{{ $alert['title'] }}</h5>
                         <p class="mb-0" style="color: #5D4037; font-size: 0.9rem;">{{ $alert['message'] }}</p>
                     </div>
                     @if($alert['action'])
@@ -85,14 +85,14 @@
     
     @if($incompleteSteps->count() > 0)
         <div class="mt-3 pt-3 border-top" style="border-top: 2px solid #E5DDD3 !important;">
-            <h6 class="text-uppercase font-weight-bold mb-3" style="font-size: 0.75rem; letter-spacing: 1px; color: #2C1810;">Prochaines étapes :</h6>
+            <h6 class="text-uppercase font-weight-bold mb-3" style="font-size: 0.75rem; letter-spacing: 1px; color: #160D0C;">Prochaines étapes :</h6>
             <div class="list-unstyled">
                 @foreach($incompleteSteps as $step)
                     <div class="d-flex align-items-center mb-2" style="font-size: 0.9rem;">
                         <div class="me-3 d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #8B7355;">
                             <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #8B7355;"></div>
                         </div>
-                        <span style="color: #2C1810; font-weight: 500;">{{ $step['title'] }}</span>
+                        <span style="color: #160D0C; font-weight: 500;">{{ $step['title'] }}</span>
                         <span class="ms-auto text-muted" style="font-weight: 700; color: #8B7355 !important;">+{{ $step['points'] }} pts</span>
                     </div>
                 @endforeach

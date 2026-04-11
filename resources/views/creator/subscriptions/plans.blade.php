@@ -16,7 +16,7 @@
     }
     
     .comparison-table th {
-        background: linear-gradient(135deg, #2C1810 0%, #3D2418 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #3D2418 100%);
         color: white;
         padding: 1.5rem;
         font-weight: 600;
@@ -42,7 +42,7 @@
     .feature-category {
         background: #F8F6F3;
         font-weight: 700;
-        color: #2C1810;
+        color: #160D0C;
         text-align: left !important;
         padding: 1rem 1.5rem !important;
     }

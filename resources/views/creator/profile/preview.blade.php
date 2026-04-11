@@ -12,7 +12,7 @@
     
     .creator-banner {
         height: 300px;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #1a0f09 100%);
         position: relative;
         overflow: hidden;
     }
@@ -56,7 +56,7 @@
                 {{-- Info --}}
                 <div class="flex-1 text-center md:text-left">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                        <h1 class="text-3xl md:text-4xl font-bold text-[#2C1810]" style="font-family: 'Cormorant Garamond', serif;">
+                        <h1 class="text-3xl md:text-4xl font-bold text-[#160D0C]" style="font-family: 'Cormorant Garamond', serif;">
                             {{ $profile->brand_name }}
                         </h1>
                         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold w-fit mx-auto md:mx-0">
@@ -138,7 +138,7 @@
         </div>
 
         <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold text-[#2C1810]" style="font-family: 'Cormorant Garamond', serif;">
+            <h2 class="text-2xl font-bold text-[#160D0C]" style="font-family: 'Cormorant Garamond', serif;">
                 Vos Produits
             </h2>
         </div>
@@ -197,7 +197,7 @@
                             <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-1">
                                 {{ $product->category?->name }}
                             </p>
-                            <h3 class="text-lg font-semibold text-[#2C1810] mb-2 line-clamp-2 group-hover:text-[#ED5F1E] transition">
+                            <h3 class="text-lg font-semibold text-[#160D0C] mb-2 line-clamp-2 group-hover:text-[#ED5F1E] transition">
                                 {{ $product->title }}
                             </h3>
                             <div class="flex items-center justify-between">

@@ -20,7 +20,7 @@
         {{-- SECTION 1 : APERÇU PUBLIC --}}
         <div class="creator-card mb-4" id="apercu">
             <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
-                <h3 class="mb-0" style="font-family: 'Playfair Display', serif; font-weight: 700; color: #2C1810;">
+                <h3 class="mb-0" style="font-family: var(--font-heading, 'Cormorant Garamond', serif); font-weight: 700; color: #160D0C;">
                     <i class="fas fa-eye text-orange-500 me-2"></i>
                     Aperçu Public
                 </h3>
@@ -50,7 +50,7 @@
         {{-- SECTION 2 : INFORMATIONS BOUTIQUE --}}
         <div class="creator-card mb-4" id="boutique">
             <div class="mb-4 pb-3 border-bottom">
-                <h3 class="mb-0" style="font-family: 'Playfair Display', serif; font-weight: 700; color: #2C1810;">
+                <h3 class="mb-0" style="font-family: var(--font-heading, 'Cormorant Garamond', serif); font-weight: 700; color: #160D0C;">
                     <i class="fas fa-store text-orange-500 me-2"></i>
                     Informations Boutique
                 </h3>
@@ -146,7 +146,7 @@
         {{-- SECTION 3 : IDENTITÉ VENDEUR --}}
         <div class="creator-card mb-4" id="identite">
             <div class="mb-4 pb-3 border-bottom">
-                <h3 class="mb-0" style="font-family: 'Playfair Display', serif; font-weight: 700; color: #2C1810;">
+                <h3 class="mb-0" style="font-family: var(--font-heading, 'Cormorant Garamond', serif); font-weight: 700; color: #160D0C;">
                     <i class="fas fa-user text-orange-500 me-2"></i>
                     Photo & Identité
                 </h3>
@@ -206,7 +206,7 @@
         {{-- SECTION 4 : RÉSEAUX SOCIAUX --}}
         <div class="creator-card mb-4" id="social">
             <div class="mb-4 pb-3 border-bottom">
-                <h3 class="mb-0" style="font-family: 'Playfair Display', serif; font-weight: 700; color: #2C1810;">
+                <h3 class="mb-0" style="font-family: var(--font-heading, 'Cormorant Garamond', serif); font-weight: 700; color: #160D0C;">
                     <i class="fas fa-share-alt text-orange-500 me-2"></i>
                     Réseaux Sociaux
                 </h3>

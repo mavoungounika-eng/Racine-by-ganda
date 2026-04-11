@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{{ asset('css/creator-premium.css') }}">
 <style>
     .profile-preview-banner {
-        background: linear-gradient(135deg, #2C1810 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #8B5A2B 100%);
         padding: 0;
         border-radius: 24px 24px 0 0;
         position: relative;
