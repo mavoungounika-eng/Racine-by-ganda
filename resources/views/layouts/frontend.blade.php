@@ -33,13 +33,13 @@
     <meta name="robots" content="@yield('robots', 'index, follow')">
     <meta name="theme-color" content="#ED5F1E">
     
-    {{-- Fonts --}}
-    {{-- Typographies Officielles RACINE --}}
-    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    {{-- Bootstrap 4 --}}
-    <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
-    
+    {{-- Fonts RACINE --}}
+    {{-- Aileron (accentué, disponible Google Fonts) --}}
+    {{-- Cormorant Garamond (fallback Aleppo) + Nunito (fallback Coco Gothic) --}}
+    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    {{-- Bootstrap 5 chargé via Vite (app.scss) — Bootstrap 4 legacy supprimé --}}
+
     {{-- RACINE Design System --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     
@@ -65,9 +65,9 @@
             --racine-orange: #ED5F1E;
             --racine-yellow: #FFB800;
             --racine-white: #FFFFFF;
-            --racine-font-heading: 'Aleppo', 'Aileron', serif;
-            --racine-font-body: 'Coco Gothic', 'Aileron', 'Helvetica Neue', sans-serif;
-            --racine-font-accent: 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-heading: 'Aleppo', 'Cormorant Garamond', 'Aileron', serif;
+            --racine-font-body: 'Coco Gothic', 'Nunito', 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-accent: 'Aileron', 'Nunito', 'Helvetica Neue', sans-serif;
         }
 
         body.racine-frontend-layout {
