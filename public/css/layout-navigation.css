@@ -16,7 +16,7 @@ html {
 
 /* ===== ANNOUNCEMENT BAR ===== */
 .announcement-bar {
-    background: linear-gradient(90deg, #1c1412 0%, #2c1a18 50%, #1c1412 100%);
+    background: linear-gradient(90deg, #160D0C 0%, #160D0C 50%, #160D0C 100%);
     padding: 8px 0;
     font-size: 0.75rem;
     font-weight: 600;
@@ -185,7 +185,7 @@ html {
 }
 
 .nav-icon-btn-primary:hover {
-    background: #ff7033;
+    background: #ED5F1E;
     color: white;
     box-shadow: 0 8px 25px rgba(237, 95, 30, 0.4);
 }
@@ -245,12 +245,12 @@ html {
     }
 
     .navbar-racine {
-        background: #1c1412 !important;
+        background: #160D0C !important;
         padding: 0.75rem 0;
     }
 
     #mobile-menu {
-        background: #1c1412;
+        background: #160D0C;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 

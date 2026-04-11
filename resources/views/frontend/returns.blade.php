@@ -5,7 +5,7 @@
 @push('styles')
 <style>
     .returns-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -28,12 +28,12 @@
     
     .returns-content {
         padding: 4rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     /* GUARANTEE */
     .guarantee-banner {
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 24px;
         padding: 3rem;
         text-align: center;
@@ -83,8 +83,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -98,7 +98,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .steps-grid {
@@ -115,7 +115,7 @@
         left: 15%;
         right: 15%;
         height: 2px;
-        background: linear-gradient(90deg, #D4A574, #8B5A2B);
+        background: linear-gradient(90deg, #FFB800, #160D0C);
     }
     
     .step-card {
@@ -130,7 +130,7 @@
     .step-number {
         width: 60px;
         height: 60px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -145,12 +145,12 @@
     .step-card h3 {
         font-size: 1.15rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
     }
     
     .step-card p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -172,7 +172,7 @@
     .condition-column h3 {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
@@ -184,7 +184,7 @@
     }
     
     .condition-column h3 i.fa-times-circle {
-        color: #EF4444;
+        color: #DC2626;
     }
     
     .condition-column ul {
@@ -197,8 +197,8 @@
         align-items: flex-start;
         gap: 0.75rem;
         padding: 0.75rem 0;
-        color: #5C4A3D;
-        border-bottom: 1px solid #E5DDD3;
+        color: rgba(22,13,12,0.6);
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .condition-column li:last-child {
@@ -214,7 +214,7 @@
     }
     
     .refuse-list li i {
-        color: #EF4444;
+        color: #DC2626;
     }
     
     /* REFUND */
@@ -232,7 +232,7 @@
     }
     
     .refund-card {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 16px;
         padding: 2rem;
         text-align: center;
@@ -241,25 +241,25 @@
     .refund-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(139, 90, 43, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(237, 95, 30, 0.08) 0%, rgba(237, 95, 30, 0.08) 100%);
         border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.25rem;
         font-size: 1.75rem;
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .refund-card h3 {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .refund-card p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -272,7 +272,7 @@
     }
     
     .faq-item {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 16px;
         margin-bottom: 1rem;
         overflow: hidden;
@@ -288,24 +288,24 @@
     }
     
     .faq-question:hover {
-        background: rgba(212, 165, 116, 0.1);
+        background: rgba(237, 95, 30, 0.08);
     }
     
     .faq-question h4 {
         font-size: 1.05rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin: 0;
     }
     
     .faq-question i {
-        color: #D4A574;
+        color: #FFB800;
         transition: transform 0.3s;
     }
     
     .faq-answer {
         padding: 0 1.5rem 1.5rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         display: none;
     }
@@ -325,7 +325,7 @@
     }
     
     .cta-box {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         border-radius: 24px;
         padding: 3rem;
         color: white;
@@ -347,7 +347,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -357,7 +357,7 @@
     
     .btn-cta:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(212, 165, 116, 0.3);
+        box-shadow: 0 15px 40px rgba(255, 184, 0, 0.3);
         color: white;
     }
     

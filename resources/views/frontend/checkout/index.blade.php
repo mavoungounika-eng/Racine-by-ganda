@@ -41,7 +41,7 @@
     {{-- En-tête avec stepper --}}
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="mb-4" style="color: #1c1412; font-weight: 700; letter-spacing: 0.05em;">Finaliser ma commande</h1>
+            <h1 class="mb-4" style="color: #160D0C; font-weight: 700; letter-spacing: 0.05em;">Finaliser ma commande</h1>
             
             {{-- Stepper visuel --}}
             <div class="checkout-stepper mb-4">
@@ -369,7 +369,7 @@
         max-width: 600px;
         margin: 0 auto;
         padding: 1.5rem;
-        background: #f8f9fa;
+        background: rgba(22,13,12,0.05);
         border-radius: 12px;
     }
 
@@ -388,28 +388,28 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #e9ecef;
-        color: #6c757d;
+        background: rgba(22,13,12,0.1);
+        color: rgba(22,13,12,0.5);
         font-size: 1.2rem;
         margin-bottom: 0.5rem;
         transition: all 0.3s;
     }
 
     .stepper-item.active .stepper-icon {
-        background: linear-gradient(135deg, #ED5F1E 0%, #D4A574 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
         color: white;
         box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);
     }
 
     .stepper-item.completed .stepper-icon {
-        background: #28a745;
+        background: #22C55E;
         color: white;
     }
 
     .stepper-label {
         font-size: 0.85rem;
         font-weight: 600;
-        color: #6c757d;
+        color: rgba(22,13,12,0.5);
         text-align: center;
     }
 
@@ -418,20 +418,20 @@
     }
 
     .stepper-item.completed .stepper-label {
-        color: #28a745;
+        color: #22C55E;
     }
 
     .stepper-line {
         flex: 1;
         height: 2px;
-        background: #e9ecef;
+        background: rgba(22,13,12,0.1);
         margin: 0 1rem;
         position: relative;
         top: -25px;
     }
 
     .stepper-item.completed + .stepper-line {
-        background: #28a745;
+        background: #22C55E;
     }
 
     /* Amélioration des cards */
@@ -448,7 +448,7 @@
 
     /* Bouton submit amélioré */
     .checkout-submit-btn {
-        background: linear-gradient(135deg, #ED5F1E 0%, #D4A574 100%) !important;
+        background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%) !important;
         border: none !important;
         padding: 1rem !important;
         font-weight: 600 !important;

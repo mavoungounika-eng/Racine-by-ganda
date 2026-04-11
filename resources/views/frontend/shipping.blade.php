@@ -5,7 +5,7 @@
 @push('styles')
 <style>
     .shipping-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -28,7 +28,7 @@
     
     .shipping-content {
         padding: 4rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     /* OPTIONS */
@@ -43,8 +43,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -58,7 +58,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .options-grid {
@@ -83,14 +83,14 @@
     }
     
     .option-card.popular {
-        border: 2px solid #D4A574;
+        border: 2px solid #FFB800;
     }
     
     .popular-badge {
         position: absolute;
         top: 1rem;
         right: 1rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         padding: 0.4rem 1rem;
         border-radius: 20px;
@@ -101,46 +101,46 @@
     .option-icon {
         width: 80px;
         height: 80px;
-        background: linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(139, 90, 43, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(237, 95, 30, 0.08) 0%, rgba(237, 95, 30, 0.08) 100%);
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.5rem;
         font-size: 2rem;
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .option-card h3 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .option-price {
         font-size: 2rem;
         font-weight: 700;
-        color: #8B5A2B;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .option-price span {
         font-size: 0.9rem;
         font-weight: 400;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     .option-delay {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         padding: 0.5rem 1rem;
         border-radius: 20px;
         font-size: 0.9rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         margin-bottom: 1rem;
     }
     
@@ -148,14 +148,14 @@
         text-align: left;
         margin-top: 1.5rem;
         padding-top: 1.5rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .option-features li {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         margin-bottom: 0.75rem;
         font-size: 0.95rem;
     }
@@ -178,18 +178,18 @@
     }
     
     .zones-table th {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         padding: 1.25rem;
         text-align: left;
         font-weight: 600;
-        color: #2C1810;
-        border-bottom: 2px solid #E5DDD3;
+        color: #160D0C;
+        border-bottom: 2px solid rgba(22,13,12,0.1);
     }
     
     .zones-table td {
         padding: 1.25rem;
-        border-bottom: 1px solid #E5DDD3;
-        color: #5C4A3D;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
+        color: rgba(22,13,12,0.6);
     }
     
     .zones-table tr:last-child td {
@@ -219,7 +219,7 @@
     }
     
     .faq-item {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 16px;
         padding: 1.5rem;
     }
@@ -227,7 +227,7 @@
     .faq-item h4 {
         font-size: 1.05rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
@@ -235,11 +235,11 @@
     }
     
     .faq-item h4 i {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .faq-item p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.7;
         font-size: 0.95rem;
     }
@@ -251,7 +251,7 @@
     }
     
     .cta-box {
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 24px;
         padding: 3rem;
         color: white;
@@ -274,7 +274,7 @@
         gap: 0.75rem;
         padding: 1rem 2rem;
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border-radius: 50px;
         text-decoration: none;
         font-weight: 600;
@@ -284,7 +284,7 @@
     .btn-cta:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        color: #2C1810;
+        color: #160D0C;
     }
     
     @media (max-width: 1024px) {

@@ -25,14 +25,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(212, 165, 116, 0.2);
+        background: rgba(237, 95, 30, 0.1);
         border: 1px solid rgba(212, 165, 116, 0.4);
         padding: 0.6rem 1.5rem;
         border-radius: 30px;
         font-size: 0.85rem;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 1.5rem;
     }
     
@@ -45,7 +45,7 @@
     }
     
     .hero-title .highlight {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .hero-description {
@@ -66,7 +66,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -76,13 +76,13 @@
     
     .btn-primary-hero:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(212, 165, 116, 0.3);
+        box-shadow: 0 15px 40px rgba(255, 184, 0, 0.3);
         color: white;
     }
     
     /* INFO BAR */
     .info-bar {
-        background: #D4A574;
+        background: #FFB800;
         padding: 1.5rem 0;
     }
     
@@ -112,7 +112,7 @@
     /* ABOUT SHOWROOM */
     .about-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .about-grid {
@@ -146,8 +146,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -161,13 +161,13 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.5rem;
         line-height: 1.2;
     }
     
     .about-text p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-size: 1.1rem;
         line-height: 1.9;
         margin-bottom: 1.5rem;
@@ -184,11 +184,11 @@
         align-items: center;
         gap: 1rem;
         padding: 0.75rem 0;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
     }
     
     .features-list i {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 1.25rem;
     }
     
@@ -230,7 +230,7 @@
     .collection-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(44, 24, 16, 0.9) 0%, transparent 60%);
+        background: linear-gradient(to top, rgba(22,13,12, 0.9) 0%, transparent 60%);
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
@@ -240,7 +240,7 @@
     
     .collection-tag {
         display: inline-block;
-        background: #D4A574;
+        background: #FFB800;
         color: white;
         padding: 0.3rem 0.75rem;
         border-radius: 20px;
@@ -265,7 +265,7 @@
     /* VISIT INFO */
     .visit-section {
         padding: 6rem 0;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     }
     
     .visit-grid {
@@ -280,7 +280,7 @@
     }
     
     .visit-content .section-tag {
-        background: rgba(212, 165, 116, 0.2);
+        background: rgba(237, 95, 30, 0.1);
     }
     
     .visit-content .section-title {
@@ -309,12 +309,12 @@
     .visit-icon {
         width: 50px;
         height: 50px;
-        background: rgba(212, 165, 116, 0.2);
+        background: rgba(237, 95, 30, 0.1);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #D4A574;
+        color: #FFB800;
         font-size: 1.25rem;
         flex-shrink: 0;
     }
@@ -334,7 +334,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -345,7 +345,7 @@
     
     .btn-book:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(212, 165, 116, 0.3);
+        box-shadow: 0 15px 40px rgba(255, 184, 0, 0.3);
         color: white;
     }
     
@@ -365,7 +365,7 @@
     /* FAQ */
     .faq-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .faq-grid {
@@ -390,23 +390,23 @@
     }
     
     .faq-question:hover {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .faq-question h4 {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .faq-question i {
-        color: #D4A574;
+        color: #FFB800;
         transition: transform 0.3s;
     }
     
     .faq-answer {
         padding: 0 1.5rem 1.5rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         line-height: 1.7;
         display: none;
     }

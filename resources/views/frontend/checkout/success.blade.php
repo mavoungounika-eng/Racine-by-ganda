@@ -4,8 +4,8 @@
 <div class="container py-5">
     {{-- Message de succès --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-left: 4px solid #28a745; background: #f8f9fa; border-radius: 8px;">
-            <i class="fas fa-check-circle mr-2" style="color: #28a745; font-size: 1.2rem;"></i>
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-left: 4px solid #22C55E; background: rgba(22,13,12,0.05); border-radius: 8px;">
+            <i class="fas fa-check-circle mr-2" style="color: #22C55E; font-size: 1.2rem;"></i>
             <strong>{{ session('success') }}</strong>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -15,8 +15,8 @@
 
     {{-- Message d'erreur (au cas où) --}}
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-left: 4px solid #dc3545; background: #f8f9fa; border-radius: 8px;">
-            <i class="fas fa-exclamation-circle mr-2" style="color: #dc3545; font-size: 1.2rem;"></i>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-left: 4px solid #DC2626; background: rgba(22,13,12,0.05); border-radius: 8px;">
+            <i class="fas fa-exclamation-circle mr-2" style="color: #DC2626; font-size: 1.2rem;"></i>
             <strong>{{ session('error') }}</strong>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>

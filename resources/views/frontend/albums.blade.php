@@ -5,7 +5,7 @@
 @push('styles')
 <style>
     .albums-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -26,7 +26,7 @@
     
     .albums-section {
         padding: 4rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         width: 100%;
     }
     
@@ -123,7 +123,7 @@
         position: absolute;
         top: 1rem;
         left: 1rem;
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         padding: 0.35rem 0.85rem;
         border-radius: 20px;
@@ -139,12 +139,12 @@
     .album-content h3 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.4rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .album-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         margin-bottom: 1rem;
         line-height: 1.6;
@@ -155,11 +155,11 @@
         align-items: center;
         justify-content: space-between;
         padding-top: 1rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .album-meta .date {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.85rem;
         display: flex;
         align-items: center;
@@ -216,7 +216,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         padding: 0.4rem 1rem;
         border-radius: 20px;
@@ -229,12 +229,12 @@
     .featured-album-content h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
     }
     
     .featured-album-content p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         margin-bottom: 1.5rem;
         line-height: 1.7;
     }
@@ -244,7 +244,7 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.85rem 1.5rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border-radius: 30px;
         text-decoration: none;
@@ -254,7 +254,7 @@
     }
     
     .btn-album:hover {
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         transform: translateY(-2px);
     }
@@ -291,7 +291,7 @@
 </section>
 
 <!-- FEATURED ALBUM -->
-<section style="padding: 4rem 0; background: #F8F6F3;">
+<section style="padding: 4rem 0; background: rgba(22,13,12,0.05);">
     <div class="container">
         <div class="featured-album">
             <div class="featured-album-gallery">

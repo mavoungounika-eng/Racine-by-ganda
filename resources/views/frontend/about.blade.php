@@ -7,7 +7,7 @@
     /* HERO */
     .about-hero {
         min-height: 70vh;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         display: flex;
         align-items: center;
         position: relative;
@@ -40,14 +40,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(212, 165, 116, 0.15);
-        border: 1px solid rgba(212, 165, 116, 0.3);
+        background: rgba(237, 95, 30, 0.08);
+        border: 1px solid rgba(255, 184, 0, 0.3);
         padding: 0.5rem 1.25rem;
         border-radius: 30px;
         font-size: 0.8rem;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 1.5rem;
     }
     
@@ -60,7 +60,7 @@
     }
     
     .hero-title .highlight {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .hero-description {
@@ -97,19 +97,19 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 700;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 0.25rem;
     }
     
     .hero-img-overlay span {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
     /* STORY SECTION */
     .story-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .story-grid {
@@ -143,8 +143,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -158,13 +158,13 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.5rem;
         line-height: 1.2;
     }
     
     .story-text p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-size: 1.1rem;
         line-height: 1.9;
         margin-bottom: 1.5rem;
@@ -190,7 +190,7 @@
     .value-card {
         text-align: center;
         padding: 2rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 20px;
         transition: all 0.3s;
     }
@@ -203,7 +203,7 @@
     .value-icon {
         width: 80px;
         height: 80px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 20px;
         display: flex;
         align-items: center;
@@ -217,12 +217,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
     }
     
     .value-card p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -230,7 +230,7 @@
     /* TEAM */
     .team-section {
         padding: 6rem 0;
-        background: #2C1810;
+        background: #160D0C;
     }
     
     .team-header {
@@ -239,7 +239,7 @@
     }
     
     .team-header .section-tag {
-        background: rgba(212, 165, 116, 0.2);
+        background: rgba(237, 95, 30, 0.1);
     }
     
     .team-header .section-title {
@@ -300,7 +300,7 @@
     }
     
     .team-info span {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 0.9rem;
     }
     
@@ -314,7 +314,7 @@
     /* TIMELINE */
     .timeline-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .timeline-header {
@@ -335,7 +335,7 @@
         top: 0;
         bottom: 0;
         width: 2px;
-        background: #D4A574;
+        background: #FFB800;
         transform: translateX(-50%);
     }
     
@@ -358,7 +358,7 @@
     
     .timeline-year {
         display: inline-block;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         padding: 0.35rem 1rem;
         border-radius: 20px;
@@ -371,12 +371,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.25rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .timeline-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -384,8 +384,8 @@
     .timeline-dot {
         width: 20px;
         height: 20px;
-        background: #D4A574;
-        border: 4px solid #F8F6F3;
+        background: #FFB800;
+        border: 4px solid rgba(22,13,12,0.05);
         border-radius: 50%;
         position: absolute;
         left: 50%;
@@ -395,7 +395,7 @@
     /* CTA */
     .cta-section {
         padding: 5rem 0;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         text-align: center;
     }
     
@@ -422,7 +422,7 @@
         gap: 0.75rem;
         padding: 1rem 2.5rem;
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border-radius: 50px;
         font-weight: 600;
         text-decoration: none;
@@ -432,7 +432,7 @@
     .btn-cta:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        color: #2C1810;
+        color: #160D0C;
     }
     
     @media (max-width: 1024px) {

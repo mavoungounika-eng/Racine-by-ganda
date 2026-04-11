@@ -9,28 +9,28 @@
 :root {
     /* ===== COULEURS OFFICIELLES RACINE ===== */
     --racine-black: #160D0C;
-    --racine-black-soft: #2A1A18;
-    --racine-black-lighter: #3D2D2B;
+    --racine-black-soft: #160D0C;
+    --racine-black-lighter: #160D0C;
 
     --racine-orange: #ED5F1E;
-    --racine-orange-dark: #C94D15;
-    --racine-orange-light: #F17A45;
-    --racine-orange-ultra-light: #FFF5F0;
+    --racine-orange-dark: #ED5F1E;
+    --racine-orange-light: #ED5F1E;
+    --racine-orange-ultra-light: rgba(237, 95, 30, 0.05);
 
     --racine-yellow: #FFB800;
-    --racine-yellow-light: #FFC933;
-    --racine-yellow-dark: #CC9300;
-    --racine-yellow-ultra-light: #FFF9E6;
+    --racine-yellow-light: #FFB800;
+    --racine-yellow-dark: #FFB800;
+    --racine-yellow-ultra-light: rgba(255, 184, 0, 0.08);
 
     --racine-white: #FFFFFF;
-    --racine-cream: #FFF8F0;
-    --racine-beige: #F5E6D3;
+    --racine-cream: rgba(237, 95, 30, 0.05);
+    --racine-beige: rgba(255, 184, 0, 0.1);
 
     /* Couleurs supplémentaires pour l'espace créateur */
-    --racine-brown: #8B7355;
-    --racine-beige-light: #F8F6F3;
-    --racine-border: #E5DDD3;
-    --racine-gold: #D4A574;
+    --racine-brown: rgba(22,13,12,0.5);
+    --racine-beige-light: rgba(22,13,12,0.05);
+    --racine-border: rgba(22,13,12,0.1);
+    --racine-gold: #FFB800;
 
     /* ===== COULEURS BOOTSTRAP OVERRIDE ===== */
     --primary: #ED5F1E;
@@ -40,10 +40,10 @@
     --dark: #160D0C;
     --dark-rgb: 22, 13, 12;
 
-    --success: #2ECC71;
+    --success: #22C55E;
     --warning: #FFB800;
-    --danger: #E74C3C;
-    --info: #3498DB;
+    --danger: #DC2626;
+    --info: #ED5F1E;
 
     /* ===== TYPOGRAPHIE OFFICIELLE ===== */
     --font-heading: 'Aleppo', 'Georgia', serif;

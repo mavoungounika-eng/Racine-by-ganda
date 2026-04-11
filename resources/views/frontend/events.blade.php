@@ -5,7 +5,7 @@
 @push('styles')
 <style>
     .events-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -38,7 +38,7 @@
     
     .events-section {
         padding: 5rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .section-header {
@@ -49,14 +49,14 @@
     .section-header h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .section-header .line {
         width: 60px;
         height: 3px;
-        background: linear-gradient(90deg, #D4A574, #ED5F1E);
+        background: linear-gradient(90deg, #FFB800, #ED5F1E);
         margin: 0 auto;
     }
     
@@ -117,7 +117,7 @@
     .event-date-badge .month {
         font-size: 0.75rem;
         text-transform: uppercase;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         letter-spacing: 1px;
     }
     
@@ -125,7 +125,7 @@
         position: absolute;
         top: 1rem;
         right: 1rem;
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         padding: 0.35rem 0.85rem;
         border-radius: 20px;
@@ -141,7 +141,7 @@
     .event-content h3 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.4rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
     }
     
@@ -156,12 +156,12 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
     .event-meta i {
-        color: #D4A574;
+        color: #FFB800;
         width: 18px;
     }
     
@@ -170,7 +170,7 @@
         align-items: center;
         justify-content: space-between;
         padding-top: 1rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .event-price {
@@ -185,7 +185,7 @@
     
     .btn-event {
         padding: 0.6rem 1.25rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border-radius: 25px;
         text-decoration: none;
@@ -195,7 +195,7 @@
     }
     
     .btn-event:hover {
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
     }
     
@@ -232,7 +232,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         padding: 0.4rem 1rem;
         border-radius: 20px;
@@ -245,12 +245,12 @@
     .featured-event-content h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.25rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
     }
     
     .featured-event-content p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         margin-bottom: 1.5rem;
         line-height: 1.7;
     }
@@ -263,7 +263,7 @@
     
     .countdown-item {
         text-align: center;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         padding: 1rem;
         border-radius: 12px;
         min-width: 70px;
@@ -277,7 +277,7 @@
     
     .countdown-item .label {
         font-size: 0.75rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         text-transform: uppercase;
     }
     
@@ -317,7 +317,7 @@
 </section>
 
 <!-- FEATURED EVENT -->
-<section style="padding: 4rem 0; background: #F8F6F3;">
+<section style="padding: 4rem 0; background: rgba(22,13,12,0.05);">
     <div class="container">
         <div class="featured-event">
             <div class="featured-event-image">

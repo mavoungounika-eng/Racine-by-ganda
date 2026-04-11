@@ -92,7 +92,7 @@
     /* ===== PLANS SECTION ===== */
     .plans-section {
         padding: 5rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .plans-container {
@@ -147,7 +147,7 @@
         text-align: center;
         margin-bottom: 2rem;
         padding-bottom: 2rem;
-        border-bottom: 2px solid #F8F6F3;
+        border-bottom: 2px solid rgba(22,13,12,0.05);
     }
     
     .plan-name {
@@ -167,12 +167,12 @@
     
     .plan-price-subtitle {
         font-size: 0.875rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     .plan-description {
         text-align: center;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         margin-bottom: 2rem;
         line-height: 1.6;
@@ -236,13 +236,13 @@
     }
     
     .plan-cta.free {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         color: var(--racine-black);
-        border-color: #E5DDD3;
+        border-color: rgba(22,13,12,0.1);
     }
     
     .plan-cta.free:hover {
-        background: #E5DDD3;
+        background: rgba(22,13,12,0.1);
         color: var(--racine-black);
         text-decoration: none;
     }

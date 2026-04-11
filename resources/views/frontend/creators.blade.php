@@ -6,7 +6,7 @@
 <style>
     .creators-hero {
         min-height: 60vh;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         display: flex;
         align-items: center;
         position: relative;
@@ -22,7 +22,7 @@
         right: -20%;
         width: 80%;
         height: 200%;
-        background: radial-gradient(ellipse, rgba(212, 165, 116, 0.1) 0%, transparent 60%);
+        background: radial-gradient(ellipse, rgba(237, 95, 30, 0.08) 0%, transparent 60%);
     }
     
     .hero-content {
@@ -38,14 +38,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(212, 165, 116, 0.15);
-        border: 1px solid rgba(212, 165, 116, 0.3);
+        background: rgba(237, 95, 30, 0.08);
+        border: 1px solid rgba(255, 184, 0, 0.3);
         padding: 0.5rem 1.25rem;
         border-radius: 30px;
         font-size: 0.8rem;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 1.5rem;
     }
     
@@ -59,7 +59,7 @@
     }
     
     .hero-title .highlight {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .hero-description {
@@ -72,7 +72,7 @@
     
     /* STATS */
     .stats-bar {
-        background: #D4A574;
+        background: #FFB800;
         padding: 2rem 0;
     }
     
@@ -99,7 +99,7 @@
     /* FEATURED CREATOR */
     .featured-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .featured-grid {
@@ -125,7 +125,7 @@
         position: absolute;
         top: 2rem;
         left: 2rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         padding: 0.5rem 1.25rem;
         border-radius: 30px;
@@ -135,8 +135,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -150,13 +150,13 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
         line-height: 1.2;
     }
     
     .featured-content p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-size: 1.1rem;
         line-height: 1.9;
         margin-bottom: 1.5rem;
@@ -167,7 +167,7 @@
         gap: 2rem;
         margin-top: 2rem;
         padding-top: 2rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .meta-item {
@@ -177,12 +177,12 @@
     }
     
     .meta-item i {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 1.25rem;
     }
     
     .meta-item span {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
     }
     
     .btn-view-collection {
@@ -190,7 +190,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -201,7 +201,7 @@
     
     .btn-view-collection:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(44, 24, 16, 0.3);
+        box-shadow: 0 15px 40px rgba(22,13,12, 0.3);
         color: white;
     }
     
@@ -226,18 +226,18 @@
     
     .filter-btn {
         padding: 0.6rem 1.5rem;
-        border: 2px solid #E5DDD3;
+        border: 2px solid rgba(22,13,12,0.1);
         background: white;
         border-radius: 30px;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-weight: 500;
         cursor: pointer;
         transition: all 0.3s;
     }
     
     .filter-btn:hover, .filter-btn.active {
-        background: #2C1810;
-        border-color: #2C1810;
+        background: #160D0C;
+        border-color: #160D0C;
         color: white;
     }
     
@@ -248,7 +248,7 @@
     }
     
     .creator-card {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 24px;
         overflow: hidden;
         transition: all 0.4s;
@@ -285,7 +285,7 @@
         border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 500;
-        color: #2C1810;
+        color: #160D0C;
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -300,19 +300,19 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .creator-specialty {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 0.9rem;
         font-weight: 500;
         margin-bottom: 1rem;
     }
     
     .creator-bio {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
         margin-bottom: 1.5rem;
@@ -323,7 +323,7 @@
         justify-content: center;
         gap: 2rem;
         padding-top: 1rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .creator-stats div {
@@ -333,18 +333,18 @@
     .creator-stats strong {
         display: block;
         font-size: 1.25rem;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .creator-stats span {
         font-size: 0.8rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     /* CTA */
     .cta-section {
         padding: 6rem 0;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         text-align: center;
     }
     
@@ -367,7 +367,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2.5rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -416,7 +416,7 @@
             {{-- CTA Marketplace --}}
             <div class="mt-4">
                 <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg" 
-                   style="background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%); color: white; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem; font-weight: 600;">
+                   style="background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%); color: white; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem; font-weight: 600;">
                     <i class="fas fa-shopping-bag"></i>
                     Voir tous les produits au Marketplace
                     <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.85rem;">{{ $totalProducts }} produits</span>

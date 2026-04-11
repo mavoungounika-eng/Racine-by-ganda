@@ -6,7 +6,7 @@
 <style>
     .product-page {
         padding: 2rem 0 4rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .breadcrumb-custom {
@@ -18,12 +18,12 @@
     }
     
     .breadcrumb-custom a {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         text-decoration: none;
     }
     
     .breadcrumb-custom a:hover {
-        color: #8B5A2B;
+        color: #160D0C;
     }
     
     .breadcrumb-custom span {
@@ -31,7 +31,7 @@
     }
     
     .breadcrumb-custom .current {
-        color: #2C1810;
+        color: #160D0C;
         font-weight: 500;
     }
     
@@ -87,7 +87,7 @@
     }
     
     .zoom-btn:hover {
-        background: #D4A574;
+        background: #FFB800;
         color: white;
     }
     
@@ -107,7 +107,7 @@
     }
     
     .thumbnail.active, .thumbnail:hover {
-        border-color: #D4A574;
+        border-color: #FFB800;
     }
     
     .thumbnail img {
@@ -137,13 +137,13 @@
     }
     
     .badge-new {
-        background: rgba(212, 165, 116, 0.15);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
     }
     
     .badge-stock {
         background: rgba(34, 197, 94, 0.15);
-        color: #16A34A;
+        color: #22C55E;
     }
     
     .badge-limited {
@@ -152,7 +152,7 @@
     }
     
     .product-category {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         text-transform: uppercase;
         letter-spacing: 2px;
@@ -163,7 +163,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         line-height: 1.2;
         margin-bottom: 1rem;
     }
@@ -182,7 +182,7 @@
     }
     
     .rating-text {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
@@ -196,7 +196,7 @@
     .current-price {
         font-size: 2rem;
         font-weight: 700;
-        color: #8B5A2B;
+        color: #160D0C;
     }
     
     .original-price {
@@ -206,7 +206,7 @@
     }
     
     .discount-badge {
-        background: #E53E3E;
+        background: #DC2626;
         color: white;
         padding: 0.3rem 0.75rem;
         border-radius: 6px;
@@ -215,11 +215,11 @@
     }
     
     .product-description {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         margin-bottom: 2rem;
         padding-bottom: 2rem;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     /* OPTIONS */
@@ -240,11 +240,11 @@
     
     .option-label span {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .option-label a {
-        color: #8B5A2B;
+        color: #160D0C;
         font-size: 0.9rem;
         text-decoration: none;
     }
@@ -257,18 +257,18 @@
     .size-btn {
         min-width: 50px;
         height: 50px;
-        border: 2px solid #E5DDD3;
+        border: 2px solid rgba(22,13,12,0.1);
         background: white;
         border-radius: 10px;
         font-weight: 600;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         cursor: pointer;
         transition: all 0.3s;
     }
     
     .size-btn:hover, .size-btn.active {
-        border-color: #2C1810;
-        background: #2C1810;
+        border-color: #160D0C;
+        background: #160D0C;
         color: white;
     }
     
@@ -302,7 +302,7 @@
     }
     
     .color-btn:hover::after, .color-btn.active::after {
-        border-color: #2C1810;
+        border-color: #160D0C;
     }
     
     /* QUANTITY */
@@ -315,7 +315,7 @@
     .qty-control {
         display: flex;
         align-items: center;
-        border: 2px solid #E5DDD3;
+        border: 2px solid rgba(22,13,12,0.1);
         border-radius: 10px;
         overflow: hidden;
     }
@@ -324,14 +324,14 @@
         width: 45px;
         height: 45px;
         border: none;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         font-size: 1.25rem;
         cursor: pointer;
         transition: all 0.3s;
     }
     
     .qty-btn:hover {
-        background: #E5DDD3;
+        background: rgba(22,13,12,0.1);
     }
     
     .qty-input {
@@ -357,7 +357,7 @@
     .btn-add-cart {
         flex: 1;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -373,13 +373,13 @@
     
     .btn-add-cart:hover {
         transform: translateY(-2px);
-        box-shadow: 0 15px 40px rgba(44, 24, 16, 0.3);
+        box-shadow: 0 15px 40px rgba(22,13,12, 0.3);
     }
     
     .btn-wishlist {
         width: 55px;
         height: 55px;
-        border: 2px solid #E5DDD3;
+        border: 2px solid rgba(22,13,12,0.1);
         background: white;
         border-radius: 12px;
         display: flex;
@@ -387,18 +387,18 @@
         justify-content: center;
         cursor: pointer;
         font-size: 1.25rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         transition: all 0.3s;
     }
     
     .btn-wishlist:hover {
-        border-color: #D4A574;
-        color: #D4A574;
+        border-color: #FFB800;
+        color: #FFB800;
     }
     
     .btn-wishlist.active {
-        background: #D4A574;
-        border-color: #D4A574;
+        background: #FFB800;
+        border-color: #FFB800;
         color: white;
     }
     
@@ -408,19 +408,19 @@
         gap: 2rem;
         margin-top: 2rem;
         padding-top: 2rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .extra-item {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-size: 0.9rem;
     }
     
     .extra-item i {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     /* TABS */
@@ -431,7 +431,7 @@
     .tabs-header {
         display: flex;
         gap: 2rem;
-        border-bottom: 2px solid #E5DDD3;
+        border-bottom: 2px solid rgba(22,13,12,0.1);
         margin-bottom: 2rem;
     }
     
@@ -441,7 +441,7 @@
         background: none;
         font-size: 1rem;
         font-weight: 600;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         cursor: pointer;
         position: relative;
         transition: color 0.3s;
@@ -454,13 +454,13 @@
         left: 0;
         right: 0;
         height: 2px;
-        background: #2C1810;
+        background: #160D0C;
         transform: scaleX(0);
         transition: transform 0.3s;
     }
     
     .tab-btn.active {
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .tab-btn.active::after {
@@ -481,12 +481,12 @@
     .tab-content h3 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
     }
     
     .tab-content p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
     }
     
@@ -500,15 +500,15 @@
         display: flex;
         justify-content: space-between;
         padding: 0.75rem 0;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .spec-item dt {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     .spec-item dd {
-        color: #2C1810;
+        color: #160D0C;
         font-weight: 500;
     }
     
@@ -520,7 +520,7 @@
     .section-title {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 2rem;
     }
     
@@ -647,12 +647,12 @@
                         <div class="flex-shrink-0">
                             <img src="{{ $creatorProfile?->logo_path ?? asset('images/default-creator.png') }}"
                                  alt="{{ $creatorProfile?->brand_name }}"
-                                 class="w-14 h-14 rounded-full object-cover border-2 border-[#8B5A2B]">
+                                 class="w-14 h-14 rounded-full object-cover border-2 border-[#160D0C]">
                         </div>
                         <div class="flex-1">
                             <h4 class="text-sm font-semibold tracking-wide text-gray-900">
                                 Vendu par 
-                                <span class="text-[#8B5A2B]">
+                                <span class="text-[#160D0C]">
                                     {{ $creatorProfile?->brand_name ?? 'Créateur partenaire' }}
                                 </span>
                             </h4>
@@ -679,7 +679,7 @@
 
                             @if($creatorProfile && $creatorProfile->slug)
                                 <a href="{{ route('frontend.creator.shop', $creatorProfile->slug) }}"
-                                   class="inline-flex items-center mt-3 px-4 py-1.5 rounded-full border-2 border-[#8B5A2B] text-[#8B5A2B] text-[11px] font-semibold hover:bg-[#8B5A2B] hover:text-white transition">
+                                   class="inline-flex items-center mt-3 px-4 py-1.5 rounded-full border-2 border-[#160D0C] text-[#160D0C] text-[11px] font-semibold hover:bg-[#160D0C] hover:text-white transition">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                                     </svg>
@@ -717,7 +717,7 @@
                                 <input type="number" class="qty-input" value="1" min="1" max="{{ $product->stock ?? 1 }}" id="qtyInput" onchange="syncCartQty()">
                                 <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
                             </div>
-                            <span style="color: #8B7355; font-size: 0.9rem;">
+                            <span style="color: rgba(22,13,12,0.5); font-size: 0.9rem;">
                                 {{ ($product->stock ?? 0) }} disponible{{ ($product->stock ?? 0) > 1 ? 's' : '' }}
                             </span>
                         </div>

@@ -5,7 +5,7 @@
 @push('styles')
 <style>
     .portfolio-hero {
-        background: linear-gradient(135deg, #1a0f09 0%, #2C1810 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -33,7 +33,7 @@
         flex-wrap: wrap;
         padding: 2rem 0;
         background: white;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
         position: sticky;
         top: 70px;
         z-index: 100;
@@ -41,10 +41,10 @@
     
     .filter-btn {
         padding: 0.65rem 1.5rem;
-        border: 2px solid #E5DDD3;
+        border: 2px solid rgba(22,13,12,0.1);
         border-radius: 30px;
         background: white;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-weight: 600;
         font-size: 0.9rem;
         cursor: pointer;
@@ -53,14 +53,14 @@
     
     .filter-btn:hover,
     .filter-btn.active {
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         border-color: #ED5F1E;
         color: white;
     }
     
     .portfolio-section {
         padding: 4rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .portfolio-grid {
@@ -128,7 +128,7 @@
     }
     
     .portfolio-overlay span {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 0.9rem;
         transform: translateY(20px);
         transition: transform 0.4s 0.1s;
@@ -162,7 +162,7 @@
     
     /* Stats */
     .portfolio-stats {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 4rem 0;
     }
     
@@ -181,7 +181,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 3.5rem;
         font-weight: 700;
-        color: #D4A574;
+        color: #FFB800;
         line-height: 1;
         margin-bottom: 0.5rem;
     }
@@ -250,7 +250,7 @@
     }
     
     .lightbox-info span {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     @media (max-width: 992px) {

@@ -30,16 +30,16 @@
     /* Blanc - Lisibilité et contraste */
 
     /* Dérivés pour variations */
-    --racine-black-soft: #1f1412;
-    --racine-black-lighter: #2a1f1d;
-    --racine-orange-soft: #f27a3f;
-    --racine-orange-dark: #c74d18;
-    --racine-yellow-soft: #ffc933;
+    --racine-black-soft: #160D0C;
+    --racine-black-lighter: #160D0C;
+    --racine-orange-soft: #ED5F1E;
+    --racine-orange-dark: #ED5F1E;
+    --racine-yellow-soft: #FFB800;
 
     /* Couleurs de fond */
     --bg-primary: #160D0C;
-    --bg-secondary: #1f1412;
-    --bg-soft: #F8F6F3;
+    --bg-secondary: #160D0C;
+    --bg-soft: rgba(22,13,12,0.05);
     --text-primary: #FFFFFF;
     --text-secondary: rgba(255, 255, 255, 0.8);
     --text-muted: rgba(255, 255, 255, 0.7);
@@ -47,9 +47,9 @@
     /* Couleurs sémantiques */
     --success: #22C55E;
     --warning: #F59E0B;
-    --error: #EF4444;
-    --danger: #EF4444;
-    --info: #3B82F6;
+    --error: #DC2626;
+    --danger: #DC2626;
+    --info: #ED5F1E;
 
     /* ============================================
        TYPOGRAPHIES
@@ -278,7 +278,7 @@ h6 {
 
 /* Card Premium avec barre gradient top */
 .card-premium {
-    background: linear-gradient(135deg, white 0%, #faf8f5 100%);
+    background: linear-gradient(135deg, white 0%, rgba(22,13,12,0.02) 100%);
     border-radius: var(--radius-xl);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-md);

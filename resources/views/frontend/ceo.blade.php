@@ -6,7 +6,7 @@
 <style>
     .ceo-hero {
         min-height: 100vh;
-        background: linear-gradient(135deg, #1a0f09 0%, #2C1810 50%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 50%, #160D0C 100%);
         display: flex;
         align-items: center;
         margin-top: -70px;
@@ -52,7 +52,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        border: 3px solid rgba(212, 165, 116, 0.3);
+        border: 3px solid rgba(255, 184, 0, 0.3);
         border-radius: 24px;
         z-index: 1;
     }
@@ -67,7 +67,7 @@
         position: absolute;
         width: 200px;
         height: 200px;
-        border: 2px solid rgba(212, 165, 116, 0.2);
+        border: 2px solid rgba(237, 95, 30, 0.1);
         border-radius: 50%;
         top: -30px;
         right: -30px;
@@ -92,7 +92,7 @@
     }
     
     .ceo-info .title {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 1.25rem;
         font-weight: 500;
         margin-bottom: 1.5rem;
@@ -106,7 +106,7 @@
         color: rgba(255, 255, 255, 0.8);
         margin-bottom: 2rem;
         padding-left: 1.5rem;
-        border-left: 3px solid #D4A574;
+        border-left: 3px solid #FFB800;
     }
     
     .ceo-social {
@@ -149,7 +149,7 @@
     .bio-intro {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.75rem;
-        color: #2C1810;
+        color: #160D0C;
         text-align: center;
         margin-bottom: 3rem;
         line-height: 1.6;
@@ -162,7 +162,7 @@
     .bio-text {
         columns: 2;
         column-gap: 3rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         font-size: 1.05rem;
     }
@@ -174,7 +174,7 @@
     /* TIMELINE */
     .ceo-timeline {
         padding: 5rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .section-title {
@@ -185,14 +185,14 @@
     .section-title h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .section-title .line {
         width: 60px;
         height: 3px;
-        background: linear-gradient(90deg, #D4A574, #ED5F1E);
+        background: linear-gradient(90deg, #FFB800, #ED5F1E);
         margin: 0 auto;
     }
     
@@ -209,7 +209,7 @@
         transform: translateX(-50%);
         width: 2px;
         height: 100%;
-        background: linear-gradient(to bottom, #D4A574, #ED5F1E);
+        background: linear-gradient(to bottom, #FFB800, #ED5F1E);
     }
     
     .timeline-item {
@@ -250,7 +250,7 @@
     
     .timeline-year {
         display: inline-block;
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
@@ -262,12 +262,12 @@
     .timeline-content h4 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.25rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .timeline-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         line-height: 1.6;
     }
@@ -275,7 +275,7 @@
     /* VALUES */
     .ceo-values {
         padding: 5rem 0;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     }
     
     .values-grid {
@@ -301,7 +301,7 @@
     .value-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -334,12 +334,12 @@
     .ceo-cta h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
     }
     
     .ceo-cta p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 1.1rem;
         margin-bottom: 2rem;
     }
@@ -349,7 +349,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -385,7 +385,7 @@
         .ceo-info .quote {
             border-left: none;
             padding-left: 0;
-            border-top: 3px solid #D4A574;
+            border-top: 3px solid #FFB800;
             padding-top: 1rem;
         }
         
