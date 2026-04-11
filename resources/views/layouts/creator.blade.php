@@ -7,10 +7,10 @@
     <title>@yield('title', 'Espace Créateur') - RACINE BY GANDA</title>
     
     {{-- Fonts --}}
-    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     {{-- Bootstrap 4 --}}
-    <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
+    {{-- Bootstrap 5 via Vite --}}
     
     {{-- RACINE Design System (Consolidé AXE D) --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
@@ -541,8 +541,7 @@
     </div>
     
     {{-- Bootstrap JS --}}
-    <script src="{{ asset('racine/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
+    {{-- Bootstrap 5 + JS via Vite -- jQuery/Bootstrap 4 legacy supprimés --}}
     
     {{-- Scroll to Top Component --}}
     @include('components.scroll-to-top')

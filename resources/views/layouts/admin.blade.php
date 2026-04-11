@@ -6,9 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Tableau de Bord Admin - ' . config('app.company.name'))</title>
 
-    {{-- Fonts & Icons --}}
-    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
+    {{-- Fonts RACINE (Cormorant Garamond → Aleppo, Nunito → Coco Gothic, Aileron) --}}
+    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    {{-- Bootstrap 5 chargé via Vite (app.scss) — Bootstrap 4 legacy supprimé --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin-enhanced.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,9 +19,9 @@
             --racine-orange: #ED5F1E;
             --racine-yellow: #FFB800;
             --racine-white: #FFFFFF;
-            --racine-font-heading: 'Aleppo', 'Aileron', serif;
-            --racine-font-body: 'Coco Gothic', 'Aileron', 'Helvetica Neue', sans-serif;
-            --racine-font-accent: 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-heading: 'Aleppo', 'Cormorant Garamond', 'Aileron', serif;
+            --racine-font-body: 'Coco Gothic', 'Nunito', 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-accent: 'Aileron', 'Nunito', 'Helvetica Neue', sans-serif;
         }
 
         body {
@@ -495,8 +495,7 @@
     </main>
 </div>
 
-<script src="{{ asset('racine/js/jquery.min.js') }}"></script>
-<script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
+{{-- Bootstrap 5 + JS chargés via Vite (app.js) — jQuery/Bootstrap 4 legacy supprimés --}}
 
 @stack('scripts')
 </body>

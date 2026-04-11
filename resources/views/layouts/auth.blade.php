@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     {{-- Bootstrap 4 --}}
-    <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
+    {{-- Bootstrap 5 via Vite --}}
     
     {{-- RACINE Design System --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
@@ -97,8 +97,7 @@
         </div>
     </div>
     
-    <script src="{{ asset('racine/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
+    {{-- Bootstrap 5 + JS via Vite — jQuery/Bootstrap 4 legacy supprimés --}}
     
     @stack('scripts')
 </body>
