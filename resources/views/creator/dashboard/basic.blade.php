@@ -36,7 +36,7 @@
     
     .stat-card-title {
         font-size: 0.875rem;
-        color: #8B7355;
+        color: #160D0C;
         text-transform: uppercase;
     }
     
@@ -112,19 +112,19 @@
                 <i class="fas fa-star" style="color: white; font-size: 1.5rem;"></i>
             </div>
             <div style="flex: 1;">
-                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #2C1810; font-weight: 700;">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #160D0C; font-weight: 700;">
                     <i class="fas fa-chart-line text-[#ED5F1E] mr-2"></i>
                     Votre Score Créateur
                 </h3>
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="font-size: 2rem; font-weight: 700; color: #ED5F1E;">
-                        {{ number_format($creatorProfile->overall_score, 0) }}<span style="font-size: 1rem; color: #8B7355;">/100</span>
+                        {{ number_format($creatorProfile->overall_score, 0) }}<span style="font-size: 1rem; color: #160D0C;">/100</span>
                     </div>
                     <div style="flex: 1;">
-                        <div style="height: 8px; background: #E5DDD3; border-radius: 10px; overflow: hidden;">
+                        <div style="height: 8px; background: #FFFFFFFFF; border-radius: 10px; overflow: hidden;">
                             <div style="width: {{ $creatorProfile->overall_score }}%; height: 100%; background: linear-gradient(90deg, #ED5F1E, #FFB800); border-radius: 10px; transition: width 0.3s;"></div>
                         </div>
-                        <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #8B7355;">
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #160D0C;">
                             @if($creatorProfile->overall_score >= 80)
                                 <i class="fas fa-check-circle text-green-600"></i> Excellent ! Votre profil est très attractif
                             @elseif($creatorProfile->overall_score >= 50)
@@ -138,7 +138,7 @@
             </div>
         </div>
         <div style="background: white; padding: 1rem; border-radius: 12px; margin-top: 1rem;">
-            <p style="margin: 0; font-size: 0.9rem; color: #2C1810;">
+            <p style="margin: 0; font-size: 0.9rem; color: #160D0C;">
                 <strong>💡 Pourquoi c'est important ?</strong> Votre score influence votre visibilité sur la marketplace. 
                 Un score élevé = plus de clients potentiels.
             </p>
@@ -158,25 +158,25 @@
     @endphp
 
     @if($progress < 100)
-    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-md); margin-bottom: 2rem; border: 1px solid #E5DDD3;">
+    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-md); margin-bottom: 2rem; border: 1px solid #FFFFFFFFF;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin: 0; font-size: 1.1rem; color: #2C1810;"><i class="fas fa-tasks text-[#ED5F1E] mr-2"></i> Complétez votre boutique</h3>
-            <span style="background: #F8F6F3; color: #ED5F1E; padding: 2px 10px; border-radius: 99px; font-weight: 700; font-size: 0.8rem;">{{ $progress }}%</span>
+            <h3 style="margin: 0; font-size: 1.1rem; color: #160D0C;"><i class="fas fa-tasks text-[#ED5F1E] mr-2"></i> Complétez votre boutique</h3>
+            <span style="background: #FFFFFF; color: #ED5F1E; padding: 2px 10px; border-radius: 99px; font-weight: 700; font-size: 0.8rem;">{{ $progress }}%</span>
         </div>
         
-        <div style="width: 100%; height: 6px; background: #E5DDD3; border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden;">
+        <div style="width: 100%; height: 6px; background: #FFFFFFFFF; border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden;">
             <div style="width: {{ $progress }}%; height: 100%; background: linear-gradient(90deg, #ED5F1E, #FFB800); border-radius: 10px;"></div>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
             {{-- Step 1: Logo --}}
             <a href="{{ route('creator.settings.shop') }}" style="text-decoration: none;">
-                <div style="padding: 1rem; border-radius: 12px; background: {{ $hasLogo ? '#F0FDF4' : 'white' }}; border: 1px solid {{ $hasLogo ? '#DCFCE7' : '#E5DDD3' }}; display: flex; align-items: center; gap: 1rem; transition: all 0.2s;">
-                    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $hasLogo ? '#22C55E' : '#FED7AA' }}; color: {{ $hasLogo ? 'white' : '#9A3412' }}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                <div style="padding: 1rem; border-radius: 12px; background: {{ $hasLogo ? '#FFFFFFFFF' : 'white' }}; border: 1px solid {{ $hasLogo ? '#FFFFFFFFF' : '#FFFFFFFFF' }}; display: flex; align-items: center; gap: 1rem; transition: all 0.2s;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $hasLogo ? '#FFB800' : '#FFFFFF' }}; color: {{ $hasLogo ? 'white' : '#ED5F1E' }}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
                         <i class="fas {{ $hasLogo ? 'fa-check' : 'fa-camera' }}"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: {{ $hasLogo ? '#166534' : '#2C1810' }}; font-size: 0.9rem;">Ajouter un logo</div>
+                        <div style="font-weight: 600; color: {{ $hasLogo ? '#160D0C' : '#160D0C' }}; font-size: 0.9rem;">Ajouter un logo</div>
                         <div style="font-size: 0.75rem; color: gray;">{{ $hasLogo ? 'Fait' : 'Pour votre identité' }}</div>
                     </div>
                 </div>
@@ -184,12 +184,12 @@
             
             {{-- Step 2: Product --}}
             <a href="{{ route('creator.products.create') }}" style="text-decoration: none;">
-                <div style="padding: 1rem; border-radius: 12px; background: {{ $hasProduct ? '#F0FDF4' : 'white' }}; border: 1px solid {{ $hasProduct ? '#DCFCE7' : '#E5DDD3' }}; display: flex; align-items: center; gap: 1rem; transition: all 0.2s;">
-                    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $hasProduct ? '#22C55E' : '#FED7AA' }}; color: {{ $hasProduct ? 'white' : '#9A3412' }}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                <div style="padding: 1rem; border-radius: 12px; background: {{ $hasProduct ? '#FFFFFFFFF' : 'white' }}; border: 1px solid {{ $hasProduct ? '#FFFFFFFFF' : '#FFFFFFFFF' }}; display: flex; align-items: center; gap: 1rem; transition: all 0.2s;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $hasProduct ? '#FFB800' : '#FFFFFF' }}; color: {{ $hasProduct ? 'white' : '#ED5F1E' }}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
                         <i class="fas {{ $hasProduct ? 'fa-check' : 'fa-plus' }}"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: {{ $hasProduct ? '#166534' : '#2C1810' }}; font-size: 0.9rem;">Créer un produit</div>
+                        <div style="font-weight: 600; color: {{ $hasProduct ? '#160D0C' : '#160D0C' }}; font-size: 0.9rem;">Créer un produit</div>
                         <div style="font-size: 0.75rem; color: gray;">{{ $hasProduct ? 'Fait' : 'Votre premier article' }}</div>
                     </div>
                 </div>
@@ -197,12 +197,12 @@
 
             {{-- Step 3: Payout --}}
             <a href="{{ route('creator.settings.payment') }}" style="text-decoration: none;">
-                <div style="padding: 1rem; border-radius: 12px; background: {{ $hasPayout ? '#F0FDF4' : 'white' }}; border: 1px solid {{ $hasPayout ? '#DCFCE7' : '#E5DDD3' }}; display: flex; align-items: center; gap: 1rem; transition: all 0.2s;">
-                    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $hasPayout ? '#22C55E' : '#FED7AA' }}; color: {{ $hasPayout ? 'white' : '#9A3412' }}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                <div style="padding: 1rem; border-radius: 12px; background: {{ $hasPayout ? '#FFFFFFFFF' : 'white' }}; border: 1px solid {{ $hasPayout ? '#FFFFFFFFF' : '#FFFFFFFFF' }}; display: flex; align-items: center; gap: 1rem; transition: all 0.2s;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $hasPayout ? '#FFB800' : '#FFFFFF' }}; color: {{ $hasPayout ? 'white' : '#ED5F1E' }}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
                         <i class="fas {{ $hasPayout ? 'fa-check' : 'fa-wallet' }}"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: {{ $hasPayout ? '#166534' : '#2C1810' }}; font-size: 0.9rem;">Mode de versement</div>
+                        <div style="font-weight: 600; color: {{ $hasPayout ? '#160D0C' : '#160D0C' }}; font-size: 0.9rem;">Mode de versement</div>
                         <div style="font-size: 0.75rem; color: gray;">{{ $hasPayout ? 'Fait' : 'Pour recevoir vos gains' }}</div>
                     </div>
                 </div>
@@ -216,7 +216,7 @@
         <div class="stat-card">
             <div class="stat-card-title">Produits</div>
             <div class="stat-card-value">{{ $stats['products_count'] ?? 0 }}</div>
-            <div style="font-size: 0.875rem; color: #8B7355;">{{ $stats['active_products_count'] ?? 0 }} actifs</div>
+            <div style="font-size: 0.875rem; color: #160D0C;">{{ $stats['active_products_count'] ?? 0 }} actifs</div>
         </div>
         
         <div class="stat-card">
@@ -236,24 +236,24 @@
     <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-md);">
         <h3 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; color: var(--racine-black);">Actions Rapides</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-            <a href="{{ route('creator.products.index') }}" style="padding: 1rem; background: #F8F6F3; border-radius: var(--radius-md); text-decoration: none; color: var(--racine-black); text-align: center; transition: var(--transition-fast);">
+            <a href="{{ route('creator.products.index') }}" style="padding: 1rem; background: #FFFFFF; border-radius: var(--radius-md); text-decoration: none; color: var(--racine-black); text-align: center; transition: var(--transition-fast);">
                 <i class="fas fa-box" style="font-size: 1.5rem; color: var(--racine-orange); margin-bottom: 0.5rem; display: block;"></i>
                 <strong>Mes Produits</strong>
             </a>
-            <a href="{{ route('creator.orders.index') }}" style="padding: 1rem; background: #F8F6F3; border-radius: var(--radius-md); text-decoration: none; color: var(--racine-black); text-align: center; transition: var(--transition-fast);">
+            <a href="{{ route('creator.orders.index') }}" style="padding: 1rem; background: #FFFFFF; border-radius: var(--radius-md); text-decoration: none; color: var(--racine-black); text-align: center; transition: var(--transition-fast);">
                 <i class="fas fa-shopping-bag" style="font-size: 1.5rem; color: var(--racine-orange); margin-bottom: 0.5rem; display: block;"></i>
                 <strong>Mes Commandes</strong>
             </a>
             @if($user->hasCapability('can_view_advanced_stats'))
-            <a href="{{ route('creator.stats.index') }}" style="padding: 1rem; background: #F8F6F3; border-radius: var(--radius-md); text-decoration: none; color: var(--racine-black); text-align: center; transition: var(--transition-fast);">
+            <a href="{{ route('creator.stats.index') }}" style="padding: 1rem; background: #FFFFFF; border-radius: var(--radius-md); text-decoration: none; color: var(--racine-black); text-align: center; transition: var(--transition-fast);">
                 <i class="fas fa-chart-line" style="font-size: 1.5rem; color: var(--racine-orange); margin-bottom: 0.5rem; display: block;"></i>
                 <strong>Statistiques</strong>
             </a>
             @else
-            <div style="padding: 1rem; background: #F8F6F3; border-radius: var(--radius-md); text-align: center; opacity: 0.5; position: relative;">
-                <i class="fas fa-lock" style="font-size: 1.5rem; color: #8B7355; margin-bottom: 0.5rem; display: block;"></i>
-                <strong style="color: #8B7355;">Statistiques</strong>
-                <small style="display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #8B7355;">Plan Officiel requis</small>
+            <div style="padding: 1rem; background: #FFFFFF; border-radius: var(--radius-md); text-align: center; opacity: 0.5; position: relative;">
+                <i class="fas fa-lock" style="font-size: 1.5rem; color: #160D0C; margin-bottom: 0.5rem; display: block;"></i>
+                <strong style="color: #160D0C;">Statistiques</strong>
+                <small style="display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #160D0C;">Plan Officiel requis</small>
             </div>
             @endif
         </div>

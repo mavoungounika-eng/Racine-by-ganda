@@ -30,7 +30,7 @@
            ============================================= */
         
         body {
-            background: linear-gradient(135deg, #f5f3f0 0%, #faf8f5 100%);
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%);
             font-family: var(--font-body);
             color: var(--racine-black);
             min-height: 100vh;
@@ -165,7 +165,7 @@
         
         .creator-sidebar-link.new-product {
             background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
+            color: #FFB800;
             margin: 0.5rem 1.5rem;
             border-radius: var(--radius-md);
             border-left: none;
@@ -173,7 +173,7 @@
         
         .creator-sidebar-link.new-product:hover {
             background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
+            color: #FFB800;
         }
         
         .creator-sidebar-footer {
@@ -231,7 +231,7 @@
             background: rgba(231, 76, 60, 0.1);
             border: 1px solid rgba(231, 76, 60, 0.3);
             border-radius: var(--radius-md);
-            color: #e74c3c;
+            color: #ED5F1E;
             font-size: 0.875rem;
             font-weight: 500;
             text-align: center;
@@ -241,8 +241,8 @@
         
         .creator-sidebar-logout:hover {
             background: rgba(231, 76, 60, 0.2);
-            border-color: #e74c3c;
-            color: #e74c3c;
+            border-color: #ED5F1E;
+            color: #ED5F1E;
             text-decoration: none;
         }
         
@@ -250,7 +250,7 @@
         .creator-main-wrapper {
             margin-left: 280px;
             min-height: 100vh;
-            background: linear-gradient(135deg, #f5f3f0 0%, #faf8f5 100%);
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%);
         }
         
         .creator-header {

@@ -5,7 +5,7 @@
 
 /* Creator Dashboard Cards */
 .creator-stat-card {
-    background: #fff;
+    background: #FFFFFF;
     border-radius: 12px;
     padding: 1.25rem;
     border: none;
@@ -25,10 +25,10 @@
     font-size: 1.25rem;
     margin-bottom: 0.75rem;
 }
-.creator-stat-card .stat-icon.sales { background: #c6f6d5; color: #22543d; }
-.creator-stat-card .stat-icon.revenue { background: #bee3f8; color: #2a4365; }
-.creator-stat-card .stat-icon.products { background: #fefcbf; color: #744210; }
-.creator-stat-card .stat-icon.rating { background: #fed7e2; color: #97266d; }
+.creator-stat-card .stat-icon.sales { background: #FFFFFFFFF; color: #160D0C; }
+.creator-stat-card .stat-icon.revenue { background: #FFFFFFFFF; color: #160D0C; }
+.creator-stat-card .stat-icon.products { background: #FFFFFF; color: #ED5F1E; }
+.creator-stat-card .stat-icon.rating { background: #FFFFFFFFF; color: #ED5F1E; }
 
 /* Product Management */
 .product-grid {
@@ -37,7 +37,7 @@
     gap: 1.25rem;
 }
 .product-card-creator {
-    background: #fff;
+    background: #FFFFFF;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -62,7 +62,7 @@
 }
 .product-card-creator .product-stock {
     font-size: 0.8rem;
-    color: #718096;
+    color: #160D0C;
 }
 
 /* Subscription Tier Badge */
@@ -75,14 +75,14 @@
     font-weight: 700;
     letter-spacing: 0.05em;
 }
-.tier-badge.free { background: #e2e8f0; color: #4a5568; }
-.tier-badge.starter { background: #c6f6d5; color: #22543d; }
-.tier-badge.pro { background: #bee3f8; color: #2a4365; }
-.tier-badge.premium { background: linear-gradient(135deg, #ED5F1E, #d4500f); color: #fff; }
+.tier-badge.free { background: #FFFFFFFFF; color: #160D0C; }
+.tier-badge.starter { background: #FFFFFFFFF; color: #160D0C; }
+.tier-badge.pro { background: #FFFFFFFFF; color: #160D0C; }
+.tier-badge.premium { background: linear-gradient(135deg, #ED5F1E, #ED5F1E); color: #FFFFFF; }
 
 /* Creator Analytics Charts */
 .analytics-card {
-    background: #fff;
+    background: #FFFFFF;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -97,7 +97,7 @@
 .analytics-card .analytics-title {
     font-size: 1rem;
     font-weight: 600;
-    color: #2d3748;
+    color: #160D0C;
 }
 
 /* Order Status Timeline */
@@ -112,7 +112,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: #e2e8f0;
+    background: #FFFFFFFFF;
 }
 .order-timeline .timeline-item {
     position: relative;
@@ -125,12 +125,12 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 2px solid #e2e8f0;
-    background: #fff;
+    border: 2px solid #FFFFFFFFF;
+    background: #FFFFFF;
 }
 .order-timeline .timeline-dot.completed {
-    background: #38a169;
-    border-color: #38a169;
+    background: #FFB800;
+    border-color: #FFB800;
 }
 
 /* KYC Progress */
@@ -143,25 +143,25 @@
     flex: 1;
     height: 4px;
     border-radius: 2px;
-    background: #e2e8f0;
+    background: #FFFFFFFFF;
 }
-.kyc-step.done { background: #38a169; }
+.kyc-step.done { background: #FFB800; }
 .kyc-step.current { background: #ED5F1E; }
 
 /* Empty State */
 .creator-empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    color: #a0aec0;
+    color: #160D0C;
 }
 .creator-empty-state i {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: #e2e8f0;
+    color: #FFFFFFFFF;
 }
 .creator-empty-state .btn-cta {
     background: #ED5F1E;
-    color: #fff;
+    color: #FFFFFF;
     border: none;
     border-radius: 8px;
     padding: 0.6rem 1.5rem;
