@@ -557,6 +557,59 @@
     color: #160D0C;
 }
 
+/* ===== BADGES VENDEUR ===== */
+.badge-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #ED5F1E 0%, #FFB800 100%);
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    box-shadow: 0 2px 8px rgba(237, 95, 30, 0.3);
+}
+
+.badge-creator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    background: #FFFFFF;
+    border: 1.5px solid #160D0C;
+    color: #160D0C;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ===== PRODUCT CSS PLACEHOLDER (boutique) ===== */
+.product-css-placeholder {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(22,13,12,0.05) 0%, rgba(237,95,30,0.07) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(22, 13, 12, 0.15);
+    font-size: 3rem;
+}
+
+/* ===== SCROLL REVEAL ===== */
+.reveal-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.reveal-item.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .shop-grid {
