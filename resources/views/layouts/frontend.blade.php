@@ -60,12 +60,167 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Styles inline minimaux si nécessaire - La majorité du CSS a été extraite vers fichiers externes */
-        /* Tous les styles sont maintenant dans :
-         * - layout-navigation.css (navigation, navbar, dropdowns)
-         * - layout-components.css (hero, product cards, buttons)
-         * - layout-footer-cta.css (footer, CTA section)
-         */
+        :root {
+            --racine-black: #160D0C;
+            --racine-orange: #ED5F1E;
+            --racine-yellow: #FFB800;
+            --racine-white: #FFFFFF;
+            --racine-font-heading: 'Aleppo', 'Aileron', serif;
+            --racine-font-body: 'Coco Gothic', 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-accent: 'Aileron', 'Helvetica Neue', sans-serif;
+        }
+
+        body.racine-frontend-layout {
+            background: var(--racine-white);
+            color: var(--racine-black);
+            font-family: var(--racine-font-body);
+        }
+
+        body.racine-frontend-layout h1,
+        body.racine-frontend-layout h2,
+        body.racine-frontend-layout h3,
+        body.racine-frontend-layout h4,
+        body.racine-frontend-layout h5,
+        body.racine-frontend-layout h6 {
+            font-family: var(--racine-font-heading);
+        }
+
+        .announcement-bar {
+            background: var(--racine-black);
+            color: var(--racine-yellow);
+        }
+
+        .announcement-text {
+            font-family: var(--racine-font-accent);
+        }
+
+        .navbar-racine {
+            background: var(--racine-black);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .logo-text {
+            color: var(--racine-yellow);
+            font-family: var(--racine-font-heading);
+            letter-spacing: 0.08em;
+        }
+
+        .main-nav-racine .nav-link-racine,
+        .main-nav-racine .nav-dropdown-toggle.nav-link-racine {
+            color: var(--racine-white) !important;
+            font-family: var(--racine-font-accent);
+        }
+
+        .main-nav-racine .nav-link-racine:hover,
+        .main-nav-racine .nav-dropdown-toggle.nav-link-racine:hover {
+            color: var(--racine-yellow) !important;
+        }
+
+        .nav-dropdown-menu {
+            background: var(--racine-black);
+            border: 1px solid rgba(255, 184, 0, 0.35);
+        }
+
+        .nav-dropdown-menu a {
+            color: var(--racine-white);
+        }
+
+        .nav-dropdown-menu a:hover {
+            color: var(--racine-yellow);
+            background: rgba(255, 184, 0, 0.12);
+        }
+
+        .nav-icon-btn {
+            color: var(--racine-white);
+            border-color: rgba(255, 255, 255, 0.32);
+        }
+
+        .nav-icon-btn:hover {
+            background: var(--racine-orange);
+            border-color: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        .nav-icon-btn-primary {
+            background: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        #mobile-menu {
+            background: var(--racine-black) !important;
+        }
+
+        #mobile-menu a,
+        #mobile-menu p,
+        #mobile-menu button {
+            font-family: var(--racine-font-accent);
+        }
+
+        #mobile-menu .text-white-50 {
+            color: rgba(255, 255, 255, 0.78) !important;
+        }
+
+        #cta-racine .cta-title,
+        #cta-racine .cta-card-title {
+            font-family: var(--racine-font-heading);
+        }
+
+        #cta-racine .cta-subtitle,
+        #cta-racine .cta-card-text,
+        #cta-racine .cta-note {
+            font-family: var(--racine-font-body);
+        }
+
+        .footer-main {
+            background: var(--racine-black);
+            color: var(--racine-white);
+        }
+
+        .footer-brand span,
+        .footer-links-col h4,
+        .footer-contact-col h4 {
+            color: var(--racine-yellow);
+            font-family: var(--racine-font-heading);
+        }
+
+        .footer-main a {
+            color: var(--racine-white);
+        }
+
+        .footer-main a:hover {
+            color: var(--racine-yellow);
+        }
+
+        .social-link {
+            color: var(--racine-yellow);
+            border-color: rgba(255, 184, 0, 0.45);
+        }
+
+        .social-link:hover {
+            background: var(--racine-orange);
+            border-color: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        .footer-bottom {
+            background: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        .footer-bottom a,
+        .footer-bottom strong,
+        .footer-bottom p {
+            color: var(--racine-white);
+        }
+
+        .footer-bottom a:hover {
+            color: var(--racine-yellow);
+        }
+
+        .footer-bottom .dev-separator,
+        .footer-bottom .legal-links span {
+            color: var(--racine-yellow);
+        }
     </style>
     
     {{-- Vite assets --}}
@@ -73,7 +228,7 @@
 
     @stack('styles')
 </head>
-<body>
+<body class="racine-frontend-layout">
     {{-- ANNOUNCEMENT BAR PREMIUM --}}
     <div class="announcement-bar">
         <div class="container text-center">
@@ -183,7 +338,7 @@
             </div>
             
             {{-- MENU MOBILE --}}
-            <div id="mobile-menu" class="d-lg-none pb-4" style="background: #1c1412; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+            <div id="mobile-menu" class="d-lg-none pb-4" style="background: #160D0C; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
                 <div class="d-flex flex-column" style="gap: 0.5rem;">
                     <a href="{{ route('frontend.home') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Accueil</a>
                     <a href="{{ route('frontend.atelier') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Atelier</a>
@@ -245,8 +400,8 @@
     {{-- Messages flash globaux --}}
     @if(session('success'))
         <div class="container mt-4">
-            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 4px solid #28a745; background: #f8f9fa; border-radius: 8px;">
-                <i class="fas fa-check-circle mr-2" style="color: #28a745;"></i>
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
+                <i class="fas fa-check-circle mr-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('success') }}</strong>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -257,8 +412,8 @@
 
     @if(session('error'))
         <div class="container mt-4">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 4px solid #dc3545; background: #f8f9fa; border-radius: 8px;">
-                <i class="fas fa-exclamation-circle mr-2" style="color: #dc3545;"></i>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
+                <i class="fas fa-exclamation-circle mr-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('error') }}</strong>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
