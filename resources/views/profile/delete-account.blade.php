@@ -13,7 +13,7 @@
     
     .delete-account-content {
         padding: 3rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 60vh;
     }
     
@@ -41,7 +41,7 @@
     }
     
     .warning-text {
-        color: #6c757d;
+        color: rgba(22,13,12,0.5);
         line-height: 1.8;
         margin-bottom: 1.5rem;
     }
@@ -54,7 +54,7 @@
     }
     
     .stat-item {
-        background: #f8f9fa;
+        background: rgba(22,13,12,0.05);
         border-radius: 12px;
         padding: 1.5rem;
         text-align: center;
@@ -63,12 +63,12 @@
     .stat-value {
         font-size: 2rem;
         font-weight: 700;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .stat-label {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
@@ -85,7 +85,7 @@
     
     .form-label {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
         display: block;
     }
@@ -94,7 +94,7 @@
         width: 100%;
         padding: 0.75rem 1rem;
         border-radius: 12px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid rgba(22,13,12,0.1);
         font-size: 1rem;
         transition: all 0.3s;
     }
@@ -120,7 +120,7 @@
     }
     
     .form-check-label {
-        color: #6c757d;
+        color: rgba(22,13,12,0.5);
         line-height: 1.6;
     }
     
@@ -144,8 +144,8 @@
     
     .btn-cancel {
         width: 100%;
-        background: rgba(108, 117, 125, 0.1);
-        color: #6c757d;
+        background: rgba(22,13,12,0.05);
+        color: rgba(22,13,12,0.5);
         border: 1px solid rgba(108, 117, 125, 0.3);
         border-radius: 12px;
         padding: 1rem 2rem;
@@ -158,8 +158,8 @@
     }
     
     .btn-cancel:hover {
-        background: rgba(108, 117, 125, 0.2);
-        color: #2C1810;
+        background: rgba(22,13,12,0.1);
+        color: #160D0C;
     }
 </style>
 @endpush
@@ -192,7 +192,7 @@
                         <p class="warning-text">
                             La suppression de votre compte est <strong>irréversible</strong>. Toutes vos données personnelles seront :
                         </p>
-                        <ul style="text-align: left; color: #6c757d; line-height: 2;">
+                        <ul style="text-align: left; color: rgba(22,13,12,0.5); line-height: 2;">
                             <li>Anonymisées conformément au RGPD</li>
                             <li>Vos commandes seront conservées pour historique mais anonymisées</li>
                             <li>Vos favoris, avis et adresses seront supprimés définitivement</li>
@@ -223,7 +223,7 @@
                 
                 <!-- DELETE FORM -->
                 <div class="delete-form-card">
-                    <h3 style="font-size: 1.5rem; font-weight: 600; color: #2C1810; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 600; color: #160D0C; margin-bottom: 1.5rem;">
                         <i class="fas fa-key me-2" style="color: #DC2626;"></i>Confirmer la suppression
                     </h3>
                     
@@ -272,15 +272,15 @@
                 </div>
                 
                 <!-- EXPORT DATA -->
-                <div class="delete-form-card" style="margin-top: 2rem; border: 2px solid #0EA5E9;">
-                    <h3 style="font-size: 1.25rem; font-weight: 600; color: #2C1810; margin-bottom: 1rem;">
-                        <i class="fas fa-download me-2" style="color: #0EA5E9;"></i>Exporter mes données avant suppression
+                <div class="delete-form-card" style="margin-top: 2rem; border: 2px solid rgba(22,13,12,0.15);">
+                    <h3 style="font-size: 1.25rem; font-weight: 600; color: #160D0C; margin-bottom: 1rem;">
+                        <i class="fas fa-download me-2" style="color: #160D0C;"></i>Exporter mes données avant suppression
                     </h3>
-                    <p style="color: #6c757d; margin-bottom: 1.5rem;">
+                    <p style="color: rgba(22,13,12,0.5); margin-bottom: 1.5rem;">
                         Avant de supprimer votre compte, vous pouvez télécharger toutes vos données personnelles au format JSON ou CSV.
                     </p>
                     <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('profile.data.export', ['format' => 'json']) }}" class="btn" style="background: rgba(14, 165, 233, 0.1); color: #0EA5E9; border: 1px solid #0EA5E9; border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 600; text-decoration: none;">
+                        <a href="{{ route('profile.data.export', ['format' => 'json']) }}" class="btn" style="background: rgba(22,13,12,0.05); color: #160D0C; border: 1px solid rgba(22,13,12,0.2); border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 600; text-decoration: none;">
                             <i class="fas fa-file-code me-2"></i>Export JSON
                         </a>
                         <a href="{{ route('profile.data.export', ['format' => 'csv']) }}" class="btn" style="background: rgba(34, 197, 94, 0.1); color: #22C55E; border: 1px solid #22C55E; border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 600; text-decoration: none;">

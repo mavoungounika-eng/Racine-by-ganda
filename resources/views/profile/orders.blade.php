@@ -30,7 +30,7 @@
         <!-- TABS FILTRES -->
         <div class="card-racine"
             <div class="card-body p-0">
-                <ul class="nav nav-tabs border-0" style="background: #f8f9fa; padding: 0.5rem 1rem; border-radius: 16px 16px 0 0;">
+                <ul class="nav nav-tabs border-0" style="background: rgba(22,13,12,0.05); padding: 0.5rem 1rem; border-radius: 16px 16px 0 0;">
                     <li class="nav-item">
                         <a class="nav-link {{ $statusFilter === 'toutes' ? 'active' : '' }}" 
                            href="{{ route('profile.orders') }}"
@@ -68,20 +68,20 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
-                        <thead style="background: #f8f9fa;">
+                        <thead style="background: rgba(22,13,12,0.05);">
                             <tr>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">N° Commande</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">Date</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">Articles</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">Montant</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">Statut</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">Paiement</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">Actions</th>
+                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">N° Commande</th>
+                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Date</th>
+                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Articles</th>
+                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Montant</th>
+                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Statut</th>
+                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Paiement</th>
+                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($orders as $order)
-                            <tr style="border-bottom: 1px solid #f0f0f0; transition: background 0.2s;">
+                            <tr style="border-bottom: 1px solid rgba(22,13,12,0.1); transition: background 0.2s;">
                                 <td style="padding: 1.25rem; vertical-align: middle;">
                                     <strong style="color: #160D0C; font-size: 1.1rem;">#{{ $order->id }}</strong>
                                 </td>
@@ -114,14 +114,14 @@
                                         $statusConfig = [
                                             'pending' => ['label' => 'En attente', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.1)'],
                                             'processing' => ['label' => 'En traitement', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.1)'],
-                                            'paid' => ['label' => 'Payée', 'color' => '#0EA5E9', 'bg' => 'rgba(14, 165, 233, 0.1)'],
-                                            'shipped' => ['label' => 'Expédiée', 'color' => '#0EA5E9', 'bg' => 'rgba(14, 165, 233, 0.1)'],
+                                            'paid' => ['label' => 'Payée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.1)'],
+                                            'shipped' => ['label' => 'Expédiée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.1)'],
                                             'completed' => ['label' => 'Complétée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.1)'],
                                             'delivered' => ['label' => 'Livrée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.1)'],
                                             'cancelled' => ['label' => 'Annulée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.1)'],
                                             'failed' => ['label' => 'Échouée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.1)'],
                                         ];
-                                        $status = $statusConfig[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.1)'];
+                                        $status = $statusConfig[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#160D0C', 'bg' => 'rgba(22,13,12,0.1)'];
                                     @endphp
                                     <span class="badge" style="background: {{ $status['bg'] }}; color: {{ $status['color'] }}; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid {{ $status['color'] }}20;">
                                         {{ $status['label'] }}
@@ -156,7 +156,7 @@
                 </div>
 
                 <!-- PAGINATION -->
-                <div class="card-footer bg-white border-0 py-4" style="border-top: 2px solid #f0f0f0;">
+                <div class="card-footer bg-white border-0 py-4" style="border-top: 2px solid rgba(22,13,12,0.1);">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <small class="text-muted">
@@ -187,7 +187,7 @@
                         Vous n'avez pas encore passé de commande.
                     @endif
                 </p>
-                <a href="{{ route('frontend.shop') }}" class="btn" style="background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%); color: white; border-radius: 12px; padding: 0.75rem 2.5rem; font-weight: 600; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);">
+                <a href="{{ route('frontend.shop') }}" class="btn" style="background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%); color: white; border-radius: 12px; padding: 0.75rem 2.5rem; font-weight: 600; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);">
                     <i class="fas fa-store me-2"></i> Découvrir la boutique
                 </a>
             </div>
@@ -227,7 +227,7 @@
         tbody tr {
             display: block;
             margin-bottom: 1rem;
-            border: 1px solid #e9ecef;
+            border: 1px solid rgba(22,13,12,0.1);
             border-radius: 12px;
             padding: 1rem;
         }
@@ -240,7 +240,7 @@
         tbody td::before {
             content: attr(data-label);
             font-weight: 600;
-            color: #6c757d;
+            color: rgba(22,13,12,0.5);
             margin-right: 1rem;
         }
     }

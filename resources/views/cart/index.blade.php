@@ -5,7 +5,7 @@
 @push('styles')
 <style>
     .cart-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 4rem 0;
         margin-top: -70px;
         padding-top: calc(4rem + 70px);
@@ -31,7 +31,7 @@
     }
     
     .breadcrumb-custom a:hover {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .breadcrumb-custom span {
@@ -39,12 +39,12 @@
     }
     
     .breadcrumb-custom .current {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .cart-section {
         padding: 3rem 0 5rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 50vh;
     }
     
@@ -67,9 +67,9 @@
         grid-template-columns: 2fr 1fr 1fr 1fr 50px;
         gap: 1rem;
         padding: 1.25rem 2rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         font-weight: 600;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -81,7 +81,7 @@
         gap: 1rem;
         padding: 1.5rem 2rem;
         align-items: center;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .cart-item:last-child {
@@ -112,35 +112,35 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.25rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.35rem;
     }
     
     .item-details .ref {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.85rem;
         margin-bottom: 0.5rem;
     }
     
     .item-details .variant {
         display: inline-block;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
         font-size: 0.8rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
     }
     
     .item-price {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         font-size: 1.05rem;
     }
     
     .item-quantity {
         display: flex;
         align-items: center;
-        border: 1.5px solid #E5DDD3;
+        border: 1.5px solid rgba(22,13,12,0.1);
         border-radius: 10px;
         overflow: hidden;
         width: fit-content;
@@ -150,15 +150,15 @@
         width: 38px;
         height: 38px;
         border: none;
-        background: #F8F6F3;
-        color: #5C4A3D;
+        background: rgba(22,13,12,0.05);
+        color: rgba(22,13,12,0.6);
         font-size: 1.1rem;
         cursor: pointer;
         transition: all 0.3s;
     }
     
     .qty-btn:hover {
-        background: #E5DDD3;
+        background: rgba(22,13,12,0.1);
     }
     
     .qty-input {
@@ -168,7 +168,7 @@
         text-align: center;
         font-weight: 600;
         font-size: 1rem;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .qty-input:focus {
@@ -177,7 +177,7 @@
     
     .item-total {
         font-weight: 700;
-        color: #8B5A2B;
+        color: #ED5F1E;
         font-size: 1.1rem;
     }
     
@@ -194,8 +194,8 @@
     }
     
     .item-remove:hover {
-        background: #FEF2F2;
-        color: #EF4444;
+        background: rgba(220,38,38,0.1);
+        color: #DC2626;
     }
     
     /* CART SUMMARY */
@@ -211,30 +211,30 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .summary-row {
         display: flex;
         justify-content: space-between;
         margin-bottom: 1rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
     }
     
     .summary-row.total {
         margin-top: 1.5rem;
         padding-top: 1.5rem;
-        border-top: 2px solid #E5DDD3;
+        border-top: 2px solid rgba(22,13,12,0.1);
         font-size: 1.25rem;
         font-weight: 700;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .summary-row.total span:last-child {
-        color: #8B5A2B;
+        color: #ED5F1E;
     }
     
     .free-shipping {
@@ -246,7 +246,7 @@
         align-items: center;
         gap: 0.75rem;
         margin-bottom: 1.5rem;
-        color: #16A34A;
+        color: #22C55E;
         font-size: 0.95rem;
     }
     
@@ -261,7 +261,7 @@
     .promo-code label {
         display: block;
         font-weight: 500;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
         font-size: 0.9rem;
     }
@@ -274,35 +274,35 @@
     .promo-input input {
         flex: 1;
         padding: 0.75rem 1rem;
-        border: 1.5px solid #E5DDD3;
+        border: 1.5px solid rgba(22,13,12,0.1);
         border-radius: 10px;
         font-size: 0.95rem;
     }
     
     .promo-input input:focus {
         outline: none;
-        border-color: #D4A574;
+        border-color: #FFB800;
     }
     
     .promo-input button {
         padding: 0.75rem 1.25rem;
-        background: #F8F6F3;
-        border: 1.5px solid #E5DDD3;
+        background: rgba(22,13,12,0.05);
+        border: 1.5px solid rgba(22,13,12,0.1);
         border-radius: 10px;
         font-weight: 600;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         cursor: pointer;
         transition: all 0.3s;
     }
     
     .promo-input button:hover {
-        background: #E5DDD3;
+        background: rgba(22,13,12,0.1);
     }
     
     .btn-checkout {
         width: 100%;
         padding: 1.1rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -319,7 +319,7 @@
     
     .btn-checkout:hover {
         transform: translateY(-2px);
-        box-shadow: 0 15px 40px rgba(44, 24, 16, 0.25);
+        box-shadow: 0 15px 40px rgba(22,13,12,0.25);
         color: white;
     }
     
@@ -327,7 +327,7 @@
         width: 100%;
         padding: 0.9rem;
         background: transparent;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         border: none;
         font-size: 0.95rem;
         cursor: pointer;
@@ -339,7 +339,7 @@
     }
     
     .btn-continue:hover {
-        color: #8B5A2B;
+        color: #ED5F1E;
     }
     
     .secure-badge {
@@ -349,8 +349,8 @@
         gap: 0.5rem;
         margin-top: 1.5rem;
         padding-top: 1.5rem;
-        border-top: 1px solid #E5DDD3;
-        color: #8B7355;
+        border-top: 1px solid rgba(22,13,12,0.1);
+        color: rgba(22,13,12,0.5);
         font-size: 0.85rem;
     }
     
@@ -369,26 +369,26 @@
     .empty-cart-icon {
         width: 120px;
         height: 120px;
-        background: linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(139, 90, 43, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(237, 95, 30, 0.1) 0%, rgba(255, 184, 0, 0.1) 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 2rem;
         font-size: 3rem;
-        color: #D4A574;
+        color: #ED5F1E;
     }
     
     .empty-cart h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
     }
     
     .empty-cart p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 1.05rem;
         margin-bottom: 2rem;
         max-width: 400px;
@@ -401,7 +401,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -411,7 +411,7 @@
     
     .btn-shop:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(212, 165, 116, 0.3);
+        box-shadow: 0 15px 40px rgba(255, 184, 0, 0.3);
         color: white;
     }
     
@@ -435,26 +435,26 @@
     .feature-icon {
         width: 50px;
         height: 50px;
-        background: linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(139, 90, 43, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(237, 95, 30, 0.1) 0%, rgba(255, 184, 0, 0.1) 100%);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.25rem;
-        color: #D4A574;
+        color: #ED5F1E;
         flex-shrink: 0;
     }
     
     .feature-text h4 {
         font-size: 0.95rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.25rem;
     }
     
     .feature-text span {
         font-size: 0.85rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     @media (max-width: 1024px) {
@@ -593,7 +593,7 @@
                     <span>Félicitations ! Vous bénéficiez de la livraison gratuite</span>
                 </div>
                 @else
-                <div class="free-shipping" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); color: #D97706;">
+                <div class="free-shipping" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); color: #FFB800;">
                     <i class="fas fa-truck"></i>
                     <span>Plus que {{ number_format(100000 - $total, 0, ',', ' ') }} FCFA pour la livraison gratuite</span>
                 </div>

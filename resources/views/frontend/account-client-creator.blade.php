@@ -25,7 +25,7 @@
             <div class="col-lg-10">
                 
                 {{-- MESSAGE CENTRAL (IMPORTANT) --}}
-                <div class="alert alert-info border-0 shadow-sm mb-5" style="background: linear-gradient(135deg, rgba(212, 165, 116, 0.15) 0%, rgba(139, 90, 43, 0.1) 100%); border-left: 4px solid #D4A574 !important;">
+                <div class="alert alert-info border-0 shadow-sm mb-5" style="background: linear-gradient(135deg, rgba(255, 184, 0, 0.1) 0%, rgba(237, 95, 30, 0.08) 100%); border-left: 4px solid #FFB800 !important;">
                     <div class="d-flex align-items-start">
                         <i class="fas fa-info-circle text-racine-orange mr-3 mt-1" style="font-size: 1.5rem;"></i>
                         <div>
@@ -49,13 +49,13 @@
                         <div class="text-center mb-4">
                             <div class="account-structure" style="font-size: 1.1rem; line-height: 2.5;">
                                 <div class="mb-3">
-                                    <strong style="color: #D4A574; font-size: 1.3rem;">UN UTILISATEUR</strong>
+                                    <strong style="color: #FFB800; font-size: 1.3rem;">UN UTILISATEUR</strong>
                                 </div>
                                 <div class="mb-3">
                                     <i class="fas fa-arrow-down text-racine-orange" style="font-size: 1.5rem;"></i>
                                 </div>
                                 <div class="mb-3">
-                                    <strong style="color: #8B5A2B; font-size: 1.2rem;">UN COMPTE</strong><br>
+                                    <strong style="color: #ED5F1E; font-size: 1.2rem;">UN COMPTE</strong><br>
                                     <span class="text-muted">(email / Google / Apple / Facebook)</span>
                                 </div>
                                 <div class="mb-3">
@@ -94,7 +94,7 @@
 
                         {{-- QUESTION 1 --}}
                         <div class="faq-item mb-4 pb-4 border-bottom">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Ai-je besoin de créer deux comptes ?
                             </h3>
                             <div class="alert alert-danger border-0 mb-3" style="background: rgba(239, 68, 68, 0.1);">
@@ -128,7 +128,7 @@
 
                         {{-- QUESTION 2 --}}
                         <div class="faq-item mb-4 pb-4 border-bottom">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Que se passe-t-il si je deviens créateur ?
                             </h3>
                             <div class="alert alert-success border-0 mb-3" style="background: rgba(34, 197, 94, 0.1);">
@@ -159,7 +159,7 @@
 
                         {{-- QUESTION 3 --}}
                         <div class="faq-item mb-4 pb-4 border-bottom">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Puis-je continuer à acheter même si je suis créateur ?
                             </h3>
                             <div class="alert alert-success border-0 mb-3" style="background: rgba(34, 197, 94, 0.1);">
@@ -186,7 +186,7 @@
 
                         {{-- QUESTION 4 --}}
                         <div class="faq-item mb-4">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Pourquoi mon compte créateur est "en attente" ?
                             </h3>
                             <p class="mb-3" style="font-size: 1.05rem; line-height: 1.8;">

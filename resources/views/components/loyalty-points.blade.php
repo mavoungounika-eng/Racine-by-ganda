@@ -10,9 +10,9 @@
         'gold' => 'Gold',
     ];
     $tierColors = [
-        'bronze' => '#cd7f32',
-        'silver' => '#c0c0c0',
-        'gold' => '#ffd700',
+        'bronze' => '#ED5F1E',
+        'silver' => 'rgba(22,13,12,0.3)',
+        'gold' => '#FFB800',
     ];
 @endphp
 
