@@ -31,7 +31,20 @@
                     </div>
                 </div>
                 <div class="hero-image">
-                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=1000&fit=crop" alt="Mode Africaine" class="hero-image-main">
+                    {{-- Collage CSS – aucune dépendance image externe --}}
+                    <div class="hero-visual-collage" aria-label="Mode Africaine Contemporaine">
+                        <div class="collage-block collage-block--main">
+                            <div class="collage-pattern"></div>
+                            <div class="collage-label">
+                                <span>✦</span>
+                                <p>Créations Africaines</p>
+                            </div>
+                        </div>
+                        <div class="collage-block collage-block--accent"></div>
+                        <div class="collage-block collage-block--dark">
+                            <span class="collage-monogram">R</span>
+                        </div>
+                    </div>
                     <div class="hero-image-float hero-float-1">
                         <div class="hero-float-content">
                             <div class="hero-float-icon"><i class="fas fa-truck"></i></div>
@@ -103,48 +116,44 @@
         
         <div class="categories-grid">
             @foreach($categories ?? [] as $category)
-            <a href="{{ route('frontend.shop', ['category' => $category->id]) }}" class="category-card">
+            <a href="{{ route('frontend.shop', ['category' => $category->id]) }}" class="category-card category-card-css">
                 @if($category->image)
-                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}">
+                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}"
+                         style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
                 @else
-                    <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="{{ $category->name }}">
+                    <div class="category-css-bg">
+                        <div class="category-css-pattern"></div>
+                        <i class="fas fa-tshirt category-css-icon"></i>
+                    </div>
                 @endif
                 <div class="category-overlay">
                     <h3>{{ $category->name }}</h3>
-                    <span>{{ $category->products_count ?? 0 }} article{{ $category->products_count > 1 ? 's' : '' }}</span>
+                    <span>{{ $category->products_count ?? 0 }} article{{ ($category->products_count ?? 0) > 1 ? 's' : '' }}</span>
                 </div>
             </a>
             @endforeach
             
             @if(empty($categories) || count($categories ?? []) === 0)
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop" alt="Robes">
+            @php
+                $defaultCategories = [
+                    ['name' => 'Robes', 'icon' => 'fas fa-star', 'mod' => ''],
+                    ['name' => 'Chemises', 'icon' => 'fas fa-tshirt', 'mod' => '--accent'],
+                    ['name' => 'Accessoires', 'icon' => 'fas fa-gem', 'mod' => '--dark'],
+                    ['name' => 'Sur-mesure', 'icon' => 'fas fa-cut', 'mod' => '--warm'],
+                ];
+            @endphp
+            @foreach($defaultCategories as $cat)
+            <a href="{{ route('frontend.shop') }}" class="category-card category-card-css{{ $cat['mod'] }}">
+                <div class="category-css-bg">
+                    <div class="category-css-pattern"></div>
+                    <i class="{{ $cat['icon'] }} category-css-icon"></i>
+                </div>
                 <div class="category-overlay">
-                    <h3>Robes</h3>
-                    <span>Découvrir</span>
+                    <h3>{{ $cat['name'] }}</h3>
+                    <span>Découvrir <i class="fas fa-arrow-right ms-1"></i></span>
                 </div>
             </a>
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Chemises">
-                <div class="category-overlay">
-                    <h3>Chemises</h3>
-                    <span>Découvrir</span>
-                </div>
-            </a>
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop" alt="Accessoires">
-                <div class="category-overlay">
-                    <h3>Accessoires</h3>
-                    <span>Découvrir</span>
-                </div>
-            </a>
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Sur-mesure">
-                <div class="category-overlay">
-                    <h3>Sur-mesure</h3>
-                    <span>Découvrir</span>
-                </div>
-            </a>
+            @endforeach
             @endif
         </div>
     </div>
@@ -165,18 +174,21 @@
         
         <div class="products-grid">
             @foreach($featuredProducts ?? [] as $product)
-            <a href="{{ route('frontend.product', $product->id) }}" class="product-card">
+            <a href="{{ route('frontend.product', $product->id) }}" class="product-card reveal-item">
                 <div class="product-image">
                     @if($product->main_image)
                         <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->title }}">
                     @else
-                        <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop" alt="{{ $product->title }}">
+                        <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
                     @endif
                     @if($product->created_at->isAfter(now()->subDays(30)))
                     <span class="product-badge">Nouveau</span>
                     @endif
+                    <div class="product-hover-cta">
+                        <span><i class="fas fa-eye me-2"></i>Voir le produit</span>
+                    </div>
                     @auth
-                    <button class="product-wishlist" 
+                    <button class="product-wishlist"
                             data-product-id="{{ $product->id }}"
                             onclick="event.preventDefault(); toggleWishlist({{ $product->id }});">
                         <i class="far fa-heart" id="wishlist-icon-{{ $product->id }}"></i>
@@ -194,21 +206,34 @@
             @endforeach
             
             @if(empty($featuredProducts) || count($featuredProducts ?? []) === 0)
-            @for($i = 0; $i < 4; $i++)
-            <a href="{{ route('frontend.shop') }}" class="product-card">
-                <div class="product-image">
-                    <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Produit">
+            @php
+                $demoProducts = [
+                    ['title' => 'Robe Wax Premium', 'category' => 'Robes', 'price' => '45 000', 'mod' => ''],
+                    ['title' => 'Ensemble Kente', 'category' => 'Ensembles', 'price' => '62 000', 'mod' => '--b'],
+                    ['title' => 'Collier Artisanal', 'category' => 'Accessoires', 'price' => '18 500', 'mod' => '--c'],
+                    ['title' => 'Chemise Bogolan', 'category' => 'Chemises', 'price' => '28 000', 'mod' => '--d'],
+                ];
+            @endphp
+            @foreach($demoProducts as $demo)
+            <a href="{{ route('frontend.shop') }}" class="product-card reveal-item">
+                <div class="product-image product-image-css{{ $demo['mod'] }}">
+                    <div class="product-css-placeholder">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
                     <span class="product-badge">Nouveau</span>
+                    <div class="product-hover-cta">
+                        <span><i class="fas fa-eye me-2"></i>Voir le produit</span>
+                    </div>
                 </div>
                 <div class="product-info">
-                    <div class="product-category">Mode</div>
-                    <h3 class="product-name">Découvrir nos produits</h3>
+                    <div class="product-category">{{ $demo['category'] }}</div>
+                    <h3 class="product-name">{{ $demo['title'] }}</h3>
                     <div class="product-price">
-                        <span class="current">Voir la boutique</span>
+                        <span class="current">{{ $demo['price'] }} FCFA</span>
                     </div>
                 </div>
             </a>
-            @endfor
+            @endforeach
             @endif
         </div>
     </div>
@@ -231,14 +256,21 @@
         <div class="container">
             <div class="about-grid">
                 <div class="about-images">
-                    <div class="about-img">
-                        <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop" alt="Mode Africaine">
+                    <div class="about-img about-img--primary">
+                        <div class="about-img-css about-img-css--main">
+                            <div class="about-img-pattern"></div>
+                            <span class="about-img-text">Mode<br>Africaine</span>
+                        </div>
                     </div>
                     <div class="about-img">
-                        <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Création">
+                        <div class="about-img-css about-img-css--accent">
+                            <i class="fas fa-palette"></i>
+                        </div>
                     </div>
                     <div class="about-img">
-                        <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Vêtement">
+                        <div class="about-img-css about-img-css--dark">
+                            <i class="fas fa-gem"></i>
+                        </div>
                     </div>
                 </div>
                 <div class="about-content">
@@ -291,24 +323,47 @@
         </div>
         
         <div class="creators-grid">
-            <div class="creator-card">
-                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=faces" alt="Créateur" class="creator-avatar">
-                <h3>Amina Diallo</h3>
-                <p class="creator-specialty">Styliste - Dakar, Sénégal</p>
-                <p class="creator-bio">Spécialiste du wax moderne, Amina crée des pièces qui allient tradition et contemporanéité.</p>
+            @forelse($latestCreators ?? [] as $creator)
+            <div class="creator-card reveal-item">
+                @if($creator->user?->avatar)
+                    <img src="{{ asset('storage/' . $creator->user->avatar) }}"
+                         alt="{{ $creator->user->name }}"
+                         class="creator-avatar">
+                @else
+                    <div class="creator-avatar creator-avatar-initials">
+                        {{ strtoupper(substr($creator->user?->name ?? 'R', 0, 1)) }}
+                    </div>
+                @endif
+                <h3>{{ $creator->user?->name ?? 'Créateur' }}</h3>
+                <p class="creator-specialty">
+                    {{ $creator->specialty ?? 'Styliste' }}
+                    @if($creator->city)· {{ $creator->city }}@endif
+                </p>
+                <p class="creator-bio">{{ Str::limit($creator->bio ?? 'Créateur passionné de mode africaine authentique.', 120) }}</p>
+                <a href="{{ route('frontend.creators') }}" class="creator-link">
+                    Voir les créations <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
-            <div class="creator-card">
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces" alt="Créateur" class="creator-avatar">
-                <h3>Kwame Asante</h3>
-                <p class="creator-specialty">Créateur - Accra, Ghana</p>
-                <p class="creator-bio">Expert en kente, Kwame perpétue un savoir-faire familial vieux de trois générations.</p>
+            @empty
+            @php
+                $demoCreators = [
+                    ['initials' => 'A', 'name' => 'Amina Diallo', 'specialty' => 'Styliste · Dakar', 'bio' => 'Spécialiste du wax moderne, crée des pièces qui allient tradition et contemporanéité.'],
+                    ['initials' => 'K', 'name' => 'Kwame Asante', 'specialty' => 'Créateur · Accra', 'bio' => 'Expert en kente, perpétue un savoir-faire familial vieux de trois générations.'],
+                    ['initials' => 'F', 'name' => 'Fatou Ndiaye', 'specialty' => 'Accessoiriste · Abidjan', 'bio' => 'Bijoux et accessoires inspirés des motifs traditionnels ivoiriens.'],
+                ];
+            @endphp
+            @foreach($demoCreators as $demo)
+            <div class="creator-card reveal-item">
+                <div class="creator-avatar creator-avatar-initials">{{ $demo['initials'] }}</div>
+                <h3>{{ $demo['name'] }}</h3>
+                <p class="creator-specialty">{{ $demo['specialty'] }}</p>
+                <p class="creator-bio">{{ $demo['bio'] }}</p>
+                <a href="{{ route('frontend.creators') }}" class="creator-link">
+                    Voir les créations <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
-            <div class="creator-card">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces" alt="Créateur" class="creator-avatar">
-                <h3>Fatou Ndiaye</h3>
-                <p class="creator-specialty">Accessoiriste - Abidjan, Côte d'Ivoire</p>
-                <p class="creator-bio">Créatrice de bijoux et accessoires inspirés des motifs traditionnels ivoiriens.</p>
-            </div>
+            @endforeach
+            @endforelse
         </div>
     </div>
 </section>
@@ -316,6 +371,21 @@
 {{-- Section newsletter supprimée - Remplacée par les CTA dans le footer --}}
 @push('scripts')
 <script>
+// Scroll reveal
+(function () {
+    const items = document.querySelectorAll('.reveal-item');
+    if (!items.length) return;
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('revealed'), i * 80);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    items.forEach(el => observer.observe(el));
+})();
+
 // Fonction pour gérer la wishlist
 function toggleWishlist(productId) {
     const icon = document.getElementById('wishlist-icon-' + productId);

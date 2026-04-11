@@ -132,12 +132,81 @@
     position: relative;
 }
 
-.hero-image-main {
-    width: 100%;
-    height: 600px;
-    object-fit: cover;
+/* ===== HERO COLLAGE CSS (zéro dépendance image externe) ===== */
+.hero-visual-collage {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    height: 560px;
     border-radius: 24px;
-    box-shadow: 0 40px 80px rgba(22, 13, 12, 0.4);
+    overflow: hidden;
+}
+
+.collage-block {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.collage-block--main {
+    grid-row: span 2;
+    background: linear-gradient(160deg, #ED5F1E 0%, #160D0C 70%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+}
+
+.collage-pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+        repeating-linear-gradient(45deg, rgba(255,184,0,0.08) 0px, rgba(255,184,0,0.08) 2px, transparent 2px, transparent 20px),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px, transparent 2px, transparent 20px);
+}
+
+.collage-label {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.collage-label span {
+    font-size: 2rem;
+    color: #FFB800;
+    line-height: 1;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.collage-label p {
+    font-family: 'Cormorant Garamond', 'Aileron', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.collage-block--accent {
+    background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
+}
+
+.collage-block--dark {
+    background: #160D0C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 184, 0, 0.25);
+}
+
+.collage-monogram {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    font-weight: 700;
+    color: rgba(255, 184, 0, 0.6);
+    letter-spacing: 0.05em;
+    animation: pulse 3s ease-in-out infinite;
 }
 
 .hero-image-float {
@@ -595,6 +664,169 @@
     color: #160D0C;
     font-size: 0.95rem;
     line-height: 1.6;
+}
+
+/* ===== CREATOR LINK ===== */
+.creator-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #ED5F1E;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 1rem;
+    transition: gap 0.3s;
+}
+.creator-link:hover { gap: 0.8rem; color: #160D0C; }
+
+/* ===== CREATOR AVATAR INITIALS ===== */
+.creator-avatar-initials {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 auto 1.5rem;
+    border: 4px solid white;
+    box-shadow: 0 8px 25px rgba(237, 95, 30, 0.25);
+}
+
+/* ===== CATEGORY CARDS CSS ===== */
+.category-card-css { position: relative; }
+.category-css-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #160D0C 0%, #2a1510 100%);
+}
+.category-card-css--accent .category-css-bg {
+    background: linear-gradient(160deg, #ED5F1E 0%, #160D0C 100%);
+}
+.category-card-css--dark .category-css-bg {
+    background: linear-gradient(160deg, #160D0C 0%, #ED5F1E 80%);
+}
+.category-card-css--warm .category-css-bg {
+    background: linear-gradient(160deg, #FFB800 0%, #ED5F1E 60%, #160D0C 100%);
+}
+.category-css-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        60deg,
+        rgba(255,184,0,0.07) 0px, rgba(255,184,0,0.07) 1px,
+        transparent 1px, transparent 24px
+    );
+}
+.category-css-icon {
+    position: relative;
+    z-index: 1;
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.15);
+}
+
+/* ===== PRODUCT HOVER CTA ===== */
+.product-hover-cta {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 1.25rem;
+    background: linear-gradient(to top, rgba(22,13,12,0.88) 0%, transparent 100%);
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.product-hover-cta span {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+.product-card:hover .product-hover-cta {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===== PRODUCT CSS PLACEHOLDER ===== */
+.product-css-placeholder {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(22,13,12,0.06) 0%, rgba(237,95,30,0.08) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(22, 13, 12, 0.15);
+    font-size: 3rem;
+}
+
+/* ===== ABOUT IMAGES CSS ===== */
+.about-img-css {
+    width: 100%; height: 100%;
+    min-height: 180px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+.about-img-css--main {
+    background: linear-gradient(160deg, #ED5F1E 0%, #160D0C 100%);
+    flex-direction: column;
+    gap: 1rem;
+}
+.about-img-css--accent {
+    background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
+}
+.about-img-css--dark {
+    background: #160D0C;
+    border: 1px solid rgba(255,184,0,0.2);
+}
+.about-img-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 18px);
+}
+.about-img-text {
+    position: relative;
+    z-index: 1;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    line-height: 1.3;
+}
+.about-img-css i {
+    font-size: 2.5rem;
+    color: rgba(255,255,255,0.35);
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== FEATURES BAR — séparateur visible ===== */
+.features-bar {
+    border-bottom: 1px solid rgba(22, 13, 12, 0.08) !important;
+    border-top: 1px solid rgba(22, 13, 12, 0.06) !important;
+    background: #FAFAFA !important;
+}
+
+/* ===== SCROLL REVEAL ===== */
+.reveal-item {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal-item.revealed {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* ===== NEWSLETTER SECTION - SUPPRIMÉE ===== */
