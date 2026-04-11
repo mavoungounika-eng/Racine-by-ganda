@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RACINE BY GANDA - Navbar Premium</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'racine-orange': '#f17c1f',
+                        'racine-dark-1': '#1c1412',
+                        'racine-dark-2': '#261915',
+                    },
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Gradient Background */
+        .navbar-gradient {
+            background: linear-gradient(135deg, #1c1412 0%, #261915 100%);
+        }
+
+        /* Smooth transitions */
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #f17c1f;
+            transform: translateY(-2px);
+        }
+
+        /* Mobile menu animation */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .mobile-menu.active {
+            max-height: 600px;
+        }
+
+        /* Logo glow effect */
+        .logo-glow {
+            box-shadow: 0 0 20px rgba(241, 124, 31, 0.3);
+        }
+
+        /* Button pulse animation */
+        @keyframes pulse-orange {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(241, 124, 31, 0.7);
+            }
+
+            50% {
+                box-shadow: 0 0 0 10px rgba(241, 124, 31, 0);
+            }
+        }
+
+        .btn-connexion {
+            animation: pulse-orange 2s infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- ========================================
+     NAVBAR PREMIUM RACINE BY GANDA
+     ======================================== -->
+    <header class="navbar-gradient shadow-2xl sticky top-0 z-50 border-b-2 border-racine-orange/20">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+
+                <!-- ===== LOGO + MARQUE (Gauche) ===== -->
+                <a href="/" class="flex items-center space-x-3 group">
+                    <!-- Logo Image -->
+                    <div
+                        class="w-14 h-14 bg-black rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 p-1">
+                        <img src="/images/logo-racine.png" alt="RACINE BY GANDA" class="w-full h-full object-contain">
+                    </div>
+
+                    <!-- Marque -->
+                    <div class="flex flex-col">
+                        <span class="text-racine-orange font-montserrat font-bold text-xl tracking-wider uppercase">
+                            RACINE BY GANDA
+                        </span>
+                    </div>
+                </a>
+
+                <!-- ===== MENU DESKTOP (Centre) ===== -->
+                <nav class="hidden lg:flex items-center space-x-8">
+                    <a href="/" class="nav-link text-white font-inter font-medium hover:text-racine-orange">
+                        Accueil
+                    </a>
+                    <a href="/atelier" class="nav-link text-white font-inter font-medium hover:text-racine-orange">
+                        Atelier
+                    </a>
+                    <a href="/boutique" class="nav-link text-white font-inter font-medium hover:text-racine-orange">
+                        Boutique
+                    </a>
+                    <a href="/boutique-createurs"
+                        class="nav-link text-white font-inter font-medium hover:text-racine-orange">
+                        Boutique Créateurs
+                    </a>
+                    <a href="/showroom" class="nav-link text-white font-inter font-medium hover:text-racine-orange">
+                        Showroom
+                    </a>
+                    <a href="/a-propos" class="nav-link text-white font-inter font-medium hover:text-racine-orange">
+                        À propos
+                    </a>
+                    <a href="/contact" class="nav-link text-white font-inter font-medium hover:text-racine-orange">
+                        Contact
+                    </a>
+                    <a href="/panier"
+                        class="nav-link text-white font-inter font-medium hover:text-racine-orange flex items-center space-x-2">
+                        <span>🛒</span>
+                        <span>Panier</span>
+                    </a>
+                </nav>
+
+                <!-- ===== BOUTON CONNEXION (Droite) ===== -->
+                <div class="hidden lg:block">
+                    <a href="/connexion"
+                        class="btn-connexion w-12 h-12 bg-gradient-to-br from-racine-orange to-orange-600 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 shadow-lg">
+                        <span class="text-2xl">👤</span>
+                    </a>
+                </div>
+
+                <!-- ===== BURGER MENU (Mobile) ===== -->
+                <button id="burger-btn" class="lg:hidden text-white focus:outline-none">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- ===== MENU MOBILE ===== -->
+            <div id="mobile-menu" class="mobile-menu lg:hidden mt-4">
+                <nav class="flex flex-col space-y-3 pb-4">
+                    <a href="/"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all">
+                        Accueil
+                    </a>
+                    <a href="/atelier"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all">
+                        Atelier
+                    </a>
+                    <a href="/boutique"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all">
+                        Boutique
+                    </a>
+                    <a href="/boutique-createurs"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all">
+                        Boutique Créateurs
+                    </a>
+                    <a href="/showroom"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all">
+                        Showroom
+                    </a>
+                    <a href="/a-propos"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all">
+                        À propos
+                    </a>
+                    <a href="/contact"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all">
+                        Contact
+                    </a>
+                    <a href="/panier"
+                        class="text-white font-inter font-medium py-2 px-4 rounded hover:bg-racine-orange/20 hover:text-racine-orange transition-all flex items-center space-x-2">
+                        <span>🛒</span>
+                        <span>Panier</span>
+                    </a>
+
+                    <!-- Connexion Mobile -->
+                    <a href="/connexion"
+                        class="bg-gradient-to-br from-racine-orange to-orange-600 text-white font-inter font-semibold py-3 px-4 rounded-full hover:scale-105 transition-all flex items-center justify-center space-x-2 shadow-lg">
+                        <span>👤</span>
+                        <span>Connexion</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================
+     CONTENU DEMO
+     ======================================== -->
+    <main class="container mx-auto px-4 py-12">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
+            <h1 class="text-4xl font-montserrat font-bold text-gray-800 mb-4">
+                🎨 Navbar Premium RACINE BY GANDA
+            </h1>
+            <p class="text-gray-600 font-inter text-lg mb-6">
+                Navbar afro-minimaliste premium avec toutes les fonctionnalités demandées.
+            </p>
+
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                        <h3 class="font-montserrat font-semibold text-gray-800">Logo + Identité Complète</h3>
+                        <p class="text-gray-600 font-inter text-sm">Logo rond orange avec "R" + nom complet + sous-titre
+                            cliquable</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                        <h3 class="font-montserrat font-semibold text-gray-800">Menu Complet Desktop</h3>
+                        <p class="text-gray-600 font-inter text-sm">8 liens centrés avec distinction Boutique / Boutique
+                            Créateurs</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                        <h3 class="font-montserrat font-semibold text-gray-800">Bouton Connexion Premium</h3>
+                        <p class="text-gray-600 font-inter text-sm">Bouton rond orange avec emoji 👤 et animation pulse
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                        <h3 class="font-montserrat font-semibold text-gray-800">Responsive Mobile</h3>
+                        <p class="text-gray-600 font-inter text-sm">Burger menu avec tous les liens + connexion avec
+                            texte</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                        <h3 class="font-montserrat font-semibold text-gray-800">Style Premium</h3>
+                        <p class="text-gray-600 font-inter text-sm">Gradient sombre, hover orange, animations douces,
+                            ombres élégantes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 p-4 bg-orange-50 rounded-lg border-l-4 border-racine-orange">
+                <p class="text-sm font-inter text-gray-700">
+                    <strong>💡 Intégration Laravel:</strong> Remplacez les liens <code
+                        class="bg-gray-200 px-2 py-1 rounded">/boutique</code> par <code
+                        class="bg-gray-200 px-2 py-1 rounded">{{ route('frontend.shop') }}</code> et adaptez selon vos
+                    routes.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========================================
+     JAVASCRIPT (Toggle Mobile Menu)
+     ======================================== -->
+    <script>
+        // Toggle mobile menu
+        const burgerBtn = document.getElementById('burger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        burgerBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!burgerBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+* * * * * cd /home/nika/projects/racine-backend && php artisan schedule:run >> /dev/null 2>&1

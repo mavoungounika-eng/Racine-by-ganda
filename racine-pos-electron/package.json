@@ -1,0 +1,57 @@
+{
+  "name": "racine-pos",
+  "version": "1.0.0",
+  "description": "POS Desktop App - Racine by GANDA",
+  "main": "electron/main.js",
+  "homepage": "http://localhost:8000",
+  "scripts": {
+    "start": "npm run electron:dev",
+    "dev": "vite",
+    "electron:dev": "concurrently \"vite\" \"electron .\"",
+    "build": "vite build",
+    "electron:build": "vite build && electron-builder",
+    "electron:build:win": "vite build && electron-builder --win nsis"
+  },
+  "author": "RACINE BY GANDA",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "idb": "^8.0.3",
+    "laravel-echo": "^2.3.1",
+    "pinia": "^3.0.4",
+    "pusher-js": "^8.4.0",
+    "vue": "^3.5.30",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.5",
+    "concurrently": "^9.2.1",
+    "electron": "^22.0.0",
+    "electron-builder": "^24.13.3",
+    "vue-i18n": "^11.3.0"
+  },
+  "build": {
+    "appId": "com.racinebyganda.pos",
+    "productName": "Racine POS",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Racine POS"
+    }
+  }
+}

@@ -1,0 +1,549 @@
+/* =============================================
+   🎨 RACINE BY GANDA - Creator Design System
+   Version: 2.0 (Consolidé)
+   Date: 2026-01-24
+   Phase: AXE D - Consolidation
+   =============================================
+   
+   Responsabilité: Design system espace créateur
+   Usage: Routes /creator/* UNIQUEMENT
+   Chargement: CONDITIONNEL (espace créateur)
+   
+   FUSION de:
+   - creator-design-system.css (624L)
+   - creator-premium.css (231L)
+   ============================================= */
+
+/* ===== CARDS CRÉATEUR ===== */
+
+.creator-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(212, 165, 116, 0.1);
+    transition: var(--transition-normal);
+}
+
+.creator-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(212, 165, 116, 0.2);
+}
+
+.creator-card-premium {
+    background: linear-gradient(135deg, white 0%, #FFFFFF 100%);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(212, 165, 116, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-normal);
+}
+
+.creator-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--racine-orange), var(--racine-yellow));
+}
+
+.creator-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* ===== STAT CARDS ===== */
+
+.creator-stat-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: var(--transition-normal);
+}
+
+.creator-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(237, 95, 30, 0.12);
+}
+
+.creator-stat-card-premium {
+    background: linear-gradient(135deg, white 0%, #FFFFFF 100%);
+    border-radius: var(--radius-xl);
+    padding: 1.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(212, 165, 116, 0.15);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-normal);
+}
+
+.creator-stat-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--stat-color-1, var(--racine-orange)), var(--stat-color-2, var(--racine-yellow)));
+}
+
+.creator-stat-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.creator-stat-value,
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--racine-black);
+    font-family: 'Playfair Display', 'Libre Baskerville', serif;
+    line-height: 1.2;
+    margin: 0.5rem 0;
+}
+
+.creator-stat-label,
+.stat-label {
+    font-size: 0.75rem;
+    color: #160D0C;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+/* ===== BOUTONS CRÉATEUR ===== */
+
+.creator-btn,
+.creator-btn-premium {
+    background: linear-gradient(135deg, var(--racine-orange) 0%, var(--racine-yellow) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: 0.875rem 2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: var(--transition-normal);
+    box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.creator-btn:hover,
+.creator-btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(237, 95, 30, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.creator-btn:active,
+.creator-btn-premium:active {
+    transform: translateY(0);
+}
+
+.creator-btn:disabled,
+.creator-btn-premium:disabled {
+    background: #FFFFFFFFF;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Variantes de taille */
+.creator-btn-sm {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+}
+
+.creator-btn-lg {
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+}
+
+/* Variantes de couleur */
+.creator-btn-secondary {
+    background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+}
+
+.creator-btn-secondary:hover {
+    box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+}
+
+/* Action buttons (petits boutons icônes) */
+.creator-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-normal);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.creator-action-btn:hover {
+    transform: translateY(-2px) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+}
+
+/* ===== FORMS CRÉATEUR ===== */
+
+.creator-form-group {
+    margin-bottom: var(--space-lg);
+}
+
+.creator-label {
+    display: block;
+    font-weight: 600;
+    color: var(--racine-black);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.creator-input,
+.creator-form-control {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid #FFFFFFFFF;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    color: var(--racine-black);
+    background: white;
+    transition: var(--transition-fast);
+}
+
+.creator-input:focus,
+.creator-form-control:focus {
+    outline: none;
+    border-color: #FFB800;
+    box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
+}
+
+.creator-input::placeholder {
+    color: #160D0C;
+    font-style: italic;
+}
+
+.creator-select {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid #FFFFFFFFF;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    color: var(--racine-black);
+    background: white;
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.creator-select:focus {
+    outline: none;
+    border-color: #FFB800;
+    box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
+}
+
+.creator-textarea {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid #FFFFFFFFF;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    color: var(--racine-black);
+    background: white;
+    transition: var(--transition-fast);
+    resize: vertical;
+    min-height: 120px;
+}
+
+.creator-textarea:focus {
+    outline: none;
+    border-color: #FFB800;
+    box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
+}
+
+/* ===== TABLES CRÉATEUR ===== */
+
+.creator-table-container,
+.creator-table-premium {
+    background: white;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.creator-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.creator-table thead {
+    background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFFFFF 100%);
+}
+
+.creator-table th {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #160D0C;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid #FFB800;
+}
+
+.creator-table td {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid #FFFFFF;
+    color: var(--racine-black);
+}
+
+.creator-table tbody tr {
+    transition: var(--transition-fast);
+}
+
+.creator-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(212, 165, 116, 0.05) 0%, transparent 100%);
+}
+
+.creator-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== BADGES CRÉATEUR ===== */
+
+.creator-badge,
+.creator-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Variantes de couleur */
+.creator-badge-success,
+.creator-status-badge-active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #FFB800;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.creator-badge-warning,
+.creator-status-badge-pending {
+    background: rgba(234, 179, 8, 0.1);
+    color: #FFB800;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.creator-badge-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ED5F1E;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.creator-badge-info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #160D0C;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.creator-badge-purple {
+    background: rgba(139, 92, 246, 0.1);
+    color: #160D0C;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.creator-badge-gray,
+.creator-status-badge-inactive {
+    background: rgba(148, 163, 184, 0.1);
+    color: #160D0C;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* ===== AVATARS ===== */
+
+.creator-avatar {
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--racine-orange) 0%, var(--racine-yellow) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    box-shadow: var(--shadow-orange);
+    flex-shrink: 0;
+}
+
+.creator-avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+}
+
+.creator-avatar-md {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+}
+
+.creator-avatar-lg {
+    width: 70px;
+    height: 70px;
+    font-size: 1.75rem;
+}
+
+.creator-avatar-xl {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+}
+
+/* ===== HERO SECTION ===== */
+
+.creator-hero {
+    background: linear-gradient(135deg, var(--racine-black) 0%, var(--racine-black-soft) 100%);
+    padding: var(--space-lg) 0;
+    margin: calc(var(--space-lg) * -1) calc(var(--space-lg) * -1) var(--space-lg) calc(var(--space-lg) * -1);
+    border-bottom: 2px solid rgba(237, 95, 30, 0.3);
+}
+
+/* ===== EMPTY STATES ===== */
+
+.creator-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #FFFFFF 0%, white 100%);
+    border-radius: var(--radius-xl);
+    border: 2px dashed #FFB800;
+}
+
+.creator-empty-state i {
+    font-size: 3rem;
+    color: #160D0C;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.creator-empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--racine-black);
+    margin-bottom: 0.5rem;
+}
+
+.creator-empty-state p {
+    color: #160D0C;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== ALERTS CRÉATEUR ===== */
+
+.creator-alert,
+.creator-alert-box {
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 2px solid;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.creator-alert-success,
+.creator-alert-box-success {
+    background: #FFFFFF;
+    border-color: #FFB800;
+    color: #160D0C;
+}
+
+.creator-alert-warning,
+.creator-alert-box-warning {
+    background: #FFFFFFFFF;
+    border-color: #FFB800;
+    color: #ED5F1E;
+}
+
+.creator-alert-danger,
+.creator-alert-box-error {
+    background: #FFFFFF;
+    border-color: #ED5F1E;
+    color: #ED5F1E;
+}
+
+.creator-alert-info,
+.creator-alert-box-info {
+    background: #FFFFFFFFF;
+    border-color: #160D0C;
+    color: #160D0C;
+}
+
+/* ===== QUICK ACTIONS (de creator-premium) ===== */
+
+.creator-quick-action {
+    background: white;
+    border: 2px solid #FFFFFFFFF;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition-normal);
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+}
+
+.creator-quick-action:hover {
+    border-color: var(--racine-orange);
+    background: rgba(237, 95, 30, 0.05);
+    transform: translateY(-4px);
+}
+
+.creator-quick-action-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--racine-orange) 0%, var(--racine-yellow) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+
+    .creator-stat-value,
+    .stat-value {
+        font-size: 2rem;
+    }
+
+    .creator-card,
+    .creator-card-premium {
+        padding: 1.5rem;
+    }
+
+    .creator-btn,
+    .creator-btn-premium {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+    }
+}

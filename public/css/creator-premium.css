@@ -1,0 +1,170 @@
+/* =============================================
+   Creator Premium — RACINE BY GANDA
+   Styles premium pour l'espace créateur
+   ============================================= */
+
+/* Creator Dashboard Cards */
+.creator-stat-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+}
+.creator-stat-card:hover {
+    transform: translateY(-2px);
+}
+.creator-stat-card .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+.creator-stat-card .stat-icon.sales { background: #FFFFFFFFF; color: #160D0C; }
+.creator-stat-card .stat-icon.revenue { background: #FFFFFFFFF; color: #160D0C; }
+.creator-stat-card .stat-icon.products { background: #FFFFFF; color: #ED5F1E; }
+.creator-stat-card .stat-icon.rating { background: #FFFFFFFFF; color: #ED5F1E; }
+
+/* Product Management */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+}
+.product-card-creator {
+    background: #FFFFFF;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.product-card-creator:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.product-card-creator .product-image {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+.product-card-creator .product-info {
+    padding: 1rem;
+}
+.product-card-creator .product-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ED5F1E;
+}
+.product-card-creator .product-stock {
+    font-size: 0.8rem;
+    color: #160D0C;
+}
+
+/* Subscription Tier Badge */
+.tier-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25em 0.75em;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.tier-badge.free { background: #FFFFFFFFF; color: #160D0C; }
+.tier-badge.starter { background: #FFFFFFFFF; color: #160D0C; }
+.tier-badge.pro { background: #FFFFFFFFF; color: #160D0C; }
+.tier-badge.premium { background: linear-gradient(135deg, #ED5F1E, #ED5F1E); color: #FFFFFF; }
+
+/* Creator Analytics Charts */
+.analytics-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 1.25rem;
+}
+.analytics-card .analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.analytics-card .analytics-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #160D0C;
+}
+
+/* Order Status Timeline */
+.order-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+.order-timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #FFFFFFFFF;
+}
+.order-timeline .timeline-item {
+    position: relative;
+    padding-bottom: 1.25rem;
+}
+.order-timeline .timeline-dot {
+    position: absolute;
+    left: -2rem;
+    top: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #FFFFFFFFF;
+    background: #FFFFFF;
+}
+.order-timeline .timeline-dot.completed {
+    background: #FFB800;
+    border-color: #FFB800;
+}
+
+/* KYC Progress */
+.kyc-progress {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.kyc-step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #FFFFFFFFF;
+}
+.kyc-step.done { background: #FFB800; }
+.kyc-step.current { background: #ED5F1E; }
+
+/* Empty State */
+.creator-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #160D0C;
+}
+.creator-empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #FFFFFFFFF;
+}
+.creator-empty-state .btn-cta {
+    background: #ED5F1E;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    margin-top: 1rem;
+}

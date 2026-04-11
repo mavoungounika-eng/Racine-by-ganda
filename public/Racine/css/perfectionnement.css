@@ -1,0 +1,350 @@
+/* PERFECTIONNEMENT FINAL - RACINE BY GANDA */
+
+/* Amélioration générale de la typographie */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Amélioration de l'accessibilité - Focus visible */
+*:focus {
+    outline: 2px solid #D4AF37;
+    outline-offset: 2px;
+}
+
+/* Skip link pour l'accessibilité */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #D4AF37;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 10000;
+    border-radius: 4px;
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+
+/* Amélioration de la navbar */
+.navbar-brand img {
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover img {
+    transform: scale(1.05);
+}
+
+.navbar-nav .nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #D4AF37;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-item.active .nav-link::after {
+    width: 80%;
+}
+
+/* Amélioration des boutons */
+.btn-custom {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-custom::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+}
+
+.btn-custom:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+/* Amélioration des cartes produits */
+.product {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.product:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.product .img-prod {
+    position: relative;
+    overflow: hidden;
+}
+
+.product .img-prod img {
+    transition: transform 0.3s ease;
+}
+
+.product:hover .img-prod img {
+    transform: scale(1.05);
+}
+
+.product .overlay {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.8) 0%, rgba(184, 134, 11, 0.8) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product:hover .overlay {
+    opacity: 1;
+}
+
+/* Amélioration de la section témoignage */
+.testimony-section {
+    position: relative;
+}
+
+.testimony-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(184, 134, 11, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Amélioration des étoiles */
+.star-rating i {
+    transition: all 0.2s ease;
+}
+
+.star-rating:hover i {
+    transform: scale(1.1);
+}
+
+.star-rating i:nth-child(1) { animation-delay: 0.1s; }
+.star-rating i:nth-child(2) { animation-delay: 0.2s; }
+.star-rating i:nth-child(3) { animation-delay: 0.3s; }
+.star-rating i:nth-child(4) { animation-delay: 0.4s; }
+.star-rating i:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes starGlow {
+    0%, 100% { 
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% { 
+        transform: scale(1.1);
+        filter: brightness(1.2);
+    }
+}
+
+.star-rating.animate i {
+    animation: starGlow 0.6s ease-in-out;
+}
+
+/* Amélioration de la galerie Instagram */
+.ftco-gallery .gallery {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.ftco-gallery .gallery:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.ftco-gallery .gallery .icon {
+    transition: all 0.3s ease;
+}
+
+.ftco-gallery .gallery:hover .icon {
+    transform: scale(1.2);
+}
+
+/* Amélioration du footer */
+.ftco-footer {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.ftco-footer-social li a {
+    transition: all 0.3s ease;
+}
+
+.ftco-footer-social li a:hover {
+    transform: translateY(-3px);
+    background: #D4AF37;
+}
+
+/* Amélioration du loader */
+#ftco-loader {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+#ftco-loader .circular .path {
+    stroke: #D4AF37;
+}
+
+/* Amélioration responsive */
+@media (max-width: 768px) {
+    .hero .slider-text h1 {
+        font-size: 2rem;
+    }
+    
+    .navbar-brand-text {
+        font-size: 1.2rem;
+    }
+    
+    .product {
+        margin-bottom: 30px;
+    }
+    
+    .testimony-wrap {
+        margin: 15px 0;
+    }
+}
+
+/* Animations d'entrée améliorées */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slideInLeft {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+.animate-slideInRight {
+    animation: slideInRight 0.6s ease-out;
+}
+
+/* Amélioration des performances */
+.img-fluid {
+    height: auto;
+    max-width: 100%;
+    object-fit: cover;
+}
+
+/* Préchargement des images importantes */
+.hero .slider-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+    z-index: 1;
+}
+
+/* Dark mode support (optionnel) */
+@media (prefers-color-scheme: dark) {
+    .bg-light {
+        background-color: #2c3e50 !important;
+        color: #ecf0f1;
+    }
+    
+    .product {
+        background: #34495e;
+        color: #ecf0f1;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .ftco-footer,
+    .btn-custom,
+    #ftco-loader {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}
+
+/* Réduction de mouvement pour l'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

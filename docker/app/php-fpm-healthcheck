@@ -1,0 +1,21 @@
+#!/bin/bash
+# ═══════════════════════════════════════════════════════════════
+# PHP-FPM Health Check Script
+# ═══════════════════════════════════════════════════════════════
+
+set -e
+
+# Check if PHP-FPM is running
+if ! pgrep -x php-fpm > /dev/null; then
+    echo "PHP-FPM is not running"
+    exit 1
+fi
+
+# Check PHP-FPM status
+SCRIPT_NAME=/status \
+SCRIPT_FILENAME=/status \
+REQUEST_METHOD=GET \
+cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
+
+echo "PHP-FPM is healthy"
+exit 0

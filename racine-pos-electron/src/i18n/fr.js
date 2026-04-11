@@ -1,0 +1,46 @@
+export default {
+  login: {
+    title: 'Connexion POS',
+    operator: 'Operateur',
+    email: 'Email',
+    password: 'Mot de passe',
+    button: 'Entrer',
+    initializing: 'Initialisation du terminal...',
+    ready: 'Terminal pret',
+  },
+  session: {
+    open: 'Ouvrir la session',
+    close: 'Cloturer la session',
+    cash: 'Caisse',
+    discrepancy: 'Ecart',
+  },
+  terminal: {
+    products: 'Produits',
+    cart: 'Panier',
+    total: 'Total',
+    checkout: 'Paiement',
+  },
+  payment: {
+    methods: 'Modes de paiement',
+    confirm: 'Confirmer',
+    cancel: 'Annuler',
+  },
+  offline: {
+    status: 'Hors ligne',
+    online: 'En ligne',
+    pending: '{count} vente(s) en attente',
+    syncing: 'Synchronisation...',
+    syncNow: 'Synchroniser maintenant',
+    lastSync: 'Derniere sync: {time}',
+    savedOffline: 'Vente enregistree hors ligne',
+    autoSync: 'Sync automatique a la reconnexion',
+    noConnection: 'Pas de connexion',
+    queueEmpty: 'File vide',
+  },
+  errors: {
+    UNAUTHORIZED: 'Acces non autorise',
+    SESSION_ALREADY_OPEN: 'Session deja ouverte',
+    SESSION_NOT_FOUND: 'Session introuvable',
+    PAYMENT_CONFIRM_FAILED: 'Confirmation paiement echouee',
+  },
+};

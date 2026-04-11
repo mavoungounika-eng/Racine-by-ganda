@@ -1,24 +1,55 @@
-*.log
-.DS_Store
+# Laravel / PHP
+/vendor/
+/bootstrap/cache/
+/storage/*.key
+/storage/app/*
+/storage/framework/*
+/storage/logs/*
+/storage/backups/
+!.env.example
+
+# Environment files
 .env
 .env.backup
+.env.local
+.env.*.local
 .env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
-/node_modules
-/public/build
+
+# Node / Front
+/node_modules/
+/racine-pos-electron/node_modules/
 /public/hot
 /public/storage
-/storage/*.key
-/storage/pail
-/vendor
-Homestead.json
-Homestead.yaml
+/public/build
+/public/mix-manifest.json
+/cypress/screenshots/
+
+# IDE / OS
+.vscode/
+.idea/
+*.log
+*.cache
+.DS_Store
 Thumbs.db
+
+# NPM/Yarn
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Other
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Legacy frontend (excluded from Laravel backend)
+Racine by GANDA/
+
+# POS Electron build artifacts
+/racine-pos-electron/dist/
+/racine-pos-electron/release/
+/racine-pos-electron/.vite/
+/racine-pos-electron/*.log
+
+# Ajouté automatiquement
+.env.production.local
+tests_backup_*/

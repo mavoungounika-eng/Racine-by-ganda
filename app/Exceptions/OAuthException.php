@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Exceptions;
+
+use Exception;
+
+/**
+ * Exception personnalisée pour les erreurs OAuth
+ * 
+ * Permet de passer des informations supplémentaires (comme une offre de conversion)
+ * pour améliorer l'UX en cas de conflit de rôle.
+ * 
+ * Module Social Auth v2
+ */
+class OAuthException extends Exception
+{
+    protected array $conversionOffer = [];
+
+    /**
+     * Définir une offre de conversion (pour conflit de rôle)
+     * 
+     * @param array $offer
+     * @return self
+     */
+    public function setConversionOffer(array $offer): self
+    {
+        $this->conversionOffer = $offer;
+        return $this;
+    }
+
+    /**
+     * Obtenir l'offre de conversion
+     * 
+     * @return array
+     */
+    public function getConversionOffer(): array
+    {
+        return $this->conversionOffer;
+    }
+}

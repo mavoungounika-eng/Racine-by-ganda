@@ -94,6 +94,14 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        'funnel' => [
+            'driver' => 'daily', // Rotation quotidienne des logs en production
+            'path' => storage_path('logs/funnel.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_FUNNEL_DAYS', 30), // Conserver 30 jours de logs
+            'replace_placeholders' => true,
+        ],
+
         'stderr' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -125,6 +133,73 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
+        ],
+
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        'auth' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/auth.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_AUTH_DAYS', 90), // Conserver 90 jours pour audit de sécurité
+            'replace_placeholders' => true,
+        ],
+
+        // Channel dédié POS Audit
+        'pos' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/pos/pos-audit.log'),
+            'level' => 'info',
+            'days' => 90,
+            'replace_placeholders' => true,
+        ],
+
+        // ✅ Module 8 : Canaux dédiés pour observabilité
+        'webhooks' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/webhooks.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_WEBHOOKS_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'payments' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/payments.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_PAYMENTS_DAYS', 90), // Conserver 90 jours pour audit financier
+            'replace_placeholders' => true,
+        ],
+
+        'queue' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/queue.log'),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => env('LOG_QUEUE_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'errors' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/errors.log'),
+            'level' => 'error', // Uniquement errors et critical
+            'days' => env('LOG_ERRORS_DAYS', 90), // Conserver 90 jours pour diagnostic
+            'replace_placeholders' => true,
+        ],
+
+        // ── ERP : Anomalies de stock ──────────────────────────────────────────
+        'erp_stock' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/erp/stock-anomaly.log'),
+            'level'  => 'warning',
+            'days'   => 90,
+            'replace_placeholders' => true,
         ],
 
     ],

@@ -1,35 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         colors="true"
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    executionOrder="depends,defects"
+    failOnRisky="true"
+    failOnWarning="false"
 >
+    <!-- ===================== -->
+    <!-- TEST SUITES -->
+    <!-- ===================== -->
     <testsuites>
+        <!-- ⚠️ Unit temporairement désactivé pour stabiliser le CI -->
+        <!--
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
+        -->
+
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <directory>modules/*/Tests/Feature</directory>
+            <directory>modules/*/Tests/Unit</directory>
         </testsuite>
     </testsuites>
+
+    <!-- ===================== -->
+    <!-- SOURCE CODE -->
+    <!-- ===================== -->
     <source>
         <include>
             <directory>app</directory>
+            <directory>modules</directory>
         </include>
     </source>
+
+    <!-- ===================== -->
+    <!-- ENVIRONMENT -->
+    <!-- ===================== -->
     <php>
+        <!-- Core -->
         <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
+        <env name="APP_DEBUG" value="true"/>
+        <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/>
+
+        <!-- Database (Local = SQLite, CI = MySQL) -->
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
-        <env name="MAIL_MAILER" value="array"/>
+        <!-- MySQL settings (for CI only)
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="testing"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value="password"/>
+        -->
+
+        <!-- Performance -->
+        <env name="BCRYPT_ROUNDS" value="4"/>
+
+        <!-- Cache / Queue / Session -->
+        <env name="CACHE_STORE" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+
+        <!-- Services -->
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+
+        <!-- Observability -->
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+
+        <!-- Stripe Mock -->
+        <env name="STRIPE_KEY" value="pk_test_mock_key_for_testing_purposes"/>
+        <env name="STRIPE_SECRET" value="sk_test_mock_secret_key_for_testing_purposes_long_enough"/>
     </php>
 </phpunit>

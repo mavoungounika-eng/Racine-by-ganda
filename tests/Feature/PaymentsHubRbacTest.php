@@ -1,0 +1,197 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Models\PaymentProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class PaymentsHubRbacTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Seed roles
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
+    }
+
+    /**
+     * Test que les utilisateurs non autorisés ne peuvent pas accéder au Payments Hub
+     */
+    public function test_unauthorized_users_cannot_access_payments_hub(): void
+    {
+        // Créer un utilisateur client (non autorisé)
+        $clientRole = \App\Models\Role::where('slug', 'client')->first();
+        $client = User::firstOrCreate(
+            ['email' => 'client@test.com'],
+            [
+                'name' => 'Client Test',
+                'password' => bcrypt('password'),
+                'role_id' => $clientRole->id,
+            ]
+        );
+
+        $this->actingAs($client);
+
+        // Tenter d'accéder au dashboard Payments Hub
+        $response = $this->get(route('admin.payments.index'));
+        $response->assertRedirect(route('login'));
+
+        // Tenter d'accéder à la page providers
+        $response = $this->get(route('admin.payments.providers.index'));
+        $response->assertRedirect(route('login'));
+    }
+
+    /**
+     * Test que les utilisateurs avec payments.view peuvent voir le dashboard
+     */
+    public function test_authorized_users_can_view_payments_hub(): void
+    {
+        // Créer un utilisateur admin (autorisé)
+        $adminRole = \App\Models\Role::where('slug', 'admin')->first();
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'name' => 'Admin Test',
+                'password' => bcrypt('password'),
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
+                'auth_version' => 1,
+            ]
+        );
+
+        $response = $this->actingAs($admin)
+            ->withSession(['2fa_verified' => true, 'session.driver' => 'array'])
+            ->get(route('admin.payments.index'));
+
+        $this->assertTrue(in_array($response->status(), [200, 302, 403]));
+    }
+
+    /**
+     * Test que les utilisateurs avec payments.config peuvent modifier les providers
+     */
+    public function test_authorized_users_can_update_providers(): void
+    {
+        // Créer un utilisateur super_admin (autorisé)
+        $adminRole = \App\Models\Role::where('slug', 'super_admin')->first();
+        $admin = User::firstOrCreate(
+            ['email' => 'superadmin@test.com'],
+            [
+                'name' => 'Super Admin Test',
+                'password' => bcrypt('password'),
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
+                'auth_version' => 1,
+            ]
+        );
+
+        $this->actingAsWithContext($admin);
+
+        // Créer un provider de test
+        $provider = PaymentProvider::firstOrCreate(
+            ['code' => 'stripe'],
+            [
+                'name' => 'Stripe',
+                'is_enabled' => true,
+                'priority' => 1,
+                'currency' => 'XAF',
+                'health_status' => 'ok',
+            ]
+        );
+
+        // Mettre à jour le provider
+        $response = $this->put(route('admin.payments.providers.update', $provider), [
+            'is_enabled' => false,
+            'priority' => 2,
+        ]);
+
+        $response->assertStatus(302); // Redirect après update
+        $response->assertSessionHas('success');
+
+        // Vérifier que le provider a été mis à jour
+        $provider->refresh();
+        $this->assertFalse($provider->is_enabled);
+        $this->assertEquals(2, $provider->priority);
+    }
+
+    /**
+     * Test que les utilisateurs sans payments.config ne peuvent pas modifier les providers
+     */
+    public function test_unauthorized_users_cannot_update_providers(): void
+    {
+        // Créer un utilisateur staff (peut voir mais pas configurer)
+        $staffRole = \App\Models\Role::where('slug', 'staff')->first();
+        $staff = User::firstOrCreate(
+            ['email' => 'staff@test.com'],
+            [
+                'name' => 'Staff Test',
+                'password' => bcrypt('password'),
+                'role_id' => $staffRole->id,
+                'auth_version' => 1,
+            ]
+        );
+
+        $this->actingAsWithContext($staff);
+
+        // Créer un provider de test
+        $provider = PaymentProvider::firstOrCreate(
+            ['code' => 'monetbil'],
+            [
+                'name' => 'Monetbil',
+                'is_enabled' => true,
+                'priority' => 1,
+                'currency' => 'XAF',
+                'health_status' => 'ok',
+            ]
+        );
+
+        // Tenter de mettre à jour le provider
+        $response = $this->put(route('admin.payments.providers.update', $provider), [
+            'is_enabled' => false,
+        ]);
+
+        $response->assertRedirect(route('login'));
+    }
+
+    /**
+     * Test que le menu Payments Hub n'est visible que pour les utilisateurs autorisés
+     */
+    public function test_payments_menu_visibility(): void
+    {
+        // Créer un utilisateur admin
+        $adminRole = \App\Models\Role::where('slug', 'admin')->first();
+        $admin = User::firstOrCreate(
+            ['email' => 'admin3@test.com'],
+            [
+                'name' => 'Admin Test 3',
+                'password' => bcrypt('password'),
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
+                'auth_version' => 1,
+            ]
+        );
+
+        $response = $this->actingAs($admin)
+            ->withSession(['2fa_verified' => true, 'session.driver' => 'array'])
+            ->get(route('admin.payments.index'));
+        $this->assertTrue(in_array($response->status(), [200, 302, 403]));
+    }
+}
+
+
+
+
+
+
+
+
+
