@@ -6,10 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Connexion') - RACINE BY GANDA</title>
 
-    {{-- Fonts --}}
-    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    {{-- Bootstrap 4 --}}
+    {{-- Fonts RACINE (Aileron + Cormorant Garamond fallback Aleppo + Nunito fallback Coco Gothic) --}}
+    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+
     {{-- Bootstrap 5 via Vite --}}
     
     {{-- RACINE Design System --}}
@@ -19,7 +18,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body {
+        /* Specificity 0,1,1 > Bootstrap body 0,0,1 → gradient survives */
+        body.racine-auth-layout {
             background: linear-gradient(135deg, #FFF8F0 0%, #F5E6D3 100%);
             min-height: 100vh;
             font-family: var(--font-body);
@@ -85,7 +85,7 @@
 
     @stack('styles')
 </head>
-<body>
+<body class="racine-auth-layout">
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-logo">
