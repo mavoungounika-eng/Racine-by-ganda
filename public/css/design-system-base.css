@@ -37,12 +37,12 @@
     --racine-yellow-soft: #FFB800;
 
     /* Couleurs de fond */
-    --bg-primary: #160D0C;
-    --bg-secondary: #160D0C;
+    --bg-primary: #FAFAF8;
+    --bg-secondary: #F5F3F0;
     --bg-soft: rgba(22,13,12,0.05);
-    --text-primary: #FFFFFF;
-    --text-secondary: rgba(255, 255, 255, 0.8);
-    --text-muted: rgba(255, 255, 255, 0.7);
+    --text-primary: #160D0C;
+    --text-secondary: rgba(22, 13, 12, 0.75);
+    --text-muted: rgba(22, 13, 12, 0.55);
 
     /* Couleurs sémantiques */
     --success: #22C55E;
@@ -55,14 +55,14 @@
        TYPOGRAPHIES
        ============================================ */
 
-    /* Titres / Logo : Playfair Display */
-    --font-display: "Playfair Display", Georgia, serif;
+    /* Titres / Logo : Aleppo → Cormorant Garamond fallback */
+    --font-display: 'Aleppo', 'Cormorant Garamond', 'Aileron', Georgia, serif;
 
-    /* Texte principal : Inter */
-    --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    /* Texte principal : Coco Gothic → Nunito fallback */
+    --font-sans: 'Coco Gothic', 'Nunito', 'Aileron', system-ui, "Helvetica Neue", sans-serif;
 
-    /* Texte accentué : Inter */
-    --font-accent: "Inter", sans-serif;
+    /* Texte accentué : Aileron */
+    --font-accent: 'Aileron', 'Nunito', sans-serif;
 
     /* ============================================
        ESPACEMENTS
@@ -109,8 +109,8 @@
    ============================================ */
 
 * {
-    margin: 0;
-    padding: 0;
+    /* margin: 0; — désactivé pour compatibilité Bootstrap */
+    /* padding: 0; — désactivé pour compatibilité Bootstrap */
     box-sizing: border-box;
 }
 

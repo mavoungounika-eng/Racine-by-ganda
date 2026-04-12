@@ -25,10 +25,10 @@
     font-size: 1.25rem;
     margin-bottom: 0.75rem;
 }
-.creator-stat-card .stat-icon.sales { background: #FFFFFFFFF; color: #160D0C; }
-.creator-stat-card .stat-icon.revenue { background: #FFFFFFFFF; color: #160D0C; }
+.creator-stat-card .stat-icon.sales { background: #FFFFFF; color: #160D0C; }
+.creator-stat-card .stat-icon.revenue { background: #FFFFFF; color: #160D0C; }
 .creator-stat-card .stat-icon.products { background: #FFFFFF; color: #ED5F1E; }
-.creator-stat-card .stat-icon.rating { background: #FFFFFFFFF; color: #ED5F1E; }
+.creator-stat-card .stat-icon.rating { background: #FFFFFF; color: #ED5F1E; }
 
 /* Product Management */
 .product-grid {
@@ -75,9 +75,9 @@
     font-weight: 700;
     letter-spacing: 0.05em;
 }
-.tier-badge.free { background: #FFFFFFFFF; color: #160D0C; }
-.tier-badge.starter { background: #FFFFFFFFF; color: #160D0C; }
-.tier-badge.pro { background: #FFFFFFFFF; color: #160D0C; }
+.tier-badge.free { background: #FFFFFF; color: #160D0C; }
+.tier-badge.starter { background: #FFFFFF; color: #160D0C; }
+.tier-badge.pro { background: #FFFFFF; color: #160D0C; }
 .tier-badge.premium { background: linear-gradient(135deg, #ED5F1E, #ED5F1E); color: #FFFFFF; }
 
 /* Creator Analytics Charts */
@@ -112,7 +112,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: #FFFFFFFFF;
+    background: #FFFFFF;
 }
 .order-timeline .timeline-item {
     position: relative;
@@ -125,7 +125,7 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 2px solid #FFFFFFFFF;
+    border: 2px solid #FFFFFF;
     background: #FFFFFF;
 }
 .order-timeline .timeline-dot.completed {
@@ -143,7 +143,7 @@
     flex: 1;
     height: 4px;
     border-radius: 2px;
-    background: #FFFFFFFFF;
+    background: #FFFFFF;
 }
 .kyc-step.done { background: #FFB800; }
 .kyc-step.current { background: #ED5F1E; }
@@ -157,7 +157,7 @@
 .creator-empty-state i {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: #FFFFFFFFF;
+    color: #FFFFFF;
 }
 .creator-empty-state .btn-cta {
     background: #ED5F1E;

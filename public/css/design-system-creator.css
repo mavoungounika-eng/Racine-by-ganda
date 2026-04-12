@@ -158,7 +158,7 @@
 
 .creator-btn:disabled,
 .creator-btn-premium:disabled {
-    background: #FFFFFFFFF;
+    background: #FFFFFF;
     cursor: not-allowed;
     box-shadow: none;
 }
@@ -222,7 +222,7 @@
 .creator-form-control {
     width: 100%;
     padding: 0.875rem 1.25rem;
-    border: 2px solid #FFFFFFFFF;
+    border: 2px solid #FFFFFF;
     border-radius: var(--radius-lg);
     font-size: 0.95rem;
     color: var(--racine-black);
@@ -245,7 +245,7 @@
 .creator-select {
     width: 100%;
     padding: 0.875rem 1.25rem;
-    border: 2px solid #FFFFFFFFF;
+    border: 2px solid #FFFFFF;
     border-radius: var(--radius-lg);
     font-size: 0.95rem;
     color: var(--racine-black);
@@ -263,7 +263,7 @@
 .creator-textarea {
     width: 100%;
     padding: 0.875rem 1.25rem;
-    border: 2px solid #FFFFFFFFF;
+    border: 2px solid #FFFFFF;
     border-radius: var(--radius-lg);
     font-size: 0.95rem;
     color: var(--racine-black);
@@ -295,7 +295,7 @@
 }
 
 .creator-table thead {
-    background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFFFFF 100%);
+    background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%);
 }
 
 .creator-table th {
@@ -480,7 +480,7 @@
 
 .creator-alert-warning,
 .creator-alert-box-warning {
-    background: #FFFFFFFFF;
+    background: #FFFFFF;
     border-color: #FFB800;
     color: #ED5F1E;
 }
@@ -494,7 +494,7 @@
 
 .creator-alert-info,
 .creator-alert-box-info {
-    background: #FFFFFFFFF;
+    background: #FFFFFF;
     border-color: #160D0C;
     color: #160D0C;
 }
@@ -503,7 +503,7 @@
 
 .creator-quick-action {
     background: white;
-    border: 2px solid #FFFFFFFFF;
+    border: 2px solid #FFFFFF;
     border-radius: 16px;
     padding: 1.5rem;
     text-align: center;

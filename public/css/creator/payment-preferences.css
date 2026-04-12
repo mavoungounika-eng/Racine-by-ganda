@@ -12,7 +12,7 @@
     --color-info: #160D0C;
 
     /* Couleurs de fond */
-    --bg-base: #FFFFFFFFF;
+    --bg-base: #FFFFFF;
     --bg-card: rgba(255, 255, 255, 0.7);
     --bg-card-hover: rgba(255, 255, 255, 0.85);
 
@@ -472,7 +472,7 @@
 .form-control {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid #FFFFFFFFF;
+    border: 1px solid #FFFFFF;
     border-radius: 0.5rem;
     font-size: 0.875rem;
     transition: var(--transition-fast);
@@ -723,7 +723,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #FFFFFFFFF;
+    background-color: #FFFFFF;
     transition: var(--transition-base);
     border-radius: 9999px;
 }

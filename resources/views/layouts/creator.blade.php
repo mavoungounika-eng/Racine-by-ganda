@@ -9,9 +9,6 @@
     {{-- Fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    {{-- Bootstrap 4 --}}
-    {{-- Bootstrap 5 via Vite --}}
-    
     {{-- RACINE Design System (Consolidé AXE D) --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/design-system-base.css') }}">
