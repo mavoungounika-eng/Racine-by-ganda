@@ -103,3 +103,83 @@
     align-items: center;
     margin-bottom: 1rem;
 }
+
+/* =============================================
+   RESPONSIVE — Admin Dashboard
+   ============================================= */
+
+/* Tablette ≤ 992px : sidebar masquée (géré dans admin.blade.php),
+   on affine ici les grilles de contenu */
+@media (max-width: 992px) {
+    .kpi-card .kpi-value { font-size: 1.5rem; }
+
+    .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile ≤ 768px */
+@media (max-width: 768px) {
+    .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .kpi-card {
+        padding: 1rem;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 1.35rem;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0.75rem;
+        border-bottom: none;
+        border-top: 1px solid rgba(22, 13, 12, 0.08);
+    }
+
+    .admin-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: rgba(22, 13, 12, 0.5);
+        margin-right: 0.5rem;
+    }
+
+    .admin-table tbody tr {
+        display: block;
+        border: 1px solid rgba(22, 13, 12, 0.1);
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        padding: 0.25rem 0;
+    }
+
+    .chart-container {
+        padding: 1rem;
+    }
+
+    .chart-container .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+/* Petit mobile ≤ 480px */
+@media (max-width: 480px) {
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 1.25rem;
+    }
+}

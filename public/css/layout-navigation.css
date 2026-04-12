@@ -267,4 +267,40 @@ html {
     .logo-text {
         font-size: 0.9rem;
     }
+
+    /* Dropdowns : position statique dans le menu mobile */
+    .nav-dropdown-menu {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        box-shadow: none;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 0;
+        padding: 0 0 0.5rem 1rem;
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    :root {
+        --racine-navbar-height: 56px;
+    }
+
+    .announcement-bar {
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+    }
+
+    .logo-text {
+        display: none !important;
+    }
+
+    .nav-icon-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 0.9rem;
+    }
 }

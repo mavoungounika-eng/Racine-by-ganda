@@ -637,7 +637,7 @@
     }
 
     .products-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .products-toolbar {
@@ -645,4 +645,19 @@
         gap: 1rem;
         align-items: stretch;
     }
+
+    .filters-sidebar {
+        display: none;
+    }
+
+    .shop-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .shop-hero h1 { font-size: 2rem; }
+    .products-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .product-card { border-radius: 12px; }
+    .shop-hero { padding: 3rem 1rem; }
 }

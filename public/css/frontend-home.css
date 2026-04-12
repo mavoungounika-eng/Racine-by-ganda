@@ -858,5 +858,18 @@
     .features-grid { grid-template-columns: 1fr; }
     .categories-grid { grid-template-columns: 1fr; }
     .products-grid { grid-template-columns: 1fr; }
-    /* Responsive newsletter supprimé */
+    .hero-visual-collage { display: none; }
+    .hero-content { text-align: center; }
+    .hero-racine { min-height: 60vh; padding: 2rem 1rem; }
+}
+
+@media (max-width: 480px) {
+    .hero-title { font-size: 2rem; }
+    .section-title { font-size: 1.5rem; }
+    .hero-racine { min-height: 50vh; }
+    .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .products-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .creators-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-cta { flex-direction: column; align-items: center; gap: 0.75rem; }
+    .btn-hero { width: 100%; text-align: center; }
 }
