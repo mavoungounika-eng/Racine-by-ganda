@@ -2,15 +2,15 @@
 
 namespace App\Services\Queue;
 
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
  * QueueRateLimiter - Limitation du débit des jobs
- * 
+ *
  * Implémente rate limiting pour les queues Laravel.
  * Limite le nombre de jobs traités par période (minute/seconde).
- * Utilise Redis pour tracking distribué.
+ * Utilise Cache:: pour tracking distribué (testable sans Redis réel).
  */
 class QueueRateLimiter
 {
@@ -38,26 +38,22 @@ class QueueRateLimiter
         [$maxAttempts, $decaySeconds] = $this->parseLimit($limit);
         
         $key = $this->getKey($jobType);
-        $current = (int) Redis::get($key) ?? 0;
-        
+        $current = (int) Cache::get($key, 0);
+
         if ($current >= $maxAttempts) {
             Log::debug('[RATE LIMITER] Limit reached', [
                 'job_type' => $jobType,
                 'current' => $current,
                 'limit' => $maxAttempts,
             ]);
-            
+
             return false;
         }
-        
-        // Incrémenter compteur
-        $newCount = Redis::incr($key);
-        
-        // Définir expiration si premier
-        if ($newCount === 1) {
-            Redis::expire($key, $decaySeconds);
-        }
-        
+
+        // Initialiser avec TTL si première occurrence, puis incrémenter
+        Cache::add($key, 0, $decaySeconds);
+        Cache::increment($key);
+
         return true;
     }
 
@@ -75,8 +71,8 @@ class QueueRateLimiter
         [$maxAttempts, $decaySeconds] = $this->parseLimit($limit);
         
         $key = $this->getKey($jobType);
-        $current = (int) Redis::get($key) ?? 0;
-        
+        $current = (int) Cache::get($key, 0);
+
         return max(0, $maxAttempts - $current);
     }
 
@@ -85,10 +81,8 @@ class QueueRateLimiter
      */
     public function availableIn(string $jobType): int
     {
-        $key = $this->getKey($jobType);
-        $ttl = Redis::ttl($key);
-        
-        return $ttl > 0 ? $ttl : 0;
+        // Cache:: ne supporte pas TTL restant nativement — retourne 0 si clé absente
+        return Cache::has($this->getKey($jobType)) ? 1 : 0;
     }
 
     /**
@@ -96,7 +90,7 @@ class QueueRateLimiter
      */
     public function clear(string $jobType): void
     {
-        Redis::del($this->getKey($jobType));
+        Cache::forget($this->getKey($jobType));
     }
 
     /**
@@ -118,8 +112,8 @@ class QueueRateLimiter
         
         [$maxAttempts, $decaySeconds] = $this->parseLimit($limit);
         $key = $this->getKey($jobType);
-        $current = (int) Redis::get($key) ?? 0;
-        
+        $current = (int) Cache::get($key, 0);
+
         return [
             'job_type' => $jobType,
             'limit' => $limit,

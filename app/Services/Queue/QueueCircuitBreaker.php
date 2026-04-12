@@ -2,21 +2,24 @@
 
 namespace App\Services\Queue;
 
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 /**
  * QueueCircuitBreaker - Protection contre surcharge queues
- * 
+ *
  * Implémente le pattern Circuit Breaker pour les queues Laravel.
  * Ouvre le circuit après N échecs consécutifs, empêchant le traitement
  * jusqu'à un cooldown. Ferme après M succès consécutifs.
- * 
+ *
  * États:
  * - CLOSED: Normal, jobs traités
  * - OPEN: Circuit ouvert, jobs rejetés
  * - HALF_OPEN: Test après cooldown
+ *
+ * Utilise Cache:: au lieu de Redis:: directement pour permettre
+ * l'usage du driver 'array' en tests (plus de flaky tests Redis).
  */
 class QueueCircuitBreaker
 {
@@ -32,7 +35,7 @@ class QueueCircuitBreaker
     public function __construct()
     {
         $config = config('queue-protection.circuit_breaker');
-        
+
         $this->failureThreshold = $config['failure_threshold'];
         $this->successThreshold = $config['success_threshold'];
         $this->timeout = $config['timeout'];
@@ -45,7 +48,7 @@ class QueueCircuitBreaker
     public function isOpen(string $queue): bool
     {
         $state = $this->getState($queue);
-        
+
         // Si OPEN, vérifier si cooldown écoulé
         if ($state === self::STATE_OPEN) {
             if ($this->shouldAttemptReset($queue)) {
@@ -54,7 +57,7 @@ class QueueCircuitBreaker
             }
             return true;
         }
-        
+
         return false;
     }
 
@@ -64,11 +67,10 @@ class QueueCircuitBreaker
     public function recordSuccess(string $queue): void
     {
         $state = $this->getState($queue);
-        
+
         if ($state === self::STATE_HALF_OPEN) {
-            // Incrémenter compteur succès
             $successCount = $this->incrementSuccessCount($queue);
-            
+
             if ($successCount >= $this->successThreshold) {
                 $this->reset($queue);
                 Log::info('[CIRCUIT BREAKER] Circuit closed', [
@@ -76,11 +78,9 @@ class QueueCircuitBreaker
                     'success_count' => $successCount,
                 ]);
 
-                // Notification
                 $this->notifyCircuitClosed($queue);
             }
         } elseif ($state === self::STATE_CLOSED) {
-            // Reset compteur échecs
             $this->resetFailureCount($queue);
         }
     }
@@ -91,38 +91,34 @@ class QueueCircuitBreaker
     public function recordFailure(string $queue): void
     {
         $state = $this->getState($queue);
-        
+
         if ($state === self::STATE_HALF_OPEN) {
-            // Incrémenter les tentatives (exponential backoff)
             $retries = $this->incrementRetryCount($queue);
-            
-            // Retour à OPEN
+
             $this->setState($queue, self::STATE_OPEN);
             $this->setOpenedAt($queue, now());
-            
+
             Log::warning('[CIRCUIT BREAKER] Circuit re-opened after test failure (Exponential backoff applied)', [
                 'queue' => $queue,
                 'retry_attempt' => $retries,
                 'next_timeout' => $this->calculateTimeout($queue),
             ]);
-            
+
             return;
         }
-        
-        // Incrémenter compteur échecs
+
         $failureCount = $this->incrementFailureCount($queue);
-        
+
         if ($failureCount >= $this->failureThreshold) {
             $this->setState($queue, self::STATE_OPEN);
             $this->setOpenedAt($queue, now());
-            
+
             Log::error('[CIRCUIT BREAKER] Circuit opened', [
                 'queue' => $queue,
                 'failure_count' => $failureCount,
                 'threshold' => $this->failureThreshold,
             ]);
-            
-            // Notification
+
             $this->notifyCircuitOpened($queue, $failureCount);
         }
     }
@@ -136,7 +132,7 @@ class QueueCircuitBreaker
         $this->resetFailureCount($queue);
         $this->resetSuccessCount($queue);
         $this->resetRetryCount($queue);
-        Redis::del($this->getOpenedAtKey($queue));
+        Cache::forget($this->getOpenedAtKey($queue));
     }
 
     /**
@@ -144,7 +140,7 @@ class QueueCircuitBreaker
      */
     public function getState(string $queue): string
     {
-        return Redis::get($this->getStateKey($queue)) ?? self::STATE_CLOSED;
+        return Cache::get($this->getStateKey($queue), self::STATE_CLOSED);
     }
 
     /**
@@ -171,13 +167,13 @@ class QueueCircuitBreaker
     protected function shouldAttemptReset(string $queue): bool
     {
         $openedAt = $this->getOpenedAt($queue);
-        
+
         if (!$openedAt) {
             return true;
         }
-        
+
         $currentTimeout = $this->calculateTimeout($queue);
-        
+
         return Carbon::parse($openedAt)->addSeconds($currentTimeout)->isPast();
     }
 
@@ -187,14 +183,12 @@ class QueueCircuitBreaker
     protected function calculateTimeout(string $queue): int
     {
         $retries = $this->getRetryCount($queue);
-        
+
         if ($retries <= 0) {
             return $this->timeout;
         }
-        
-        // Timeout = base_timeout * (2 ^ retries)
-        // Max 24 hours to avoid overflow
-        $multiplier = pow(2, min($retries, 12)); 
+
+        $multiplier = pow(2, min($retries, 12));
         return min($this->timeout * (int)$multiplier, 24 * 3600);
     }
 
@@ -203,7 +197,17 @@ class QueueCircuitBreaker
      */
     protected function setState(string $queue, string $state): void
     {
-        Redis::setex($this->getStateKey($queue), $this->ttl, $state);
+        Cache::put($this->getStateKey($queue), $state, $this->ttl);
+    }
+
+    /**
+     * Incrémenter un compteur avec TTL
+     * Initialise la clé avec TTL si elle n'existe pas encore.
+     */
+    protected function incrementWithTtl(string $key): int
+    {
+        Cache::add($key, 0, $this->ttl);
+        return Cache::increment($key);
     }
 
     /**
@@ -211,10 +215,7 @@ class QueueCircuitBreaker
      */
     protected function incrementFailureCount(string $queue): int
     {
-        $key = $this->getFailureCountKey($queue);
-        $count = Redis::incr($key);
-        Redis::expire($key, $this->ttl);
-        return $count;
+        return $this->incrementWithTtl($this->getFailureCountKey($queue));
     }
 
     /**
@@ -222,10 +223,7 @@ class QueueCircuitBreaker
      */
     protected function incrementSuccessCount(string $queue): int
     {
-        $key = $this->getSuccessCountKey($queue);
-        $count = Redis::incr($key);
-        Redis::expire($key, $this->ttl);
-        return $count;
+        return $this->incrementWithTtl($this->getSuccessCountKey($queue));
     }
 
     /**
@@ -233,7 +231,7 @@ class QueueCircuitBreaker
      */
     protected function resetFailureCount(string $queue): void
     {
-        Redis::del($this->getFailureCountKey($queue));
+        Cache::forget($this->getFailureCountKey($queue));
     }
 
     /**
@@ -241,7 +239,7 @@ class QueueCircuitBreaker
      */
     protected function resetSuccessCount(string $queue): void
     {
-        Redis::del($this->getSuccessCountKey($queue));
+        Cache::forget($this->getSuccessCountKey($queue));
     }
 
     /**
@@ -249,7 +247,7 @@ class QueueCircuitBreaker
      */
     protected function getFailureCount(string $queue): int
     {
-        return (int) Redis::get($this->getFailureCountKey($queue)) ?? 0;
+        return (int) Cache::get($this->getFailureCountKey($queue), 0);
     }
 
     /**
@@ -257,7 +255,7 @@ class QueueCircuitBreaker
      */
     protected function getSuccessCount(string $queue): int
     {
-        return (int) Redis::get($this->getSuccessCountKey($queue)) ?? 0;
+        return (int) Cache::get($this->getSuccessCountKey($queue), 0);
     }
 
     /**
@@ -265,7 +263,7 @@ class QueueCircuitBreaker
      */
     protected function getRetryCount(string $queue): int
     {
-        return (int) Redis::get($this->getRetryCountKey($queue)) ?? 0;
+        return (int) Cache::get($this->getRetryCountKey($queue), 0);
     }
 
     /**
@@ -273,10 +271,7 @@ class QueueCircuitBreaker
      */
     protected function incrementRetryCount(string $queue): int
     {
-        $key = $this->getRetryCountKey($queue);
-        $count = Redis::incr($key);
-        Redis::expire($key, $this->ttl);
-        return $count;
+        return $this->incrementWithTtl($this->getRetryCountKey($queue));
     }
 
     /**
@@ -284,7 +279,7 @@ class QueueCircuitBreaker
      */
     protected function resetRetryCount(string $queue): void
     {
-        Redis::del($this->getRetryCountKey($queue));
+        Cache::forget($this->getRetryCountKey($queue));
     }
 
     /**
@@ -292,10 +287,10 @@ class QueueCircuitBreaker
      */
     protected function setOpenedAt(string $queue, Carbon $timestamp): void
     {
-        Redis::setex(
+        Cache::put(
             $this->getOpenedAtKey($queue),
-            $this->ttl,
-            $timestamp->toIso8601String()
+            $timestamp->toIso8601String(),
+            $this->ttl
         );
     }
 
@@ -304,7 +299,7 @@ class QueueCircuitBreaker
      */
     protected function getOpenedAt(string $queue): ?string
     {
-        return Redis::get($this->getOpenedAtKey($queue));
+        return Cache::get($this->getOpenedAtKey($queue));
     }
 
     /**
@@ -312,10 +307,9 @@ class QueueCircuitBreaker
      */
     protected function notifyCircuitOpened(string $queue, int $failureCount): void
     {
-        // Intégration avec AlertService
         try {
             $alertService = app(\App\Services\Monitoring\AlertService::class);
-            
+
             $alertService->critical(
                 "Circuit Breaker Opened - Queue: {$queue}",
                 "The circuit breaker has opened for queue '{$queue}' after {$failureCount} consecutive failures. Jobs are being rejected to prevent system overload.",
@@ -332,8 +326,7 @@ class QueueCircuitBreaker
                 'error' => $e->getMessage(),
             ]);
         }
-        
-        // Fallback log
+
         Log::critical('[CIRCUIT BREAKER] ALERT: Circuit opened', [
             'queue' => $queue,
             'failure_count' => $failureCount,
@@ -346,10 +339,9 @@ class QueueCircuitBreaker
      */
     protected function notifyCircuitClosed(string $queue): void
     {
-        // Intégration avec AlertService
         try {
             $alertService = app(\App\Services\Monitoring\AlertService::class);
-            
+
             $alertService->info(
                 "Circuit Breaker Closed - Queue: {$queue}",
                 "The circuit breaker has successfully closed for queue '{$queue}'. Normal processing has resumed.",
@@ -366,7 +358,7 @@ class QueueCircuitBreaker
     }
 
     /**
-     * Clés Redis
+     * Clés Cache
      */
     protected function getStateKey(string $queue): string
     {

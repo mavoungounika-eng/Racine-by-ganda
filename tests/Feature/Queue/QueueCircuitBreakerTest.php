@@ -7,7 +7,7 @@ use App\Services\Queue\QueueCircuitBreaker;
 use App\Services\Queue\QueueMonitor;
 use App\Exceptions\CircuitBreakerOpenException;
 use App\Services\Monitoring\AlertService;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 use Mockery;
@@ -21,13 +21,14 @@ class QueueCircuitBreakerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Clear Redis for test queue
-        Redis::del("circuit_breaker:{$this->testQueue}:state");
-        Redis::del("circuit_breaker:{$this->testQueue}:failures");
-        Redis::del("circuit_breaker:{$this->testQueue}:successes");
-        Redis::del("circuit_breaker:{$this->testQueue}:opened_at");
-        
+
+        // Clear Cache for test queue
+        Cache::forget("circuit_breaker:{$this->testQueue}:state");
+        Cache::forget("circuit_breaker:{$this->testQueue}:failures");
+        Cache::forget("circuit_breaker:{$this->testQueue}:successes");
+        Cache::forget("circuit_breaker:{$this->testQueue}:opened_at");
+        Cache::forget("circuit_breaker:{$this->testQueue}:retries");
+
         $this->circuitBreaker = app(QueueCircuitBreaker::class);
         $this->monitor = app(QueueMonitor::class);
     }
@@ -37,7 +38,7 @@ class QueueCircuitBreakerTest extends TestCase
     {
         $middleware = new CircuitBreakerJob($this->circuitBreaker, $this->monitor);
         $job = new class { public $queue = 'test-queue'; };
-        
+
         $middleware->handle($job, function ($job) {
             // Success
         });
@@ -52,7 +53,6 @@ class QueueCircuitBreakerTest extends TestCase
         $middleware = new CircuitBreakerJob($this->circuitBreaker, $this->monitor);
         $job = new class { public $queue = 'test-queue'; };
 
-        // Mock AlertService to prevent external calls but verify notification
         $alertMock = Mockery::mock(AlertService::class);
         $alertMock->shouldReceive('critical')->once();
         $this->app->instance(AlertService::class, $alertMock);
@@ -73,15 +73,15 @@ class QueueCircuitBreakerTest extends TestCase
     /** @test */
     public function it_rejects_jobs_when_open()
     {
-        // Force OPEN state
-        Redis::set("circuit_breaker:{$this->testQueue}:state", 'open');
-        Redis::set("circuit_breaker:{$this->testQueue}:opened_at", now()->toIso8601String());
+        // Force OPEN state via Cache
+        Cache::put("circuit_breaker:{$this->testQueue}:state", 'open', 3600);
+        Cache::put("circuit_breaker:{$this->testQueue}:opened_at", now()->toIso8601String(), 3600);
 
         $middleware = new CircuitBreakerJob($this->circuitBreaker, $this->monitor);
         $job = new class { public $queue = 'test-queue'; };
 
         $this->expectException(CircuitBreakerOpenException::class);
-        
+
         $middleware->handle($job, function ($job) {
             // Should not be called
         });
@@ -91,10 +91,10 @@ class QueueCircuitBreakerTest extends TestCase
     public function it_transitions_to_half_open_after_timeout()
     {
         $timeout = config('queue-protection.circuit_breaker.timeout', 60);
-        
+
         // Force OPEN state with old timestamp
-        Redis::set("circuit_breaker:{$this->testQueue}:state", 'open');
-        Redis::set("circuit_breaker:{$this->testQueue}:opened_at", now()->subSeconds($timeout + 1)->toIso8601String());
+        Cache::put("circuit_breaker:{$this->testQueue}:state", 'open', 3600);
+        Cache::put("circuit_breaker:{$this->testQueue}:opened_at", now()->subSeconds($timeout + 1)->toIso8601String(), 3600);
 
         $this->assertFalse($this->circuitBreaker->isOpen($this->testQueue));
         $this->assertEquals('half_open', $this->circuitBreaker->getState($this->testQueue));
@@ -108,13 +108,13 @@ class QueueCircuitBreakerTest extends TestCase
         $job = new class { public $queue = 'test-queue'; };
 
         // Force HALF_OPEN
-        Redis::set("circuit_breaker:{$this->testQueue}:state", 'half_open');
+        Cache::put("circuit_breaker:{$this->testQueue}:state", 'half_open', 3600);
 
         for ($i = 0; $i < $threshold; $i++) {
             $middleware->handle($job, function ($job) {
                 // Success
             });
-            
+
             if ($i < $threshold - 1) {
                 $this->assertEquals('half_open', $this->circuitBreaker->getState($this->testQueue));
             }
@@ -130,7 +130,7 @@ class QueueCircuitBreakerTest extends TestCase
         $job = new class { public $queue = 'test-queue'; };
 
         // Force HALF_OPEN
-        Redis::set("circuit_breaker:{$this->testQueue}:state", 'half_open');
+        Cache::put("circuit_breaker:{$this->testQueue}:state", 'half_open', 3600);
 
         try {
             $middleware->handle($job, function ($job) {
@@ -151,34 +151,34 @@ class QueueCircuitBreakerTest extends TestCase
         $job = new class { public $queue = 'test-queue'; };
 
         // 1. Force HALF_OPEN and fail
-        Redis::set("circuit_breaker:{$this->testQueue}:state", 'half_open');
+        Cache::put("circuit_breaker:{$this->testQueue}:state", 'half_open', 3600);
         try {
             $middleware->handle($job, function ($job) { throw new \Exception('Fail 1'); });
         } catch (\Exception $e) {}
 
         // Should be OPEN with retry_count = 1
-        $this->assertEquals(1, Redis::get("circuit_breaker:{$this->testQueue}:retries"));
+        $this->assertEquals(1, Cache::get("circuit_breaker:{$this->testQueue}:retries"));
         $this->assertEquals($baseTimeout * 2, $this->circuitBreaker->getMetrics($this->testQueue)['current_timeout']);
 
         // 2. Fail again in HALF_OPEN (force state first)
-        Redis::set("circuit_breaker:{$this->testQueue}:state", 'half_open');
+        Cache::put("circuit_breaker:{$this->testQueue}:state", 'half_open', 3600);
         try {
             $middleware->handle($job, function ($job) { throw new \Exception('Fail 2'); });
         } catch (\Exception $e) {}
 
         // Should be OPEN with retry_count = 2
-        $this->assertEquals(2, Redis::get("circuit_breaker:{$this->testQueue}:retries"));
+        $this->assertEquals(2, Cache::get("circuit_breaker:{$this->testQueue}:retries"));
         $this->assertEquals($baseTimeout * 4, $this->circuitBreaker->getMetrics($this->testQueue)['current_timeout']);
 
         // 3. Success in HALF_OPEN then CLOSE should reset retries
-        Redis::set("circuit_breaker:{$this->testQueue}:state", 'half_open');
+        Cache::put("circuit_breaker:{$this->testQueue}:state", 'half_open', 3600);
         $successThreshold = config('queue-protection.circuit_breaker.success_threshold', 5);
         for ($i = 0; $i < $successThreshold; $i++) {
             $middleware->handle($job, function ($job) {});
         }
 
         $this->assertEquals('closed', $this->circuitBreaker->getState($this->testQueue));
-        $this->assertEquals(0, Redis::get("circuit_breaker:{$this->testQueue}:retries"));
+        $this->assertNull(Cache::get("circuit_breaker:{$this->testQueue}:retries"));
         $this->assertEquals($baseTimeout, $this->circuitBreaker->getMetrics($this->testQueue)['current_timeout']);
     }
 }
