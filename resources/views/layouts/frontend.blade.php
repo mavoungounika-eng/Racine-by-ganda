@@ -33,13 +33,13 @@
     <meta name="robots" content="@yield('robots', 'index, follow')">
     <meta name="theme-color" content="#ED5F1E">
     
-    {{-- Fonts --}}
-    {{-- Typographies Officielles RACINE --}}
-    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    {{-- Bootstrap 4 --}}
-    <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
-    
+    {{-- Fonts RACINE --}}
+    {{-- Aileron (accentué, disponible Google Fonts) --}}
+    {{-- Cormorant Garamond (fallback Aleppo) + Nunito (fallback Coco Gothic) --}}
+    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    {{-- Bootstrap 5 chargé via Vite (app.scss) — Bootstrap 4 legacy supprimé --}}
+
     {{-- RACINE Design System --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     
@@ -65,9 +65,9 @@
             --racine-orange: #ED5F1E;
             --racine-yellow: #FFB800;
             --racine-white: #FFFFFF;
-            --racine-font-heading: 'Aleppo', 'Aileron', serif;
-            --racine-font-body: 'Coco Gothic', 'Aileron', 'Helvetica Neue', sans-serif;
-            --racine-font-accent: 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-heading: 'Aleppo', 'Cormorant Garamond', 'Aileron', serif;
+            --racine-font-body: 'Coco Gothic', 'Nunito', 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-accent: 'Aileron', 'Nunito', 'Helvetica Neue', sans-serif;
         }
 
         body.racine-frontend-layout {
@@ -94,10 +94,7 @@
             font-family: var(--racine-font-accent);
         }
 
-        .navbar-racine {
-            background: var(--racine-black);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-        }
+        /* .navbar-racine base styles → layout-navigation.css */
 
         .logo-text {
             color: var(--racine-yellow);
@@ -230,16 +227,16 @@
 </head>
 <body class="racine-frontend-layout">
     {{-- ANNOUNCEMENT BAR PREMIUM --}}
-    <div class="announcement-bar">
+    <div class="announcement-bar" id="announcement-bar">
         <div class="container text-center">
-            <span class="announcement-text">✨ Livraison offerte dès 150€ d'achat | Collection "Héritage" disponible 🌿</span>
+            <span class="announcement-text">{{ $cmsBlocks['announcement'] ?? '✦ Livraison offerte dès 150€ · Collection "Héritage" disponible ✦' }}</span>
         </div>
     </div>
 
     {{-- HEADER PREMIUM RACINE BY GANDA --}}
-    <header role="banner" class="navbar-racine sticky-top w-100">
+    <header role="banner" class="navbar-racine sticky-top w-100" id="navbar-header">
         <div class="container">
-            <div class="d-flex align-items-center justify-content-between" style="height: 70px;">
+            <div class="navbar-inner d-flex align-items-center justify-content-between">
                 
                 {{-- LOGO + NOM --}}
                 <a href="{{ route('frontend.home') }}" class="logo-navbar-wrapper">
@@ -403,7 +400,7 @@
             <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
                 <i class="fas fa-check-circle mr-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('success') }}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -415,7 +412,7 @@
             <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
                 <i class="fas fa-exclamation-circle mr-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('error') }}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -647,8 +644,7 @@
     {{-- CSS inline supprimé - Déjà extrait vers layout-footer-cta.css et layout-navigation.css --}}
     
     {{-- Scripts --}}
-    <script src="{{ asset('racine/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
+    {{-- Bootstrap 5 + JS chargés via Vite (app.js) — jQuery/Bootstrap 4 legacy supprimés --}}
     
     {{-- RACINE Navigation JavaScript (extrait du inline) --}}
     <script src="{{ asset('js/layout-navigation.js') }}"></script>

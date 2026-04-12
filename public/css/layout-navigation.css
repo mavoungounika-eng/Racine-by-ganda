@@ -47,20 +47,30 @@ html {
 
 /* ===== NAVBAR PREMIUM RACINE ===== */
 .navbar-racine {
-    background: transparent;
-    padding: 1.25rem 0;
+    background: #160D0C;
     z-index: 1050;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.4s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Inner row — contrôle la hauteur via CSS variable */
+.navbar-inner {
+    height: var(--racine-navbar-height, 70px);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navbar-racine.scrolled {
-    background: rgba(28, 20, 18, 0.92);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    padding: 0.75rem 0;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(237, 95, 30, 0.3);
+    background: rgba(22, 13, 12, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid rgba(237, 95, 30, 0.25);
+}
+
+.navbar-racine.scrolled .navbar-inner {
+    height: 56px;
 }
 
 /* ===== NAV LINKS & DROPDOWNS RACINE ===== */

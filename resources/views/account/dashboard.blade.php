@@ -50,7 +50,7 @@
         color: white;
         font-size: 2.75rem;
         font-weight: 700;
-        font-family: 'Playfair Display', serif;
+        font-family: var(--font-heading, 'Cormorant Garamond', 'Aileron', serif);
     }
     
     .dashboard-content {
@@ -815,7 +815,7 @@
                                     $unreadCount = app(\App\Services\ConversationService::class)->getUnreadConversationsCount(auth()->id());
                                 @endphp
                                 @if($unreadCount > 0)
-                                    <span class="badge badge-primary ml-2">{{ $unreadCount }}</span>
+                                    <span class="badge ms-2" style="background: #ED5F1E; color: white;">{{ $unreadCount }}</span>
                                 @endif
                             </div>
                             <i class="fas fa-chevron-right quick-action-arrow"></i>
@@ -873,6 +873,31 @@
         </div>
     </div>
 </section>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry, i) {
+            if (entry.isIntersecting) {
+                setTimeout(function () {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, i * 80);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.stat-card, .orders-section, .loyalty-card, .quick-actions-card').forEach(function (el, i) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(el);
+    });
+});
+</script>
+@endpush
 
 @include('components.navigation-breadcrumb', [
     'items' => [

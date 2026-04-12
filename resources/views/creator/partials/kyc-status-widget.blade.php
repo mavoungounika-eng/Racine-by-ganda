@@ -16,7 +16,7 @@
         </div>
         
         <div class="flex-1">
-            <h3 class="text-lg font-bold text-[#2C1810] mb-2">
+            <h3 class="text-lg font-bold text-[#160D0C] mb-2">
                 @if($kycStatus['status'] === 'complete')
                     ✅ Vérification Complète
                 @elseif($kycStatus['status'] === 'pending_review')

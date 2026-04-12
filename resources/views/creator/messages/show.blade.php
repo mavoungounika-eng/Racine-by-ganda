@@ -44,7 +44,7 @@
     }
 
     .message-sent {
-        background: linear-gradient(135deg, #2C1810 0%, #4A2C21 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #4A2C21 100%);
         color: white;
         margin-left: auto;
         border-bottom-right-radius: 4px;
@@ -113,7 +113,7 @@
                     {{ $initial }}
                 </div>
                 <div>
-                    <h3 class="font-bold text-[#2C1810]">{{ $name }}</h3>
+                    <h3 class="font-bold text-[#160D0C]">{{ $name }}</h3>
                     <p class="text-xs text-gray-500">{{ $conversation->subject }}</p>
                 </div>
             </div>
@@ -182,7 +182,7 @@
                     {{-- Text & Submit --}}
                     <div class="flex-1 relative">
                         <textarea name="content" rows="1" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#ED5F1E] resize-none" placeholder="Écrivez votre message..." required></textarea>
-                        <button type="submit" class="absolute right-2 top-2 bg-[#2C1810] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#ED5F1E] transition">
+                        <button type="submit" class="absolute right-2 top-2 bg-[#160D0C] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#ED5F1E] transition">
                             <i class="fas fa-paper-plane text-xs"></i>
                         </button>
                     </div>

@@ -202,27 +202,25 @@
                 
                 <div class="products-grid" id="productsGrid">
                     @forelse($products ?? [] as $product)
-                    <div class="product-card">
+                    <div class="product-card reveal-item">
                         <a href="{{ route('frontend.product', $product->id) }}" class="product-image-link">
                             <div class="product-image">
-                                <img src="{{ $product->main_image ?? $product->image ?? 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop' }}" 
+                                @if($product->main_image ?? $product->image ?? false)
+                                <img src="{{ $product->main_image ?? $product->image }}"
                                      alt="{{ $product->title ?? $product->name ?? 'Produit' }}"
                                      loading="lazy">
+                                @else
+                                <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
+                                @endif
                                 <div class="product-badges">
                                     {{-- Badge Type Vendeur --}}
                                     @if($product->isBrand())
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-[#ED5F1E] to-[#FFB800] text-white text-[10px] font-bold uppercase tracking-wide shadow-md">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                            </svg>
-                                            RACINE BY GANDA
+                                        <span class="badge-brand">
+                                            <i class="fas fa-star"></i> RACINE BY GANDA
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FFFFFF] border-2 border-[#160D0C] text-[#160D0C] text-[10px] font-semibold uppercase tracking-wide">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                                            </svg>
-                                            Créateur partenaire
+                                        <span class="badge-creator">
+                                            <i class="fas fa-user"></i> Créateur partenaire
                                         </span>
                                     @endif
                                     
@@ -288,10 +286,10 @@
                     @empty
                     <!-- Demo products if no data -->
                     @for($i = 0; $i < 9; $i++)
-                    <div class="product-card">
+                    <div class="product-card reveal-item">
                         <a href="#" class="product-image-link">
                             <div class="product-image">
-                                <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Produit">
+                                <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
                                 <div class="product-badges">
                                     @if($i % 5 === 0)
                                     <span class="badge-out-of-stock">Stock épuisé</span>
@@ -356,7 +354,7 @@
                 @if($products->hasPages())
                 <div class="pagination-wrapper">
                     <div class="pagination">
-                        {{ $products->links('pagination::bootstrap-4') }}
+                        {{ $products->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
                 @endif
@@ -408,6 +406,23 @@
     'backText' => 'Retour à l\'accueil',
     'position' => 'bottom',
 ])
+@push('scripts')
+<script>
+(function () {
+    const items = document.querySelectorAll('.reveal-item');
+    if (!items.length) return;
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('revealed'), i * 60);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08 });
+    items.forEach(el => observer.observe(el));
+})();
+</script>
+@endpush
 @endsection
 
 {{-- JavaScript extrait vers public/js/frontend-shop.js --}}

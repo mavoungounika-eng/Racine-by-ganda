@@ -46,7 +46,7 @@
             <i class="fas fa-check text-6xl text-white"></i>
         </div>
         
-        <h1 class="text-4xl font-bold text-[#2C1810] mb-4" style="font-family: 'Libre Baskerville', serif;">
+        <h1 class="text-4xl font-bold text-[#160D0C] mb-4" style="font-family: 'Libre Baskerville', serif;">
             🎉 Abonnement Activé avec Succès !
         </h1>
         
@@ -64,7 +64,7 @@
 
     {{-- What's Next --}}
     <div class="premium-card mb-8">
-        <h2 class="text-2xl font-bold text-[#2C1810] mb-6">
+        <h2 class="text-2xl font-bold text-[#160D0C] mb-6">
             <i class="fas fa-rocket text-[#ED5F1E] mr-2"></i>
             Prochaines Étapes
         </h2>
@@ -74,7 +74,7 @@
                 <div class="quick-action-icon">
                     <i class="fas fa-plus"></i>
                 </div>
-                <h3 class="font-bold text-[#2C1810] mb-2">Créer un Produit</h3>
+                <h3 class="font-bold text-[#160D0C] mb-2">Créer un Produit</h3>
                 <p class="text-sm text-[#8B7355]">Ajoutez vos premiers articles</p>
             </a>
             
@@ -82,7 +82,7 @@
                 <div class="quick-action-icon">
                     <i class="fas fa-store"></i>
                 </div>
-                <h3 class="font-bold text-[#2C1810] mb-2">Personnaliser</h3>
+                <h3 class="font-bold text-[#160D0C] mb-2">Personnaliser</h3>
                 <p class="text-sm text-[#8B7355]">Configurez votre vitrine</p>
             </a>
             
@@ -90,7 +90,7 @@
                 <div class="quick-action-icon">
                     <i class="fas fa-wallet"></i>
                 </div>
-                <h3 class="font-bold text-[#2C1810] mb-2">Paiements</h3>
+                <h3 class="font-bold text-[#160D0C] mb-2">Paiements</h3>
                 <p class="text-sm text-[#8B7355]">Configurez vos versements</p>
             </a>
         </div>
@@ -98,7 +98,7 @@
 
     {{-- Unlocked Features --}}
     <div class="premium-card mb-8">
-        <h2 class="text-2xl font-bold text-[#2C1810] mb-6">
+        <h2 class="text-2xl font-bold text-[#160D0C] mb-6">
             <i class="fas fa-unlock text-green-600 mr-2"></i>
             Fonctionnalités Débloquées
         </h2>
@@ -110,7 +110,7 @@
                         <div class="flex items-start gap-3">
                             <i class="fas fa-check-circle text-green-600 text-xl mt-1"></i>
                             <div>
-                                <h4 class="font-semibold text-[#2C1810] mb-1">{{ $feature }}</h4>
+                                <h4 class="font-semibold text-[#160D0C] mb-1">{{ $feature }}</h4>
                                 <p class="text-sm text-[#8B7355]">Disponible immédiatement</p>
                             </div>
                         </div>
@@ -122,7 +122,7 @@
 
     {{-- Subscription Details --}}
     <div class="premium-card mb-8">
-        <h2 class="text-2xl font-bold text-[#2C1810] mb-6">
+        <h2 class="text-2xl font-bold text-[#160D0C] mb-6">
             <i class="fas fa-file-invoice text-[#ED5F1E] mr-2"></i>
             Détails de Votre Abonnement
         </h2>
@@ -130,22 +130,22 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="p-4 bg-[#F8F6F3] rounded-xl">
                 <div class="text-sm text-[#8B7355] mb-1">Plan Souscrit</div>
-                <div class="text-xl font-bold text-[#2C1810]">{{ $plan->name }}</div>
+                <div class="text-xl font-bold text-[#160D0C]">{{ $plan->name }}</div>
             </div>
             
             <div class="p-4 bg-[#F8F6F3] rounded-xl">
                 <div class="text-sm text-[#8B7355] mb-1">Montant Mensuel</div>
-                <div class="text-xl font-bold text-[#2C1810]">{{ number_format($plan->price, 0, ',', ' ') }} FCFA</div>
+                <div class="text-xl font-bold text-[#160D0C]">{{ number_format($plan->price, 0, ',', ' ') }} FCFA</div>
             </div>
             
             <div class="p-4 bg-[#F8F6F3] rounded-xl">
                 <div class="text-sm text-[#8B7355] mb-1">Date d'Activation</div>
-                <div class="text-xl font-bold text-[#2C1810]">{{ now()->format('d/m/Y') }}</div>
+                <div class="text-xl font-bold text-[#160D0C]">{{ now()->format('d/m/Y') }}</div>
             </div>
             
             <div class="p-4 bg-[#F8F6F3] rounded-xl">
                 <div class="text-sm text-[#8B7355] mb-1">Prochain Paiement</div>
-                <div class="text-xl font-bold text-[#2C1810]">{{ now()->addMonth()->format('d/m/Y') }}</div>
+                <div class="text-xl font-bold text-[#160D0C]">{{ now()->addMonth()->format('d/m/Y') }}</div>
             </div>
         </div>
         

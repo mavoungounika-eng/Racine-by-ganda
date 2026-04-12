@@ -72,7 +72,7 @@
     }
 
     .creator-tab-link:hover {
-        color: #2C1810;
+        color: #160D0C;
         background: rgba(212, 165, 116, 0.1);
         text-decoration: none;
     }

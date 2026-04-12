@@ -20,7 +20,7 @@
     .form-label {
         display: block;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
         font-size: 0.95rem;
     }
@@ -36,7 +36,7 @@
         border: 2px solid #E5DDD3;
         border-radius: 12px;
         font-size: 0.95rem;
-        color: #2C1810;
+        color: #160D0C;
         background: white;
         transition: all 0.3s;
     }
@@ -75,7 +75,7 @@
     
     .premium-btn-secondary {
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border: 2px solid #E5DDD3;
         border-radius: 12px;
         padding: 0.875rem 2rem;
@@ -91,7 +91,7 @@
     .premium-btn-secondary:hover {
         background: #F8F6F3;
         border-color: #D4A574;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .error-message {
@@ -120,7 +120,7 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="premium-card">
         <div class="mb-8 pb-6 border-b-2 border-[#E5DDD3]">
-            <h2 class="text-2xl font-bold text-[#2C1810]" style="font-family: 'Libre Baskerville', serif;">
+            <h2 class="text-2xl font-bold text-[#160D0C]" style="font-family: 'Libre Baskerville', serif;">
                 <i class="fas fa-edit text-[#ED5F1E] mr-2"></i>
                 Modifier le produit
             </h2>
@@ -267,7 +267,7 @@
                            value="1"
                            {{ old('is_active', $product->is_active) ? 'checked' : '' }}
                            class="w-5 h-5 text-[#ED5F1E] border-[#E5DDD3] rounded focus:ring-[#ED5F1E]">
-                    <label for="is_active" class="text-[#2C1810] font-medium cursor-pointer">
+                    <label for="is_active" class="text-[#160D0C] font-medium cursor-pointer">
                         Produit actif (publié)
                     </label>
                 </div>

@@ -132,15 +132,19 @@ class FrontendController extends Controller
         return redirect()->route('frontend.contact')
             ->with('success', 'Votre message a été envoyé avec succès. Nous vous répondrons dans les 24 heures.');
     }
-    public function creators() 
-    { 
+    public function creators()
+    {
         $creators = \App\Models\CreatorProfile::active()
             ->with('user')
             ->paginate(12);
 
-        $totalProducts = \App\Models\Product::where('is_active', true)->count();
+        $totalProducts = \App\Models\Product::where('product_type', 'marketplace')
+            ->where('is_active', true)
+            ->count();
 
-        return view('frontend.creators', compact('creators', 'totalProducts')); 
+        $cmsPage = app(\App\Services\Cms\PageService::class)->getPublishedPage('createurs');
+
+        return view('frontend.creators', compact('creators', 'totalProducts', 'cmsPage'));
     }
     public function marketplace(Request $request)
     {

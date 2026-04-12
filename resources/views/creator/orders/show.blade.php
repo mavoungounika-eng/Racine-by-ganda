@@ -42,7 +42,7 @@
     .premium-table td {
         padding: 1.5rem 1rem;
         border-bottom: 1px solid #F8F6F3;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .premium-table tbody tr:hover {
@@ -66,7 +66,7 @@
         border: 2px solid #E5DDD3;
         border-radius: 12px;
         padding: 0.75rem 1rem;
-        color: #2C1810;
+        color: #160D0C;
         transition: all 0.3s;
     }
     
@@ -100,7 +100,7 @@
     
     .premium-btn-secondary {
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border: 2px solid #E5DDD3;
         border-radius: 12px;
         padding: 0.875rem 2rem;
@@ -116,7 +116,7 @@
     .premium-btn-secondary:hover {
         background: #F8F6F3;
         border-color: #D4A574;
-        color: #2C1810;
+        color: #160D0C;
     }
 </style>
 @endpush
@@ -127,7 +127,7 @@
     <div class="premium-card">
         <div class="flex items-center justify-between mb-6 pb-6 border-b-2 border-[#E5DDD3]">
             <div>
-                <h3 class="text-2xl font-bold text-[#2C1810] mb-2" style="font-family: 'Libre Baskerville', serif;">
+                <h3 class="text-2xl font-bold text-[#160D0C] mb-2" style="font-family: 'Libre Baskerville', serif;">
                     <i class="fas fa-shopping-bag text-[#ED5F1E] mr-2"></i>
                     Informations de la commande
                 </h3>
@@ -164,10 +164,10 @@
                     Client
                 </h4>
                 <div class="space-y-2 text-sm">
-                    <p class="text-[#2C1810]"><span class="text-[#8B7355] font-medium">Nom:</span> <span class="font-semibold">{{ $order->customer_name ?? $order->user?->name ?? 'N/A' }}</span></p>
-                    <p class="text-[#2C1810]"><span class="text-[#8B7355] font-medium">Email:</span> {{ $order->customer_email ?? $order->user?->email ?? 'N/A' }}</p>
+                    <p class="text-[#160D0C]"><span class="text-[#8B7355] font-medium">Nom:</span> <span class="font-semibold">{{ $order->customer_name ?? $order->user?->name ?? 'N/A' }}</span></p>
+                    <p class="text-[#160D0C]"><span class="text-[#8B7355] font-medium">Email:</span> {{ $order->customer_email ?? $order->user?->email ?? 'N/A' }}</p>
                     @if($order->customer_phone)
-                        <p class="text-[#2C1810]"><span class="text-[#8B7355] font-medium">Téléphone:</span> {{ $order->customer_phone }}</p>
+                        <p class="text-[#160D0C]"><span class="text-[#8B7355] font-medium">Téléphone:</span> {{ $order->customer_phone }}</p>
                     @endif
                 </div>
             </div>
@@ -178,7 +178,7 @@
                     <i class="fas fa-map-marker-alt mr-2"></i>
                     Adresse de livraison
                 </h4>
-                <div class="text-sm text-[#2C1810] leading-relaxed">
+                <div class="text-sm text-[#160D0C] leading-relaxed">
                     {!! nl2br(e($order->customer_address ?? 'Non renseignée')) !!}
                 </div>
             </div>
@@ -187,7 +187,7 @@
 
     {{-- Produits de la commande --}}
     <div class="premium-card">
-        <h3 class="text-xl font-bold text-[#2C1810] mb-6" style="font-family: 'Libre Baskerville', serif;">
+        <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
             <i class="fas fa-box text-[#ED5F1E] mr-2"></i>
             Vos produits dans cette commande
         </h3>
@@ -217,7 +217,7 @@
                                     </div>
                                 @endif
                                 <div>
-                                    <p class="font-bold text-[#2C1810]">{{ $item->product->title ?? 'Produit supprimé' }}</p>
+                                    <p class="font-bold text-[#160D0C]">{{ $item->product->title ?? 'Produit supprimé' }}</p>
                                 </div>
                             </div>
                         </td>
@@ -225,7 +225,7 @@
                             <p class="text-[#8B7355] font-medium">{{ number_format($item->price, 0, ',', ' ') }} F</p>
                         </td>
                         <td>
-                            <span class="px-3 py-1 bg-gradient-to-r from-[#F8F6F3] to-white rounded-lg border border-[#E5DDD3] font-semibold text-[#2C1810]">
+                            <span class="px-3 py-1 bg-gradient-to-r from-[#F8F6F3] to-white rounded-lg border border-[#E5DDD3] font-semibold text-[#160D0C]">
                                 {{ $item->quantity }}
                             </span>
                         </td>
@@ -237,7 +237,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="border-t-2 border-[#D4A574]">
-                        <td colspan="3" class="py-4 px-4 text-right font-bold text-[#2C1810] text-lg">
+                        <td colspan="3" class="py-4 px-4 text-right font-bold text-[#160D0C] text-lg">
                             Total (vos produits):
                         </td>
                         <td class="py-4 px-4 text-right">
@@ -251,7 +251,7 @@
 
     {{-- Mise à jour du statut --}}
     <div class="premium-card">
-        <h3 class="text-xl font-bold text-[#2C1810] mb-6" style="font-family: 'Libre Baskerville', serif;">
+        <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
             <i class="fas fa-sync-alt text-[#ED5F1E] mr-2"></i>
             Mettre à jour le statut
         </h3>

@@ -509,102 +509,53 @@
         </div>
         
         <div class="creators-grid">
+            @forelse ($creators as $creator)
             <div class="creator-card">
                 <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500" alt="Amina Diallo">
-                    <span class="creator-country">🇸🇳 Sénégal</span>
+                    @if($creator->avatar_path)
+                        <img src="{{ asset('storage/' . $creator->avatar_path) }}"
+                             alt="{{ $creator->brand_name ?? $creator->user->name }}">
+                    @else
+                        <div class="creator-avatar-initials">
+                            {{ strtoupper(substr($creator->brand_name ?? $creator->user->name ?? 'C', 0, 1)) }}
+                        </div>
+                    @endif
+                    @if($creator->user->country ?? false)
+                        <span class="creator-country">{{ $creator->user->country }}</span>
+                    @endif
                 </div>
                 <div class="creator-info">
-                    <h3>Amina Diallo</h3>
-                    <p class="creator-specialty">Styliste Wax</p>
-                    <p class="creator-bio">Créatrice passionnée, elle sublime le wax avec une touche contemporaine unique.</p>
+                    <h3>{{ $creator->brand_name ?? $creator->user->name }}</h3>
+                    @if($creator->bio)
+                        <p class="creator-bio">{{ Str::limit($creator->bio, 100) }}</p>
+                    @endif
                     <div class="creator-stats">
-                        <div><strong>85</strong><span>Créations</span></div>
-                        <div><strong>4.9</strong><span>Note</span></div>
+                        <div>
+                            <strong>{{ $creator->products_count ?? 0 }}</strong>
+                            <span>Créations</span>
+                        </div>
                     </div>
+                    <a href="{{ route('frontend.creator.shop', $creator->slug) }}"
+                       class="btn btn-sm mt-2"
+                       style="background:#160D0C;color:white;border-radius:30px;padding:0.4rem 1rem;">
+                        Voir la boutique
+                    </a>
                 </div>
             </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500" alt="Kwame Asante">
-                    <span class="creator-country">🇬🇭 Ghana</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Kwame Asante</h3>
-                    <p class="creator-specialty">Maître Kente</p>
-                    <p class="creator-bio">Expert en tissage kente, il perpétue une tradition familiale de 3 générations.</p>
-                    <div class="creator-stats">
-                        <div><strong>62</strong><span>Créations</span></div>
-                        <div><strong>4.8</strong><span>Note</span></div>
-                    </div>
-                </div>
+            @empty
+            <div class="col-12 text-center py-5" style="grid-column: 1 / -1;">
+                <p style="color:rgba(22,13,12,0.5);font-size:1.1rem;">
+                    Aucun créateur actif pour le moment.
+                </p>
+                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg mt-3"
+                   style="background:linear-gradient(135deg,#FFB800,#ED5F1E);color:white;border-radius:50px;padding:0.75rem 2rem;">
+                    Découvrir le marketplace
+                </a>
             </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500" alt="Fatou Ndiaye">
-                    <span class="creator-country">🇨🇮 Côte d'Ivoire</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Fatou Ndiaye</h3>
-                    <p class="creator-specialty">Accessoiriste</p>
-                    <p class="creator-bio">Créatrice de bijoux et accessoires inspirés des motifs traditionnels.</p>
-                    <div class="creator-stats">
-                        <div><strong>124</strong><span>Créations</span></div>
-                        <div><strong>4.9</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500" alt="Moussa Keita">
-                    <span class="creator-country">🇲🇱 Mali</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Moussa Keita</h3>
-                    <p class="creator-specialty">Teinturier Bogolan</p>
-                    <p class="creator-bio">Artisan spécialisé dans le bogolan, technique ancestrale malienne.</p>
-                    <div class="creator-stats">
-                        <div><strong>45</strong><span>Créations</span></div>
-                        <div><strong>4.7</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500" alt="Aïcha Camara">
-                    <span class="creator-country">🇨🇲 Cameroun</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Aïcha Camara</h3>
-                    <p class="creator-specialty">Créatrice Haute Couture</p>
-                    <p class="creator-bio">Elle fusionne les tissus africains avec des coupes haute couture.</p>
-                    <div class="creator-stats">
-                        <div><strong>38</strong><span>Créations</span></div>
-                        <div><strong>5.0</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500" alt="Ibrahim Sow">
-                    <span class="creator-country">🇸🇳 Sénégal</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Ibrahim Sow</h3>
-                    <p class="creator-specialty">Couturier Homme</p>
-                    <p class="creator-bio">Spécialiste de la mode masculine africaine contemporaine.</p>
-                    <div class="creator-stats">
-                        <div><strong>56</strong><span>Créations</span></div>
-                        <div><strong>4.8</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
+            @endforelse
         </div>
+
+        {{ $creators->links() }}
     </div>
 </section>
 
