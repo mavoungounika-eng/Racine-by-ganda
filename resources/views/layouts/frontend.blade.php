@@ -669,7 +669,60 @@
     
     {{-- RACINE AJAX Spinner -- Désactivé --}}
     {{-- <script src="{{ asset('js/racine-ajax-spinner.js') }}"></script> --}}
-    
+
+    {{-- SCROLL REVEAL — Consolidé ici pour toutes les pages frontend --}}
+    {{-- Progressive enhancement : opacity:1 par défaut, JS ajoute reveal-js-ready sur <html> --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var items = document.querySelectorAll('.reveal-item');
+        if (!items.length) return;
+
+        // Active le masquage CSS (.reveal-js-ready .reveal-item { opacity:0 })
+        document.documentElement.classList.add('reveal-js-ready');
+
+        // Fallback immédiat : si IntersectionObserver absent ou échoue,
+        // révèle tout après 300ms (élimine tout risque de contenu invisible)
+        var fallbackTimer = setTimeout(function () {
+            items.forEach(function (el) { el.classList.add('revealed'); });
+        }, 300);
+
+        // Version optimale avec IntersectionObserver
+        if ('IntersectionObserver' in window) {
+            try {
+                var observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry, i) {
+                        if (entry.isIntersecting) {
+                            setTimeout(function () {
+                                entry.target.classList.add('revealed');
+                            }, i * 70);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
+
+                items.forEach(function (el) { observer.observe(el); });
+
+                // Observer actif : annuler le fallback brut
+                clearTimeout(fallbackTimer);
+
+                // Fallback de sécurité : si après 2s des items restent non-révélés,
+                // les révéler quand même (cas CSP partiel ou JS lent)
+                setTimeout(function () {
+                    items.forEach(function (el) {
+                        if (!el.classList.contains('revealed')) {
+                            el.classList.add('revealed');
+                        }
+                    });
+                }, 2000);
+
+            } catch (e) {
+                // IntersectionObserver échoue → révéler immédiatement
+                items.forEach(function (el) { el.classList.add('revealed'); });
+            }
+        }
+    });
+    </script>
+
     @stack('scripts')
     
     {{-- SPLASH SCREEN PREMIUM --}}

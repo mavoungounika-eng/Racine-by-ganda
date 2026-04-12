@@ -40,8 +40,8 @@ class SecurityHeaders
         // Content Security Policy (CSP) - Hardened
         // On autorise unsafe-inline UNIQUEMENT s'il est accompagné du nonce
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com; " .
-               "style-src 'self' 'nonce-{$nonce}' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
+               "script-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com; " .
+               "style-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " .
                "img-src 'self' data: https: http:; " .
                "connect-src 'self' https://api.stripe.com https://api.openai.com https://api.anthropic.com https://api.groq.com; " .

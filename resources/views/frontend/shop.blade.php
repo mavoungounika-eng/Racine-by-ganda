@@ -406,23 +406,7 @@
     'backText' => 'Retour à l\'accueil',
     'position' => 'bottom',
 ])
-@push('scripts')
-<script>
-(function () {
-    const items = document.querySelectorAll('.reveal-item');
-    if (!items.length) return;
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, i) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => entry.target.classList.add('revealed'), i * 60);
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.08 });
-    items.forEach(el => observer.observe(el));
-})();
-</script>
-@endpush
+{{-- Scroll reveal géré dans layouts/frontend.blade.php --}}
 @endsection
 
 {{-- JavaScript extrait vers public/js/frontend-shop.js --}}

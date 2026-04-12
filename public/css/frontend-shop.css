@@ -600,14 +600,20 @@
 }
 
 /* ===== SCROLL REVEAL ===== */
+/* Visible par défaut (fallback si JS bloqué par CSP ou absent) */
 .reveal-item {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.45s ease, transform 0.45s ease;
-}
-.reveal-item.revealed {
     opacity: 1;
     transform: translateY(0);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+/* JS a chargé : on masque pour animer */
+.reveal-js-ready .reveal-item {
+    opacity: 0;
+    transform: translateY(20px);
+}
+.reveal-item.revealed {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
 }
 
 /* Responsive */

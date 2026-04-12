@@ -371,20 +371,7 @@
 {{-- Section newsletter supprimée - Remplacée par les CTA dans le footer --}}
 @push('scripts')
 <script>
-// Scroll reveal
-(function () {
-    const items = document.querySelectorAll('.reveal-item');
-    if (!items.length) return;
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, i) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => entry.target.classList.add('revealed'), i * 80);
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.12 });
-    items.forEach(el => observer.observe(el));
-})();
+// Scroll reveal géré dans layouts/frontend.blade.php (consolidé)
 
 // Fonction pour gérer la wishlist
 function toggleWishlist(productId) {
