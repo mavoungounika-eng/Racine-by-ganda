@@ -46,9 +46,9 @@
     --info: #ED5F1E;
 
     /* ===== TYPOGRAPHIE OFFICIELLE ===== */
-    --font-heading: 'Aleppo', 'Georgia', serif;
-    --font-body: 'Coco Gothic', 'Helvetica Neue', sans-serif;
-    --font-accent: 'Aileron', 'Arial', sans-serif;
+    --font-heading: 'Aleppo', 'Cormorant Garamond', 'Aileron', serif;
+    --font-body: 'Coco Gothic', 'Nunito', 'Aileron', 'Helvetica Neue', sans-serif;
+    --font-accent: 'Aileron', 'Nunito', 'Arial', sans-serif;
 
     --font-size-xs: 0.75rem;
     /* 12px */
