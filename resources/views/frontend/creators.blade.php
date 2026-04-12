@@ -535,7 +535,7 @@
                             <span>Créations</span>
                         </div>
                     </div>
-                    <a href="{{ route('creator.shop', $creator->slug) }}"
+                    <a href="{{ route('frontend.creator.shop', $creator->slug) }}"
                        class="btn btn-sm mt-2"
                        style="background:#160D0C;color:white;border-radius:30px;padding:0.4rem 1rem;">
                         Voir la boutique
