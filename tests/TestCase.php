@@ -14,6 +14,30 @@ abstract class TestCase extends BaseTestCase
     protected ?array $currentUserContext = null;
 
     /**
+     * Safety net : si une version en cache de `bootstrap/cache/routes-v7.php` existe,
+     * elle peut avoir été générée en dehors de l'environnement testing et exclure les
+     * routes conditionnelles (ex. `if (app()->environment('testing'))`). On la supprime
+     * une seule fois par process de test pour garantir que les routes de fixture
+     * (/api/test-idempotency, /api/api-test/*, auth.google.redirect) soient visibles.
+     */
+    protected function setUp(): void
+    {
+        static $routeCachePurged = false;
+        if (!$routeCachePurged) {
+            // Chemin direct sans helper Laravel : setUp() est appelé AVANT que
+            // l'application ne soit bootée, donc base_path() / app() ne sont pas
+            // encore disponibles. On résout via __DIR__ (tests/ → racine).
+            $cachePath = __DIR__ . '/../bootstrap/cache/routes-v7.php';
+            if (is_file($cachePath)) {
+                @unlink($cachePath);
+            }
+            $routeCachePurged = true;
+        }
+
+        parent::setUp();
+    }
+
+    /**
      * Authenticate as a user WITH UserContext in session
      * 
      * This is required for routes protected by EnsureAuthenticated middleware.

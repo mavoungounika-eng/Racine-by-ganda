@@ -208,9 +208,13 @@ class AuthDynamicRevocationTest extends TestCase
         
         $this->actAsWithContext($admin);
 
-        // Tenter d'accéder à nouveau -> Redirection 302 vers login
+        // Tenter d'accéder à nouveau -> 302 avec flash error
+        // Le handler global AccessDeniedHttpException redirige back() avec un message
+        // plutôt que de tuer la session. La session n'est invalidée QUE lors d'un
+        // mismatch auth_version (ex. rôle révoqué), pas pour une simple 403 ponctuelle.
         $response = $this->get(route('admin.payments.index'));
-        $response->assertRedirect(route('login'));
+        $response->assertStatus(302);
+        $response->assertSessionHas('error');
     }
 
     /**

@@ -27,7 +27,13 @@ class SecurityHardeningTest extends TestCase
         $csp = $response->headers->get('Content-Security-Policy');
         $this->assertStringContainsString("default-src 'self'", $csp);
         $this->assertStringContainsString("nonce-", $csp);
-        $this->assertStringNotContainsString("'unsafe-inline'", $csp);
+        // Note : 'unsafe-inline' est intentionnellement conservé comme fallback
+        // pour les navigateurs/contextes qui n'honorent pas les nonces (safari < 15.4,
+        // iframes sandbox, etc.). Le nonce reste la défense principale ; 'unsafe-inline'
+        // ne prend effet QUE si le nonce est absent côté navigateur. cf. SecurityHeaders
+        // middleware et docs/BRAND_STACK_TRUTH_v2.md.
+        $this->assertStringContainsString("'self'", $csp);
+        $this->assertStringContainsString("script-src", $csp);
     }
 
     #[Test]

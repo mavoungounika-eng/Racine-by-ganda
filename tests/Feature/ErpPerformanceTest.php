@@ -113,8 +113,11 @@ class ErpPerformanceTest extends TestCase
             ->get(route('erp.dashboard'));
         $response2->assertStatus(200);
         
-        // Les deux réponses doivent être identiques
-        $this->assertEquals($response1->getContent(), $response2->getContent());
+        // Les deux réponses doivent être identiques.
+        // Note : on strip les valeurs de nonce CSP avant comparaison car elles sont
+        // régénérées à chaque requête (SecurityHeaders middleware, random_bytes(16)).
+        $strip = fn(string $html) => preg_replace('/nonce="[A-Za-z0-9+\/=]+"/', 'nonce="X"', $html);
+        $this->assertEquals($strip($response1->getContent()), $strip($response2->getContent()));
     }
 
     /**
