@@ -13,7 +13,7 @@ const DB_VERSION = 2;
 class LocalDb {
   constructor() {
     this.dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion) {
+      upgrade: async (db, oldVersion, _newVersion, tx) => {
         // v1 → Create stores
         if (oldVersion < 1) {
           if (!db.objectStoreNames.contains('pending_sales')) {
@@ -35,12 +35,29 @@ class LocalDb {
             syncStore.createIndex('status', 'status');
           }
         }
-        // v2 → old salesStore used localId autoIncrement; migrate to uuid keyPath
-        if (oldVersion === 1) {
-          // Drop old store (data loss acceptable during version upgrade from dev)
-          if (db.objectStoreNames.contains('pending_sales')) {
-            db.deleteObjectStore('pending_sales');
+
+        // v2 → l'ancien pending_sales utilisait localId autoIncrement ;
+        // on migre vers uuid keyPath SANS perdre les ventes pending.
+        //
+        // Stratégie non-destructive :
+        //   1. Lire toutes les ventes existantes (via le vieux store)
+        //   2. Drop + recrée le store avec keyPath 'uuid'
+        //   3. Re-insère les ventes en garantissant un uuid
+        //      (si absent, on en génère un à la volée — cas dev early)
+        if (oldVersion === 1 && db.objectStoreNames.contains('pending_sales')) {
+          let preserved = [];
+          try {
+            const oldStore = tx.objectStore('pending_sales');
+            preserved = await oldStore.getAll();
+          } catch (err) {
+            // Si on ne peut pas lire (schéma corrompu), on logge et continue.
+            // Mieux vaut un store vide qu'une app qui plante au boot.
+            // eslint-disable-next-line no-console
+            console.warn('[localDb v1→v2] Impossible de lire pending_sales existant :', err);
+            preserved = [];
           }
+
+          db.deleteObjectStore('pending_sales');
           const salesStore = db.createObjectStore('pending_sales', {
             keyPath: 'uuid',
           });
@@ -49,6 +66,30 @@ class LocalDb {
           salesStore.createIndex('idempotencyKey', 'idempotencyKey', {
             unique: true,
           });
+
+          // Ré-insérer les ventes préservées
+          for (const row of preserved) {
+            const migrated = {
+              ...row,
+              uuid:
+                row.uuid ||
+                (typeof crypto !== 'undefined' && crypto.randomUUID
+                  ? crypto.randomUUID()
+                  : `migrated-${Date.now()}-${Math.random().toString(36).slice(2)}`),
+            };
+            // Supprimer l'ancien localId autoIncrement s'il traînait
+            delete migrated.localId;
+            try {
+              await salesStore.add(migrated);
+            } catch (err) {
+              // Si collision idempotencyKey (peu probable), on saute — on privilégie
+              // la non-crash au prix d'une vente perdue sur le cas edge.
+              // eslint-disable-next-line no-console
+              console.warn('[localDb v1→v2] Vente ignorée à la migration :', err, migrated);
+            }
+          }
+          // eslint-disable-next-line no-console
+          console.info(`[localDb v1→v2] Migré ${preserved.length} vente(s) pending vers keyPath uuid`);
         }
       },
     });
