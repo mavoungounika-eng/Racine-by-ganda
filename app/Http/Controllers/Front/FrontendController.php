@@ -176,18 +176,18 @@ class FrontendController extends Controller
 
     public function creatorShop(string $slug)
     {
-        $creator = \App\Models\CreatorProfile::where('slug', $slug)
+        $creatorProfile = \App\Models\CreatorProfile::where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
 
         $products = \App\Models\Product::where('is_active', true)
-            ->where('user_id', $creator->user_id)
+            ->where('user_id', $creatorProfile->user_id)
             ->with('category')
             ->orderBy('created_at', 'desc')
             ->paginate(24)
             ->withQueryString();
 
-        return view('frontend.creator-shop', compact('creator', 'products'));
+        return view('frontend.creator-shop', compact('creatorProfile', 'products'));
     }
     public function events() { return view('frontend.events'); }
     public function portfolio() { return view('frontend.portfolio'); }

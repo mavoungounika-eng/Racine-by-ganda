@@ -29,6 +29,11 @@ class ProductPolicy
      */
     public function create(User $user): bool
     {
+        // Les créateurs peuvent toujours créer leurs propres produits
+        if ($user->isCreator()) {
+            return true;
+        }
+
         return $user->hasPermission('create-products');
     }
 

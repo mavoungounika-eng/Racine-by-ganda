@@ -19,6 +19,11 @@ class SecurityHeaders
         $nonce = base64_encode(random_bytes(16));
         $request->attributes->set('csp_nonce', $nonce);
 
+        // Partager le nonce via config() et View::share() pour garantir
+        // l'accès dans tous les contextes Blade (routes authentifiées incluses)
+        config(['csp.nonce' => $nonce]);
+        \Illuminate\Support\Facades\View::share('cspNonce', $nonce);
+
         $response = $next($request);
 
         // Headers de sécurité HTTP de base
@@ -38,13 +43,18 @@ class SecurityHeaders
         }
         
         // Content Security Policy (CSP) - Hardened
-        // On autorise unsafe-inline UNIQUEMENT s'il est accompagné du nonce
+        // En local, on autorise le serveur Vite HMR (port 5173) pour le hot-reload
+        $isLocal      = app()->environment('local');
+        $scriptExtra  = $isLocal ? ' http://127.0.0.1:5173' : '';
+        $styleExtra   = $isLocal ? ' http://127.0.0.1:5173' : '';
+        $connectExtra = $isLocal ? ' http://127.0.0.1:5173 ws://127.0.0.1:5173' : '';
+
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com; " .
-               "style-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
+               "script-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com{$scriptExtra}; " .
+               "style-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://fonts.googleapis.com https://cdnjs.cloudflare.com{$styleExtra}; " .
                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " .
                "img-src 'self' data: https: http:; " .
-               "connect-src 'self' https://api.stripe.com https://api.openai.com https://api.anthropic.com https://api.groq.com; " .
+               "connect-src 'self' https://api.stripe.com https://api.openai.com https://api.anthropic.com https://api.groq.com{$connectExtra}; " .
                "frame-src 'self' https://js.stripe.com https://hooks.stripe.com; " .
                "object-src 'none'; " .
                "base-uri 'self'; " .

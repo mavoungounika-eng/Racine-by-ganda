@@ -42,3 +42,15 @@ if (!function_exists('current_currency_symbol')) {
     return config("currency.symbols.{$currency}", $currency);
   }
 }
+
+if (!function_exists('csp_nonce')) {
+    /**
+     * Retourne le nonce CSP de la requête courante.
+     * Cherche dans l'ordre : config runtime → request attributes → vide.
+     */
+    function csp_nonce(): string {
+        return config('csp.nonce')
+            ?? request()->attributes->get('csp_nonce')
+            ?? '';
+    }
+}

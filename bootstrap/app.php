@@ -118,22 +118,14 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, \Illuminate\Http\Request $request) {
-            // CRITICAL: Toute révocation de sécurité -> logout + redirect (302)
-            if (Auth::check()) {
-                Log::warning('Global Exception Handler: Access Denied. Forcing Logout.', [
-                    'user_id' => Auth::id(),
-                    'url' => $request->url()
-                ]);
-                
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-
-                return redirect()->route('login')
-                    ->with('error', 'Accès refusé. Pour votre sécurité, votre session a été clôturée.');
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Forbidden.'], 403);
             }
-            
-            return null; // Let default handler handle if not logged in
+
+            // Redirect back with error instead of logging out — a permission error
+            // on one action should not terminate the entire session.
+            return redirect()->back()
+                ->with('error', 'Vous n\'avez pas les permissions nécessaires pour effectuer cette action.');
         });
     })
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
