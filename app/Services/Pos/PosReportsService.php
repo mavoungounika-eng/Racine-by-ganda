@@ -22,22 +22,39 @@ class PosReportsService
 {
     /**
      * Rapport journalier POS
+     *
+     * PERF : utilise un eager-load `->with('sales')` pour éviter le N+1
+     * précédent (`$sessions->sum(fn($s) => $s->sales()->sum(...))` faisait
+     * une requête SQL par session).
      */
     public function getDailyReport(\DateTime $date): array
     {
         $sessions = PosSession::whereDate('opened_at', $date)
             ->where('status', 'closed')
+            ->with('sales')
             ->get();
+
+        return $this->buildDailyReportFromSessions($date, $sessions);
+    }
+
+    /**
+     * Construire un daily report à partir d'une collection déjà eager-loaded.
+     * Extrait de getDailyReport() pour que getPeriodReport() puisse réutiliser
+     * les sessions déjà chargées au lieu de re-querier jour par jour.
+     */
+    protected function buildDailyReportFromSessions(\DateTime $date, Collection $sessions): array
+    {
+        $threshold = (float) config('pos.cash_discrepancy_threshold', 1.00);
 
         return [
             'date' => $date->format('Y-m-d'),
             'sessions_count' => $sessions->count(),
-            'sessions_total_sales' => $sessions->sum(fn($s) => $s->sales()->sum('total_amount')),
+            'sessions_total_sales' => $sessions->sum(fn($s) => $s->sales->sum('total_amount')),
             'total_opening_cash' => $sessions->sum('opening_cash'),
             'total_closing_cash' => $sessions->sum('closing_cash'),
             'total_expected_cash' => $sessions->sum('expected_cash'),
             'total_cash_difference' => $sessions->sum('cash_difference'),
-            'discrepancies' => $sessions->filter(fn($s) => abs($s->cash_difference) >= 1.00)->count(),
+            'discrepancies' => $sessions->filter(fn($s) => abs($s->cash_difference) >= $threshold)->count(),
             'payment_methods' => $this->analyzePaymentMethods($sessions),
             'performance' => $this->analyzeOperatorPerformance($sessions),
         ];
@@ -45,29 +62,49 @@ class PosReportsService
 
     /**
      * Rapport période (semaine, mois)
+     *
+     * PERF : charge TOUTES les sessions de la période en une seule requête
+     * (avec sales eager-loaded), puis les groupe par jour en mémoire.
+     * Avant : N jours × M sessions × 1 query par session = O(N·M) queries.
+     * Après : 2 queries fixes (sessions + sales).
      */
     public function getPeriodReport(\DateTime $startDate, \DateTime $endDate): array
     {
         $sessions = PosSession::whereBetween('opened_at', [$startDate, $endDate])
             ->where('status', 'closed')
+            ->with('sales')
             ->get();
+
+        $threshold = (float) config('pos.cash_discrepancy_threshold', 1.00);
+
+        // Grouper en mémoire par date d'ouverture (format Y-m-d)
+        $sessionsByDay = $sessions->groupBy(
+            fn($s) => Carbon::parse($s->opened_at)->format('Y-m-d')
+        );
 
         $dailyData = [];
         $currentDate = clone $startDate;
-
         while ($currentDate <= $endDate) {
-            $dailyData[$currentDate->format('Y-m-d')] = $this->getDailyReport($currentDate);
+            $key = $currentDate->format('Y-m-d');
+            $daySessions = $sessionsByDay->get($key, new Collection());
+            // Respect du contrat : clone pour ne pas muter le curseur de boucle
+            $dailyData[$key] = $this->buildDailyReportFromSessions(
+                \DateTime::createFromFormat('Y-m-d', $key),
+                $daySessions
+            );
             $currentDate->addDay();
         }
+
+        $totalSales = $sessions->sum(fn($s) => $s->sales->sum('total_amount'));
 
         return [
             'period' => "{$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}",
             'days' => count($dailyData),
             'total_sessions' => $sessions->count(),
-            'total_sales' => $sessions->sum(fn($s) => $s->sales()->sum('total_amount')),
-            'average_session_sales' => $sessions->count() > 0 ? $sessions->sum(fn($s) => $s->sales()->sum('total_amount')) / $sessions->count() : 0,
+            'total_sales' => $totalSales,
+            'average_session_sales' => $sessions->count() > 0 ? $totalSales / $sessions->count() : 0,
             'total_cash_discrepancies' => $sessions->sum('cash_difference'),
-            'discrepancy_rate' => $sessions->count() > 0 ? ($sessions->filter(fn($s) => abs($s->cash_difference) >= 1.00)->count() / $sessions->count()) * 100 : 0,
+            'discrepancy_rate' => $sessions->count() > 0 ? ($sessions->filter(fn($s) => abs($s->cash_difference) >= $threshold)->count() / $sessions->count()) * 100 : 0,
             'daily_data' => $dailyData,
         ];
     }
@@ -96,10 +133,14 @@ class PosReportsService
 
     /**
      * Analyser performance opérateurs
+     *
+     * PERF : utilise $session->sales (collection eager-loaded par le caller)
+     * au lieu de $session->sales() (query DB par session).
      */
     private function analyzeOperatorPerformance(Collection $sessions): array
     {
         $operatorStats = [];
+        $threshold = (float) config('pos.cash_discrepancy_threshold', 1.00);
 
         foreach ($sessions as $session) {
             $userId = $session->opened_by;
@@ -115,9 +156,9 @@ class PosReportsService
             }
 
             $operatorStats[$operator]['sessions']++;
-            $operatorStats[$operator]['total_sales'] += $session->sales()->sum('total_amount');
+            $operatorStats[$operator]['total_sales'] += $session->sales->sum('total_amount');
 
-            if (abs($session->cash_difference) >= 1.00) {
+            if (abs($session->cash_difference) >= $threshold) {
                 $operatorStats[$operator]['discrepancies']++;
                 $operatorStats[$operator]['discrepancy_total'] += $session->cash_difference;
             }
@@ -139,8 +180,10 @@ class PosReportsService
     /**
      * Rapport discrepancies
      */
-    public function getDiscrepancyReport(\DateTime $startDate, \DateTime $endDate, float $minThreshold = 1.00): array
+    public function getDiscrepancyReport(\DateTime $startDate, \DateTime $endDate, ?float $minThreshold = null): array
     {
+        $minThreshold = $minThreshold ?? (float) config('pos.cash_discrepancy_threshold', 1.00);
+
         $sessions = PosSession::whereBetween('opened_at', [$startDate, $endDate])
             ->where('status', 'closed')
             ->whereRaw('ABS(cash_difference) >= ?', [$minThreshold])
@@ -192,8 +235,9 @@ class PosReportsService
                 'closing_cash' => $session->closing_cash,
                 'expected_cash' => $session->expected_cash,
                 'cash_difference' => $session->cash_difference,
-                'sales_count' => $session->sales()->count(),
-                'total_sales_amount' => $session->sales()->sum('total_amount'),
+                // PERF : utilise la relation eager-loaded au lieu de $session->sales()
+                'sales_count' => $session->sales->count(),
+                'total_sales_amount' => $session->sales->sum('total_amount'),
                 'notes' => $session->notes,
             ];
         })->toArray();

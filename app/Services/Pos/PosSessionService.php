@@ -201,7 +201,8 @@ class PosSessionService
 
             // 🔍 DÉTECTER DISCREPANCY CASH
             $cashDifference = $closingCash - $expectedCash;
-            if (abs($cashDifference) >= 1.00) { // Seuil 1€
+            $threshold = (float) config('pos.cash_discrepancy_threshold', 1.00);
+            if (abs($cashDifference) >= $threshold) {
                 event(new \App\Events\CashDiscrepancyDetected(
                     $session,
                     $expectedCash,
