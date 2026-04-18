@@ -3,7 +3,7 @@
 @section('title', 'Gérer la Double Authentification - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .manage-page {
         min-height: 100vh;
         background: #F8F6F3;

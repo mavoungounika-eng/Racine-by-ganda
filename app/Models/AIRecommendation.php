@@ -10,6 +10,15 @@ class AIRecommendation extends Model
 {
     use HasFactory;
 
+    /**
+     * Override Laravel's default naming convention.
+     *
+     * Without this, Eloquent snake_cases the class name "AIRecommendation"
+     * into "a_i_recommendations" (the capital I gets its own segment).
+     * The real table created by the migration is "ai_recommendations".
+     */
+    protected $table = 'ai_recommendations';
+
     protected $fillable = [
         'type',
         'priority',

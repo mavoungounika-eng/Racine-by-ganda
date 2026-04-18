@@ -5,7 +5,7 @@
     {{-- Messages flash --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle mr-2"></i>
+            <i class="fas fa-check-circle me-2"></i>
             {{ session('success') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -15,7 +15,7 @@
 
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle mr-2"></i>
+            <i class="fas fa-exclamation-circle me-2"></i>
             {{ session('error') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -25,7 +25,7 @@
 
     @if($errors->any())
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <i class="fas fa-exclamation-triangle me-2"></i>
             <strong>Erreur de validation :</strong>
             <ul class="mb-0 mt-2">
                 @foreach($errors->all() as $error)
@@ -303,7 +303,7 @@
                                             </div>
                                         @endif
                                     </div>
-                                    <div class="flex-grow-1 ml-3">
+                                    <div class="flex-grow-1 ms-3">
                                         <h6 class="mb-1">{{ $title }}</h6>
                                         <small class="text-muted">Qté : {{ $qty }}</small>
                                         <div class="mt-1">
@@ -333,11 +333,11 @@
 
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary btn-lg btn-block checkout-submit-btn">
-                                <i class="fas fa-lock mr-2"></i>
+                                <i class="fas fa-lock me-2"></i>
                                 Valider ma commande
                             </button>
                             <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.85rem;">
-                                <i class="fas fa-shield-alt mr-1"></i>
+                                <i class="fas fa-shield-alt me-1"></i>
                                 Paiement 100% sécurisé
                             </p>
                         </div>
@@ -347,7 +347,7 @@
                             <div class="text-center">
                                 <small class="text-muted d-block mb-2">Besoin d'aide ?</small>
                                 <a href="{{ route('frontend.contact') }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="fas fa-envelope mr-1"></i>
+                                    <i class="fas fa-envelope me-1"></i>
                                     Nous contacter
                                 </a>
                             </div>
@@ -360,7 +360,7 @@
 </div>
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     /* Stepper visuel */
     .checkout-stepper {
         display: flex;

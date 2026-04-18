@@ -4,7 +4,7 @@
 @section('page-title', 'Paramètres de Paiement')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .payment-card {
         background: white;
         border-radius: 20px;
@@ -50,9 +50,9 @@
         letter-spacing: 0.5px;
     }
 
-    .badge-success-premium { background: #DCFCE7; color: #166534; }
-    .badge-warning-premium { background: #FEF3C7; color: #92400E; }
-    .badge-info-premium { background: #E0F2FE; color: #075985; }
+    .bg-success-premium { background: #DCFCE7; color: #166534; }
+    .bg-warning-premium { background: #FEF3C7; color: #92400E; }
+    .bg-info-premium { background: #E0F2FE; color: #075985; }
 
     .payment-info-box {
         background: #F8F6F3;
@@ -103,13 +103,13 @@
     {{-- MESSAGES --}}
     @if(session('success'))
         <div class="alert alert-success border-0 shadow-sm mb-4 rounded-pill px-4">
-            <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
+            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert alert-danger border-0 shadow-sm mb-4 rounded-pill px-4">
-            <i class="fas fa-exclamation-circle mr-2"></i> {{ session('error') }}
+            <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
         </div>
     @endif
 
@@ -122,12 +122,12 @@
                         <i class="fab fa-stripe"></i>
                     </div>
                     @if($stripeAccount && $stripeAccount->payouts_enabled)
-                        <span class="badge-premium badge-success-premium">
-                            <i class="fas fa-check-circle mr-1"></i> Compte Actif
+                        <span class="badge-premium bg-success-premium">
+                            <i class="fas fa-check-circle me-1"></i> Compte Actif
                         </span>
                     @else
-                        <span class="badge-premium badge-warning-premium">
-                            <i class="fas fa-clock mr-1"></i> À configurer
+                        <span class="badge-premium bg-warning-premium">
+                            <i class="fas fa-clock me-1"></i> À configurer
                         </span>
                     @endif
                 </div>
@@ -139,7 +139,7 @@
                     @if(!$stripeAccount || !$stripeAccount->payouts_enabled)
                         <div class="alert bg-warning border-0 px-3 py-3" style="background-color: #FEF3C7 !important;">
                             <p class="small mb-0 font-weight-bold" style="color: #92400E !important;">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <i class="fas fa-exclamation-triangle me-2"></i>
                                 Votre compte Stripe n'est pas encore actif. Connectez-vous pour automatiser vos virements bancaires.
                             </p>
                         </div>
@@ -150,7 +150,7 @@
                     <form action="{{ route('creator.settings.payment-preferences.stripe.connect') }}" method="POST" class="{{ $stripeAccount && $stripeAccount->payouts_enabled ? 'd-none' : '' }}">
                         @csrf
                         <button type="submit" class="btn creator-btn w-100 py-3">
-                            <i class="fas fa-link mr-2"></i> Configurer mon compte Stripe
+                            <i class="fas fa-link me-2"></i> Configurer mon compte Stripe
                         </button>
                     </form>
 
@@ -166,7 +166,7 @@
                             </span>
                         </div>
                         <a href="{{ route('creator.finances.index') }}" class="btn btn-outline-dark w-100 rounded-pill font-weight-bold">
-                            <i class="fas fa-external-link-alt mr-2"></i> Gérer via le Dashboard
+                            <i class="fas fa-external-link-alt me-2"></i> Gérer via le Dashboard
                         </a>
                     @endif
                 </div>
@@ -180,7 +180,7 @@
                     <div class="payment-icon-wrapper momo-icon shadow-sm">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
-                    <span class="badge-premium badge-info-premium">Méthode Locales</span>
+                    <span class="badge-premium bg-info-premium">Méthode Locales</span>
                 </div>
 
                 <h3 class="card-title-premium h4">Mobile Money</h3>
@@ -191,7 +191,7 @@
                     @if(!$stripeAccount || !$stripeAccount->payouts_enabled)
                         <div class="alert border-0 px-3 py-3 mb-4" style="background-color: #E0F2FE; color: #075985;">
                             <p class="small mb-0 font-weight-bold">
-                                <i class="fas fa-info-circle mr-2"></i>
+                                <i class="fas fa-info-circle me-2"></i>
                                 Note : Stripe est recommandé pour les virements automatiques, mais vous pouvez configurer votre MoMo pour les retraits manuels.
                             </p>
                         </div>
@@ -224,7 +224,7 @@
                         <div class="form-group mb-4">
                             <label class="creator-label d-flex justify-content-between">
                                 Seuil de versement (F CFA)
-                                <span class="badge badge-info-premium shadow-none">Min. 5 000 F</span>
+                                <span class="badge bg-info-premium shadow-none">Min. 5 000 F</span>
                             </label>
                             <input type="number" name="minimum_payout_threshold" class="form-control creator-input h-auto py-3 @error('minimum_payout_threshold') is-invalid @enderror" 
                                    placeholder="5000" min="5000" step="1000"
@@ -234,7 +234,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill font-weight-bold shadow-sm">
-                            <i class="fas fa-save mr-2"></i> Sauvegarder mes coordonnées MoMo
+                            <i class="fas fa-save me-2"></i> Sauvegarder mes coordonnées MoMo
                         </button>
                     </form>
                 </div>
@@ -245,7 +245,7 @@
     {{-- INFORMATIONS --}}
     <div class="payment-info-box shadow-sm">
         <h4 class="h5 font-weight-bold mb-4" style="color: var(--racine-black); font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-info-circle text-orange mr-2"></i> À savoir sur vos revenus
+            <i class="fas fa-info-circle text-orange me-2"></i> À savoir sur vos revenus
         </h4>
         <div class="row">
             <div class="col-md-3 mb-4 mb-md-0">
@@ -265,7 +265,7 @@
             </div>
             <div class="col-md-3">
                 <div class="p-3 bg-white rounded-lg border">
-                    <span class="info-label text-warning"><i class="fas fa-shield-alt mr-1"></i> Mode Test Actif</span>
+                    <span class="info-label text-warning"><i class="fas fa-shield-alt me-1"></i> Mode Test Actif</span>
                     <p class="small text-muted mb-0">Les transactions Stripe ne sont pas réelles pour le moment.</p>
                 </div>
             </div>

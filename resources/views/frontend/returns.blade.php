@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Retours & Échanges - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .returns-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
@@ -563,7 +563,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.querySelectorAll('.faq-question').forEach(question => {
     question.addEventListener('click', function() {
         const item = this.parentElement;

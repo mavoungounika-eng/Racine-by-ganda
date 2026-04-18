@@ -50,7 +50,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creator-tabs-wrapper {
         background: #F8F6F3;
         padding: 6px;

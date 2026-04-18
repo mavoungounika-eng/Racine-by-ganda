@@ -4,7 +4,7 @@
 @section('page-title', 'Mes Notifications')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .notification-card {
         background: white;
         border-radius: 20px;
@@ -17,13 +17,13 @@
     }
     
     .notification-unread {
-        border-left: 5px solid var(--racine-orange);
+        border-start: 5px solid var(--racine-orange);
         background: linear-gradient(90deg, #FFF7ED 0%, #FFFFFF 100%);
         border-color: var(--racine-orange);
     }
     
     .notification-unread:hover {
-        border-left-width: 8px;
+        border-start-width: 8px;
     }
 
     .notification-icon-box {
@@ -100,7 +100,7 @@
                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                     <div>
                         <h2 class="h3 font-weight-bold text-dark mb-1" style="font-family: 'Libre Baskerville', serif;">
-                            <i class="fas fa-bell text-warning mr-2"></i>
+                            <i class="fas fa-bell text-warning me-2"></i>
                             Mes Notifications
                         </h2>
                         <p class="text-muted mb-0 font-weight-bold">
@@ -114,11 +114,11 @@
                     
                     <div class="d-flex align-items-center mt-3 mt-md-0">
                         <a href="{{ route('creator.notifications.index', ['filter' => request('filter') === 'unread' ? null : 'unread']) }}" 
-                           class="btn {{ request('filter') === 'unread' ? 'btn-outline-dark' : 'btn-light border' }} filter-btn mr-2">
+                           class="btn {{ request('filter') === 'unread' ? 'btn-outline-dark' : 'btn-light border' }} filter-btn me-2">
                             @if(request('filter') === 'unread')
-                                <i class="fas fa-eye mr-1"></i> Voir toutes
+                                <i class="fas fa-eye me-1"></i> Voir toutes
                             @else
-                                <i class="fas fa-filter mr-1"></i> Non lues
+                                <i class="fas fa-filter me-1"></i> Non lues
                             @endif
                         </a>
                         
@@ -127,7 +127,7 @@
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="btn btn-success filter-btn shadow-sm">
-                                <i class="fas fa-check-double mr-1"></i> Tout marquer lu
+                                <i class="fas fa-check-double me-1"></i> Tout marquer lu
                             </button>
                         </form>
                         @endif
@@ -141,12 +141,12 @@
                 <div class="notification-card {{ !$notification->is_read ? 'notification-unread' : '' }}">
                     <div class="d-flex align-items-start">
                         {{-- Icône --}}
-                        <div class="notification-icon-box {{ !$notification->is_read ? 'icon-unread' : 'icon-read' }} mr-4">
+                        <div class="notification-icon-box {{ !$notification->is_read ? 'icon-unread' : 'icon-read' }} me-4">
                             <span>{{ $notification->display_icon }}</span>
                         </div>
                         
                         {{-- Contenu --}}
-                        <div class="flex-grow-1 mr-3">
+                        <div class="flex-grow-1 me-3">
                             <h4 class="h5 notification-title mt-1">
                                 {{ $notification->title }}
                                 @if(!$notification->is_read)
@@ -157,7 +157,7 @@
                                 {{ $notification->message }}
                             </p>
                             <div class="notification-time">
-                                <i class="far fa-clock mr-1"></i>
+                                <i class="far fa-clock me-1"></i>
                                 {{ $notification->created_at->diffForHumans() }}
                             </div>
                         </div>
@@ -211,7 +211,7 @@
             {{-- Back Button --}}
             <div class="text-center mt-5">
                 <a href="{{ route('creator.dashboard') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <i class="fas fa-arrow-left me-2"></i>
                     Retour au tableau de bord
                 </a>
             </div>

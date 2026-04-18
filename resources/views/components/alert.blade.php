@@ -37,12 +37,12 @@ $classes = 'p-4 border rounded-lg ' . $config['bg'] . ' ' . $config['border'];
 
 <div {{ $attributes->merge(['class' => $classes]) }} x-data="{ show: true }" x-show="show">
     <div class="flex items-start">
-        <i class="{{ $config['icon'] }} mt-0.5 mr-3"></i>
+        <i class="{{ $config['icon'] }} mt-0.5 me-3"></i>
         <div class="flex-1 {{ $config['text'] }}">
             {{ $slot }}
         </div>
         @if($dismissible)
-            <button @click="show = false" class="ml-3 text-gray-400 hover:text-gray-600">
+            <button @click="show = false" class="ms-3 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
             </button>
         @endif

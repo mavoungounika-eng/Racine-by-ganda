@@ -5,7 +5,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/creator-premium.css') }}">
-<style>
+<style nonce="{{ csp_nonce() }}">
     .comparison-table-wrapper {
         background: white;
         border-radius: 24px;
@@ -97,14 +97,14 @@
             {{-- Feedback Messages --}}
             @if(session('success'))
                 <div class="alert alert-success border-0 shadow-sm mb-4 rounded-xl">
-                    <i class="fas fa-check-circle mr-2"></i>
+                    <i class="fas fa-check-circle me-2"></i>
                     {{ session('success') }}
                 </div>
             @endif
 
             @if(session('error'))
                 <div class="alert alert-danger border-0 shadow-sm mb-4 rounded-xl">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <i class="fas fa-exclamation-circle me-2"></i>
                     {{ session('error') }}
                 </div>
             @endif
@@ -122,7 +122,7 @@
                 {{-- Current Plan Badge --}}
                 @if($currentSubscription && $currentSubscription->plan)
                     <div class="mt-4 d-inline-block px-4 py-2 bg-success text-white rounded-pill shadow-sm">
-                        <i class="fas fa-check-circle mr-2"></i>
+                        <i class="fas fa-check-circle me-2"></i>
                         <span class="font-weight-bold">Plan actuel : {{ $currentSubscription->plan->name }}</span>
                     </div>
                 @endif
@@ -136,7 +136,7 @@
                             {{-- Badge --}}
                             <div class="mb-3">
                                 @if($currentSubscription && $currentSubscription->plan && $currentSubscription->plan->id === $plan->id)
-                                    <span class="badge badge-success px-3 py-2 rounded-pill">Plan Actuel</span>
+                                    <span class="badge bg-success px-3 py-2 rounded-pill">Plan Actuel</span>
                                 @elseif($plan->code === 'premium')
                                     <span class="badge px-3 py-2 rounded-pill text-white" style="background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);">⭐ Recommandé</span>
                                 @else
@@ -157,7 +157,7 @@
                                 @if($plan->features)
                                     @foreach(array_slice($plan->features, 0, 5) as $feature)
                                         <li class="d-flex align-items-start mb-3">
-                                            <i class="fas fa-check-circle text-success mt-1 mr-2"></i>
+                                            <i class="fas fa-check-circle text-success mt-1 me-2"></i>
                                             <span class="text-dark">{{ $feature }}</span>
                                         </li>
                                     @endforeach
@@ -169,7 +169,7 @@
                             {{-- CTA Section --}}
                             @if($currentSubscription && $currentSubscription->plan && $currentSubscription->plan->id === $plan->id)
                                 <button disabled class="btn btn-success btn-lg btn-block rounded-pill py-3">
-                                    <i class="fas fa-check mr-2"></i>
+                                    <i class="fas fa-check me-2"></i>
                                     Votre Plan Actuel
                                 </button>
                             @else
@@ -216,7 +216,7 @@
                     <table class="table comparison-table mb-0">
                         <thead>
                             <tr>
-                                <th class="text-left">Fonctionnalités</th>
+                                <th class="text-start">Fonctionnalités</th>
                                 @foreach($plans as $plan)
                                     <th class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
                                         {{ $plan->name }}
@@ -231,12 +231,12 @@
                             {{-- Gestion Produits --}}
                             <tr>
                                 <td colspan="{{ count($plans) + 1 }}" class="feature-category">
-                                    <i class="fas fa-box mr-2 text-warning"></i>
+                                    <i class="fas fa-box me-2 text-warning"></i>
                                     Gestion des Produits
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-left font-weight-bold text-dark">Nombre de produits</td>
+                                <td class="text-start font-weight-bold text-dark">Nombre de produits</td>
                                 @foreach($plans as $plan)
                                     @php
                                         $capability = $plan->capabilities->where('capability_key', 'max_products')->first();
@@ -244,7 +244,7 @@
                                     @endphp
                                     <td class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
                                         @if($maxProducts === -1)
-                                            <span class="badge badge-dark">Illimité</span>
+                                            <span class="badge bg-dark">Illimité</span>
                                         @else
                                             {{ $maxProducts }}
                                         @endif
@@ -252,7 +252,7 @@
                                 @endforeach
                             </tr>
                             <tr>
-                                <td class="text-left font-weight-bold text-dark">Variantes produits</td>
+                                <td class="text-start font-weight-bold text-dark">Variantes produits</td>
                                 @foreach($plans as $plan)
                                     <td class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
                                         <i class="fas fa-check text-success"></i>
@@ -263,12 +263,12 @@
                             {{-- Analytics & Stats --}}
                             <tr>
                                 <td colspan="{{ count($plans) + 1 }}" class="feature-category">
-                                    <i class="fas fa-chart-line mr-2 text-warning"></i>
+                                    <i class="fas fa-chart-line me-2 text-warning"></i>
                                     Analytics & Statistiques
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-left font-weight-bold text-dark">Statistiques de base</td>
+                                <td class="text-start font-weight-bold text-dark">Statistiques de base</td>
                                 @foreach($plans as $plan)
                                     <td class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
                                         <i class="fas fa-check text-success"></i>
@@ -276,7 +276,7 @@
                                 @endforeach
                             </tr>
                             <tr>
-                                <td class="text-left font-weight-bold text-dark">Analytics avancées</td>
+                                <td class="text-start font-weight-bold text-dark">Analytics avancées</td>
                                 @foreach($plans as $plan)
                                     @php
                                         $capability = $plan->capabilities->where('capability_key', 'can_view_analytics')->first();
@@ -295,18 +295,18 @@
                             {{-- Support & Services --}}
                             <tr>
                                 <td colspan="{{ count($plans) + 1 }}" class="feature-category">
-                                    <i class="fas fa-headset mr-2 text-warning"></i>
+                                    <i class="fas fa-headset me-2 text-warning"></i>
                                     Support & Services
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-left font-weight-bold text-dark">Support email</td>
+                                <td class="text-start font-weight-bold text-dark">Support email</td>
                                 <td>48h</td>
                                 <td>24h</td>
                                 <td class="plan-highlight-bg text-dark font-weight-bold">12h prioritaire</td>
                             </tr>
                             <tr>
-                                <td class="text-left font-weight-bold text-dark">Chat en direct</td>
+                                <td class="text-start font-weight-bold text-dark">Chat en direct</td>
                                 <td><i class="fas fa-times text-danger"></i></td>
                                 <td><i class="fas fa-check text-success"></i></td>
                                 <td class="plan-highlight-bg"><i class="fas fa-check text-success"></i></td>
@@ -315,12 +315,12 @@
                             {{-- Marketing --}}
                             <tr>
                                 <td colspan="{{ count($plans) + 1 }}" class="feature-category">
-                                    <i class="fas fa-bullhorn mr-2 text-warning"></i>
+                                    <i class="fas fa-bullhorn me-2 text-warning"></i>
                                     Marketing & Promotion
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-left font-weight-bold text-dark">Mise en avant sur marketplace</td>
+                                <td class="text-start font-weight-bold text-dark">Mise en avant sur marketplace</td>
                                 <td><i class="fas fa-times text-danger"></i></td>
                                 <td>1x/mois</td>
                                 <td class="plan-highlight-bg text-dark font-weight-bold">3x/mois</td>
@@ -333,7 +333,7 @@
             {{-- FAQ Section --}}
             <div class="creator-card mb-5">
                 <h3 class="h3 font-weight-bold text-dark mb-4">
-                    <i class="fas fa-question-circle text-warning mr-2"></i>
+                    <i class="fas fa-question-circle text-warning me-2"></i>
                     Questions Fréquentes
                 </h3>
                 
@@ -382,7 +382,7 @@
             {{-- Back Button --}}
             <div class="text-center mb-5">
                 <a href="{{ route('creator.dashboard') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <i class="fas fa-arrow-left me-2"></i>
                     Retour au tableau de bord
                 </a>
             </div>

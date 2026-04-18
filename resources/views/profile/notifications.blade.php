@@ -3,7 +3,7 @@
 @section('title', 'Mes Notifications - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .notifications-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 3rem 0;
@@ -68,12 +68,12 @@
         padding: 1.5rem;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         transition: all 0.3s;
-        border-left: 4px solid transparent;
+        border-start: 4px solid transparent;
         position: relative;
     }
     
     .notification-item.unread {
-        border-left-color: #ED5F1E;
+        border-start-color: #ED5F1E;
         background: linear-gradient(to right, rgba(237, 95, 30, 0.05), white);
     }
     
@@ -377,7 +377,7 @@
 </section>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // AJAX pour marquer comme lu
     document.querySelectorAll('.mark-read-form').forEach(form => {
         form.addEventListener('submit', function(e) {

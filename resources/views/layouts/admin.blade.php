@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/admin-enhanced.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         :root {
             --racine-black: #160D0C;
             --racine-orange: #ED5F1E;

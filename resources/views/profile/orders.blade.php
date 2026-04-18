@@ -196,7 +196,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     .nav-link {
         transition: all 0.3s;
     }

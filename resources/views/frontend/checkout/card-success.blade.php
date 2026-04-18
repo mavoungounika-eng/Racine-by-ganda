@@ -22,7 +22,7 @@
                     {{-- Message de confirmation --}}
                     <div class="alert alert-success">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle fa-2x mr-3"></i>
+                            <i class="fas fa-check-circle fa-2x me-3"></i>
                             <div>
                                 <strong>Paiement confirmé</strong>
                                 <p class="mb-0">Votre commande a été enregistrée et sera traitée dans les plus brefs délais.</p>
@@ -59,7 +59,7 @@
 
                     {{-- Message email --}}
                     <div class="alert alert-info">
-                        <i class="fas fa-envelope mr-2"></i>
+                        <i class="fas fa-envelope me-2"></i>
                         <strong>Email de confirmation :</strong> Un email de confirmation vous a été envoyé.
                     </div>
 
@@ -68,14 +68,14 @@
                         <div class="row">
                             <div class="col-md-6 mb-2">
                                 <a href="{{ route('frontend.shop') }}" class="btn btn-primary btn-block">
-                                    <i class="fas fa-shopping-bag mr-2"></i>
+                                    <i class="fas fa-shopping-bag me-2"></i>
                                     Continuer mes achats
                                 </a>
                             </div>
                             @auth
                             <div class="col-md-6 mb-2">
                                 <a href="{{ route('profile.orders') }}" class="btn btn-outline-dark btn-block">
-                                    <i class="fas fa-list mr-2"></i>
+                                    <i class="fas fa-list me-2"></i>
                                     Voir mes commandes
                                 </a>
                             </div>

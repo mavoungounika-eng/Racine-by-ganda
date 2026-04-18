@@ -9,7 +9,7 @@
     {{-- Statistiques --}}
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card shadow-sm border-left-primary">
+            <div class="card shadow-sm border-start-primary">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Transactions</div>
                     <div class="h5 mb-0 font-weight-bold">{{ $stats['total'] }}</div>
@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card shadow-sm border-left-success">
+            <div class="card shadow-sm border-start-success">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Actives</div>
                     <div class="h5 mb-0 font-weight-bold">{{ $stats['active'] }}</div>
@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card shadow-sm border-left-info">
+            <div class="card shadow-sm border-start-info">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Montant Total</div>
                     <div class="h5 mb-0 font-weight-bold">{{ number_format($stats['total_amount'], 0, ',', ' ') }} FCFA</div>
@@ -38,14 +38,14 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" class="form-inline">
-                <label class="mr-2">Filtrer :</label>
-                <select name="status" class="form-control mr-2" onchange="this.form.submit()">
+                <label class="me-2">Filtrer :</label>
+                <select name="status" class="form-control me-2" onchange="this.form.submit()">
                     <option value="">Tous les statuts</option>
                     <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Actifs</option>
                     <option value="canceled" {{ request('status') === 'canceled' ? 'selected' : '' }}>Annulés</option>
                 </select>
                 
-                <input type="text" name="search" class="form-control mr-2" 
+                <input type="text" name="search" class="form-control me-2" 
                        placeholder="Rechercher..." value="{{ request('search') }}">
                 
                 <button type="submit" class="btn btn-primary">
@@ -67,7 +67,7 @@
                             <th>Montant</th>
                             <th>Période</th>
                             <th>Statut</th>
-                            <th class="text-right">Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -94,14 +94,14 @@
                                 </td>
                                 <td>
                                     @if($transaction->status === 'active')
-                                        <span class="badge badge-success">Actif</span>
+                                        <span class="badge bg-success">Actif</span>
                                     @elseif($transaction->status === 'canceled')
-                                        <span class="badge badge-danger">Annulé</span>
+                                        <span class="badge bg-danger">Annulé</span>
                                     @else
-                                        <span class="badge badge-warning">{{ ucfirst($transaction->status) }}</span>
+                                        <span class="badge bg-warning">{{ ucfirst($transaction->status) }}</span>
                                     @endif
                                 </td>
-                                <td class="text-right">
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ route('admin.mobile-money.show', $transaction) }}" 
                                            class="btn btn-outline-primary" title="Détails">

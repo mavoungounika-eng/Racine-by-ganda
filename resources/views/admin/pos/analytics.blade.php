@@ -5,7 +5,7 @@
 
 @push('styles')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
+<style nonce="{{ csp_nonce() }}">
     .analytics-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -86,7 +86,7 @@
         border-bottom: 1px solid rgba(212, 165, 116, 0.1);
     }
 
-    .badge-success {
+    .bg-success {
         background: rgba(34, 197, 94, 0.2);
         color: #22c55e;
         padding: 0.25rem 0.75rem;
@@ -94,7 +94,7 @@
         font-size: 0.875rem;
     }
 
-    .badge-warning {
+    .bg-warning {
         background: rgba(251, 191, 36, 0.2);
         color: #fbbf24;
         padding: 0.25rem 0.75rem;
@@ -102,7 +102,7 @@
         font-size: 0.875rem;
     }
 
-    .badge-danger {
+    .bg-danger {
         background: rgba(239, 68, 68, 0.2);
         color: #ef4444;
         padding: 0.25rem 0.75rem;
@@ -117,7 +117,7 @@
     {{-- Filtres --}}
     <div class="analytics-card">
         <h3 class="text-white mb-3">
-            <i class="fas fa-filter text-warning mr-2"></i>
+            <i class="fas fa-filter text-warning me-2"></i>
             Filtres
         </h3>
         
@@ -148,14 +148,14 @@
 
             <div class="col-md-3 d-flex align-items-end">
                 <button id="load-report" class="btn-analytics w-100">
-                    <i class="fas fa-chart-line mr-2"></i>
+                    <i class="fas fa-chart-line me-2"></i>
                     Charger le rapport
                 </button>
             </div>
 
             <div class="col-md-3 d-flex align-items-end">
                 <button id="export-csv" class="btn btn-secondary w-100" style="border-radius: 12px;">
-                    <i class="fas fa-download mr-2"></i>
+                    <i class="fas fa-download me-2"></i>
                     Export CSV
                 </button>
             </div>
@@ -165,7 +165,7 @@
     {{-- Stats globales --}}
     <div class="analytics-card">
         <h3 class="text-white mb-3">
-            <i class="fas fa-chart-bar text-warning mr-2"></i>
+            <i class="fas fa-chart-bar text-warning me-2"></i>
             Statistiques
         </h3>
 
@@ -221,7 +221,7 @@
     {{-- Tableau performance --}}
     <div class="analytics-card">
         <h3 class="text-white mb-3">
-            <i class="fas fa-users text-warning mr-2"></i>
+            <i class="fas fa-users text-warning me-2"></i>
             Détails performance opérateurs
         </h3>
 
@@ -245,7 +245,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 let paymentMethodsChart = null;
 let operatorsChart = null;
 
@@ -437,11 +437,11 @@ function updatePerformanceTable(performance) {
         
         let statusBadge = '';
         if (data.discrepancy_rate === 0) {
-            statusBadge = '<span class="badge-success">Excellent</span>';
+            statusBadge = '<span class="bg-success">Excellent</span>';
         } else if (data.discrepancy_rate < 10) {
-            statusBadge = '<span class="badge-warning">Acceptable</span>';
+            statusBadge = '<span class="bg-warning">Acceptable</span>';
         } else {
-            statusBadge = '<span class="badge-danger">À surveiller</span>';
+            statusBadge = '<span class="bg-danger">À surveiller</span>';
         }
 
         row.innerHTML = `

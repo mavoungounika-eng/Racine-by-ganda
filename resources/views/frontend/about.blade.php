@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Notre Histoire - ' . config('app.company.name'))
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     /* HERO */
     .about-hero {
         min-height: 70vh;

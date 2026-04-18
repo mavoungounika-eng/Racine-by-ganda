@@ -4,7 +4,7 @@
 @section('page-title', 'Conversation')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .chat-container {
         background: white;
         border-radius: 20px;
@@ -121,11 +121,11 @@
             <div>
                 @if($conversation->type == 'order_thread' && $conversation->related_order_id)
                     <a href="{{ route('creator.orders.show', $conversation->related_order_id) }}" class="text-sm bg-teal-50 text-teal-700 px-3 py-1 rounded-full hover:bg-teal-100 transition">
-                        <i class="fas fa-eye mr-1"></i> Voir commande
+                        <i class="fas fa-eye me-1"></i> Voir commande
                     </a>
                 @elseif($conversation->type == 'product_thread' && $conversation->related_product_id)
                      <a href="{{ route('creator.products.edit', $conversation->related_product_id) }}" class="text-sm bg-orange-50 text-orange-700 px-3 py-1 rounded-full hover:bg-orange-100 transition">
-                        <i class="fas fa-eye mr-1"></i> Voir produit
+                        <i class="fas fa-eye me-1"></i> Voir produit
                     </a>
                 @endif
             </div>
@@ -161,7 +161,7 @@
                     <div class="message-meta">
                         {{ $msg->created_at->format('H:i') }}
                         @if($msg->user_id == Auth::id())
-                            <i class="fas fa-check-double ml-1 {{ $msg->read_by ? 'text-blue-300' : 'text-gray-400' }}"></i>
+                            <i class="fas fa-check-double ms-1 {{ $msg->read_by ? 'text-blue-300' : 'text-gray-400' }}"></i>
                         @endif
                     </div>
                 </div>
@@ -193,7 +193,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Scroll to bottom on load
     const messagesList = document.getElementById('messagesList');
     messagesList.scrollTop = messagesList.scrollHeight;

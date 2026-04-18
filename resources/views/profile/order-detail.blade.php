@@ -233,7 +233,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     .card {
         transition: transform 0.3s, box-shadow 0.3s;
     }

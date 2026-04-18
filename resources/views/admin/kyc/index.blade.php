@@ -9,7 +9,7 @@
     {{-- Statistiques --}}
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card shadow-sm border-left-primary">
+            <div class="card shadow-sm border-start-primary">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total</div>
                     <div class="h5 mb-0 font-weight-bold">{{ $stats['total'] }}</div>
@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm border-left-success">
+            <div class="card shadow-sm border-start-success">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Complets</div>
                     <div class="h5 mb-0 font-weight-bold">{{ $stats['complete'] }}</div>
@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm border-left-warning">
+            <div class="card shadow-sm border-start-warning">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">En Attente</div>
                     <div class="h5 mb-0 font-weight-bold">{{ $stats['pending'] }}</div>
@@ -33,7 +33,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm border-left-danger">
+            <div class="card shadow-sm border-start-danger">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Incomplets</div>
                     <div class="h5 mb-0 font-weight-bold">{{ $stats['incomplete'] }}</div>
@@ -46,8 +46,8 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" class="form-inline">
-                <label class="mr-2">Filtrer par statut :</label>
-                <select name="status" class="form-control mr-2" onchange="this.form.submit()">
+                <label class="me-2">Filtrer par statut :</label>
+                <select name="status" class="form-control me-2" onchange="this.form.submit()">
                     <option value="">Tous</option>
                     <option value="complete" {{ request('status') === 'complete' ? 'selected' : '' }}>Complets</option>
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>En attente</option>
@@ -70,7 +70,7 @@
                             <th>Documents</th>
                             <th>Paiements</th>
                             <th>Statut</th>
-                            <th class="text-right">Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,9 +87,9 @@
                                 <td>{{ $creator->email }}</td>
                                 <td>
                                     @if($account->onboarding_status === 'complete')
-                                        <span class="badge badge-success">Complet</span>
+                                        <span class="badge bg-success">Complet</span>
                                     @else
-                                        <span class="badge badge-warning">{{ ucfirst($account->onboarding_status) }}</span>
+                                        <span class="badge bg-warning">{{ ucfirst($account->onboarding_status) }}</span>
                                     @endif
                                 </td>
                                 <td>
@@ -108,14 +108,14 @@
                                 </td>
                                 <td>
                                     @if($isComplete)
-                                        <span class="badge badge-success">✓ Vérifié</span>
+                                        <span class="badge bg-success">✓ Vérifié</span>
                                     @elseif($account->details_submitted)
-                                        <span class="badge badge-warning">⏳ En cours</span>
+                                        <span class="badge bg-warning">⏳ En cours</span>
                                     @else
-                                        <span class="badge badge-danger">✗ Incomplet</span>
+                                        <span class="badge bg-danger">✗ Incomplet</span>
                                     @endif
                                 </td>
-                                <td class="text-right">
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ route('admin.kyc.show', $creator) }}" 
                                            class="btn btn-outline-primary" title="Détails">

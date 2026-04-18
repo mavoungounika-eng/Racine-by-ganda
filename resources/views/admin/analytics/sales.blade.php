@@ -45,7 +45,7 @@
             @endif
             <div class="col-md-3 mb-3">
                 <button type="submit" class="btn btn-primary btn-block">
-                    <i class="fas fa-filter mr-2"></i>
+                    <i class="fas fa-filter me-2"></i>
                     Appliquer
                 </button>
             </div>
@@ -93,7 +93,7 @@
         <div class="col-md-6 mb-3">
             <div class="card-racine">
                 <h4 class="h6 font-weight-bold mb-3">
-                    <i class="fas fa-credit-card mr-2 text-primary"></i>
+                    <i class="fas fa-credit-card me-2 text-primary"></i>
                     Répartition par méthode de paiement
                 </h4>
                 <div class="table-responsive">
@@ -101,9 +101,9 @@
                         <thead>
                             <tr>
                                 <th>Méthode</th>
-                                <th class="text-right">Commandes</th>
-                                <th class="text-right">CA</th>
-                                <th class="text-right">%</th>
+                                <th class="text-end">Commandes</th>
+                                <th class="text-end">CA</th>
+                                <th class="text-end">%</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -111,19 +111,19 @@
                             <tr>
                                 <td>
                                     @if($data['method'] === 'card')
-                                        <i class="fas fa-credit-card mr-2"></i> Carte bancaire
+                                        <i class="fas fa-credit-card me-2"></i> Carte bancaire
                                     @elseif($data['method'] === 'mobile_money')
-                                        <i class="fas fa-mobile-alt mr-2"></i> Mobile Money
+                                        <i class="fas fa-mobile-alt me-2"></i> Mobile Money
                                     @elseif($data['method'] === 'cash_on_delivery')
-                                        <i class="fas fa-money-bill-wave mr-2"></i> Paiement à la livraison
+                                        <i class="fas fa-money-bill-wave me-2"></i> Paiement à la livraison
                                     @else
                                         {{ ucfirst(str_replace('_', ' ', $data['method'])) }}
                                     @endif
                                 </td>
-                                <td class="text-right">{{ number_format($data['orders_count'], 0, ',', ' ') }}</td>
-                                <td class="text-right">{{ number_format($data['revenue'], 0, ',', ' ') }} FCFA</td>
-                                <td class="text-right">
-                                    <span class="badge badge-primary">{{ number_format($data['revenue_share'], 1) }}%</span>
+                                <td class="text-end">{{ number_format($data['orders_count'], 0, ',', ' ') }}</td>
+                                <td class="text-end">{{ number_format($data['revenue'], 0, ',', ' ') }} FCFA</td>
+                                <td class="text-end">
+                                    <span class="badge bg-primary">{{ number_format($data['revenue_share'], 1) }}%</span>
                                 </td>
                             </tr>
                             @empty
@@ -139,7 +139,7 @@
         <div class="col-md-6 mb-3">
             <div class="card-racine">
                 <h4 class="h6 font-weight-bold mb-3">
-                    <i class="fas fa-chart-pie mr-2 text-primary"></i>
+                    <i class="fas fa-chart-pie me-2 text-primary"></i>
                     Évolution journalière
                 </h4>
                 <div class="table-responsive">
@@ -147,8 +147,8 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th class="text-right">Commandes</th>
-                                <th class="text-right">CA</th>
+                                <th class="text-end">Commandes</th>
+                                <th class="text-end">CA</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -156,8 +156,8 @@
                                 @foreach(array_slice($stats['timeline']['labels'], -7) as $index => $date)
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</td>
-                                    <td class="text-right">{{ number_format($stats['timeline']['orders'][$index] ?? 0, 0, ',', ' ') }}</td>
-                                    <td class="text-right">{{ number_format($stats['timeline']['revenue'][$index] ?? 0, 0, ',', ' ') }} FCFA</td>
+                                    <td class="text-end">{{ number_format($stats['timeline']['orders'][$index] ?? 0, 0, ',', ' ') }}</td>
+                                    <td class="text-end">{{ number_format($stats['timeline']['revenue'][$index] ?? 0, 0, ',', ' ') }} FCFA</td>
                                 </tr>
                                 @endforeach
                             @else
@@ -175,7 +175,7 @@
     {{-- Top produits --}}
     <div class="card-racine">
         <h4 class="h6 font-weight-bold mb-3">
-            <i class="fas fa-star mr-2 text-warning"></i>
+            <i class="fas fa-star me-2 text-warning"></i>
             Top 10 produits vendus
         </h4>
         <div class="table-responsive">
@@ -183,8 +183,8 @@
                 <thead>
                     <tr>
                         <th>Produit</th>
-                        <th class="text-right">Quantité vendue</th>
-                        <th class="text-right">Chiffre d'affaires</th>
+                        <th class="text-end">Quantité vendue</th>
+                        <th class="text-end">Chiffre d'affaires</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -194,10 +194,10 @@
                             <strong>{{ $product['name'] }}</strong>
                             <br><small class="text-muted">#{{ $product['product_id'] }}</small>
                         </td>
-                        <td class="text-right">
-                            <span class="badge badge-primary">{{ number_format($product['total_quantity'], 0, ',', ' ') }}</span>
+                        <td class="text-end">
+                            <span class="badge bg-primary">{{ number_format($product['total_quantity'], 0, ',', ' ') }}</span>
                         </td>
-                        <td class="text-right">
+                        <td class="text-end">
                             <strong>{{ number_format($product['total_revenue'], 0, ',', ' ') }} FCFA</strong>
                         </td>
                     </tr>

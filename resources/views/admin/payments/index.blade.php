@@ -256,26 +256,26 @@
                                     </td>
                                     <td>
                                         @if($provider->is_enabled)
-                                            <span class="badge badge-success">Actif</span>
+                                            <span class="badge bg-success">Actif</span>
                                         @else
-                                            <span class="badge badge-secondary">Inactif</span>
+                                            <span class="badge bg-secondary">Inactif</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($configStatus['status'] === 'ok')
-                                            <span class="badge badge-success">OK</span>
+                                            <span class="badge bg-success">OK</span>
                                         @else
-                                            <span class="badge badge-danger">KO</span>
+                                            <span class="badge bg-danger">KO</span>
                                             <small class="d-block text-muted">{{ $configStatus['message'] }}</small>
                                         @endif
                                     </td>
                                     <td>
                                         @if($provider->health_status === 'ok')
-                                            <span class="badge badge-success">OK</span>
+                                            <span class="badge bg-success">OK</span>
                                         @elseif($provider->health_status === 'degraded')
-                                            <span class="badge badge-warning">Dégradé</span>
+                                            <span class="badge bg-warning">Dégradé</span>
                                         @else
-                                            <span class="badge badge-danger">Down</span>
+                                            <span class="badge bg-danger">Down</span>
                                         @endif
                                     </td>
                                     <td>
@@ -286,7 +286,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge badge-info">{{ $provider->priority }}</span>
+                                        <span class="badge bg-info">{{ $provider->priority }}</span>
                                     </td>
                                 </tr>
                             @empty
@@ -338,11 +338,11 @@
                                     </td>
                                     <td>
                                         @if($event['status'] === 'processed')
-                                            <span class="badge badge-success">Traité</span>
+                                            <span class="badge bg-success">Traité</span>
                                         @elseif($event['status'] === 'failed')
-                                            <span class="badge badge-danger">Échoué</span>
+                                            <span class="badge bg-danger">Échoué</span>
                                         @else
-                                            <span class="badge badge-warning">{{ ucfirst($event['status']) }}</span>
+                                            <span class="badge bg-warning">{{ ucfirst($event['status']) }}</span>
                                         @endif
                                     </td>
                                     <td>

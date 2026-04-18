@@ -94,7 +94,7 @@
                         <th>Prix</th>
                         <th>Stock</th>
                         <th>Statut</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -25,7 +25,7 @@
     @endif
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 .auth-footer {
     font-size: 0.9rem;
 }

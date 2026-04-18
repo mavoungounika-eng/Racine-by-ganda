@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Livraison - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .shipping-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;

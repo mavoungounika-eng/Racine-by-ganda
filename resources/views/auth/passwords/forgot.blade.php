@@ -6,7 +6,7 @@
     <title>Mot de passe oublié - RACINE BY GANDA</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -118,7 +118,7 @@
         .alert-success {
             background: rgba(76, 175, 80, 0.15);
             border: 1px solid rgba(76, 175, 80, 0.3);
-            border-left: 4px solid #4CAF50;
+            border-start: 4px solid #4CAF50;
             border-radius: 12px;
             padding: 1rem;
             margin-bottom: 1.5rem;
@@ -129,7 +129,7 @@
         .alert-error {
             background: rgba(255, 107, 107, 0.1);
             border: 1px solid rgba(255, 107, 107, 0.3);
-            border-left: 4px solid #ff6b6b;
+            border-start: 4px solid #ff6b6b;
             border-radius: 12px;
             padding: 1rem;
             margin-bottom: 1.5rem;

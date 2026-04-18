@@ -172,7 +172,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Autocomplete pour la recherche
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.querySelector('input[name="q"]');

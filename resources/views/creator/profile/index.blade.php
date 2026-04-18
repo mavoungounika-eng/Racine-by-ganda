@@ -280,11 +280,11 @@
 </div>
 
 @push('scripts')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .hover-opacity-100:hover { opacity: 1 !important; }
     .transition-opacity { transition: opacity 0.3s ease; }
 </style>
-<script>
+<script nonce="{{ csp_nonce() }}">
 function previewImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();

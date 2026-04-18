@@ -10,6 +10,15 @@ class AIAlert extends Model
 {
     use HasFactory;
 
+    /**
+     * Override Laravel's default naming convention.
+     *
+     * Without this, Eloquent snake_cases the class name "AIAlert"
+     * into "a_i_alerts" (the capital I gets its own segment).
+     * The real table created by the migration is "ai_alerts".
+     */
+    protected $table = 'ai_alerts';
+
     protected $fillable = [
         'type',
         'severity',

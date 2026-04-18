@@ -3,7 +3,7 @@
 @section('title', 'Modifier mon avis - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .review-edit-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 3rem 0;

@@ -26,7 +26,7 @@
       </div>
 
       <div class="col-md">
-        <div class="ftco-footer-widget mb-4 ml-md-5">
+        <div class="ftco-footer-widget mb-4 ms-md-5">
           <h2 class="ftco-heading-2">Menu</h2>
           <ul class="list-unstyled">
             <li><a href="{{ route('frontend.shop') }}" class="py-2 d-block">Boutique</a></li>
@@ -42,7 +42,7 @@
         <div class="ftco-footer-widget mb-4">
           <h2 class="ftco-heading-2">Aide</h2>
           <div class="d-flex">
-            <ul class="list-unstyled mr-l-5 pr-l-3 mr-4">
+            <ul class="list-unstyled mr-l-5 pr-l-3 me-4">
               <li><a href="{{ route('frontend.shipping') }}" class="py-2 d-block">Livraison</a></li>
               <li><a href="{{ route('frontend.returns') }}" class="py-2 d-block">Retours &amp; échanges</a></li>
               <li><a href="{{ route('frontend.terms') }}" class="py-2 d-block">Conditions générales</a></li>
@@ -70,7 +70,7 @@
     <div class="row">
       <div class="col-md-12 text-center">
         <p>
-          &copy; <script>document.write(new Date().getFullYear());</script> RACINE BY GANDA. Tous droits réservés.
+          &copy; <script nonce="{{ csp_nonce() }}">document.write(new Date().getFullYear());</script> RACINE BY GANDA. Tous droits réservés.
         </p>
       </div>
     </div>

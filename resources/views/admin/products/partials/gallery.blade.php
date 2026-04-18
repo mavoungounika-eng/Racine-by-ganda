@@ -89,7 +89,7 @@
 
         {{-- Sortable.js pour réorganiser --}}
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-        <script>
+        <script nonce="{{ csp_nonce() }}">
             document.addEventListener('DOMContentLoaded', function() {
                 const grid = document.getElementById('images-grid');
                 if (grid) {

@@ -4,7 +4,7 @@
 @section('page-title', 'Ma Vitrine')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .vitrine-card {
         background: white;
         border-radius: 20px;
@@ -122,7 +122,7 @@
             @if(session('success'))
                 <div class="alert alert-success border-0 shadow-sm mb-4 rounded-pill px-4 py-3">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-check-circle mr-3 fa-lg"></i>
+                        <i class="fas fa-check-circle me-3 fa-lg"></i>
                         <span class="font-weight-bold">{{ session('success') }}</span>
                     </div>
                 </div>
@@ -166,7 +166,7 @@
                                 </div>
                                 <div class="custom-file">
                                     <input type="file" name="logo" class="custom-file-input" id="logoInput" accept="image/*">
-                                    <label class="custom-file-label text-left" for="logoInput">Changer le logo</label>
+                                    <label class="custom-file-label text-start" for="logoInput">Changer le logo</label>
                                 </div>
                                 <small class="text-muted mt-2 d-block">Recommandé : 500x500px (Max 2MB)</small>
                                 @error('logo') <div class="text-danger small font-weight-bold mt-2">{{ $message }}</div> @enderror
@@ -186,7 +186,7 @@
                                 </div>
                                 <div class="custom-file">
                                     <input type="file" name="banner" class="custom-file-input" id="bannerInput" accept="image/*">
-                                    <label class="custom-file-label text-left" for="bannerInput">Changer la bannière</label>
+                                    <label class="custom-file-label text-start" for="bannerInput">Changer la bannière</label>
                                 </div>
                                 <small class="text-muted mt-2 d-block">Idéal : 1200x400px (Max 4MB)</small>
                                 @error('banner') <div class="text-danger small font-weight-bold mt-2">{{ $message }}</div> @enderror
@@ -237,10 +237,10 @@
                     {{-- Actions --}}
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4 mt-5 pt-4 border-top">
                         <a href="{{ route('creator.dashboard') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none order-2 order-md-1">
-                            <i class="fas fa-arrow-left mr-2"></i> Annuler les changements
+                            <i class="fas fa-arrow-left me-2"></i> Annuler les changements
                         </a>
                         <button type="submit" class="btn btn-save-vitrine btn-lg order-1 order-md-2 px-5">
-                            <i class="fas fa-save mr-2"></i> Enregistrer ma vitrine
+                            <i class="fas fa-save me-2"></i> Enregistrer ma vitrine
                         </button>
                     </div>
 
@@ -252,7 +252,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Script simple pour afficher le nom du fichier sélectionné dans les labels Bootstrap
     document.querySelectorAll('.custom-file-input').forEach(input => {
         input.addEventListener('change', e => {

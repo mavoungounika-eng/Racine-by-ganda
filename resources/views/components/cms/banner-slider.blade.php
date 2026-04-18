@@ -65,7 +65,7 @@
     @endif
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 function trackBannerClick(id) {
     fetch('/banner/' + id + '/click', {
         method: 'POST',

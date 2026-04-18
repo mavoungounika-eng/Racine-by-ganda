@@ -212,7 +212,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function openDeleteModal(id, name) {
     document.getElementById('categoryName').textContent = name;
     document.getElementById('deleteForm').action = '{{ route('admin.categories.destroy', ':id') }}'.replace(':id', id);

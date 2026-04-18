@@ -17,12 +17,12 @@
             <p class="text-muted mb-0">Vue d'ensemble des performances et du tunnel d'achat</p>
         </div>
         <div>
-            <a href="{{ route('admin.analytics.funnel') }}" class="btn btn-primary mr-2">
-                <i class="fas fa-funnel-dollar mr-2"></i>
+            <a href="{{ route('admin.analytics.funnel') }}" class="btn btn-primary me-2">
+                <i class="fas fa-funnel-dollar me-2"></i>
                 Funnel d'achat
             </a>
             <a href="{{ route('admin.analytics.sales') }}" class="btn btn-outline-primary">
-                <i class="fas fa-dollar-sign mr-2"></i>
+                <i class="fas fa-dollar-sign me-2"></i>
                 Ventes & CA
             </a>
         </div>
@@ -33,7 +33,7 @@
         <div class="col-12">
             <div class="card-racine">
                 <h3 class="h5 font-weight-bold mb-3">
-                    <i class="fas fa-funnel-dollar mr-2 text-primary"></i>
+                    <i class="fas fa-funnel-dollar me-2 text-primary"></i>
                     Funnel d'achat (7 derniers jours)
                 </h3>
                 <div class="row">
@@ -72,7 +72,7 @@
                 </div>
                 <div class="mt-3">
                     <a href="{{ route('admin.analytics.funnel') }}" class="btn btn-sm btn-outline-primary">
-                        Voir le détail du funnel <i class="fas fa-arrow-right ml-1"></i>
+                        Voir le détail du funnel <i class="fas fa-arrow-right ms-1"></i>
                     </a>
                 </div>
             </div>
@@ -120,24 +120,24 @@
         <div class="col-md-6 mb-3">
             <div class="card-racine">
                 <h4 class="h6 font-weight-bold mb-3">
-                    <i class="fas fa-funnel-dollar mr-2 text-primary"></i>
+                    <i class="fas fa-funnel-dollar me-2 text-primary"></i>
                     Funnel d'achat
                 </h4>
                 <p class="text-muted mb-3">Analysez où les utilisateurs abandonnent dans le tunnel d'achat et les taux de conversion.</p>
                 <a href="{{ route('admin.analytics.funnel') }}" class="btn btn-primary btn-sm">
-                    Accéder au dashboard Funnel <i class="fas fa-arrow-right ml-1"></i>
+                    Accéder au dashboard Funnel <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
         <div class="col-md-6 mb-3">
             <div class="card-racine">
                 <h4 class="h6 font-weight-bold mb-3">
-                    <i class="fas fa-dollar-sign mr-2 text-success"></i>
+                    <i class="fas fa-dollar-sign me-2 text-success"></i>
                     Ventes & Chiffres d'affaires
                 </h4>
                 <p class="text-muted mb-3">Suivez les performances commerciales, le CA, les top produits et l'évolution dans le temps.</p>
                 <a href="{{ route('admin.analytics.sales') }}" class="btn btn-success btn-sm">
-                    Accéder au dashboard Ventes <i class="fas fa-arrow-right ml-1"></i>
+                    Accéder au dashboard Ventes <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>

@@ -370,7 +370,7 @@
 
 {{-- Section newsletter supprimée - Remplacée par les CTA dans le footer --}}
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Scroll reveal géré dans layouts/frontend.blade.php (consolidé)
 
 // Fonction pour gérer la wishlist

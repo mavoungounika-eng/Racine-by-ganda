@@ -21,7 +21,7 @@
                 <div class="card-body p-4">
                     @if(session('error'))
                     <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <i class="fas fa-exclamation-circle me-2"></i>
                         {{ session('error') }}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
@@ -64,7 +64,7 @@
                         {{-- Instructions --}}
                         <div class="alert alert-info">
                             <h6 class="font-weight-bold">
-                                <i class="fas fa-info-circle mr-2"></i>
+                                <i class="fas fa-info-circle me-2"></i>
                                 Instructions
                             </h6>
                             <p class="mb-0">Après validation, vous recevrez une demande de paiement sur votre téléphone. Suivez les instructions pour confirmer le paiement.</p>
@@ -73,7 +73,7 @@
                         {{-- Bouton submit --}}
                         <div class="form-group mb-0">
                             <button type="submit" class="btn btn-primary btn-lg btn-block">
-                                <i class="fas fa-mobile-alt mr-2"></i>
+                                <i class="fas fa-mobile-alt me-2"></i>
                                 Confirmer le paiement
                             </button>
                         </div>

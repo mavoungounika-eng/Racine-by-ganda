@@ -310,7 +310,7 @@
 
 @push('scripts')
 <script src="{{ asset('js/creator/payment-preferences.js') }}"></script>
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Slider pour le seuil minimum
 const slider = document.getElementById('thresholdSlider');
 const valueDisplay = document.getElementById('thresholdValue');

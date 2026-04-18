@@ -387,7 +387,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle sidebar sur mobile
     const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');

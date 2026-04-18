@@ -15,7 +15,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 /* ===== RACINE LOADER ANIMATION ===== */
 .racine-loader {
     position: fixed;
@@ -315,7 +315,7 @@
 }
 </style>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     const loader = document.getElementById('racine-loader');
     

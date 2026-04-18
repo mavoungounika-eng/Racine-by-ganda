@@ -9,6 +9,15 @@ class AIMetric extends Model
 {
     use HasFactory;
 
+    /**
+     * Override Laravel's default naming convention.
+     *
+     * Without this, Eloquent snake_cases the class name "AIMetric"
+     * into "a_i_metrics" (the capital I gets its own segment).
+     * The real table created by the migration is "ai_metrics".
+     */
+    protected $table = 'ai_metrics';
+
     protected $fillable = [
         'metric_type',
         'entity_type',

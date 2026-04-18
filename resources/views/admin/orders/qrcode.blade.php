@@ -4,7 +4,7 @@
 @section('page-title', 'QR Code Commande #' . str_pad($order->id, 6, '0', STR_PAD_LEFT))
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -59,7 +59,7 @@
 <div class="max-w-3xl mx-auto space-y-6">
     <div class="premium-card">
         <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-qrcode text-racine-orange mr-2"></i>
+            <i class="fas fa-qrcode text-racine-orange me-2"></i>
             QR Code - Commande #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
         </h2>
         <p class="text-slate-400 mb-6">Scannez ce code pour accéder rapidement à la commande</p>
@@ -74,7 +74,7 @@
         <!-- Order Information -->
         <div class="pt-6 border-t border-slate-700">
             <h3 class="text-lg font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-info-circle text-racine-orange mr-2"></i>
+                <i class="fas fa-info-circle text-racine-orange me-2"></i>
                 Informations de la commande
             </h3>
             <div class="info-grid">

@@ -686,7 +686,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function editNote(id, note, tags, isImportant, isPinned) {
     document.getElementById('noteModalTitle').textContent = 'Modifier la note';
     document.getElementById('noteForm').action = '{{ route('admin.creators.notes.update', ':id') }}'.replace(':id', id);

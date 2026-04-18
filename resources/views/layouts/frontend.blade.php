@@ -59,7 +59,7 @@
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         :root {
             --racine-black: #160D0C;
             --racine-orange: #ED5F1E;
@@ -269,7 +269,7 @@
                         <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                         <span>Panier</span>
                         @if(isset($cartCount) && $cartCount > 0)
-                          <span class="badge badge-danger" 
+                          <span class="badge bg-danger" 
                                 style="font-size: 0.65rem; padding: 0.2rem 0.4rem; border-radius: 10px; margin-left: 0.25rem;"
                                 id="cart-count-badge">{{ $cartCount }}</span>
                         @endif
@@ -343,10 +343,10 @@
                     {{-- Boutique section --}}
                     <div class="py-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                         <p class="text-white mb-2" style="font-weight: 600; font-size: 0.9rem;">Boutique</p>
-                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
+                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
                             <i class="fas fa-store" style="margin-right: 0.5rem;"></i> RACINE BY GANDA
                         </a>
-                        <a href="{{ route('frontend.marketplace') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
+                        <a href="{{ route('frontend.marketplace') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
                             <i class="fas fa-shopping-bag" style="margin-right: 0.5rem;"></i> Marketplace
                         </a>
                     </div>
@@ -356,9 +356,9 @@
                     {{-- Info section --}}
                     <div class="py-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                         <p class="text-white mb-2" style="font-weight: 600; font-size: 0.9rem;">Informations</p>
-                        <a href="{{ route('frontend.about') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ À propos</a>
-                        <a href="{{ route('frontend.contact') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Contact</a>
-                        <a href="{{ route('frontend.help') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Aide</a>
+                        <a href="{{ route('frontend.about') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ À propos</a>
+                        <a href="{{ route('frontend.contact') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Contact</a>
+                        <a href="{{ route('frontend.help') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Aide</a>
                     </div>
                     
                     <a href="{{ route('cart.index') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
@@ -376,7 +376,7 @@
                         </a>
                         <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                             @csrf
-                            <button type="submit" class="text-white d-flex align-items-center py-2 w-100 text-left" style="gap: 0.5rem; text-decoration: none; border: none; background: none; cursor: pointer; font-size: 1rem; font-family: inherit;">
+                            <button type="submit" class="text-white d-flex align-items-center py-2 w-100 text-start" style="gap: 0.5rem; text-decoration: none; border: none; background: none; cursor: pointer; font-size: 1rem; font-family: inherit;">
                                 <span style="font-size: 1.25rem;">🚪</span> Déconnexion
                             </button>
                         </form>
@@ -397,8 +397,8 @@
     {{-- Messages flash globaux --}}
     @if(session('success'))
         <div class="container mt-4">
-            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
-                <i class="fas fa-check-circle mr-2" style="color: #ED5F1E;"></i>
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
+                <i class="fas fa-check-circle me-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('success') }}</strong>
                 <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -409,8 +409,8 @@
 
     @if(session('error'))
         <div class="container mt-4">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
-                <i class="fas fa-exclamation-circle mr-2" style="color: #ED5F1E;"></i>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
+                <i class="fas fa-exclamation-circle me-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('error') }}</strong>
                 <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -672,7 +672,7 @@
 
     {{-- SCROLL REVEAL — Consolidé ici pour toutes les pages frontend --}}
     {{-- Progressive enhancement : opacity:1 par défaut, JS ajoute reveal-js-ready sur <html> --}}
-    <script>
+    <script nonce="{{ csp_nonce() }}">
     document.addEventListener('DOMContentLoaded', function () {
         var items = document.querySelectorAll('.reveal-item');
         if (!items.length) return;

@@ -147,7 +147,7 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script>
+<script nonce="{{ csp_nonce() }}">
     const ctx = document.getElementById('salesChart');
     if (ctx) {
         new Chart(ctx, {

@@ -8,7 +8,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 .auth-card-container {
     min-height: 100vh;
     display: flex;

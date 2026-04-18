@@ -6,7 +6,7 @@
 
 @section('content')
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     $(document).ready(function() {
         // Requeue one
         $('.requeue-one-btn').on('click', function() {
@@ -174,9 +174,9 @@
                             </td>
                             <td>
                                 @if($event['provider'] === 'stripe')
-                                    <span class="badge badge-primary">Stripe</span>
+                                    <span class="badge bg-primary">Stripe</span>
                                 @else
-                                    <span class="badge badge-info">Monetbil</span>
+                                    <span class="badge bg-info">Monetbil</span>
                                 @endif
                             </td>
                             <td>
@@ -185,11 +185,11 @@
                             <td>{{ $event['event_type'] ?? '-' }}</td>
                             <td>
                                 @if($event['status'] === 'processed')
-                                    <span class="badge badge-success">Processed</span>
+                                    <span class="badge bg-success">Processed</span>
                                 @elseif($event['status'] === 'failed')
-                                    <span class="badge badge-danger">Failed</span>
+                                    <span class="badge bg-danger">Failed</span>
                                 @else
-                                    <span class="badge badge-warning">Received</span>
+                                    <span class="badge bg-warning">Received</span>
                                 @endif
                             </td>
                             <td>{{ $event['created_at']->format('Y-m-d H:i:s') }}</td>
@@ -212,7 +212,7 @@
                             </td>
                             <td>
                                 @if(($event['requeue_count'] ?? 0) > 0)
-                                    <span class="badge badge-warning" 
+                                    <span class="badge bg-warning" 
                                           title="Dernier requeue: {{ $event['last_requeue_at'] ? $event['last_requeue_at']->format('Y-m-d H:i:s') : '-' }}">
                                         {{ $event['requeue_count'] }}
                                     </span>
@@ -347,7 +347,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     // Select all checkbox
     const selectAll = document.getElementById('selectAll');

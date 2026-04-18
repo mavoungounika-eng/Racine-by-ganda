@@ -5,7 +5,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/creator-premium.css') }}">
-<style>
+<style nonce="{{ csp_nonce() }}">
     .profile-preview-banner {
         background: linear-gradient(135deg, #160D0C 0%, #8B5A2B 100%);
         padding: 0;
@@ -139,7 +139,7 @@
             {{-- Notice d'édition --}}
             <div class="edit-notice-card shadow-sm">
                 <div class="d-flex align-items-start">
-                    <div class="mr-3">
+                    <div class="me-3">
                         <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
                             <i class="fas fa-info-circle fa-lg"></i>
                         </div>
@@ -151,7 +151,7 @@
                             rendez-vous dans les <strong>Paramètres → Ma Vitrine</strong>.
                         </p>
                         <a href="{{ route('creator.settings.shop') }}" class="btn btn-warning btn-sm font-weight-bold px-4 py-2 rounded-pill">
-                            <i class="fas fa-edit mr-2"></i>
+                            <i class="fas fa-edit me-2"></i>
                             Modifier mon profil
                         </a>
                     </div>
@@ -235,7 +235,7 @@
                         <div class="col-lg-4">
                             {{-- Statistiques --}}
                             <div class="d-flex justify-content-lg-end gap-3">
-                                <div class="stat-box mr-3">
+                                <div class="stat-box me-3">
                                     <span class="stat-number">{{ $profile->products()->where('is_active', true)->count() }}</span>
                                     <span class="stat-label">Produits</span>
                                 </div>
@@ -255,7 +255,7 @@
                             </h2>
                             @if($profile->products()->count() > 6)
                                 <a href="{{ route('creator.products.index') }}" class="btn btn-link text-orange font-weight-bold p-0">
-                                    Tout voir <i class="fas fa-arrow-right ml-1"></i>
+                                    Tout voir <i class="fas fa-arrow-right ms-1"></i>
                                 </a>
                             @endif
                         </div>
@@ -291,7 +291,7 @@
                                 </div>
                                 <h4 class="h5 text-muted mb-3">Vous n'avez pas encore de produits</h4>
                                 <a href="{{ route('creator.products.create') }}" class="btn btn-orange font-weight-bold px-4 py-2 rounded-pill shadow-sm">
-                                    <i class="fas fa-plus mr-2"></i>
+                                    <i class="fas fa-plus me-2"></i>
                                     Créer mon premier produit
                                 </a>
                             </div>
@@ -303,7 +303,7 @@
             {{-- Back Button --}}
             <div class="text-center mt-5">
                 <a href="{{ route('creator.dashboard') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <i class="fas fa-arrow-left me-2"></i>
                     Retour au tableau de bord
                 </a>
             </div>

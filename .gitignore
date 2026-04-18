@@ -53,3 +53,11 @@ Racine by GANDA/
 # Ajouté automatiquement
 .env.production.local
 tests_backup_*/
+
+# Legacy archivés (sortis de public/ le 2026-04-18)
+/archive/legacy-public-files/
+
+# Claude Code / OMX local state (ne pas versionner)
+.omx/
+/CLAUDE.md.backup
+*.backup

@@ -21,7 +21,7 @@
 
     @yield('styles')
 
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         body {
             font-family: 'Aileron', sans-serif;
             background-color: #f8f9fa;

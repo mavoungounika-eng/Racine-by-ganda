@@ -21,7 +21,7 @@
     <script src="{{ asset('js/core/utilities.js') }}" defer></script>
     <script src="{{ asset('js/core/ajax.js') }}" defer></script>
     
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         /* =============================================
            🎨 LAYOUT CRÉATEUR - RACINE BY GANDA
            ============================================= */
@@ -46,7 +46,7 @@
             overflow-x: hidden;
             transition: var(--transition-normal);
             box-shadow: var(--shadow-xl);
-            border-right: 2px solid rgba(237, 95, 30, 0.2);
+            border-end: 2px solid rgba(237, 95, 30, 0.2);
         }
         
         .creator-sidebar::-webkit-scrollbar {
@@ -137,20 +137,20 @@
             transition: var(--transition-fast);
             font-size: 0.9rem;
             font-weight: 500;
-            border-left: 3px solid transparent;
+            border-start: 3px solid transparent;
         }
         
         .creator-sidebar-link:hover {
             background: rgba(237, 95, 30, 0.1);
             color: var(--racine-orange);
-            border-left-color: var(--racine-orange);
+            border-start-color: var(--racine-orange);
             text-decoration: none;
         }
         
         .creator-sidebar-link.active {
             background: rgba(237, 95, 30, 0.2);
             color: var(--racine-orange);
-            border-left-color: var(--racine-orange);
+            border-start-color: var(--racine-orange);
             font-weight: 600;
         }
         
@@ -165,7 +165,7 @@
             color: #FFB800;
             margin: 0.5rem 1.5rem;
             border-radius: var(--radius-md);
-            border-left: none;
+            border-start: none;
         }
         
         .creator-sidebar-link.new-product:hover {

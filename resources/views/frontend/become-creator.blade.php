@@ -3,7 +3,7 @@
 @section('title', 'Devenir Créateur - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     /* ===== HERO SECTION ===== */
     .become-creator-hero {
         background: linear-gradient(135deg, var(--racine-black) 0%, var(--racine-black-soft) 100%);

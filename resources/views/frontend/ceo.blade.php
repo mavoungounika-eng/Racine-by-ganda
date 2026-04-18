@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? config('app.company.ceo') . ' - Fondatrice & CEO - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .ceo-hero {
         min-height: 100vh;
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 50%, #160D0C 100%);
@@ -106,7 +106,7 @@
         color: rgba(255, 255, 255, 0.8);
         margin-bottom: 2rem;
         padding-left: 1.5rem;
-        border-left: 3px solid #FFB800;
+        border-start: 3px solid #FFB800;
     }
     
     .ceo-social {
@@ -383,7 +383,7 @@
         }
         
         .ceo-info .quote {
-            border-left: none;
+            border-start: none;
             padding-left: 0;
             border-top: 3px solid #FFB800;
             padding-top: 1rem;

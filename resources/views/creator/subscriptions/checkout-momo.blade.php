@@ -4,7 +4,7 @@
 @section('page-title', 'Paiement Mobile Money')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .payment-summary-card {
         background: #F8F6F3;
         border-radius: 20px;
@@ -167,10 +167,10 @@
                                 <label for="phone" class="font-weight-bold text-dark">Numéro de téléphone</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text bg-light border-right-0"><i class="fas fa-phone-alt text-muted"></i></span>
+                                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone-alt text-muted"></i></span>
                                     </div>
                                     <input type="tel" id="phone" name="phone" 
-                                           class="form-control border-left-0 h-auto py-3 @error('phone') is-invalid @enderror" 
+                                           class="form-control border-start-0 h-auto py-3 @error('phone') is-invalid @enderror" 
                                            placeholder="Ex: 0707070707" required>
                                 </div>
                                 <small class="text-muted font-italic">Le numéro doit être enregistré à votre nom.</small>
@@ -181,10 +181,10 @@
 
                             <div class="info-box mb-5 shadow-sm">
                                 <div class="d-flex">
-                                    <i class="fas fa-info-circle fa-lg mr-3 mt-1"></i>
+                                    <i class="fas fa-info-circle fa-lg me-3 mt-1"></i>
                                     <div>
                                         <h5 class="h6 mb-3">Étapes du paiement :</h5>
-                                        <ol class="small pl-3 mb-0">
+                                        <ol class="small ps-3 mb-0">
                                             <li>Sélectionnez votre opérateur mobile.</li>
                                             <li>Entrez votre numéro de téléphone.</li>
                                             <li>Validez la demande de paiement qui apparaîtra sur votre mobile.</li>
@@ -196,13 +196,13 @@
 
                             <div class="d-flex align-items-center mb-3">
                                 <button type="submit" class="btn btn-orange btn-lg btn-block font-weight-bold rounded-pill py-3 shadow">
-                                    <i class="fas fa-lock mr-2"></i> Payer en toute sécurité
+                                    <i class="fas fa-lock me-2"></i> Payer en toute sécurité
                                 </button>
                             </div>
                             
                             <div class="text-center">
                                 <a href="{{ route('creator.subscription.plans') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none">
-                                    <i class="fas fa-arrow-left mr-1"></i> Revenir aux plans
+                                    <i class="fas fa-arrow-left me-1"></i> Revenir aux plans
                                 </a>
                             </div>
                         </form>

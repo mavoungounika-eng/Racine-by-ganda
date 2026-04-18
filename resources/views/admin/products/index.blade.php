@@ -221,7 +221,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
         // Notification de succès

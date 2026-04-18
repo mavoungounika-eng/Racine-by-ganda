@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Politique de Confidentialité - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .legal-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 4rem 0;

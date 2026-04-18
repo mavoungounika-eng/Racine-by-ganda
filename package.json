@@ -4,15 +4,15 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "rm -f public/hot && vite",
+        "watch": "vite build --watch",
+        "start": "rm -f public/hot && concurrently --names \"Laravel,Vite\" --prefix-colors \"green,blue\" \"php artisan serve\" \"vite build --watch\""
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^6.0.3",
         "autoprefixer": "^10.4.20",
         "concurrently": "^9.0.1",
         "cypress": "^15.9.0",
-        "electron": "^28.0.0",
-        "electron-is-dev": "^3.0.1",
         "laravel-vite-plugin": "^2.0.0",
         "postcss": "^8.4.47",
         "vite": "^7.0.0"

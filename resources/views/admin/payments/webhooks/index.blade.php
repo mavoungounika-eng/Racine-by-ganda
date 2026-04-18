@@ -138,7 +138,7 @@
            href="{{ route('admin.payments.webhooks.index', array_merge(request()->all(), ['provider' => 'stripe'])) }}">
             <i class="fab fa-stripe me-1"></i> Stripe
             @if($stats['stripe']['total'] > 0)
-                <span class="badge badge-primary">{{ $stats['stripe']['total'] }}</span>
+                <span class="badge bg-primary">{{ $stats['stripe']['total'] }}</span>
             @endif
         </a>
     </li>
@@ -147,7 +147,7 @@
            href="{{ route('admin.payments.webhooks.index', array_merge(request()->all(), ['provider' => 'monetbil'])) }}">
             <i class="fas fa-mobile-alt me-1"></i> Monetbil
             @if($stats['monetbil']['total'] > 0)
-                <span class="badge badge-info">{{ $stats['monetbil']['total'] }}</span>
+                <span class="badge bg-info">{{ $stats['monetbil']['total'] }}</span>
             @endif
         </a>
     </li>

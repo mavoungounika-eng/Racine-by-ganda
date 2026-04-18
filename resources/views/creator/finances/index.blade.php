@@ -4,7 +4,7 @@
 @section('page-title', 'Mes Finances (Analytique)')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .finance-stat-card {
         background: white;
         border-radius: 20px;
@@ -93,7 +93,7 @@
     {{-- Header d'information SaaS --}}
     <div class="alert alert-info border-0 shadow-sm rounded-lg mb-4" style="background: #F0F7FF; color: #005691;">
         <div class="d-flex align-items-center">
-            <i class="fas fa-info-circle fa-2x mr-3"></i>
+            <i class="fas fa-info-circle fa-2x me-3"></i>
             <div>
                 <h6 class="font-weight-bold mb-1">Modèle SaaS Pur : Pas de gestion de fonds tiers</h6>
                 <p class="mb-0 small">RACINE ne prélève aucune commission. Ces chiffres représentent votre volume d'affaires direct encaissé via vos propres passerelles (Stripe/MoMo).</p>
@@ -157,7 +157,7 @@
             <div class="creator-card h-100 border-0 shadow-lg">
                 <div class="card-header bg-dark py-3 px-4">
                     <h4 class="h5 font-weight-bold text-white mb-0">
-                        <i class="fas fa-file-contract mr-2"></i> Documents Contractuels (KYC)
+                        <i class="fas fa-file-contract me-2"></i> Documents Contractuels (KYC)
                     </h4>
                 </div>
                 <div class="card-body p-4">
@@ -167,12 +167,12 @@
                         @foreach(['identity_card' => 'Pièce d\'identité (CNI/Passeport)', 'registration_certificate' => 'RCCM / Certificat', 'tax_id' => 'NIU (Numéro Fiscal)'] as $key => $label)
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <div>
-                                <i class="fas fa-file-alt text-muted mr-2"></i> {{ $label }}
+                                <i class="fas fa-file-alt text-muted me-2"></i> {{ $label }}
                             </div>
                             @if(in_array($key, $kycStatus['missing_documents']))
-                                <span class="badge badge-danger">Manquant</span>
+                                <span class="badge bg-danger">Manquant</span>
                             @else
-                                <span class="badge badge-success">Soumis</span>
+                                <span class="badge bg-success">Soumis</span>
                             @endif
                         </li>
                         @endforeach
@@ -198,7 +198,7 @@
                             </div>
                         </div>
                         <button type="submit" class="btn btn-dark btn-block font-weight-bold">
-                            <i class="fas fa-upload mr-2"></i> ENVOYER POUR VÉRIFICATION
+                            <i class="fas fa-upload me-2"></i> ENVOYER POUR VÉRIFICATION
                         </button>
                     </form>
                 </div>
@@ -210,7 +210,7 @@
             <div class="creator-card h-100 border-0 shadow-lg">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
                     <h4 class="h5 font-weight-bold mb-0" style="color: var(--racine-black); font-family: 'Libre Baskerville', serif;">
-                        <i class="fas fa-trophy text-orange mr-2"></i> Top Produits (Volume Ventes)
+                        <i class="fas fa-trophy text-orange me-2"></i> Top Produits (Volume Ventes)
                     </h4>
                 </div>
                 <div class="card-body p-4">
@@ -219,15 +219,15 @@
                             <thead>
                                 <tr class="text-muted small text-uppercase">
                                     <th>Produit</th>
-                                    <th class="text-right">Volume</th>
+                                    <th class="text-end">Volume</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($metrics['top_products'] as $product)
                                 <tr class="border-bottom">
                                     <td class="py-3 font-weight-bold">{{ $product->product_name }}</td>
-                                    <td class="py-3 text-right">
-                                        <span class="badge badge-pill badge-light px-3 py-2 font-weight-bold">
+                                    <td class="py-3 text-end">
+                                        <span class="badge badge-pill bg-light text-dark px-3 py-2 font-weight-bold">
                                             {{ $product->qty }} ventes
                                         </span>
                                     </td>
@@ -251,7 +251,7 @@
     <div class="creator-card border-0 shadow-lg overflow-hidden mt-4">
         <div class="card-header bg-dark py-3 px-4">
             <h4 class="h5 font-weight-bold text-white mb-0">
-                <i class="fas fa-history mr-2"></i> Dernières Ventes Fulfilled (Analytique)
+                <i class="fas fa-history me-2"></i> Dernières Ventes Fulfilled (Analytique)
             </h4>
         </div>
         <div class="table-responsive">
@@ -262,7 +262,7 @@
                         <th>Date de remise</th>
                         <th>Lieu (POS)</th>
                         <th>Méthode Paiement</th>
-                        <th class="text-right">Montant Brut</th>
+                        <th class="text-end">Montant Brut</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -271,8 +271,8 @@
                         <td class="font-weight-bold">#{{ str_pad($sale->order_id, 6, '0', STR_PAD_LEFT) }}</td>
                         <td>{{ $sale->fulfilled_at ? $sale->fulfilled_at->format('d/m/Y H:i') : 'En attente' }}</td>
                         <td>{{ $sale->pickup_location }}</td>
-                        <td><span class="badge badge-info">{{ $sale->payment_method }}</span></td>
-                        <td class="text-right font-weight-bold">{{ number_format($sale->gross_amount, 0, ',', ' ') }} F</td>
+                        <td><span class="badge bg-info">{{ $sale->payment_method }}</span></td>
+                        <td class="text-end font-weight-bold">{{ number_format($sale->gross_amount, 0, ',', ' ') }} F</td>
                     </tr>
                     @empty
                     <tr>

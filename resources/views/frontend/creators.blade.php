@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Nos Créateurs - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creators-hero {
         min-height: 60vh;
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);

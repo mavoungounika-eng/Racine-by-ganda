@@ -72,7 +72,7 @@
 @endsection
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     :root {
         --racine-black: #160D0C;
         --racine-orange: #ED5F1E;

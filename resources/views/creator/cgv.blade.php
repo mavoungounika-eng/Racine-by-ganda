@@ -27,7 +27,7 @@
         <div class="mt-8 text-center">
             <a href="{{ route('creator.register') }}" 
                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
-                <i class="fas fa-arrow-left mr-2"></i>
+                <i class="fas fa-arrow-left me-2"></i>
                 Retour à l'inscription
             </a>
         </div>

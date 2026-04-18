@@ -44,6 +44,32 @@ php artisan serve
 
 Voir [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) pour détails.
 
+## Structure du dépôt
+
+Ce dépôt contient **deux applications npm distinctes** (mini-monorepo) :
+
+| Chemin                   | Rôle                                 | Node / deps clés                          |
+|--------------------------|--------------------------------------|-------------------------------------------|
+| `./` (racine)            | Laravel 12 + Blade + Vite (web)      | `vue@^3.5`, `bootstrap@^5.3`, `vite@^7`   |
+| `./racine-pos-electron/` | Desktop POS (caisses physiques)      | `electron@^28`, `vue@^3.5`, `vue-router`  |
+
+> **Important** : `electron` n'est **PAS** une dépendance du `package.json` racine.
+> Elle est pinée **uniquement** dans `racine-pos-electron/package.json` pour éviter
+> les collisions de versions et ne pas télécharger les binaires Electron (~200 Mo)
+> lors d'un `npm install` côté serveur web.
+
+Installation séparée :
+
+```bash
+# Web (racine)
+npm install
+
+# POS desktop (sous-package)
+cd racine-pos-electron && npm install
+```
+
+Voir [racine-pos-electron/LANCER_POS.md](./racine-pos-electron/LANCER_POS.md) pour le lancement du POS et [docs/pos/](./docs/pos/) pour la doc fonctionnelle.
+
 ## Documentation
 
 - **Architecture** : [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)

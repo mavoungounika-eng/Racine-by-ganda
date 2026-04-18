@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Conditions Générales de Vente - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .legal-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 4rem 0;
@@ -147,7 +147,7 @@
     
     .highlight-box {
         background: rgba(237, 95, 30, 0.08);
-        border-left: 4px solid #FFB800;
+        border-start: 4px solid #FFB800;
         padding: 1.25rem;
         border-radius: 0 12px 12px 0;
         margin: 1.5rem 0;

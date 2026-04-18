@@ -125,7 +125,7 @@
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <span class="icon-check mr-2"></span> Enregistrer les modifications
+                            <span class="icon-check me-2"></span> Enregistrer les modifications
                         </button>
                         <a href="{{ route('profile.edit') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-edit me-2"></i> Modifier toutes les informations
@@ -175,7 +175,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-gold">
-                        <span class="icon-lock mr-2"></span> Modifier le mot de passe
+                        <span class="icon-lock me-2"></span> Modifier le mot de passe
                     </button>
                 </form>
             </div>

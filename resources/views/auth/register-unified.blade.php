@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -75,7 +75,7 @@
         .alert-reassuring {
             background: rgba(212, 165, 116, 0.15);
             border: 1px solid rgba(212, 165, 116, 0.3);
-            border-left: 4px solid #D4A574;
+            border-start: 4px solid #D4A574;
             border-radius: 12px;
             padding: 1.25rem;
             margin-bottom: 2rem;

@@ -43,7 +43,7 @@
                 @endif
                 
                 <a href="{{ route('creator.settings.stripe.connect') }}" class="inline-block px-4 py-2 bg-gradient-to-r from-[#ED5F1E] to-[#FFB800] text-white font-semibold rounded-lg hover:shadow-lg transition-all">
-                    <i class="fas fa-plug mr-2"></i>
+                    <i class="fas fa-plug me-2"></i>
                     {{ $kycStatus['status'] === 'not_started' ? 'Commencer la vérification' : 'Continuer la vérification' }}
                 </a>
             @else

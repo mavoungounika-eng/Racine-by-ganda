@@ -3,7 +3,7 @@
 @section('title', 'Supprimer mon compte - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .delete-account-hero {
         background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
         padding: 3rem 0;

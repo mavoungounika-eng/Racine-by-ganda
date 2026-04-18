@@ -324,7 +324,7 @@
 @endsection
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .status-pill {
         font-family: 'Aileron', 'Helvetica Neue', sans-serif;
     }
@@ -382,7 +382,7 @@
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration globale Chart.js
     Chart.defaults.font.family = "'Aileron', system-ui, sans-serif";

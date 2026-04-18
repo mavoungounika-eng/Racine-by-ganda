@@ -21,7 +21,7 @@
     </ul>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 .currency-selector .btn-link {
     color: var(--text-color, #333);
     text-decoration: none;

@@ -3,7 +3,7 @@
 @section('title', $profile->brand_name . ' - Aperçu Boutique - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creator-header {
         position: relative;
         margin-top: -70px;
@@ -54,7 +54,7 @@
                 </div>
                 
                 {{-- Info --}}
-                <div class="flex-1 text-center md:text-left">
+                <div class="flex-1 text-center md:text-start">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 mb-2">
                         <h1 class="text-3xl md:text-4xl font-bold text-[#160D0C]" style="font-family: 'Cormorant Garamond', serif;">
                             {{ $profile->brand_name }}

@@ -3,7 +3,7 @@
 @section('title', 'Vérification 2FA - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .challenge-page {
         min-height: 100vh;
         background: linear-gradient(135deg, #1a0f09 0%, #2C1810 50%, #1a0f09 100%);
@@ -298,7 +298,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Auto-format du code
 document.getElementById('code').addEventListener('input', function(e) {
     let value = this.value.replace(/[^0-9A-Za-z-]/g, '');

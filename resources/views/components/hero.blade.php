@@ -88,7 +88,7 @@ $heightClasses = [
     <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
 </section>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

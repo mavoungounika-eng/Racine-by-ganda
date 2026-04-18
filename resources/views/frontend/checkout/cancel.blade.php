@@ -33,26 +33,26 @@
                             @csrf
                             <input type="hidden" name="order_id" value="{{ $order->id }}">
                             <button type="submit" class="btn btn-primary btn-lg btn-block">
-                                <i class="fas fa-credit-card mr-2"></i>
+                                <i class="fas fa-credit-card me-2"></i>
                                 Réessayer le paiement par carte
                             </button>
                         </form>
                     @elseif($paymentMethod === 'mobile_money')
                         <a href="{{ route('checkout.mobile-money.form', $order) }}" class="btn btn-primary btn-lg btn-block mb-3">
-                            <i class="fas fa-mobile-alt mr-2"></i>
+                            <i class="fas fa-mobile-alt me-2"></i>
                             Réessayer le paiement Mobile Money
                         </a>
                     @else
                         {{-- Fallback générique --}}
                         <a href="{{ route('checkout.index') }}" class="btn btn-primary btn-lg btn-block mb-3">
-                            <i class="fas fa-redo mr-2"></i>
+                            <i class="fas fa-redo me-2"></i>
                             Retour au checkout
                         </a>
                     @endif
 
                     {{-- Bouton retour accueil --}}
                     <a href="{{ route('frontend.home') }}" class="btn btn-outline-secondary btn-block">
-                        <i class="fas fa-home mr-2"></i>
+                        <i class="fas fa-home me-2"></i>
                         Retour à l'accueil
                     </a>
                 </div>

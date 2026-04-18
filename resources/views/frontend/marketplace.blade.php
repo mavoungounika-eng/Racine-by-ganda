@@ -3,7 +3,7 @@
 @section('title', 'Marketplace - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .marketplace-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0 3rem;
@@ -467,7 +467,7 @@
         {{-- CTA Nos Créateurs --}}
         <div class="mt-4">
             <a href="{{ route('frontend.creators') }}" class="btn btn-outline-light btn-lg">
-                <i class="fas fa-users mr-2"></i>
+                <i class="fas fa-users me-2"></i>
                 Découvrir nos créateurs
             </a>
         </div>

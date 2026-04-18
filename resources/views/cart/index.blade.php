@@ -3,7 +3,7 @@
 @section('title', 'Mon Panier - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .cart-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 4rem 0;

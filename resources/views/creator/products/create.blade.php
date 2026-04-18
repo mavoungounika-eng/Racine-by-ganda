@@ -4,7 +4,7 @@
 @section('page-title', 'Nouveau Produit')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: white;
         border-radius: 24px;
@@ -113,7 +113,7 @@
     <div class="premium-card">
         <div class="mb-8 pb-6 border-b-2 border-[#E5DDD3]">
             <h2 class="text-2xl font-bold text-[#160D0C]" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-plus-circle text-[#ED5F1E] mr-2"></i>
+                <i class="fas fa-plus-circle text-[#ED5F1E] me-2"></i>
                 Créer un nouveau produit
             </h2>
             <p class="text-[#8B7355] mt-2">Remplissez les informations ci-dessous pour ajouter un nouveau produit à votre boutique</p>

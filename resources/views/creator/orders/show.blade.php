@@ -4,7 +4,7 @@
 @section('page-title', 'Détail Commande #' . str_pad($order->id, 6, '0', STR_PAD_LEFT))
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: white;
         border-radius: 24px;
@@ -128,11 +128,11 @@
         <div class="flex items-center justify-between mb-6 pb-6 border-b-2 border-[#E5DDD3]">
             <div>
                 <h3 class="text-2xl font-bold text-[#160D0C] mb-2" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-shopping-bag text-[#ED5F1E] mr-2"></i>
+                    <i class="fas fa-shopping-bag text-[#ED5F1E] me-2"></i>
                     Informations de la commande
                 </h3>
                 <p class="text-[#8B7355]">
-                    <i class="fas fa-calendar mr-1"></i>
+                    <i class="fas fa-calendar me-1"></i>
                     Date: {{ $order->created_at->format('d/m/Y à H:i') }}
                 </p>
             </div>
@@ -160,7 +160,7 @@
             {{-- Informations client --}}
             <div class="p-4 bg-gradient-to-br from-[#F8F6F3] to-white rounded-xl border border-[#E5DDD3]">
                 <h4 class="text-sm font-bold text-[#8B7355] mb-4 uppercase tracking-wide">
-                    <i class="fas fa-user mr-2"></i>
+                    <i class="fas fa-user me-2"></i>
                     Client
                 </h4>
                 <div class="space-y-2 text-sm">
@@ -175,7 +175,7 @@
             {{-- Adresse de livraison --}}
             <div class="p-4 bg-gradient-to-br from-[#F8F6F3] to-white rounded-xl border border-[#E5DDD3]">
                 <h4 class="text-sm font-bold text-[#8B7355] mb-4 uppercase tracking-wide">
-                    <i class="fas fa-map-marker-alt mr-2"></i>
+                    <i class="fas fa-map-marker-alt me-2"></i>
                     Adresse de livraison
                 </h4>
                 <div class="text-sm text-[#160D0C] leading-relaxed">
@@ -188,7 +188,7 @@
     {{-- Produits de la commande --}}
     <div class="premium-card">
         <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-box text-[#ED5F1E] mr-2"></i>
+            <i class="fas fa-box text-[#ED5F1E] me-2"></i>
             Vos produits dans cette commande
         </h3>
         
@@ -199,7 +199,7 @@
                         <th>Produit</th>
                         <th>Prix unitaire</th>
                         <th>Quantité</th>
-                        <th class="text-right">Total</th>
+                        <th class="text-end">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -229,7 +229,7 @@
                                 {{ $item->quantity }}
                             </span>
                         </td>
-                        <td class="text-right">
+                        <td class="text-end">
                             <p class="font-bold text-[#ED5F1E] text-lg">{{ number_format($item->price * $item->quantity, 0, ',', ' ') }} F</p>
                         </td>
                     </tr>
@@ -237,10 +237,10 @@
                 </tbody>
                 <tfoot>
                     <tr class="border-t-2 border-[#D4A574]">
-                        <td colspan="3" class="py-4 px-4 text-right font-bold text-[#160D0C] text-lg">
+                        <td colspan="3" class="py-4 px-4 text-end font-bold text-[#160D0C] text-lg">
                             Total (vos produits):
                         </td>
-                        <td class="py-4 px-4 text-right">
+                        <td class="py-4 px-4 text-end">
                             <p class="text-2xl font-bold text-[#ED5F1E]" style="font-family: 'Playfair Display', serif;">{{ number_format($creatorTotal, 0, ',', ' ') }} F</p>
                         </td>
                     </tr>
@@ -252,7 +252,7 @@
     {{-- Mise à jour du statut --}}
     <div class="premium-card">
         <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-sync-alt text-[#ED5F1E] mr-2"></i>
+            <i class="fas fa-sync-alt text-[#ED5F1E] me-2"></i>
             Mettre à jour le statut
         </h3>
         

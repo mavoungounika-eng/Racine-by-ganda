@@ -1,7 +1,7 @@
 <!-- Toast Notification Container -->
 <div id="toast-container" class="toast-container"></div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 function showNotification(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -41,7 +41,7 @@ function showNotification(message, type = 'success') {
 }
 </script>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 .toast-container {
     position: fixed;
     top: 20px;
@@ -69,7 +69,7 @@ function showNotification(message, type = 'success') {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    border-left: 4px solid;
+    border-start: 4px solid;
 }
 
 .toast.show {
@@ -78,11 +78,11 @@ function showNotification(message, type = 'success') {
 }
 
 .toast-success {
-    border-left-color: #D4A574;
+    border-start-color: #D4A574;
 }
 
 .toast-error {
-    border-left-color: #E53E3E;
+    border-start-color: #E53E3E;
 }
 
 .toast-content {

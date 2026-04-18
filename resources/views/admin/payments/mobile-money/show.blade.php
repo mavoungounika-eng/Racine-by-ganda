@@ -6,7 +6,7 @@
 <div class="container-fluid py-4">
     <div class="mb-4">
         <a href="{{ route('admin.mobile-money.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left mr-2"></i>Retour à la liste
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
         </a>
     </div>
 
@@ -29,11 +29,11 @@
                             <small class="text-muted">Statut</small>
                             <p class="mb-0">
                                 @if($subscription->status === 'active')
-                                    <span class="badge badge-success badge-lg">Actif</span>
+                                    <span class="badge bg-success badge-lg">Actif</span>
                                 @elseif($subscription->status === 'canceled')
-                                    <span class="badge badge-danger badge-lg">Annulé</span>
+                                    <span class="badge bg-danger badge-lg">Annulé</span>
                                 @else
-                                    <span class="badge badge-warning badge-lg">{{ ucfirst($subscription->status) }}</span>
+                                    <span class="badge bg-warning badge-lg">{{ ucfirst($subscription->status) }}</span>
                                 @endif
                             </p>
                         </div>
@@ -86,7 +86,7 @@
                     </div>
                     <div class="mt-3">
                         <a href="{{ route('admin.creators.show', $subscription->creatorProfile->user->id) }}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-user mr-1"></i>Voir le profil complet
+                            <i class="fas fa-user me-1"></i>Voir le profil complet
                         </a>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
                         <form action="{{ route('admin.mobile-money.validate', $subscription) }}" method="POST" class="mb-2">
                             @csrf
                             <button type="submit" class="btn btn-success btn-block">
-                                <i class="fas fa-check mr-2"></i>Valider la Transaction
+                                <i class="fas fa-check me-2"></i>Valider la Transaction
                             </button>
                         </form>
                     @endif
@@ -141,7 +141,7 @@
                               onsubmit="return confirm('Êtes-vous sûr de vouloir rejeter cette transaction ?');">
                             @csrf
                             <button type="submit" class="btn btn-danger btn-block">
-                                <i class="fas fa-times mr-2"></i>Rejeter la Transaction
+                                <i class="fas fa-times me-2"></i>Rejeter la Transaction
                             </button>
                         </form>
                     @endif
@@ -177,7 +177,7 @@
 </div>
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
 .timeline {
     position: relative;
     padding-left: 30px;

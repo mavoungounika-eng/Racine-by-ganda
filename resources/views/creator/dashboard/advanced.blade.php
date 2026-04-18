@@ -5,7 +5,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creator-hero {
         background: linear-gradient(135deg, var(--racine-black) 0%, var(--racine-black-soft) 100%);
         padding: 2.5rem 0;
@@ -25,7 +25,7 @@
         border-radius: var(--radius-xl);
         padding: 2rem;
         box-shadow: var(--shadow-md);
-        border-left: 4px solid var(--racine-orange);
+        border-start: 4px solid var(--racine-orange);
     }
     
     .stat-card-value {
@@ -143,7 +143,7 @@
 @if(isset($salesData) && $user->hasCapability('can_view_analytics'))
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
+<script nonce="{{ csp_nonce() }}">
     const ctx = document.getElementById('salesChart');
     if (ctx) {
         new Chart(ctx, {

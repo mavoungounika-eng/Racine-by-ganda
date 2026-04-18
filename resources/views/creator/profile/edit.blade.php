@@ -4,7 +4,7 @@
 @section('page-title', 'Mon Profil')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: white;
         border-radius: 24px;
@@ -257,7 +257,7 @@
                 <div class="info-value">
                     <a href="{{ $creatorProfile->website }}" target="_blank" class="link-premium">
                         {{ $creatorProfile->website }}
-                        <i class="fas fa-external-link-alt ml-2" style="font-size: 0.75rem;"></i>
+                        <i class="fas fa-external-link-alt ms-2" style="font-size: 0.75rem;"></i>
                     </a>
                 </div>
             </div>
@@ -269,7 +269,7 @@
                 <div class="info-value">
                     <a href="https://instagram.com/{{ $creatorProfile->instagram }}" target="_blank" class="link-premium">
                         @{{ $creatorProfile->instagram }}
-                        <i class="fas fa-external-link-alt ml-2" style="font-size: 0.75rem;"></i>
+                        <i class="fas fa-external-link-alt ms-2" style="font-size: 0.75rem;"></i>
                     </a>
                 </div>
             </div>
@@ -281,7 +281,7 @@
                 <div class="info-value">
                     <a href="https://facebook.com/{{ $creatorProfile->facebook }}" target="_blank" class="link-premium">
                         {{ $creatorProfile->facebook }}
-                        <i class="fas fa-external-link-alt ml-2" style="font-size: 0.75rem;"></i>
+                        <i class="fas fa-external-link-alt ms-2" style="font-size: 0.75rem;"></i>
                     </a>
                 </div>
             </div>

@@ -4,7 +4,7 @@
 @section('page-title', 'Statistiques & Performances')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: white;
         border-radius: 24px;
@@ -171,7 +171,7 @@
     {{-- Graphique : Évolution des ventes --}}
     <div class="premium-card mb-8">
         <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-chart-area text-[#ED5F1E] mr-2"></i>
+            <i class="fas fa-chart-area text-[#ED5F1E] me-2"></i>
             Évolution des ventes
         </h3>
         <div class="chart-container">
@@ -184,7 +184,7 @@
         {{-- Top produits --}}
         <div class="premium-card">
             <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-trophy text-[#ED5F1E] mr-2"></i>
+                <i class="fas fa-trophy text-[#ED5F1E] me-2"></i>
                 Top produits (par CA)
             </h3>
             <div class="chart-container" style="height: 250px;">
@@ -208,7 +208,7 @@
         {{-- Répartition statuts commandes --}}
         <div class="premium-card">
             <h3 class="text-xl font-bold text-[#160D0C] mb-6" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-chart-pie text-[#ED5F1E] mr-2"></i>
+                <i class="fas fa-chart-pie text-[#ED5F1E] me-2"></i>
                 Répartition des statuts
             </h3>
             <div class="chart-container" style="height: 250px;">
@@ -219,7 +219,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Graphique évolution des ventes
     const salesCtx = document.getElementById('salesChart').getContext('2d');
     const salesData = @json($salesTimeSeries);

@@ -23,7 +23,7 @@
 @endif
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .profile-edit-container {
         max-width: 900px;
         margin: 0 auto;

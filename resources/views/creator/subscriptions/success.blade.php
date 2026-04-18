@@ -5,7 +5,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/creator-premium.css') }}">
-<style>
+<style nonce="{{ csp_nonce() }}">
     .success-animation {
         animation: scaleIn 0.5s ease-out;
     }
@@ -55,7 +55,7 @@
         </p>
         
         <div class="inline-block px-6 py-3 bg-green-100 border-2 border-green-300 rounded-xl">
-            <i class="fas fa-calendar-check text-green-600 mr-2"></i>
+            <i class="fas fa-calendar-check text-green-600 me-2"></i>
             <span class="font-semibold text-green-800">
                 Prochain paiement : {{ now()->addMonth()->format('d/m/Y') }}
             </span>
@@ -65,7 +65,7 @@
     {{-- What's Next --}}
     <div class="premium-card mb-8">
         <h2 class="text-2xl font-bold text-[#160D0C] mb-6">
-            <i class="fas fa-rocket text-[#ED5F1E] mr-2"></i>
+            <i class="fas fa-rocket text-[#ED5F1E] me-2"></i>
             Prochaines Étapes
         </h2>
         
@@ -99,7 +99,7 @@
     {{-- Unlocked Features --}}
     <div class="premium-card mb-8">
         <h2 class="text-2xl font-bold text-[#160D0C] mb-6">
-            <i class="fas fa-unlock text-green-600 mr-2"></i>
+            <i class="fas fa-unlock text-green-600 me-2"></i>
             Fonctionnalités Débloquées
         </h2>
         
@@ -123,7 +123,7 @@
     {{-- Subscription Details --}}
     <div class="premium-card mb-8">
         <h2 class="text-2xl font-bold text-[#160D0C] mb-6">
-            <i class="fas fa-file-invoice text-[#ED5F1E] mr-2"></i>
+            <i class="fas fa-file-invoice text-[#ED5F1E] me-2"></i>
             Détails de Votre Abonnement
         </h2>
         
@@ -169,12 +169,12 @@
     {{-- CTA Buttons --}}
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="{{ route('creator.dashboard') }}" class="premium-btn text-center">
-            <i class="fas fa-chart-pie mr-2"></i>
+            <i class="fas fa-chart-pie me-2"></i>
             Accéder au Tableau de Bord
         </a>
         
         <a href="{{ route('creator.products.create') }}" class="px-6 py-3 rounded-xl border-2 border-[#ED5F1E] text-[#ED5F1E] font-semibold hover:bg-[#ED5F1E] hover:text-white transition-colors text-center">
-            <i class="fas fa-plus mr-2"></i>
+            <i class="fas fa-plus me-2"></i>
             Créer Mon Premier Produit
         </a>
     </div>

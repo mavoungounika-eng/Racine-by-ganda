@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Événements - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .events-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
@@ -470,7 +470,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Countdown to next event
 const eventDate = new Date('2025-02-15T19:00:00').getTime();
 

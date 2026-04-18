@@ -3,7 +3,7 @@
 @section('title', 'Mon Compte - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .dashboard-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 3rem 0;
@@ -875,7 +875,7 @@
 </section>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function () {
     const observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry, i) {

@@ -15,7 +15,7 @@
     {{-- TinyMCE --}}
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         body {
             font-family: 'Aileron', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: #F5F2EC;

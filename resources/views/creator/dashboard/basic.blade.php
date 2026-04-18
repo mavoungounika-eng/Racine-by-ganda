@@ -4,7 +4,7 @@
 @section('page-title', 'Tableau de bord')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creator-hero {
         background: linear-gradient(135deg, var(--racine-black) 0%, var(--racine-black-soft) 100%);
         padding: 2rem 0;
@@ -113,7 +113,7 @@
             </div>
             <div style="flex: 1;">
                 <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #160D0C; font-weight: 700;">
-                    <i class="fas fa-chart-line text-[#ED5F1E] mr-2"></i>
+                    <i class="fas fa-chart-line text-[#ED5F1E] me-2"></i>
                     Votre Score Créateur
                 </h3>
                 <div style="display: flex; align-items: center; gap: 1rem;">
@@ -160,7 +160,7 @@
     @if($progress < 100)
     <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-md); margin-bottom: 2rem; border: 1px solid #FFFFFFFFF;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin: 0; font-size: 1.1rem; color: #160D0C;"><i class="fas fa-tasks text-[#ED5F1E] mr-2"></i> Complétez votre boutique</h3>
+            <h3 style="margin: 0; font-size: 1.1rem; color: #160D0C;"><i class="fas fa-tasks text-[#ED5F1E] me-2"></i> Complétez votre boutique</h3>
             <span style="background: #FFFFFF; color: #ED5F1E; padding: 2px 10px; border-radius: 99px; font-weight: 700; font-size: 0.8rem;">{{ $progress }}%</span>
         </div>
         

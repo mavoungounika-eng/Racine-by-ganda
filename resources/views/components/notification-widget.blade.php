@@ -1,5 +1,5 @@
 <!-- Notification Widget - RACINE BY GANDA -->
-<style>
+<style nonce="{{ csp_nonce() }}">
     .notification-widget {
         position: relative;
     }
@@ -135,7 +135,7 @@
 
     .notification-item.unread {
         background: rgba(75, 29, 242, 0.04);
-        border-left: 3px solid #4B1DF2;
+        border-start: 3px solid #4B1DF2;
     }
 
     .notification-icon {
@@ -258,7 +258,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 (function() {
     const widget = document.getElementById('notification-widget');
     const bell = document.getElementById('notification-bell');

@@ -20,7 +20,7 @@
 <div class="loyalty-card card mb-4">
     <div class="card-body">
         <h5 class="card-title">
-            <i class="icon-star mr-2"></i>
+            <i class="icon-star me-2"></i>
             Programme de Fidélité
         </h5>
         
@@ -29,7 +29,7 @@
                 <h3 class="mb-0">{{ number_format($points) }} points</h3>
                 <small class="text-muted">Points disponibles</small>
             </div>
-            <div class="text-right">
+            <div class="text-end">
                 <span class="badge" style="background: {{ $tierColors[$tier] }}; color: white; padding: 0.5rem 1rem;">
                     {{ $tierNames[$tier] }}
                 </span>

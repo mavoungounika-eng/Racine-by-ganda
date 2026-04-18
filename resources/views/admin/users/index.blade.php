@@ -4,7 +4,7 @@
 @section('page-title', 'Gestion des Utilisateurs')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -85,7 +85,7 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
             <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-users text-racine-orange mr-2"></i>
+                <i class="fas fa-users text-racine-orange me-2"></i>
                 Gestion des Utilisateurs
             </h2>
             <p class="text-slate-400">{{ $users->total() }} utilisateurs au total</p>
@@ -142,7 +142,7 @@
                         <th>Email</th>
                         <th>Rôle</th>
                         <th>Créé le</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>

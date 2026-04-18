@@ -3,7 +3,7 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'L\'Atelier - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .atelier-hero {
         min-height: 80vh;
         background: linear-gradient(135deg, rgba(22,13,12, 0.95) 0%, rgba(26, 15, 9, 0.98) 100%),

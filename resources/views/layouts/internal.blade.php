@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{{ asset('racine/css/open-iconic-bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('racine/css/icomoon.css') }}">
 
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         /* =============================================
            🎨 CHARTE GRAPHIQUE RACINE BY GANDA
            ============================================= */
@@ -643,11 +643,11 @@
             font-size: 0.75rem;
         }
 
-        .badge-success { background: #DCFCE7; color: #15803D; }
-        .badge-warning { background: #FEF3C7; color: #92400E; }
-        .badge-danger { background: #FEE2E2; color: #DC2626; }
-        .badge-info { background: #DBEAFE; color: #1D4ED8; }
-        .badge-primary { background: rgba(75, 29, 242, 0.1); color: var(--racine-violet); }
+        .bg-success { background: #DCFCE7; color: #15803D; }
+        .bg-warning { background: #FEF3C7; color: #92400E; }
+        .bg-danger { background: #FEE2E2; color: #DC2626; }
+        .bg-info { background: #DBEAFE; color: #1D4ED8; }
+        .bg-primary { background: rgba(75, 29, 242, 0.1); color: var(--racine-violet); }
 
         /* =============================================
            📝 FORMS PREMIUM
@@ -809,7 +809,7 @@
                     $unreadCount = app(\App\Services\ConversationService::class)->getUnreadConversationsCount(auth()->id());
                 @endphp
                 @if($unreadCount > 0)
-                    <span class="badge badge-primary ml-auto">{{ $unreadCount }}</span>
+                    <span class="badge bg-primary ms-auto">{{ $unreadCount }}</span>
                 @endif
             </a>
 
@@ -920,20 +920,20 @@
                                 @endswitch
                             </span>
                         </div>
-                        <span class="icon-chevron-down ml-2 d-none d-md-inline"></span>
+                        <span class="icon-chevron-down ms-2 d-none d-md-inline"></span>
                     </div>
                     <div class="dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item" href="{{ route('profile.index') }}">
-                            <span class="icon-user mr-2"></span> Mon Profil
+                            <span class="icon-user me-2"></span> Mon Profil
                         </a>
                         <a class="dropdown-item" href="{{ route('frontend.home') }}" target="_blank">
-                            <span class="icon-external-link mr-2"></span> Voir le site
+                            <span class="icon-external-link me-2"></span> Voir le site
                         </a>
                         <div class="dropdown-divider"></div>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit" class="dropdown-item text-danger">
-                                <span class="icon-log-out mr-2"></span> Déconnexion
+                                <span class="icon-log-out me-2"></span> Déconnexion
                             </button>
                         </form>
                     </div>
@@ -947,7 +947,7 @@
                 <div class="alert alert-success animate-fade-in" role="alert">
                     <span class="icon-check"></span>
                     {{ session('success') }}
-                    <button type="button" class="close ml-auto" data-dismiss="alert" style="background:none;border:none;font-size:1.25rem;">&times;</button>
+                    <button type="button" class="close ms-auto" data-dismiss="alert" style="background:none;border:none;font-size:1.25rem;">&times;</button>
                 </div>
             @endif
 
@@ -955,7 +955,7 @@
                 <div class="alert alert-danger animate-fade-in" role="alert">
                     <span class="icon-alert-circle"></span>
                     {{ session('error') }}
-                    <button type="button" class="close ml-auto" data-dismiss="alert" style="background:none;border:none;font-size:1.25rem;">&times;</button>
+                    <button type="button" class="close ms-auto" data-dismiss="alert" style="background:none;border:none;font-size:1.25rem;">&times;</button>
                 </div>
             @endif
 
@@ -968,7 +968,7 @@
     <script src="{{ asset('racine/js/popper.min.js') }}"></script>
     <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         // Mobile sidebar toggle
         document.getElementById('mobileToggle')?.addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('show');

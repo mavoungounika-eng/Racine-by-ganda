@@ -152,7 +152,7 @@
 </footer>
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     /* ===== FOOTER PREMIUM STYLES RACINE BY GANDA ===== */
     .footer-premium {
         background: linear-gradient(180deg, #1a0f09 0%, #0d0806 100%);

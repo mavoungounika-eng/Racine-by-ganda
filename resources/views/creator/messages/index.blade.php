@@ -4,7 +4,7 @@
 @section('page-title', 'Messagerie Client')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .message-card {
         background: white;
         border-radius: 16px;
@@ -20,7 +20,7 @@
     }
     
     .message-card.unread {
-        border-left: 4px solid #ED5F1E;
+        border-start: 4px solid #ED5F1E;
         background: #FFFAF8;
     }
 
@@ -97,9 +97,9 @@
                             
                             <div class="flex items-center gap-2 mb-2">
                                 @if($conversation->type == 'order_thread')
-                                    <span class="badge-order"><i class="fas fa-shopping-bag mr-1"></i> Commande #{{ $conversation->order->order_number ?? 'N/A' }}</span>
+                                    <span class="badge-order"><i class="fas fa-shopping-bag me-1"></i> Commande #{{ $conversation->order->order_number ?? 'N/A' }}</span>
                                 @elseif($conversation->type == 'product_thread')
-                                    <span class="badge-product"><i class="fas fa-box mr-1"></i> Produit</span>
+                                    <span class="badge-product"><i class="fas fa-box me-1"></i> Produit</span>
                                 @endif
                                 <span class="text-sm font-medium text-gray-700 truncate">{{ $conversation->subject }}</span>
                             </div>
