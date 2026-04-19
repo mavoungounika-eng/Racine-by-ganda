@@ -201,6 +201,7 @@ class FrontendController extends Controller
     public function privacy() { return view('frontend.privacy'); }
     public function cookies() { return redirect()->route('frontend.page.show', 'cookies'); }
     public function about() { return redirect()->route('frontend.page.show', 'a-propos'); }
+    public function legal() { return redirect()->route('frontend.page.show', 'mentions-legales'); }
     public function becomeCreator()
     {
         $plans = \App\Models\CreatorPlan::where('is_active', true)->orderBy('price')->get();

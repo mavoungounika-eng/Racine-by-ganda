@@ -626,6 +626,8 @@
                         <a href="{{ route('frontend.privacy') }}">Confidentialité</a>
                         <span>•</span>
                         <a href="{{ route('frontend.cookies') }}">Cookies</a>
+                        <span>•</span>
+                        <a href="{{ route('frontend.legal') }}">Mentions légales</a>
                     </div>
                     <div class="payment-methods">
                         <span>Paiement sécurisé</span>

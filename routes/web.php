@@ -344,10 +344,9 @@ Route::get('/language/{locale}', [\App\Http\Controllers\LanguageController::clas
 
 // Routes Frontend (Rate Limited: 60 req/min)
 // Anciennes routes statiques → CMS dynamique
-Route::redirect('/a-propos', '/pages/a-propos', 301);
-Route::redirect('/cgv', '/pages/cgv', 301);
-Route::redirect('/mentions-legales', '/pages/mentions-legales', 301);
-Route::redirect('/confidentialite', '/pages/confidentialite', 301);
+// Note: /a-propos, /cgv, /confidentialite, /mentions-legales sont définis comme
+// routes nommées dans le groupe frontend.* ci-dessous (voir terms, privacy, about, legal).
+// On garde ici uniquement les redirections qui n'ont pas de route nommée équivalente.
 Route::redirect('/faq', '/pages/faq', 301);
 Route::redirect('/contact-old', '/pages/contact', 301); // Eviter conflit avec /contact existant si souhaité
 
@@ -381,6 +380,7 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/confidentialite', [FrontendController::class, 'privacy'])->name('privacy');
     Route::get('/a-propos', [FrontendController::class, 'about'])->name('about');
     Route::get('/cookies', [FrontendController::class, 'cookies'])->name('cookies');
+    Route::get('/mentions-legales', [FrontendController::class, 'legal'])->name('legal');
     Route::get('/devenir-createur', [FrontendController::class, 'becomeCreator'])->name('become-creator');
 
     // ✅ NOUVEAU: Routes CMS dynamiques
