@@ -2,9 +2,10 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
+import { cspTransform } from './vite/plugins/cspTransform.js';
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), cspTransform()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

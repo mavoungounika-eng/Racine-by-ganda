@@ -4,15 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!--
-    CSP — on restreint au strict minimum nécessaire.
+    CSP — durcissement du renderer Electron.
+
+    ⚠️ Les tokens littéraux de la meta CSP ci-dessous (localhost:8000,
+    HMR Vite, wildcard pusher.com) sont RÉÉCRITS au build par
+    vite/plugins/cspTransform.js selon les variables d'env :
+      VITE_API_URL, VITE_REVERB_HOST/PORT/SCHEME.
+    Voir le fichier plugin pour le détail des substitutions.
+
     - 'self' : JS/CSS/images bundlés par Vite dans dist/
-    - http://127.0.0.1:8000 + http://localhost:8000 : backend Laravel (dev)
-      Pour prod, remplacer manuellement par le domaine cible (racinebyganda.cm)
-      ou générer dynamiquement au build via un petit plugin Vite.
-    - ws://localhost:5173 : HMR Vite en dev, inerte en prod
-    - https://*.pusher.com + wss://*.pusher.com : laravel-echo (temps réel)
-    - 'unsafe-inline' sur style-src : Vue 3 injecte des styles scoped inline
-      (pas de contournement propre tant qu'on n'utilise pas de nonce côté Electron)
+    - 'unsafe-inline' sur style-src : Vue 3 injecte des styles scoped
+      inline (pas de contournement propre tant qu'on n'utilise pas de
+      nonce côté Electron).
   -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
