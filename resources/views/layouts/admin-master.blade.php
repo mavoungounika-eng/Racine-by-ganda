@@ -327,6 +327,10 @@
                 <i class="fas fa-exclamation-triangle"></i>
                 <span>Alertes stock</span>
             </a>
+            <a href="{{ route('admin.promo-codes.index') }}" class="admin-nav-link {{ request()->routeIs('admin.promo-codes.*') ? 'active' : '' }}">
+                <i class="fas fa-tags"></i>
+                <span>Codes promo</span>
+            </a>
 
             <div class="admin-nav-section-title">Modules Business</div>
             <a href="{{ route('erp.dashboard') }}" class="admin-nav-link {{ request()->routeIs('erp.*') ? 'active' : '' }}">

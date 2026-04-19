@@ -447,6 +447,11 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
 
         // Gestion des produits
         Route::resource('products', \App\Http\Controllers\Admin\AdminProductController::class);
+
+        // Gestion des codes promo (hors-show : tout se passe dans la liste + edit)
+        Route::resource('promo-codes', \App\Http\Controllers\Admin\AdminPromoCodeController::class)
+            ->except(['show'])
+            ->parameters(['promo-codes' => 'promo_code']);
         
         // Galerie d'images produits
         Route::prefix('products/{product}/images')->name('products.images.')->group(function () {
