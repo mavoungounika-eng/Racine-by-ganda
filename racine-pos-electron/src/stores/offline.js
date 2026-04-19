@@ -92,6 +92,8 @@ export const useOfflineStore = defineStore('offline', {
 
     async checkConnectivity() {
       try {
+        // PosApiClient.get() retourne déjà res.data axios, donc ici `res` est
+        // le body backend `{success, data: {...}, error, meta}`.
         const res = await this._client().get(PING_URL);
         this.queueCount = res?.data?.queue_count ?? 0;
 
@@ -100,8 +102,13 @@ export const useOfflineStore = defineStore('offline', {
           this.isOffline = false;
           await this.syncNow();
         }
-      } catch {
-        this.isOffline = true;
+      } catch (err) {
+        // N'active « offline » QUE sur vraie erreur réseau (pas de response
+        // HTTP). Un 429 / 401 / 500 signifie que le backend répond — on
+        // n'est PAS hors-ligne, même si la requête a échoué.
+        if (!err?.response) {
+          this.isOffline = true;
+        }
       }
     },
 
@@ -234,11 +241,16 @@ export const useOfflineStore = defineStore('offline', {
     async checkStatus() {
       try {
         const res = await this._client().get('/api/pos/offline/status');
-        this.isOffline = !!res?.data?.is_offline;
+        // `res` est le body backend `{success, data: {offline, queue_count}, ...}`.
+        this.isOffline = !!res?.data?.offline;
         this.queueCount = res?.data?.queue_count || 0;
         return res;
-      } catch {
-        this.isOffline = true;
+      } catch (err) {
+        // Idem checkConnectivity : seul un VRAI manque de réseau doit flip
+        // l'état offline.
+        if (!err?.response) {
+          this.isOffline = true;
+        }
       }
     },
 
@@ -249,8 +261,10 @@ export const useOfflineStore = defineStore('offline', {
     },
 
     async getQueue() {
+      // `res` est déjà le body (cf. checkConnectivity).
+      // Enveloppe backend : {success, data: [...queue], error, meta}.
       const res = await this._client().get('/api/pos/offline/queue');
-      this.serverQueue = res?.data?.data || [];
+      this.serverQueue = Array.isArray(res?.data) ? res.data : [];
       return res;
     },
 

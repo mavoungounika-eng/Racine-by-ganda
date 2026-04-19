@@ -21,7 +21,6 @@
             type="email"
             autocomplete="username"
             :placeholder="t('login.email')"
-            :disabled="initializingTerminal"
           />
 
           <label>{{ t('login.password') }}</label>
@@ -30,11 +29,13 @@
             type="password"
             autocomplete="current-password"
             :placeholder="t('login.password')"
-            :disabled="initializingTerminal"
           />
 
-          <button type="submit" :disabled="initializingTerminal || isPendingDevice || !email || !password">
-            {{ t('login.button') }}
+          <button
+            type="submit"
+            :disabled="initializingTerminal || isPendingDevice || !email || !password || cooldownSeconds > 0"
+          >
+            {{ cooldownSeconds > 0 ? `Patientez ${cooldownSeconds}s…` : t('login.button') }}
           </button>
 
           <p v-if="isPendingDevice" class="warn">Terminal en attente d'activation administrateur. Contactez l'admin avant de vous connecter.</p>
@@ -83,7 +84,26 @@ const password = ref('');
 const loginError = ref('');
 const terminalError = ref('');
 const initializingTerminal = ref(true);
+const cooldownSeconds = ref(0);
+let cooldownTimer = null;
 const isPendingDevice = computed(() => auth.device?.status === 'pending');
+
+/**
+ * Démarre un cooldown visuel du bouton Entrer quand le backend renvoie 429.
+ * Utilise le header Retry-After si présent (standard HTTP), sinon 30 s par défaut.
+ * Bloque aussi le spam qui réarmerait la fenêtre de throttle côté serveur.
+ */
+function startCooldown(seconds) {
+  if (cooldownTimer) clearInterval(cooldownTimer);
+  cooldownSeconds.value = Math.max(1, seconds | 0);
+  cooldownTimer = setInterval(() => {
+    cooldownSeconds.value -= 1;
+    if (cooldownSeconds.value <= 0) {
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
+    }
+  }, 1000);
+}
 
 onMounted(async () => {
   auth.loadFromStorage();
@@ -98,7 +118,7 @@ onMounted(async () => {
 });
 
 const login = async () => {
-  if (isPendingDevice.value) {
+  if (isPendingDevice.value || cooldownSeconds.value > 0) {
     return;
   }
 
@@ -107,6 +127,20 @@ const login = async () => {
     await auth.login(email.value, password.value);
     router.push('/session/open');
   } catch (e) {
+    // Traitement spécifique du 429 : on affiche un message humain et on
+    // verrouille le bouton le temps du Retry-After pour ne pas ré-armer
+    // la fenêtre de throttle Laravel.
+    if (e.response?.status === 429) {
+      const retryAfter =
+        parseInt(e.response?.headers?.['retry-after'], 10) ||
+        e.response?.data?.error?.retry_after ||
+        30;
+      loginError.value =
+        e.response?.data?.error?.message ||
+        `Trop de tentatives. Réessayez dans ${retryAfter}s.`;
+      startCooldown(retryAfter);
+      return;
+    }
     loginError.value = e.response?.data?.error?.message || e.message || 'Login failed';
   }
 };

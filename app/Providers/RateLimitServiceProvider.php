@@ -56,5 +56,26 @@ class RateLimitServiceProvider extends ServiceProvider
 
             return Limit::perMinute(300)->by('pos_device_' . $deviceId);
         });
+
+        // Rate limiting pour login opérateur POS.
+        // 20/min par IP : laisse passer les miss-clics et la saisie itérative
+        // de dev, tout en bloquant un brute-force naïf. Retry-After est ajouté
+        // automatiquement par Laravel et la réponse JSON est i18n-friendly.
+        RateLimiter::for('pos_operator_login', function (Request $request) {
+            return Limit::perMinute(20)
+                ->by($request->ip())
+                ->response(function (Request $request, array $headers) {
+                    $retryAfter = (int) ($headers['Retry-After'] ?? 60);
+
+                    return response()->json([
+                        'success' => false,
+                        'error' => [
+                            'code' => 'TOO_MANY_ATTEMPTS',
+                            'message' => 'Trop de tentatives de connexion. Réessayez dans ' . $retryAfter . ' seconde(s).',
+                            'retry_after' => $retryAfter,
+                        ],
+                    ], 429, $headers);
+                });
+        });
     }
 }

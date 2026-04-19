@@ -14,8 +14,11 @@ use Illuminate\Support\Facades\Route;
 // POS Terminal Registration (no auth required)
 Route::post('/register', [PosAuthController::class, 'registerTerminal']);
 
-// POS Operator Auth (no device JWT required)
-Route::prefix('auth')->middleware(['throttle:5,1'])->group(function () {
+// POS Operator Auth (no device JWT required).
+// Throttling via named limiter `pos_operator_login` (cf. RateLimitServiceProvider)
+// pour retourner une réponse JSON structurée et un header Retry-After exploitable
+// côté front au lieu de la page HTML par défaut de Laravel.
+Route::prefix('auth')->middleware(['throttle:pos_operator_login'])->group(function () {
     Route::post('/operator/login', [PosAuthController::class, 'login']);
 });
 

@@ -18,7 +18,13 @@ import { useOfflineStore } from './stores/offline';
 const offline = useOfflineStore();
 
 onMounted(() => {
-  offline.initOfflineSystem(offline.client());
+  // Kick off offline system init (local DB counters + connectivity monitor).
+  // Fire-and-forget: init is async but shouldn't block the UI. Any failure
+  // during counter load is non-fatal; connectivity monitor is resilient.
+  offline.init().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.warn('offline.init() failed:', err);
+  });
 });
 </script>
 

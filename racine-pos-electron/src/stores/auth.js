@@ -51,16 +51,21 @@ export const useAuthStore = defineStore('auth', {
     },
     async login(email, password) {
       try {
-        // Use PosApiClient to ensure correct headers (Accept: application/json)
-        // This prevents Laravel from treating it as a web request and redirecting to /login
+        // PosApiClient.post() retourne directement le BODY JSON du backend
+        // (axios `res.data`), pas la réponse axios enveloppée. Donc ici `res`
+        // vaut déjà `{ success, data: { operator, token }, error, meta }`.
+        // On déstructure en conséquence — l'ancienne version lisait
+        // `res.data.success` / `res.data.data.operator` (double-unwrapping)
+        // et jetait systématiquement "Login failed" alors que le back répondait 200.
         const res = await this.client().post('/api/pos/auth/operator/login', { email, password });
-        if (res.data?.success) {
-          this.operator = res.data.data.operator;
-          this.operatorToken = res.data.data.token;
+
+        if (res?.success && res?.data?.operator && res?.data?.token) {
+          this.operator = res.data.operator;
+          this.operatorToken = res.data.token;
           this.persist();
-          return res.data;
+          return res;
         }
-        throw new Error(res.data?.error?.message || 'Login failed');
+        throw new Error(res?.error?.message || 'Login failed');
       } catch (e) {
         console.error('Operator login error:', e);
         throw e;
