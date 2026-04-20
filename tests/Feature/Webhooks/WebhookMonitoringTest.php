@@ -502,6 +502,15 @@ class WebhookMonitoringTest extends TestCase
     #[Test]
     public function kpi_values_are_consistent_with_raw_metrics(): void
     {
+        // Defense-in-depth: le KPI aggrège TOUS les webhook_metrics de la
+        // fenêtre temporelle, sans filtrage par provider. Si un autre test
+        // du même run a laissé traîner des records (RefreshDatabase +
+        // transactions normalement suffisent, mais l exécution `depends,
+        // defects` peut réordonner et exposer des fuites), le ratio calculé
+        // ne reflète plus notre contrat. On part d une table propre pour
+        // rendre l assertion déterministe quel que soit l ordre d exécution.
+        WebhookMetric::query()->delete();
+
         // Create 100 metrics with 95% success rate
         for ($i = 0; $i < 100; $i++) {
             WebhookMetric::create([
@@ -517,8 +526,8 @@ class WebhookMonitoringTest extends TestCase
         $response = $this->actingAs($this->admin)->get('/api/webhooks/monitoring/kpis?hours=1');
 
         $kpis = $response->json();
-        
-        // Should be approximately 95%
+
+        // Should be exactly 95% (95 successes / 100 total)
         $this->assertGreaterThan(94, $kpis['success_rate']['value']);
         $this->assertLessThan(96, $kpis['success_rate']['value']);
     }
