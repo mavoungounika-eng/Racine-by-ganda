@@ -62,6 +62,40 @@ class PosSessionServiceTest extends TestCase
         $this->service->openSession($machineId, $user->id, 5000.00);
     }
 
+    public function test_openSession_fails_with_clear_error_if_operator_has_active_session_on_another_machine(): void
+    {
+        // Régression: la contrainte unique DB (opened_by, is_active) est cross-machine.
+        // On doit lever une erreur EXPLICITE avant de toucher la couche DB, pas un
+        // 409 cryptique "Duplicate entry 'X-1' for key pos_sessions.uq_user_active_session".
+        $user = User::factory()->create();
+        $machineA = (string) Str::uuid();
+        $machineB = (string) Str::uuid();
+
+        $this->service->openSession($machineA, $user->id, 5000.00);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('autre machine');
+        $this->service->openSession($machineB, $user->id, 3000.00);
+    }
+
+    public function test_openSession_succeeds_on_new_machine_after_previous_session_closed(): void
+    {
+        // L invariant ne doit PAS bloquer quand la session précédente est clôturée:
+        // closeSession() libère is_active (→ NULL), autorisant l ouverture suivante.
+        $user = User::factory()->create();
+        $machineA = (string) Str::uuid();
+        $machineB = (string) Str::uuid();
+
+        $first = $this->service->openSession($machineA, $user->id, 5000.00);
+        $this->service->closeSession($first, 5000.00, $user->id);
+
+        $second = $this->service->openSession($machineB, $user->id, 2000.00);
+
+        $this->assertEquals(PosSession::STATUS_OPEN, $second->status);
+        $this->assertEquals($machineB, $second->machine_id);
+        $this->assertNotEquals($first->id, $second->id);
+    }
+
     public function test_openSession_records_opening_cash_amount(): void
     {
         $user = User::factory()->create();

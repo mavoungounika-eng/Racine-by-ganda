@@ -16,7 +16,8 @@ export const useCartStore = defineStore('cart', {
       return new PosApiClient(
         () => auth.token,
         (t) => { auth.token = t; auth.isAuthenticated = !!t; },
-        (offline) => { auth.offline = offline; }
+        (offline) => { auth.offline = offline; },
+        () => auth.operatorToken,
       );
     },
     addItem(product) {

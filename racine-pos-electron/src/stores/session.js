@@ -15,7 +15,8 @@ export const useSessionStore = defineStore('session', {
       return new PosApiClient(
         () => auth.token,
         (t) => { auth.token = t; auth.isAuthenticated = !!t; },
-        (offline) => { auth.offline = offline; }
+        (offline) => { auth.offline = offline; },
+        () => auth.operatorToken,
       );
     },
     async openSession(openingCash) {

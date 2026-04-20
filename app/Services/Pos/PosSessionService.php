@@ -39,9 +39,26 @@ class PosSessionService
         return DB::transaction(function () use ($machineId, $userId, $openingCash) {
             // Vérifier qu'aucune session n'est déjà ouverte pour cette machine
             $existingSession = PosSession::forMachine($machineId)->open()->first();
-            
+
             if ($existingSession) {
                 throw new \Exception("Une session est déjà ouverte pour cette machine (ID: {$existingSession->id})");
+            }
+
+            // La contrainte unique DB (opened_by, is_active) est cross-machine.
+            // Si l opérateur a une session active sur une AUTRE machine, on lève
+            // une erreur explicite AVANT d atteindre la couche DB (sinon 409 cryptique
+            // "Duplicate entry 'X-1' for key pos_sessions.uq_user_active_session").
+            $otherMachineSession = PosSession::query()
+                ->where('opened_by', $userId)
+                ->where('is_active', 1)
+                ->where('machine_id', '!=', $machineId)
+                ->first();
+
+            if ($otherMachineSession) {
+                throw new \Exception(
+                    "L opérateur a déjà une session ouverte sur une autre machine (ID session: {$otherMachineSession->id}, "
+                    . "machine: {$otherMachineSession->machine_id}). Veuillez la clôturer avant d en ouvrir une nouvelle."
+                );
             }
 
             // Créer la session
