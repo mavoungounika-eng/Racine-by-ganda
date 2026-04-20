@@ -177,6 +177,18 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Canal dédié aux écritures comptables (FinancialIntent, bootstrap,
+        // règlement POS). Séparé de 'payments' car le cycle de rétention et
+        // le niveau d audit diffèrent: on veut tracer chaque intent committed
+        // et chaque blocage de bootstrap pour reconstituer la piste d audit.
+        'accounting' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/accounting.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_ACCOUNTING_DAYS', 365), // Rétention longue pour audit fiscal
+            'replace_placeholders' => true,
+        ],
+
         'queue' => [
             'driver' => 'daily',
             'path' => storage_path('logs/queue.log'),
