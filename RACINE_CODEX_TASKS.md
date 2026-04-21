@@ -13,77 +13,61 @@
 ✅ `start.sh` fiable one-command avec nettoyage cache  
 ✅ `ProductPolicy::create()` — créateurs autorisés nativement  
 ✅ Handler 403 global — ne déconnecte plus l'utilisateur  
+✅ **T-01** · Fix `DetectStockAnomalies` — Conflit propriété `$queue` (3 jobs AI) [commit 29ca972e]
+✅ **T-04** · `RiskDetectionService` — Colonne `risk_level` ajoutée [commit c70f11d5]
+✅ **T-02** · Page `/createurs` — Section featured dynamique de la DB [commit fb97e47f]
+✅ **T-05** · `RiskDetectionService` — Notification email CreatorRiskAlert [commit afdf0541]
 
 ---
 
 ## PRIORITÉ 1 — CRITIQUE (bugs qui plantent / bloquent)
 
-### T-01 · `DetectStockAnomalies` — Conflit propriété `$queue`
-**Fichier :** `app/Jobs/AI/DetectStockAnomalies.php:17`  
-**Problème :** Le job déclare `public string $queue = 'ai-processing';` mais le trait `Queueable` définit déjà `public ?string $queue = null;`. PHP 8.x considère les types incompatibles → FatalError à chaque dispatch.  
-**Erreur log :** `App\Jobs\AI\DetectStockAnomalies and Illuminate\Bus\Queueable define the same property ($queue)`  
-**Fix :** Supprimer la déclaration explicite et utiliser `$this->onQueue()` dans le constructeur :
-```php
-// Supprimer la ligne : public string $queue = 'ai-processing';
-public function __construct()
-{
-    $this->onQueue('ai-processing');
-}
-```
-**Même vérification :** Faire la même recherche sur TOUS les jobs dans `app/Jobs/AI/` qui utilisent `public string $queue`.
+### T-01 · `DetectStockAnomalies` — Conflit propriété `$queue` ✅ COMPLÈTE
+**Status :** ✅ DONE (commit 29ca972e)  
+**Tests :** 9 passed / AiJobsQueuePropertyTest.php  
+**Changements :**
+- Supprimé `public string $queue = 'ai-processing'` sur 3 jobs AI
+- Ajouté `$this->onQueue('ai-processing')` dans constructeur (Queueable trait compatible)
+- Migration : aucune (code-only)
 
 ---
 
-### T-02 · Page `/createurs` — Grille hardcodée au lieu de la DB
-**Fichier :** `resources/views/frontend/creators.blade.php` (environ ligne 450–550)  
-**Problème :** La vue ignore la variable `$creators` (paginator Eloquent) et affiche 6 artisans hardcodés (Amina Diallo, Kwame Asante, etc.).  
-**Controller OK :** `app/Http/Controllers/Front/FrontendController.php:147` — `compact('creators', 'totalProducts', 'cmsPage')` est correct.  
-**Fix :** Remplacer le bloc HTML des 6 cartes statiques par :
-```blade
-@forelse ($creators as $creator)
-    <div class="creator-card">
-        <img src="{{ $creator->logo_url ?? asset('images/placeholder-creator.jpg') }}" alt="{{ $creator->brand_name }}">
-        <h2 class="section-title">{{ $creator->brand_name }}</h2>
-        <p>{{ $creator->bio ?? '' }}</p>
-        <a href="{{ route('frontend.creator.shop', $creator->slug) }}">Voir la boutique</a>
-    </div>
-@empty
-    <p class="text-center">Aucun créateur actif pour le moment.</p>
-@endforelse
-```
-Ajouter la pagination en bas : `{{ $creators->links() }}`
+### T-04 · `RiskDetectionService` — Colonne `risk_level` manquante ✅ COMPLÈTE
+**Status :** ✅ DONE (commit c70f11d5)  
+**Tests :** 4 passed / RiskDetectionServiceT04Test.php  
+**Changements :**
+- Migration `2026_04_21_000001_add_risk_level_to_creator_profiles_table.php` (enum: normal/watch/high/critical)
+- `CreatorProfile` model : ajouté `risk_level` dans `$fillable` et `$casts` (boolean)
+- `RiskDetectionService::sendRiskAlerts()` : persiste `$creator->update(['risk_level' => $riskLevel])`
+
+---
+
+### T-02 · Page `/createurs` — Section featured hardcodée ✅ COMPLÈTE
+**Status :** ✅ DONE (commit fb97e47f)  
+**Tests :** 5 passed / CreatorsPageDynamicTest.php  
+**Changements :**
+- Migration `2026_04_21_000002_add_is_featured_to_creator_profiles_table.php` (boolean is_featured)
+- `FrontendController::creators()` : cherche featured creator (is_featured=true ou premier actif)
+- `creators.blade.php` : section featured remplacée par données DB (plus de "Amina Diallo" hardcodée)
+- Dynamique : affiche brand_name, bio, location, products_count réels
+
+---
+
+### T-05 · `RiskDetectionService` — Notification email non implémentée ✅ COMPLÈTE
+**Status :** ✅ DONE (commit afdf0541)  
+**Tests :** 6 passed / CreatorRiskAlertNotificationTest.php  
+**Changements :**
+- Nouvelle notification `app/Notifications/CreatorRiskAlert.php` (ShouldQueue, channels: mail + database)
+- Email template automatique via MailMessage (subject, raison, action, lien profil)
+- `RiskDetectionService::sendRiskAlerts()` : envoie `$creator->user->notify(new CreatorRiskAlert(...))`
+- Seuls risques 'critical' déclenchent notification
 
 ---
 
 ### T-03 · `SubscriptionOptimizationService` — Table manquante
 **Fichier :** `app/Services/Financial/SubscriptionOptimizationService.php:142`  
 **Problème :** Le code référence la table `creator_subscription_events` qui n'existe pas en DB.  
-**Fix :** Créer la migration :
-```
-php artisan make:migration create_creator_subscription_events_table
-```
-Colonnes : `id`, `creator_profile_id` (FK), `event_type` (string), `plan_from`, `plan_to`, `metadata` (json nullable), `created_at`.
-
----
-
-### T-04 · `RiskDetectionService` — Colonne `risk_level` manquante
-**Fichier :** `app/Services/Financial/RiskDetectionService.php:98`  
-**Problème :** Code essaie de mettre à jour `risk_level` sur `creator_profiles` mais la colonne n'existe pas.  
-**Fix :** Créer migration `add_risk_level_to_creator_profiles_table` :
-```php
-$table->string('risk_level')->default('normal')->after('status');
-// Valeurs : 'normal', 'watch', 'high', 'critical'
-```
-
----
-
-### T-05 · `RiskDetectionService` — Envoi email non implémenté
-**Fichier :** `app/Services/Financial/RiskDetectionService.php:113`  
-**Commentaire :** `// TODO: Implémenter l'envoi d'email`  
-**Fix :** Créer notification `App\Notifications\CreatorRiskAlert` et la dispatcher :
-```php
-$creator->user->notify(new CreatorRiskAlert($creator, $riskLevel));
-```
+**Status :** ⏳ PENDING (non commencé)
 
 ---
 
