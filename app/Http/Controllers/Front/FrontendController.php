@@ -134,6 +134,20 @@ class FrontendController extends Controller
     }
     public function creators()
     {
+        // Chercher un créateur marqué comme featured, sinon prendre le premier actif
+        $featuredCreator = \App\Models\CreatorProfile::active()
+            ->with('user')
+            ->where('is_featured', true)
+            ->first();
+        
+        if (!$featuredCreator) {
+            // Fallback : prendre le créateur le plus ancien actif
+            $featuredCreator = \App\Models\CreatorProfile::active()
+                ->with('user')
+                ->orderBy('created_at', 'asc')
+                ->first();
+        }
+
         $creators = \App\Models\CreatorProfile::active()
             ->with('user')
             ->paginate(12);
@@ -144,7 +158,7 @@ class FrontendController extends Controller
 
         $cmsPage = app(\App\Services\Cms\PageService::class)->getPublishedPage('createurs');
 
-        return view('frontend.creators', compact('creators', 'totalProducts', 'cmsPage'));
+        return view('frontend.creators', compact('creators', 'featuredCreator', 'totalProducts', 'cmsPage'));
     }
     public function marketplace(Request $request)
     {

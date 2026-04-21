@@ -453,41 +453,61 @@
 <!-- FEATURED -->
 <section class="featured-section">
     <div class="container">
+        @if ($featuredCreator)
         <div class="featured-grid">
             <div class="featured-image">
-                <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=800" alt="Créatrice vedette" class="featured-img">
-                <span class="featured-badge">⭐ Créatrice du mois</span>
+                @if($featuredCreator->avatar_path)
+                    <img src="{{ asset('storage/' . $featuredCreator->avatar_path) }}" 
+                         alt="{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}" 
+                         class="featured-img">
+                @elseif($featuredCreator->banner_path)
+                    <img src="{{ asset('storage/' . $featuredCreator->banner_path) }}" 
+                         alt="{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}" 
+                         class="featured-img">
+                @else
+                    <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=800" 
+                         alt="Créatrice vedette" class="featured-img">
+                @endif
+                <span class="featured-badge">⭐ Créateur vedette</span>
             </div>
             <div class="featured-content">
                 <span class="section-tag">À la Une</span>
-                <h2 class="section-title">Amina Diallo</h2>
-                <p>
-                    Originaire de Dakar, Amina perpétue un savoir-faire familial vieux de trois générations. 
-                    Ses créations en wax mêlent tradition et modernité avec une maîtrise exceptionnelle.
-                </p>
-                <p>
-                    "Chaque pièce que je crée raconte une histoire. Mon objectif est de sublimer notre 
-                    patrimoine textile tout en le rendant accessible au monde entier."
-                </p>
+                <h2 class="section-title">{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}</h2>
+                @if ($featuredCreator->bio)
+                    <p>{{ $featuredCreator->bio }}</p>
+                @endif
                 <div class="featured-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Dakar, Sénégal</span>
-                    </div>
+                    @if ($featuredCreator->location)
+                        <div class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ $featuredCreator->location }}
+                                @if ($featuredCreator->user->country)
+                                    , {{ $featuredCreator->user->country }}
+                                @endif
+                            </span>
+                        </div>
+                    @endif
                     <div class="meta-item">
                         <i class="fas fa-calendar"></i>
-                        <span>Depuis 2019</span>
+                        <span>
+                            @if ($featuredCreator->created_at)
+                                Depuis {{ $featuredCreator->created_at->format('Y') }}
+                            @else
+                                Membres actifs
+                            @endif
+                        </span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-box"></i>
-                        <span>85 créations</span>
+                        <span>{{ $featuredCreator->products_count ?? 0 }} créations</span>
                     </div>
                 </div>
-                <a href="{{ route('frontend.shop') }}" class="btn-view-collection">
+                <a href="{{ route('frontend.creator.shop', $featuredCreator->slug) }}" class="btn-view-collection">
                     <i class="fas fa-eye"></i> Voir sa collection
                 </a>
             </div>
         </div>
+        @endif
     </div>
 </section>
 

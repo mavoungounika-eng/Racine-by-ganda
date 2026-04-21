@@ -45,6 +45,7 @@ class CreatorProfile extends Model
         'risk_level',
         'is_verified',
         'is_active',
+        'is_featured',
         'quality_score',
         'completeness_score',
         'performance_score',
@@ -55,6 +56,7 @@ class CreatorProfile extends Model
     protected $casts = [
         'is_verified' => 'boolean',
         'is_active' => 'boolean',
+        'is_featured' => 'boolean',
         'payout_details' => 'array',
         'quality_score' => 'decimal:2',
         'completeness_score' => 'decimal:2',
