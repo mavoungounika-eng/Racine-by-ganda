@@ -107,10 +107,16 @@ class RiskDetectionService
 
             $alertCount++;
 
-            // Envoyer un email à l'admin si niveau critique
+            // Envoyer un email à l'admin si niveau critique (T-05)
             if ($sendEmail && $riskLevel === 'critical') {
-                // TODO: Implémenter l'envoi d'email
-                // Mail::to(config('mail.admin_email'))->send(new CreatorRiskAlert($creator, $risk));
+                try {
+                    $creator->user->notify(new \App\Notifications\CreatorRiskAlert($creator, $risk));
+                } catch (\Throwable $e) {
+                    Log::error('Impossible d\'envoyer alerte risque créateur', [
+                        'creator_id' => $creator->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         }
 
