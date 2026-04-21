@@ -94,9 +94,8 @@ class RiskDetectionService
             $creator = $risk['creator'];
             $riskLevel = $risk['risk_level'];
 
-            // Marquer le créateur avec un flag risk_level
-            // TODO: Ajouter une colonne risk_level dans creator_profiles si nécessaire
-            // Pour l'instant, on log
+            // Persister le risk_level détecté (colonne ajoutée via migration T-04)
+            $creator->update(['risk_level' => $riskLevel]);
 
             Log::warning('Créateur à risque détecté', [
                 'creator_id' => $creator->id,

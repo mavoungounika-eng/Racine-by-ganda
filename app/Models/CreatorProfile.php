@@ -42,6 +42,7 @@ class CreatorProfile extends Model
         'payout_method',
         'payout_details',
         'status',
+        'risk_level',
         'is_verified',
         'is_active',
         'quality_score',
