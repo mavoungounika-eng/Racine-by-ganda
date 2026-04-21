@@ -16,9 +16,13 @@ class AnalyzeCreatorSales implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'ai-processing';
     public int $timeout = 300;
     public int $tries = 3;
+
+    public function __construct()
+    {
+        $this->onQueue('ai-processing');
+    }
 
     public function handle(
         ProductAiService $productAiService,
