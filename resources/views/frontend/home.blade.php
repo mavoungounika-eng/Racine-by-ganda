@@ -31,20 +31,32 @@
                     </div>
                 </div>
                 <div class="hero-image">
-                    {{-- Collage CSS – aucune dépendance image externe --}}
-                    <div class="hero-visual-collage" aria-label="Mode Africaine Contemporaine">
-                        <div class="collage-block collage-block--main">
-                            <div class="collage-pattern"></div>
-                            <div class="collage-label">
-                                <span>✦</span>
-                                <p>Créations Africaines</p>
-                            </div>
-                        </div>
-                        <div class="collage-block collage-block--accent"></div>
-                        <div class="collage-block collage-block--dark">
-                            <span class="collage-monogram">R</span>
-                        </div>
-                    </div>
+    <div class="hero-slider" id="heroSlider">
+        <div class="hero-slider-track">
+            @foreach(range(1, 7) as $i)
+            <div class="hero-slide {{ $i === 1 ? 'active' : '' }}">
+                <img src="{{ asset('storage/hero/slide-' . $i . '.jpg') }}"
+                     alt="Racine by Ganda - Look {{ $i }}"
+                     loading="{{ $i === 1 ? 'eager' : 'lazy' }}">
+            </div>
+            @endforeach
+        </div>
+
+        <div class="hero-slider-dots">
+            @foreach(range(1, 7) as $i)
+            <button class="hero-dot {{ $i === 1 ? 'active' : '' }}"
+                    data-index="{{ $i - 1 }}"
+                    aria-label="Slide {{ $i }}"></button>
+            @endforeach
+        </div>
+
+        <button class="hero-slider-prev" aria-label="Précédent">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="hero-slider-next" aria-label="Suivant">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
                     <div class="hero-image-float hero-float-1">
                         <div class="hero-float-content">
                             <div class="hero-float-icon"><i class="fas fa-truck"></i></div>
@@ -371,6 +383,32 @@
 {{-- Section newsletter supprimée - Remplacée par les CTA dans le footer --}}
 @push('scripts')
 <script nonce="{{ csp_nonce() }}">
+// Hero Slider
+(function () {
+    const slider = document.getElementById('heroSlider');
+    if (!slider) return;
+    const slides = slider.querySelectorAll('.hero-slide');
+    const dots   = slider.querySelectorAll('.hero-dot');
+    let current  = 0, timer;
+    function goTo(i) {
+        slides[current].classList.remove('active');
+        dots[current].classList.remove('active');
+        current = (i + slides.length) % slides.length;
+        slides[current].classList.add('active');
+        dots[current].classList.add('active');
+    }
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+    function startAuto() { timer = setInterval(next, 4500); }
+    function stopAuto()  { clearInterval(timer); }
+    slider.querySelector('.hero-slider-next').addEventListener('click', () => { stopAuto(); next(); startAuto(); });
+    slider.querySelector('.hero-slider-prev').addEventListener('click', () => { stopAuto(); prev(); startAuto(); });
+    dots.forEach((dot, i) => dot.addEventListener('click', () => { stopAuto(); goTo(i); startAuto(); }));
+    slider.addEventListener('mouseenter', stopAuto);
+    slider.addEventListener('mouseleave', startAuto);
+    startAuto();
+})();
+
 // Scroll reveal géré dans layouts/frontend.blade.php (consolidé)
 
 // Fonction pour gérer la wishlist

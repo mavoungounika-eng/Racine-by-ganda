@@ -139,4 +139,34 @@ class SubscriptionCheckoutTest extends TestCase
         $response->assertRedirect(route('creator.subscription.plans'));
         $response->assertSessionHas('info');
     }
+    #[Test]
+    public function it_does_not_call_stripe_checkout_for_free_plan()
+    {
+        $service = Mockery::mock(CreatorSubscriptionService::class);
+        $service->shouldNotReceive('createCheckoutSession');
+        $this->app->instance(CreatorSubscriptionService::class, $service);
+
+        $user = User::factory()->create(['role' => 'createur']);
+        CreatorProfile::create([
+            'user_id' => $user->id,
+            'brand_name' => 'Test Brand',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $plan = CreatorPlan::create([
+            'code' => 'free',
+            'name' => 'Plan Gratuit',
+            'price' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('creator.subscription.checkout', $plan));
+
+        $response->assertRedirect(route('creator.subscription.plans'));
+        $response->assertSessionHas('info');
+    }
 }
+

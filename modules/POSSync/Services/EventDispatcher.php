@@ -11,6 +11,8 @@ class EventDispatcher
      */
     protected array $eventHandlers = [
         'PosSaleCreated' => \Modules\POSSync\Jobs\ProcessPosSale::class,
+        'PosSaleFinalized' => \Modules\POSSync\Jobs\FinalizePosStockMovement::class,
+        'PosSessionClosed' => \Modules\POSSync\Jobs\ProcessPosSessionClosure::class,
     ];
 
     /**

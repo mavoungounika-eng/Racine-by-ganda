@@ -433,7 +433,12 @@
                 <div class="ceo-decoration"></div>
                 <div class="ceo-decoration-2"></div>
                 <div class="ceo-photo">
-                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=800&fit=crop&crop=faces" alt="Amira Ganda - CEO RACINE BY GANDA">
+                    <img 
+                        src="{{ asset('storage/hero/slide-1.jpg') }}" 
+                        alt="{{ config('app.company.ceo') }} - CEO {{ config('app.name') }}"
+                        loading="lazy"
+                        decoding="async"
+                    >
                 </div>
             </div>
             

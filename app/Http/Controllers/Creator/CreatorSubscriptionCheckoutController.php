@@ -34,24 +34,43 @@ class CreatorSubscriptionCheckoutController extends Controller
     }
 
     /**
-     * Redirige vers Stripe Checkout pour un plan donné.
+     * Redirige vers Stripe Checkout pour un plan donne.
      */
     public function checkout(CreatorPlan $plan): RedirectResponse
     {
         $user = Auth::user();
 
+        if ($plan->code === 'free' || (float) $plan->price <= 0.0) {
+            return redirect()->route('creator.subscription.plans')
+                ->with('info', 'Le plan Gratuit ne necessite pas Stripe Checkout.');
+        }
+
+        if (empty($plan->stripe_price_id)) {
+            Log::warning('Plan creator sans stripe_price_id au checkout', [
+                'plan_id' => $plan->id,
+                'plan_code' => $plan->code,
+            ]);
+
+            return redirect()->route('creator.subscription.plans')
+                ->with('error', "Le plan '{$plan->name}' n'a pas de price_id Stripe. Lancez: php artisan stripe:sync-plans");
+        }
+
         try {
             $checkoutUrl = $this->subscriptionService->createCheckoutSession($user, $plan);
             return redirect()->away($checkoutUrl);
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la création de la session Checkout : ' . $e->getMessage());
+            Log::error('Erreur lors de la creation de la session Checkout : ' . $e->getMessage(), [
+                'plan_id' => $plan->id,
+                'user_id' => $user->id,
+            ]);
+
             return redirect()->route('creator.subscription.plans')
-                ->with('error', 'Impossible de créer la session de paiement. Veuillez réessayer plus tard.');
+                ->with('error', 'Impossible de creer la session de paiement. Verifiez la configuration Stripe des plans.');
         }
     }
 
     /**
-     * Gère le retour après paiement réussi.
+     * Gere le retour apres paiement reussi.
      */
     public function success(Request $request, CreatorPlan $plan): View
     {
@@ -62,18 +81,16 @@ class CreatorSubscriptionCheckoutController extends Controller
                 ->with('warning', 'Session de paiement introuvable.');
         }
 
-        // Le webhook Stripe s'occupera de créer/mettre à jour l'abonnement
-        // Afficher la page de confirmation avec les détails du plan
         return view('creator.subscriptions.success', compact('plan'));
     }
 
     /**
-     * Gère l'annulation du paiement.
+     * Gere l'annulation du paiement.
      */
     public function cancel(CreatorPlan $plan): RedirectResponse
     {
         return redirect()->route('creator.subscription.plans')
-            ->with('info', 'Vous avez annulé le paiement. Vous pouvez réessayer à tout moment.');
+            ->with('info', 'Vous avez annule le paiement. Vous pouvez reessayer a tout moment.');
     }
 
     /**
@@ -117,14 +134,14 @@ class CreatorSubscriptionCheckoutController extends Controller
             ]);
 
             return redirect()->away($paymentUrl);
-
         } catch (\Exception $e) {
             Log::error('Erreur paiement Monetbil abonnement : ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
             ]);
+
             return redirect()->back()
-                ->with('error', 'Impossible d\'initier le paiement Mobile Money. Veuillez réessayer.');
+                ->with('error', 'Impossible d\'initier le paiement Mobile Money. Veuillez reessayer.');
         }
     }
 }

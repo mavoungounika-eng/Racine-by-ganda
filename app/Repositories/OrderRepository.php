@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Cart;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -195,8 +196,9 @@ class OrderRepository
      */
     public function getAbandonedCartsCount(): int
     {
-        // TODO: Implémenter avec table carts quand disponible
-        return 0;
+        return Cart::where('updated_at', '<', now()->subHours(24))
+            ->whereHas('items')
+            ->count();
     }
 
     /**
@@ -204,7 +206,12 @@ class OrderRepository
      */
     public function getAbandonedCartsValue(): float
     {
-        // TODO: Implémenter avec table carts quand disponible
-        return 0;
+        $total = DB::table('carts')
+            ->join('cart_items', 'cart_items.cart_id', '=', 'carts.id')
+            ->where('carts.updated_at', '<', now()->subHours(24))
+            ->selectRaw('SUM(cart_items.price * cart_items.quantity) as total')
+            ->value('total');
+
+        return (float) ($total ?? 0);
     }
 }

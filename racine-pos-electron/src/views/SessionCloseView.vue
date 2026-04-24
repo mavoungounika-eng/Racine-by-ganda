@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page">
     <h1>{{ t('session.close') }}</h1>
     <div class="card">
@@ -25,18 +25,26 @@ const { t } = useI18n();
 const session = useSessionStore();
 const closingCash = ref(0);
 const summary = ref(null);
-const zReport = ref(null);
 const error = ref('');
+
+const zReport = computed(() => session.zReport);
 
 const discrepancy = computed(() => {
   if (!summary.value) return null;
-  const expected = summary.value.expected_cash || 0;
+  const expected = summary.value.expected_cash || zReport.value?.expected_cash || 0;
   const diff = closingCash.value - expected;
   return Math.abs(diff) > 1000 ? diff : null;
 });
 
 onMounted(async () => {
   if (!session.currentSession) return;
+
+  try {
+    await session.buildLocalZReport(session.currentSession.id);
+  } catch {
+    // Local report is best-effort only.
+  }
+
   try {
     const res = await session.prepareClose(session.currentSession.id);
     summary.value = res.data || null;
@@ -47,12 +55,19 @@ onMounted(async () => {
 
 const closeSession = async () => {
   if (!session.currentSession) return;
+
   error.value = '';
+
   try {
     await session.closeSession(session.currentSession.id, closingCash.value);
-    const zr = await session.getZReport(session.currentSession.id);
-    zReport.value = zr.data?.z_report || zr.data || null;
+    await session.getZReport(session.currentSession.id);
   } catch (e) {
+    try {
+      await session.buildLocalZReport(session.currentSession.id);
+    } catch {
+      // noop
+    }
+
     error.value = e.response?.data?.error?.message || 'Close failed';
   }
 };

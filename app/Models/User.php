@@ -352,7 +352,9 @@ class User extends Authenticatable implements MustVerifyEmail
             ?->pluck('slug')
             ?->contains($permission) ?? false;
 
-        Log::info("[PermissionCheck] User {$this->id} ({$this->getRoleSlug()}) checking for '{$permission}': " . ($has ? 'YES' : 'NO'));
+        if (config('app.debug')) {
+            Log::debug("[PermissionCheck] User {$this->id} ({$this->getRoleSlug()}) checking for '{$permission}': " . ($has ? 'YES' : 'NO'));
+        }
         
         return $has;
     }

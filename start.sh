@@ -48,6 +48,12 @@ if [ ! -f public/build/manifest.json ]; then
     echo "  ✓ Build Vite créé"
 fi
 
+# 5b. Vérification migrations en attente (warning uniquement)
+PENDING=$(php artisan migrate:status --no-ansi 2>/dev/null | grep -c "Pending" || true)
+if [ "${PENDING:-0}" -gt 0 ]; then
+    echo "  ⚠ $PENDING migration(s) en attente ! Lancer: php artisan migrate"
+fi
+
 echo ""
 echo "=================================================="
 echo "  Laravel  → http://127.0.0.1:8000"

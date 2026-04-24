@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { useAuthStore } from './auth';
 import { PosApiClient } from '../api/posClient';
+import { useSessionStore } from './session';
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -45,9 +46,12 @@ export const useCartStore = defineStore('cart', {
     async createSale(paymentMethod = null) {
       if (paymentMethod) this.paymentMethod = paymentMethod;
       const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+      const sessionStore = useSessionStore();
       const saleData = {
         items: this.items.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
         payment_method: this.paymentMethod,
+        total_amount: this.total,
+        session_id: sessionStore.currentSession?.id || null,
       };
 
       try {
@@ -95,3 +99,4 @@ export const useCartStore = defineStore('cart', {
     }
   }
 });
+

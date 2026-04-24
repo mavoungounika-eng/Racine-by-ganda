@@ -1,6 +1,6 @@
 @props(['banners', 'autoplay' => true, 'interval' => 5000])
 
-@if(count($banners) > 0)
+@if(count($banners) > 0 and $banners->first() and $banners->first()->image_path)
 <div class="relative overflow-hidden group cms-banner-slider" 
      id="banner-slider-{{ uniqid() }}"
      data-autoplay="{{ $autoplay ? 'true' : 'false' }}"
@@ -154,4 +154,51 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSlider();
 });
 </script>
+@else
+<section class="hero">
+    <div class="hero-bg-pattern"></div>
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-text">
+                <span class="hero-badge">Nouvelle Collection 2025</span>
+                <h1 class="hero-title">L'Elegance<br><span class="highlight">Africaine</span><br>Reinventee</h1>
+                <p class="hero-description">Decouvrez des creations uniques qui celebrent notre heritage.</p>
+                <div class="hero-cta">
+                    <a href="/boutique" class="btn-primary-custom"><i class="fas fa-shopping-bag"></i> Explorer la boutique</a>
+                    <a href="/ateliers" class="btn-outline-custom"><i class="fas fa-palette"></i> Nos createurs</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-slider" id="heroSlider">
+                    <div class="hero-slider-track">
+                        @foreach(range(1, 7) as $i)
+                        <div class="hero-slide {{ $i === 1 ? 'active' : '' }}">
+                            <img src="{{ asset('storage/hero/slide-' . $i . '.jpg') }}" alt="Look {{ $i }}" loading="{{ $i === 1 ? 'eager' : 'lazy' }}">
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="hero-slider-dots">
+                        @foreach(range(1, 7) as $i)
+                        <button class="hero-dot {{ $i === 1 ? 'active' : '' }}" data-index="{{ $i - 1 }}" aria-label="Slide {{ $i }}"></button>
+                        @endforeach
+                    </div>
+                    <button class="hero-slider-prev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="hero-slider-next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="hero-image-float hero-float-1">
+                    <div class="hero-float-content">
+                        <div class="hero-float-icon"><i class="fas fa-truck"></i></div>
+                        <div class="hero-float-text"><h4>Livraison Express</h4><span>Partout en France</span></div>
+                    </div>
+                </div>
+                <div class="hero-image-float hero-float-2">
+                    <div class="hero-float-content">
+                        <div class="hero-float-icon"><i class="fas fa-award"></i></div>
+                        <div class="hero-float-text"><h4>100% Authentique</h4><span>Fait main en Afrique</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 @endif

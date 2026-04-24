@@ -9,6 +9,7 @@ use App\Models\ProductionMaterialLog;
 use App\Models\ProductionTimeLog;
 use App\Models\ProductionQualityControl;
 use App\Models\ProductionOutput;
+use App\Models\StockMovement;
 use App\Services\Stock\StockService;
 use App\Services\Production\ProductionCostingService;
 use App\Exceptions\Production\InvalidOrderStateException;
@@ -391,9 +392,17 @@ class ProductionService
         // CALCULATION (Using snapshot ONLY)
         // ========================================
         
-        // Material Cost (from actual consumption, priced from snapshot)
-        // TODO Phase C: Use real material prices from stock movements
-        $materialCost = $order->materialLogs()->sum('quantity_used') * 10; // Placeholder: 10 XAF per unit
+        // Material cost based on latest real inbound prices from stock movements.
+        $materialCost = $order->materialLogs()
+            ->get()
+            ->sum(function (ProductionMaterialLog $log) {
+                $unitCost = $this->resolveLatestMaterialUnitCost(
+                    $log->material_type,
+                    $log->material_reference
+                );
+
+                return ((float) $log->quantity_used) * $unitCost;
+            });
         
         // Labor Cost (from actual time logs)
         $totalMinutes = 0;
@@ -416,6 +425,38 @@ class ProductionService
             'good_quantity' => $order->produced_qty_good,
             'bom_version' => $snapshot['version'] ?? 'unknown',
         ];
+    }
+
+    /**
+     * Resolve latest known unit cost from stock movements for a material.
+     */
+    private function resolveLatestMaterialUnitCost(?string $materialType, ?string $materialReference): float
+    {
+        if (empty($materialType) || empty($materialReference)) {
+            return 0.0;
+        }
+
+        $baseQuery = StockMovement::query()
+            ->forMaterial($materialType, $materialReference)
+            ->incoming()
+            ->whereNotNull('unit_cost');
+
+        $latestPurchaseCost = (clone $baseQuery)
+            ->where('source_type', 'PURCHASE')
+            ->orderByDesc('movement_date')
+            ->orderByDesc('id')
+            ->value('unit_cost');
+
+        if ($latestPurchaseCost !== null) {
+            return (float) $latestPurchaseCost;
+        }
+
+        $latestIncomingCost = (clone $baseQuery)
+            ->orderByDesc('movement_date')
+            ->orderByDesc('id')
+            ->value('unit_cost');
+
+        return (float) ($latestIncomingCost ?? 0.0);
     }
 
     /**

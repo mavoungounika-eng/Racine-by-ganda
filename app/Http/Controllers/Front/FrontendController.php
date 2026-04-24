@@ -108,13 +108,18 @@ class FrontendController extends Controller
 
         return view($template, compact('page'));
     }
+    protected function renderStaticPageWithCms(string $slug, string $view, array $data = []): \Illuminate\View\View
+    {
+        $cmsPage = app(\App\Services\Cms\PageService::class)->getPublishedPage($slug);
 
+        return view($view, array_merge($data, ['cmsPage' => $cmsPage]));
+    }
     /**
      * Methods for specific frontend pages
      */
-    public function showroom() { return view('frontend.showroom'); }
-    public function atelier() { return view('frontend.atelier'); }
-    public function contact() { return view('frontend.contact'); }
+    public function showroom() { return $this->renderStaticPageWithCms('showroom', 'frontend.showroom'); }
+    public function atelier() { return $this->renderStaticPageWithCms('atelier', 'frontend.atelier'); }
+    public function contact() { return $this->renderStaticPageWithCms('contact', 'frontend.contact'); }
 
     public function contactSubmit(\Illuminate\Http\Request $request)
     {
@@ -203,23 +208,23 @@ class FrontendController extends Controller
 
         return view('frontend.creator-shop', compact('creatorProfile', 'products'));
     }
-    public function events() { return view('frontend.events'); }
-    public function portfolio() { return view('frontend.portfolio'); }
-    public function albums() { return view('frontend.albums'); }
-    public function ceo() { return view('frontend.ceo'); }
-    public function help() { return view('frontend.help'); }
-    public function accountClientCreator() { return view('frontend.account-client-creator'); }
-    public function shipping() { return view('frontend.shipping'); }
-    public function returns() { return view('frontend.returns'); }
-    public function terms() { return view('frontend.terms'); }
-    public function privacy() { return view('frontend.privacy'); }
+    public function events() { return $this->renderStaticPageWithCms('evenements', 'frontend.events'); }
+    public function portfolio() { return $this->renderStaticPageWithCms('portfolio', 'frontend.portfolio'); }
+    public function albums() { return $this->renderStaticPageWithCms('albums', 'frontend.albums'); }
+    public function ceo() { return $this->renderStaticPageWithCms('amira-ganda', 'frontend.ceo'); }
+    public function help() { return $this->renderStaticPageWithCms('aide', 'frontend.help'); }
+    public function accountClientCreator() { return $this->renderStaticPageWithCms('aide-compte-client-createur', 'frontend.account-client-creator'); }
+    public function shipping() { return $this->renderStaticPageWithCms('livraison', 'frontend.shipping'); }
+    public function returns() { return $this->renderStaticPageWithCms('retours-echanges', 'frontend.returns'); }
+    public function terms() { return $this->renderStaticPageWithCms('cgv', 'frontend.terms'); }
+    public function privacy() { return $this->renderStaticPageWithCms('confidentialite', 'frontend.privacy'); }
     public function cookies() { return redirect()->route('frontend.page.show', 'cookies'); }
     public function about() { return redirect()->route('frontend.page.show', 'a-propos'); }
     public function legal() { return redirect()->route('frontend.page.show', 'mentions-legales'); }
     public function becomeCreator()
     {
         $plans = \App\Models\CreatorPlan::where('is_active', true)->orderBy('price')->get();
-        return view('frontend.become-creator', compact('plans'));
+        return $this->renderStaticPageWithCms('devenir-createur', 'frontend.become-creator', compact('plans'));
     }
 
     public function product($id)
@@ -245,3 +250,5 @@ class FrontendController extends Controller
         return $this->home();
     }
 }
+
+
