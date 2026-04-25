@@ -237,8 +237,22 @@ Route::middleware('auth')->prefix('2fa')->name('2fa.')->group(function () {
 // ============================================
 // Dashboard Staff (alias vers dashboard équipe unique)
 // PHASE 3: Migration vers EnsureAuthenticated
-Route::get('/staff/dashboard', function() {
-    return view('admin.dashboard');
+Route::get('/staff/dashboard', function () {
+    $now = now();
+    $stats = [
+        'monthly_sales'      => \App\Models\Order::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->sum('total_amount') ?? 0,
+        'monthly_orders'     => \App\Models\Order::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count(),
+        'pending_orders'     => \App\Models\Order::where('status', 'pending')->count(),
+        'total_clients'      => \App\Models\User::where('role', 'client')->count(),
+        'new_clients_month'  => \App\Models\User::where('role', 'client')->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count(),
+        'total_products'     => \App\Models\Product::where('is_active', true)->count(),
+        'low_stock_products' => \App\Models\StockAlert::where('status', 'active')->distinct('product_id')->count(),
+    ];
+    $recentActivity = [
+        'recent_orders' => \App\Models\Order::with('user')->latest()->limit(5)->get(),
+        'new_users'     => \App\Models\User::where('role', 'client')->latest()->limit(5)->get(),
+    ];
+    return view('admin.dashboard', compact('stats', 'recentActivity'));
 })->name('staff.dashboard')->middleware(['auth', 'ensure:staff,admin,super_admin']);
 
 Route::middleware(['auth', 'ensure:client'])->group(function () {
@@ -405,7 +419,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
     Route::middleware(['ensure:admin,super_admin', '2fa'])->group(function () {
         // Phase 6: Dashboard Financier & BI
         Route::prefix('financial')->name('financial.')->group(function () {
-            Route::get('dashboard', [\App\Http\Controllers\Admin\FinancialDashboardController::class, 'index'])->name('dashboard');
+            Route::get('dashboard', [\App\Http\Controllers\Admin\FinancialDashboardController::class, 'showDashboard'])->name('dashboard');
             Route::get('snapshot', [\App\Http\Controllers\Admin\FinancialDashboardController::class, 'snapshot'])->name('snapshot');
         });
 

@@ -123,7 +123,7 @@
                                                     @case('meeting') 🤝 @break
                                                     @default 📌
                                                 @endswitch
-                                                {{ $activity->summary }}
+                                                {{ $activity->subject }}
                                             </h6>
                                             <small class="text-muted">{{ $activity->created_at->diffForHumans() }}</small>
                                         </div>
