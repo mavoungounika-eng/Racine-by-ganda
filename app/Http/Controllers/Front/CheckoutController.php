@@ -178,7 +178,16 @@ class CheckoutController extends Controller
             $idempotencyKey = $request->header('X-Idempotency-Key')
                 ?: $request->input('idempotency_key')
                 ?: session('checkout_idempotency_key');
-            $order = $this->orderService->createOrderFromCart($data, $items, $user->id, $idempotencyKey, $checkoutToken);
+
+            // Récupérer le code promo depuis la session (appliqué via applyPromo())
+            $promoCodeId      = session('applied_promo_code_id');
+            $promoDiscount    = session('applied_promo_discount', 0);
+            $promoFreeShipping = session('applied_promo_free_shipping', false);
+
+            $order = $this->orderService->createOrderFromCart(
+                $data, $items, $user->id, $idempotencyKey, $checkoutToken,
+                $promoCodeId, $promoDiscount, $promoFreeShipping
+            );
 
             \Log::info('Checkout: Order created', [
                 'order_id' => $order->id ?? 'NO ID',
@@ -204,7 +213,11 @@ class CheckoutController extends Controller
             \Log::info('Checkout: Cart cleared');
 
             // ✅ Module 8 - Protection double soumission : Supprimer token après utilisation
-            session()->forget(['checkout_token', 'checkout_idempotency_key']);
+            session()->forget([
+                'checkout_token', 'checkout_idempotency_key',
+                'applied_promo_code_id', 'applied_promo_code_code',
+                'applied_promo_discount', 'applied_promo_free_shipping',
+            ]);
 
             \Log::info('Checkout: Calling redirectToPayment', [
                 'order_id' => $order->id,
@@ -489,10 +502,18 @@ class CheckoutController extends Controller
         $discount = $promoCode->calculateDiscount($total);
         $freeShipping = $promoCode->type === 'free_shipping';
 
+        // Persister le code promo en session pour qu'il soit appliqué lors du placeOrder
+        session([
+            'applied_promo_code_id'     => $promoCode->id,
+            'applied_promo_code_code'   => $promoCode->code,
+            'applied_promo_discount'    => $discount,
+            'applied_promo_free_shipping' => $freeShipping,
+        ]);
+
         return response()->json([
             'success' => true,
-            'message' => $freeShipping 
-                ? 'Livraison gratuite appliquée !' 
+            'message' => $freeShipping
+                ? 'Livraison gratuite appliquée !'
                 : 'Code promo appliqué ! Réduction de ' . number_format($discount, 0, ',', ' ') . ' FCFA',
             'promo_code' => [
                 'id' => $promoCode->id,

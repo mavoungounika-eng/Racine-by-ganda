@@ -7,9 +7,7 @@
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>
             {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -17,9 +15,7 @@
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i>
             {{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -32,9 +28,7 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -286,9 +280,12 @@
                                     $product = Auth::check() ? $item->product : (object)$item;
                                     $qty = Auth::check() ? $item->quantity : $item['quantity'];
                                     $price = Auth::check() ? $item->price : $item['price'];
-                                    $image = Auth::check() ? $product->main_image : $item['main_image'];
-                                    $title = Auth::check() ? $product->title : $item['title'];
+                                    $image = ($product && Auth::check()) ? ($product->main_image ?? null) : ($item['main_image'] ?? null);
+                                    $title = ($product && Auth::check()) ? ($product->title ?? 'Produit supprimé') : ($item['title'] ?? 'Produit');
                                 @endphp
+                                @if(!$product && Auth::check())
+                                    @continue
+                                @endif
                                 <li class="d-flex mb-3 pb-3 border-bottom">
                                     <div class="flex-shrink-0">
                                         @if($image)

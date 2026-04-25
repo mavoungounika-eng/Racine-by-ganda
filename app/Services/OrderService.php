@@ -67,7 +67,7 @@ class OrderService
      * @throws StockException Si le stock est insuffisant
      * @throws \Throwable En cas d'erreur lors de la création
      */
-    public function createOrderFromCart(array $formData, Collection $cartItems, int $userId, ?string $idempotencyKey = null, ?string $checkoutToken = null): Order
+    public function createOrderFromCart(array $formData, Collection $cartItems, int $userId, ?string $idempotencyKey = null, ?string $checkoutToken = null, ?int $promoCodeId = null, float $promoDiscount = 0, bool $promoFreeShipping = false): Order
     {
         if ($cartItems->isEmpty()) {
             throw new OrderException(
@@ -146,12 +146,12 @@ class OrderService
         }
 
         // 2) Calcul des montants (hors transaction, pas de DB)
-        $amounts = $this->calculateAmounts($cartItems, $formData['shipping_method']);
+        $amounts = $this->calculateAmounts($cartItems, $formData['shipping_method'], $promoDiscount, $promoFreeShipping);
 
         // 3) Création de la commande et des items dans une transaction
         // RBG-P0-020 : Validation stock + verrouillage dans la transaction pour anti-oversell
         try {
-            $order = DB::transaction(function () use ($formData, $cartItems, $userId, $amounts) {
+            $order = DB::transaction(function () use ($formData, $cartItems, $userId, $amounts, $promoCodeId) {
                 // 1) Validation du stock avec verrouillage (dans la transaction pour lockForUpdate)
                 try {
                     $stockValidation = $this->stockValidationService->validateStockForCart($cartItems);
@@ -178,7 +178,7 @@ class OrderService
                     : null;
 
                 // Créer la commande sans déclencher les observers (pour créer les items d'abord)
-                $order = Order::withoutEvents(function () use ($formData, $userId, $amounts, $orderNumber, $qrToken, $creatorId) {
+                $order = Order::withoutEvents(function () use ($formData, $userId, $amounts, $orderNumber, $qrToken, $creatorId, $promoCodeId) {
                     return Order::create([
                         'user_id' => $userId,
                         'creator_id' => $creatorId,
@@ -192,6 +192,8 @@ class OrderService
                         'payment_status' => 'pending',
                         'status' => 'pending',
                         'total_amount' => $amounts['total'],
+                        'discount_amount' => $amounts['discount'],
+                        'promo_code_id' => $promoCodeId,
                         'order_number' => $orderNumber,
                         'qr_token' => $qrToken,
                     ]);
@@ -251,7 +253,7 @@ class OrderService
      * @param string $shippingMethod Méthode de livraison (home_delivery, showroom_pickup)
      * @return array ['subtotal' => float, 'shipping' => float, 'total' => float]
      */
-    public function calculateAmounts(Collection $cartItems, string $shippingMethod): array
+    public function calculateAmounts(Collection $cartItems, string $shippingMethod, float $promoDiscount = 0, bool $promoFreeShipping = false): array
     {
         // Calculer le sous-total
         $subtotal = $cartItems->sum(function ($item) {
@@ -260,15 +262,19 @@ class OrderService
             return $price * $qty;
         });
 
-        // Calculer les frais de livraison
-        $shipping = $shippingMethod === 'home_delivery' ? 2000 : 0; // 2000 FCFA pour livraison à domicile
+        // Calculer les frais de livraison (free_shipping promo écrase la méthode)
+        $shipping = ($promoFreeShipping || $shippingMethod === 'showroom_pickup') ? 0 : 2000;
 
-        // Total
-        $total = $subtotal + $shipping;
+        // Appliquer la réduction promo sans descendre sous 0
+        $discount = min($promoDiscount, $subtotal);
+
+        // Total final
+        $total = max(0, $subtotal - $discount + $shipping);
 
         return [
             'subtotal' => $subtotal,
             'shipping' => $shipping,
+            'discount' => $discount,
             'total' => $total,
         ];
     }

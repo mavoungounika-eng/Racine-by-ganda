@@ -7,9 +7,7 @@
         <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-start: 4px solid #22C55E; background: rgba(22,13,12,0.05); border-radius: 8px;">
             <i class="fas fa-check-circle me-2" style="color: #22C55E; font-size: 1.2rem;"></i>
             <strong>{{ session('success') }}</strong>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -18,9 +16,7 @@
         <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 2rem; border-start: 4px solid #DC2626; background: rgba(22,13,12,0.05); border-radius: 8px;">
             <i class="fas fa-exclamation-circle me-2" style="color: #DC2626; font-size: 1.2rem;"></i>
             <strong>{{ session('error') }}</strong>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 

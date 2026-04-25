@@ -592,6 +592,9 @@ class CardPaymentService
                 'payment_status' => 'paid',
                 'status' => 'processing', // Statut commande = processing (pas 'paid')
             ]);
+
+            // Émettre l'event PaymentCompleted pour le monitoring (parity avec handleCheckoutSessionCompleted)
+            event(new PaymentCompleted($lockedOrder, $lockedPayment));
         });
     }
 
