@@ -8,6 +8,8 @@ use App\Exceptions\StockException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\IdempotencyKey;
+use App\Models\PromoCode;
+use App\Models\PromoCodeUsage;
 use App\Services\Cart\DatabaseCartService;
 use App\Services\Cart\SessionCartService;
 use App\Services\StockReservationService;
@@ -164,17 +166,30 @@ class OrderService
                     ]);
                     throw $e;
                 }
-                
+
+                // 2) Double vérification du code promo avec lock (anti race-condition)
+                $lockedPromo = null;
+                if ($promoCodeId) {
+                    $lockedPromo = PromoCode::where('id', $promoCodeId)->lockForUpdate()->first();
+                    if (!$lockedPromo || !$lockedPromo->canBeUsedBy($userId, $formData['email'] ?? null)) {
+                        throw new OrderException(
+                            'Code promo invalide ou expiré au moment de la commande',
+                            422,
+                            'Votre code promo n\'est plus valide. Veuillez recommencer sans code promo.'
+                        );
+                    }
+                }
+
                 // Générer order_number et qr_token avant création
                 $orderNumberService = app(\App\Services\OrderNumberService::class);
                 $orderNumber = $orderNumberService->generateOrderNumber();
                 $qrToken = Order::generateUniqueQrToken();
-                
+
                 // Déterminer le creator_id (Propriétaire des produits)
                 // On prend le user_id du premier produit car validateCartIntegrity garantit l'unicité du propriétaire
                 $firstProduct = $lockedProducts->first();
-                $creatorId = ($firstProduct && $firstProduct->product_type === 'marketplace') 
-                    ? $firstProduct->user_id 
+                $creatorId = ($firstProduct && $firstProduct->product_type === 'marketplace')
+                    ? $firstProduct->user_id
                     : null;
 
                 // Créer la commande sans déclencher les observers (pour créer les items d'abord)
@@ -198,6 +213,23 @@ class OrderService
                         'qr_token' => $qrToken,
                     ]);
                 });
+
+                // Enregistrer l'usage du code promo et incrémenter le compteur
+                if ($lockedPromo && $amounts['discount'] > 0) {
+                    PromoCodeUsage::create([
+                        'promo_code_id'   => $lockedPromo->id,
+                        'user_id'         => $userId,
+                        'order_id'        => $order->id,
+                        'email'           => $formData['email'] ?? null,
+                        'discount_amount' => $amounts['discount'],
+                    ]);
+                    $lockedPromo->increment('used_count');
+                    Log::info('OrderService: Promo code usage recorded', [
+                        'promo_code_id' => $lockedPromo->id,
+                        'order_id'      => $order->id,
+                        'discount'      => $amounts['discount'],
+                    ]);
+                }
 
                 // 🧪 TEST ROLLBACK FORCÉ (Étape A4)
                 if (config('app.env') === 'testing' && request()->header('X-Force-Rollback')) {
