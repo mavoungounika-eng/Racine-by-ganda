@@ -7,7 +7,7 @@
     .atelier-hero {
         min-height: 80vh;
         background: linear-gradient(135deg, rgba(22,13,12, 0.95) 0%, rgba(26, 15, 9, 0.98) 100%),
-                    url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600') center/cover;
+                    url('{{ asset("storage/showroom/gallery/gallery-01.jpeg") }}') center/cover;
         display: flex;
         align-items: center;
         position: relative;
@@ -513,8 +513,9 @@
                 </div>
             </div>
             <div class="hero-video">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" alt="Atelier">
-                <button class="play-btn"><i class="fas fa-play"></i></button>
+                <video autoplay muted loop playsinline style="width:100%;height:450px;object-fit:cover;">
+                    <source src="{{ asset('storage/atelier/atelier-chemise-01.mp4') }}" type="video/mp4">
+                </video>
             </div>
         </div>
     </div>
@@ -564,25 +565,42 @@
 
         <div class="gallery-grid">
             <div class="gallery-item large">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600" alt="Atelier">
+                <img src="{{ asset('storage/showroom/gallery/gallery-01.jpeg') }}" alt="Atelier de couture">
                 <div class="gallery-overlay"><span>Atelier de couture</span></div>
-                    </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="Tissus">
+                <img src="{{ asset('storage/showroom/gallery/gallery-02.jpeg') }}" alt="Sélection des tissus">
                 <div class="gallery-overlay"><span>Sélection des tissus</span></div>
-                    </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400" alt="Création">
+                <img src="{{ asset('storage/showroom/gallery/gallery-03.jpeg') }}" alt="Travail manuel">
                 <div class="gallery-overlay"><span>Travail manuel</span></div>
-                </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=400" alt="Finitions">
+                <img src="{{ asset('storage/showroom/gallery/gallery-04.jpeg') }}" alt="Finitions soignées">
                 <div class="gallery-overlay"><span>Finitions soignées</span></div>
-                    </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400" alt="Résultat">
+                <img src="{{ asset('storage/showroom/gallery/gallery-05.jpeg') }}" alt="Résultat final">
                 <div class="gallery-overlay"><span>Résultat final</span></div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- VIDEOS ATELIER -->
+<section style="padding: 4rem 0; background: rgba(22,13,12,0.03);">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Coulisses</span>
+            <h2 class="section-title">L'atelier en vidéo</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+            @foreach(['atelier-chemise-02.mp4','atelier-kimono-01.mp4','atelier-kimono-02.mp4','atelier-soiree-01.mp4','atelier-soiree-02.mp4'] as $video)
+            <video controls style="width:100%;border-radius:16px;background:#160D0C;" preload="none">
+                <source src="{{ asset('storage/atelier/' . $video) }}" type="video/mp4">
+            </video>
+            @endforeach
         </div>
     </div>
 </section>
@@ -630,7 +648,7 @@
                 et une équipe à l'écoute."
             </p>
             <div class="testimonial-author">
-                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=faces" alt="Cliente">
+                <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Cliente" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
                 <div class="author-info">
                     <h4>Marie-Claire Diop</h4>
                     <span>Mariée en Juin 2024</span>

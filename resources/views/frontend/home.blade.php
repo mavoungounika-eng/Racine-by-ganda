@@ -35,7 +35,7 @@
         <div class="hero-slider-track">
             @foreach(range(1, 7) as $i)
             <div class="hero-slide {{ $i === 1 ? 'active' : '' }}">
-                <img src="{{ asset('storage/hero/slide-' . $i . '.jpg') }}"
+                <img src="{{ asset('storage/hero/hero-' . sprintf('%02d', $i) . '.jpeg') }}"
                      alt="Racine by Ganda - Look {{ $i }}"
                      loading="{{ $i === 1 ? 'eager' : 'lazy' }}">
             </div>

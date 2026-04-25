@@ -527,7 +527,7 @@
         <div class="guides-grid">
             <a href="#" class="guide-card">
                 <div class="guide-image">
-                    <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="Guide tailles">
+                    <img src="{{ asset('storage/catalogue/vetements/soiree-01.jpeg') }}" alt="Guide tailles">
                 </div>
                 <div class="guide-content">
                     <span class="guide-tag">Guide</span>
@@ -537,7 +537,7 @@
             </a>
             <a href="#" class="guide-card">
                 <div class="guide-image">
-                    <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400" alt="Entretien wax">
+                    <img src="{{ asset('storage/catalogue/vetements/bazin-01.jpeg') }}" alt="Entretien wax">
                 </div>
                 <div class="guide-content">
                     <span class="guide-tag">Entretien</span>
@@ -547,7 +547,7 @@
             </a>
             <a href="#" class="guide-card">
                 <div class="guide-image">
-                    <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=400" alt="Style">
+                    <img src="{{ asset('storage/catalogue/vetements/pagne-01.jpeg') }}" alt="Style">
                 </div>
                 <div class="guide-content">
                     <span class="guide-tag">Style</span>

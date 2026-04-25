@@ -309,80 +309,80 @@
 <section class="portfolio-section">
     <div class="container">
         <div class="portfolio-grid">
-            <div class="portfolio-item wide" data-category="collection" data-title="Collection Été 2024" data-img="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" alt="Collection Été 2024">
+            <div class="portfolio-item wide" data-category="collection" data-title="Collection Été 2024" data-img="{{ asset('storage/showroom/gallery/gallery-01.jpeg') }}">
+                <img src="{{ asset('storage/showroom/gallery/gallery-01.jpeg') }}" alt="Collection Été 2024">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Collection Été 2024</h3>
                     <span>Collection</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item" data-category="fashion" data-title="Robe Ankara" data-img="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=1200">
-                <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=600" alt="Robe Ankara">
+
+            <div class="portfolio-item" data-category="fashion" data-title="Robe Ankara" data-img="{{ asset('storage/catalogue/vetements/soiree-01.jpeg') }}">
+                <img src="{{ asset('storage/catalogue/vetements/soiree-01.jpeg') }}" alt="Robe Ankara">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Robe Ankara</h3>
                     <span>Mode Femme</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item tall" data-category="fashion" data-title="Ensemble Kente" data-img="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=1200">
-                <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600" alt="Ensemble Kente">
+
+            <div class="portfolio-item tall" data-category="fashion" data-title="Ensemble Kente" data-img="{{ asset('storage/catalogue/vetements/kimono-01.jpeg') }}">
+                <img src="{{ asset('storage/catalogue/vetements/kimono-01.jpeg') }}" alt="Ensemble Kente">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Ensemble Kente</h3>
                     <span>Mode</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item" data-category="accessory" data-title="Bijoux Ethniques" data-img="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=1200">
-                <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600" alt="Bijoux">
+
+            <div class="portfolio-item" data-category="accessory" data-title="Bijoux Ethniques" data-img="{{ asset('storage/catalogue/accessoires/kit-voyage-bleu-01.jpeg') }}">
+                <img src="{{ asset('storage/catalogue/accessoires/kit-voyage-bleu-01.jpeg') }}" alt="Kit Voyage Bleu">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Bijoux Ethniques</h3>
                     <span>Accessoires</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item" data-category="event" data-title="Défilé Brazzaville" data-img="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1200">
-                <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600" alt="Défilé">
+
+            <div class="portfolio-item" data-category="event" data-title="Défilé Brazzaville" data-img="{{ asset('storage/showroom/gallery/showroom-06.jpeg') }}">
+                <img src="{{ asset('storage/showroom/gallery/showroom-06.jpeg') }}" alt="Défilé Brazzaville">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Défilé Brazzaville</h3>
                     <span>Événement</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item wide" data-category="backstage" data-title="En coulisses" data-img="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=1200">
-                <img src="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800" alt="Backstage">
+
+            <div class="portfolio-item wide" data-category="backstage" data-title="En coulisses" data-img="{{ asset('storage/showroom/gallery/gallery-02.jpeg') }}">
+                <img src="{{ asset('storage/showroom/gallery/gallery-02.jpeg') }}" alt="En coulisses">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>En coulisses</h3>
                     <span>Backstage</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item" data-category="collection" data-title="Hiver 2024" data-img="https://images.unsplash.com/photo-1544441893-675973e31985?w=1200">
-                <img src="https://images.unsplash.com/photo-1544441893-675973e31985?w=600" alt="Collection Hiver">
+
+            <div class="portfolio-item" data-category="collection" data-title="Hiver 2024" data-img="{{ asset('storage/catalogue/vetements/soiree-05.jpeg') }}">
+                <img src="{{ asset('storage/catalogue/vetements/soiree-05.jpeg') }}" alt="Collection Hiver 2024">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Collection Hiver 2024</h3>
                     <span>Collection</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item" data-category="fashion" data-title="Costume Homme" data-img="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600" alt="Costume">
+
+            <div class="portfolio-item" data-category="fashion" data-title="Costume Homme" data-img="{{ asset('storage/catalogue/vetements/bazin-01.jpeg') }}">
+                <img src="{{ asset('storage/catalogue/vetements/bazin-01.jpeg') }}" alt="Costume Homme Bazin">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Costume Homme</h3>
                     <span>Mode Homme</span>
                 </div>
             </div>
-            
-            <div class="portfolio-item" data-category="accessory" data-title="Sacs Artisanaux" data-img="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=1200">
-                <img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600" alt="Sacs">
+
+            <div class="portfolio-item" data-category="accessory" data-title="Sacs Artisanaux" data-img="{{ asset('storage/catalogue/accessoires/kit-voyage-noir-01.jpeg') }}">
+                <img src="{{ asset('storage/catalogue/accessoires/kit-voyage-noir-01.jpeg') }}" alt="Kit Voyage Noir">
                 <div class="portfolio-overlay">
                     <div class="view-btn"><i class="fas fa-expand"></i></div>
                     <h3>Sacs Artisanaux</h3>

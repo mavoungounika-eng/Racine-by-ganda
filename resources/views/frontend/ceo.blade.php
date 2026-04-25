@@ -434,7 +434,7 @@
                 <div class="ceo-decoration-2"></div>
                 <div class="ceo-photo">
                     <img 
-                        src="{{ asset('storage/hero/slide-1.jpg') }}" 
+                        src="{{ asset('storage/hero/hero-01.jpeg') }}"
                         alt="{{ config('app.company.ceo') }} - CEO {{ config('app.name') }}"
                         loading="lazy"
                         decoding="async"

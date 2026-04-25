@@ -79,16 +79,12 @@ class CmsAdminController extends Controller
             $validated['featured_image'] = $request->file('featured_image')->store('cms/pages', 'public');
         }
         
-        $validated['author_id'] = auth()->id();
-        $validated['meta'] = [
-            'title' => $validated['meta_title'] ?? null,
-            'description' => $validated['meta_description'] ?? null,
-        ];
-        
+        $validated['created_by'] = auth()->id();
+
         if ($validated['status'] === 'published') {
             $validated['published_at'] = now();
         }
-        
+
         $page = CmsPage::create($validated);
         
         // Invalider le cache
@@ -114,16 +110,18 @@ class CmsAdminController extends Controller
             'featured_image' => 'nullable|image|max:2048',
             'template' => 'nullable|string',
             'status' => 'required|in:draft,published,archived',
+            'meta_title' => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:160',
         ]);
-        
+
         if ($request->hasFile('featured_image')) {
             $validated['featured_image'] = $request->file('featured_image')->store('cms/pages', 'public');
         }
-        
+
         if ($validated['status'] === 'published' && !$page->published_at) {
             $validated['published_at'] = now();
         }
-        
+
         $oldSlug = $page->slug;
         $page->update($validated);
         
@@ -314,16 +312,26 @@ class CmsAdminController extends Controller
             'description' => 'nullable|string',
             'content' => 'nullable|string',
             'featured_image' => 'nullable|image|max:2048',
+            'gallery.*' => 'nullable|image|max:2048',
             'category' => 'nullable|string|max:100',
             'client' => 'nullable|string|max:255',
             'project_date' => 'nullable|date',
             'status' => 'required|in:draft,published',
         ]);
-        
+
         if ($request->hasFile('featured_image')) {
             $validated['featured_image'] = $request->file('featured_image')->store('cms/portfolio', 'public');
         }
-        
+
+        // Merge newly uploaded gallery images with existing ones (never drop existing)
+        $existingGallery = $portfolio->gallery ?? [];
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $image) {
+                $existingGallery[] = $image->store('cms/portfolio/gallery', 'public');
+            }
+        }
+        $validated['gallery'] = $existingGallery;
+
         $portfolio->update($validated);
         
         return redirect()->route('cms.admin.portfolio')->with('success', 'Projet mis à jour.');
@@ -402,16 +410,29 @@ class CmsAdminController extends Controller
             'slug' => 'nullable|string|max:255|unique:cms_albums,slug,' . $album->id,
             'description' => 'nullable|string',
             'cover_image' => 'nullable|image|max:2048',
+            'photos.*' => 'nullable|image|max:2048',
             'category' => 'nullable|string|max:100',
             'album_date' => 'nullable|date',
             'status' => 'required|in:draft,published',
             'is_featured' => 'boolean',
         ]);
-        
+
         if ($request->hasFile('cover_image')) {
             $validated['cover_image'] = $request->file('cover_image')->store('cms/albums', 'public');
         }
-        
+
+        // Merge newly uploaded photos with existing ones (never drop existing)
+        $existingPhotos = $album->photos ?? [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $existingPhotos[] = [
+                    'path' => $photo->store('cms/albums/photos', 'public'),
+                    'caption' => '',
+                ];
+            }
+        }
+        $validated['photos'] = $existingPhotos;
+
         $album->update($validated);
         
         return redirect()->route('cms.admin.albums')->with('success', 'Album mis à jour.');
@@ -441,25 +462,26 @@ class CmsAdminController extends Controller
     public function storeBanner(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string',
             'image' => 'required|image|max:2048',
             'image_mobile' => 'nullable|image|max:2048',
-            'link_url' => 'nullable|url',
-            'link_text' => 'nullable|string|max:100',
+            'cta_link' => 'nullable|url',
+            'cta_text' => 'nullable|string|max:100',
             'position' => 'required|string|max:100',
             'order' => 'nullable|integer',
             'is_active' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
-        
+
+        $validated['name'] = $validated['title'] ?? $validated['position'];
         $validated['image'] = $request->file('image')->store('cms/banners', 'public');
-        
+
         if ($request->hasFile('image_mobile')) {
             $validated['image_mobile'] = $request->file('image_mobile')->store('cms/banners', 'public');
         }
-        
+
         CmsBanner::create($validated);
         
         return redirect()->route('cms.admin.banners')->with('success', 'Bannière créée avec succès.');
@@ -473,18 +495,20 @@ class CmsAdminController extends Controller
     public function updateBanner(Request $request, CmsBanner $banner)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
             'image_mobile' => 'nullable|image|max:2048',
-            'link_url' => 'nullable|url',
-            'link_text' => 'nullable|string|max:100',
+            'cta_link' => 'nullable|url',
+            'cta_text' => 'nullable|string|max:100',
             'position' => 'required|string|max:100',
             'order' => 'nullable|integer',
             'is_active' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
+
+        $validated['name'] = $validated['title'] ?? $banner->name;
         
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('cms/banners', 'public');

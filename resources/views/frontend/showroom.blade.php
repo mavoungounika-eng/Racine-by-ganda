@@ -7,7 +7,7 @@
     .showroom-hero {
         min-height: 70vh;
         background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.98) 100%),
-                    url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600') center/cover;
+                    url('{{ asset("storage/showroom/hero/showroom-hero-01.jpeg") }}') center/cover;
         display: flex;
         align-items: center;
         margin-top: -70px;
@@ -485,13 +485,13 @@
         <div class="about-grid">
             <div class="about-images">
                 <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600" alt="Showroom">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-01.jpeg') }}" alt="Showroom">
                 </div>
                 <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="Collection">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-02.jpeg') }}" alt="Collection">
                 </div>
                 <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=400" alt="Tissus">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-03.jpeg') }}" alt="Tissus">
                 </div>
             </div>
             <div class="about-content">
@@ -529,7 +529,7 @@
         
         <div class="collections-grid">
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=600" alt="Collection">
+                <img src="{{ asset('storage/showroom/collections/collection-01.jpeg') }}" alt="Collection Printemps">
                 <div class="collection-overlay">
                     <span class="collection-tag">Nouveau</span>
                     <h3>Printemps 2025</h3>
@@ -537,7 +537,7 @@
                 </div>
             </div>
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600" alt="Collection">
+                <img src="{{ asset('storage/showroom/collections/collection-02.jpeg') }}" alt="Haute Couture">
                 <div class="collection-overlay">
                     <span class="collection-tag">Exclusif</span>
                     <h3>Haute Couture</h3>
@@ -545,7 +545,7 @@
                 </div>
             </div>
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=600" alt="Collection">
+                <img src="{{ asset('storage/showroom/collections/collection-03.jpeg') }}" alt="Accessoires">
                 <div class="collection-overlay">
                     <span class="collection-tag">Best-seller</span>
                     <h3>Accessoires</h3>

@@ -11,25 +11,25 @@
         padding-top: calc(5rem + 70px);
         text-align: center;
     }
-    
+
     .albums-hero h1 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 3.5rem;
         color: white;
         margin-bottom: 1rem;
     }
-    
+
     .albums-hero p {
         color: rgba(255, 255, 255, 0.7);
         font-size: 1.1rem;
     }
-    
+
     .albums-section {
         padding: 4rem 0;
         background: rgba(22,13,12,0.05);
         width: 100%;
     }
-    
+
     /* S'assurer que le CTA et le footer prennent toute la largeur */
     #cta-racine {
         width: 100% !important;
@@ -37,20 +37,20 @@
         margin-left: 0 !important;
         margin-right: 0 !important;
     }
-    
+
     .footer-area {
         width: 100% !important;
         max-width: 100% !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
     }
-    
+
     .albums-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
         gap: 2rem;
     }
-    
+
     .album-card {
         background: white;
         border-radius: 20px;
@@ -59,29 +59,29 @@
         transition: all 0.4s;
         cursor: pointer;
     }
-    
+
     .album-card:hover {
         transform: translateY(-10px);
         box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
     }
-    
+
     .album-cover {
         position: relative;
         height: 280px;
         overflow: hidden;
     }
-    
+
     .album-cover img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform 0.5s;
     }
-    
+
     .album-card:hover .album-cover img {
         transform: scale(1.1);
     }
-    
+
     .album-preview {
         position: absolute;
         bottom: 1rem;
@@ -90,7 +90,7 @@
         display: flex;
         gap: 0.5rem;
     }
-    
+
     .album-preview-thumb {
         width: 50px;
         height: 50px;
@@ -99,13 +99,13 @@
         border: 2px solid white;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     }
-    
+
     .album-preview-thumb img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
-    
+
     .album-preview-more {
         width: 50px;
         height: 50px;
@@ -118,7 +118,7 @@
         font-weight: 600;
         font-size: 0.85rem;
     }
-    
+
     .album-category {
         position: absolute;
         top: 1rem;
@@ -131,25 +131,25 @@
         font-weight: 600;
         text-transform: uppercase;
     }
-    
+
     .album-content {
         padding: 1.5rem;
     }
-    
+
     .album-content h3 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.4rem;
         color: #160D0C;
         margin-bottom: 0.5rem;
     }
-    
+
     .album-content p {
         color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         margin-bottom: 1rem;
         line-height: 1.6;
     }
-    
+
     .album-meta {
         display: flex;
         align-items: center;
@@ -157,7 +157,7 @@
         padding-top: 1rem;
         border-top: 1px solid rgba(22,13,12,0.1);
     }
-    
+
     .album-meta .date {
         color: rgba(22,13,12,0.5);
         font-size: 0.85rem;
@@ -165,7 +165,7 @@
         align-items: center;
         gap: 0.5rem;
     }
-    
+
     .album-meta .count {
         display: flex;
         align-items: center;
@@ -173,7 +173,7 @@
         color: #ED5F1E;
         font-weight: 600;
     }
-    
+
     /* Featured Album */
     .featured-album {
         background: white;
@@ -184,7 +184,7 @@
         margin-bottom: 3rem;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
     }
-    
+
     .featured-album-gallery {
         display: grid;
         grid-template-columns: 2fr 1fr;
@@ -193,25 +193,25 @@
         padding: 0.5rem;
         height: 450px;
     }
-    
+
     .featured-album-gallery .main {
         grid-row: span 2;
     }
-    
+
     .featured-album-gallery img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         border-radius: 12px;
     }
-    
+
     .featured-album-content {
         padding: 3rem;
         display: flex;
         flex-direction: column;
         justify-content: center;
     }
-    
+
     .featured-badge {
         display: inline-flex;
         align-items: center;
@@ -225,20 +225,20 @@
         width: fit-content;
         margin-bottom: 1rem;
     }
-    
+
     .featured-album-content h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
         color: #160D0C;
         margin-bottom: 1rem;
     }
-    
+
     .featured-album-content p {
         color: rgba(22,13,12,0.6);
         margin-bottom: 1.5rem;
         line-height: 1.7;
     }
-    
+
     .btn-album {
         display: inline-flex;
         align-items: center;
@@ -252,23 +252,23 @@
         transition: all 0.3s;
         width: fit-content;
     }
-    
+
     .btn-album:hover {
         background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         transform: translateY(-2px);
     }
-    
+
     @media (max-width: 992px) {
         .featured-album {
             grid-template-columns: 1fr;
         }
-        
+
         .featured-album-gallery {
             height: 300px;
         }
     }
-    
+
     @media (max-width: 576px) {
         .albums-grid {
             grid-template-columns: 1fr;
@@ -278,13 +278,115 @@
 @endpush
 
 @section('content')
+
+@php
+    /* ── HERO ─────────────────────────────────────────────── */
+    $heroSection = $cmsPage?->section('hero');
+    $heroData    = $heroSection?->data ?? [];
+
+    /* ── FEATURED ALBUM ───────────────────────────────────── */
+    $featuredSection = $cmsPage?->section('featured_album');
+    $featured        = $featuredSection?->data ?? [];
+
+    $featuredMainImage     = $featured['main_image']       ?? 'showroom/gallery/gallery-05.jpeg';
+    $featuredGalleryImages = $featured['gallery_images']   ?? [
+        'catalogue/vetements/soiree-02.jpeg',
+        'catalogue/vetements/kimono-02.jpeg',
+    ];
+
+    /* ── ALBUMS GRID ──────────────────────────────────────── */
+    $albumsSection = $cmsPage?->section('albums');
+    $albumItems    = $albumsSection?->data['items'] ?? [
+        [
+            'title'          => 'En coulisses - Hiver 2024',
+            'description'    => 'Les moments exclusifs des préparatifs avant le défilé.',
+            'category'       => 'Backstage',
+            'date'           => 'Déc 2024',
+            'photos_count'   => 24,
+            'cover_image'    => 'showroom/gallery/showroom-09.jpeg',
+            'preview_images' => [
+                'showroom/gallery/gallery-06.jpeg',
+                'showroom/gallery/gallery-07.jpeg',
+            ],
+            'more_count'     => 22,
+            'album_url'      => '#',
+        ],
+        [
+            'title'          => 'Exposition "Racines & Modernité"',
+            'description'    => 'Notre exposition à la Galerie d\'Art de Brazzaville.',
+            'category'       => 'Événement',
+            'date'           => 'Nov 2024',
+            'photos_count'   => 37,
+            'cover_image'    => 'showroom/gallery/showroom-10.jpeg',
+            'preview_images' => [
+                'showroom/gallery/gallery-08.jpeg',
+                'showroom/gallery/gallery-09.jpeg',
+            ],
+            'more_count'     => 35,
+            'album_url'      => '#',
+        ],
+        [
+            'title'          => 'Lookbook Été 2024',
+            'description'    => 'Les plus belles pièces de notre collection estivale.',
+            'category'       => 'Collection',
+            'date'           => 'Juin 2024',
+            'photos_count'   => 18,
+            'cover_image'    => 'showroom/collections/collection-04.jpeg',
+            'preview_images' => [
+                'catalogue/accessoires/kit-voyage-bleu-02.jpeg',
+                'catalogue/accessoires/kit-voyage-noir-02.jpeg',
+            ],
+            'more_count'     => 16,
+            'album_url'      => '#',
+        ],
+        [
+            'title'          => 'Atelier de Création',
+            'description'    => 'Découvrez notre atelier et nos artisans talentueux.',
+            'category'       => 'Atelier',
+            'date'           => 'Oct 2024',
+            'photos_count'   => 15,
+            'cover_image'    => 'showroom/gallery/showroom-11.jpeg',
+            'preview_images' => [
+                'catalogue/vetements/bazin-02.jpeg',
+                'catalogue/vetements/kimono-03.jpeg',
+            ],
+            'more_count'     => 12,
+            'album_url'      => '#',
+        ],
+        [
+            'title'          => 'Shooting Campagne 2024',
+            'description'    => 'Les coulisses de notre campagne publicitaire.',
+            'category'       => 'Shooting',
+            'date'           => 'Sept 2024',
+            'photos_count'   => 32,
+            'cover_image'    => 'showroom/gallery/showroom-12.jpeg',
+            'preview_images' => [
+                'catalogue/vetements/soiree-03.jpeg',
+                'catalogue/vetements/soiree-04.jpeg',
+            ],
+            'more_count'     => 28,
+            'album_url'      => '#',
+        ],
+        [
+            'title'          => 'Fashion Week Pointe-Noire',
+            'description'    => 'Notre participation à la Fashion Week locale.',
+            'category'       => 'Défilé',
+            'date'           => 'Avril 2024',
+            'photos_count'   => 48,
+            'cover_image'    => 'showroom/gallery/showroom-13.jpeg',
+            'preview_images' => [
+                'showroom/gallery/showroom-14.jpeg',
+                'showroom/gallery/showroom-15.jpeg',
+            ],
+            'more_count'     => 45,
+            'album_url'      => '#',
+        ],
+    ];
+@endphp
+
 <!-- HERO -->
 <section class="albums-hero">
     <div class="container">
-        @php
-            $heroSection = $cmsPage?->section('hero');
-            $heroData = $heroSection?->data ?? [];
-        @endphp
         <h1>{!! $heroData['title'] ?? '📸 Albums Photos' !!}</h1>
         <p>{{ $heroData['description'] ?? 'Revivez les moments forts de RACINE BY GANDA à travers nos albums photos' }}</p>
     </div>
@@ -296,24 +398,30 @@
         <div class="featured-album">
             <div class="featured-album-gallery">
                 <div class="main">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" alt="Album à la une">
+                    <img src="{{ asset('storage/' . $featuredMainImage) }}"
+                         alt="{{ $featured['title'] ?? 'Album à la une' }}">
                 </div>
-                <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="">
-                <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400" alt="">
+                @foreach(array_slice($featuredGalleryImages, 0, 2) as $galleryImg)
+                <img src="{{ asset('storage/' . $galleryImg) }}" alt="">
+                @endforeach
             </div>
             <div class="featured-album-content">
                 <span class="featured-badge"><i class="fas fa-star"></i> Album à la une</span>
-                <h2>Défilé Collection Printemps 2024</h2>
-                <p>
-                    Retour en images sur notre défilé exceptionnel présentant la collection Printemps 2024. 
-                    Une soirée magique au cœur de Pointe-Noire, célébrant l'élégance africaine contemporaine.
-                </p>
+                <h2>{{ $featured['title'] ?? 'Défilé Collection Printemps 2024' }}</h2>
+                <p>{{ $featured['description'] ?? 'Retour en images sur notre défilé exceptionnel présentant la collection Printemps 2024. Une soirée magique au cœur de Pointe-Noire, célébrant l\'élégance africaine contemporaine.' }}</p>
                 <div class="album-meta" style="border: none; padding: 0; margin-bottom: 1.5rem;">
-                    <span class="date"><i class="fas fa-calendar"></i> Mars 2024</span>
-                    <span class="count"><i class="fas fa-images"></i> 48 photos</span>
+                    <span class="date">
+                        <i class="fas fa-calendar"></i>
+                        {{ $featured['date'] ?? 'Mars 2024' }}
+                    </span>
+                    <span class="count">
+                        <i class="fas fa-images"></i>
+                        {{ $featured['photos_count'] ?? 48 }} photos
+                    </span>
                 </div>
-                <a href="#" class="btn-album">
-                    <i class="fas fa-eye"></i> Voir l'album complet
+                <a href="{{ $featured['button_url'] ?? '#' }}" class="btn-album">
+                    <i class="fas fa-eye"></i>
+                    {{ $featured['button_label'] ?? 'Voir l\'album complet' }}
                 </a>
             </div>
         </div>
@@ -324,133 +432,42 @@
 <section class="albums-section">
     <div class="container">
         <div class="albums-grid">
-            <!-- Album 1 -->
-            <div class="album-card">
+            @foreach($albumItems as $album)
+            <div class="album-card" @if(!empty($album['album_url']) && $album['album_url'] !== '#') onclick="window.location='{{ $album['album_url'] }}'" @endif>
                 <div class="album-cover">
-                    <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600" alt="Backstage">
-                    <span class="album-category">Backstage</span>
+                    <img src="{{ asset('storage/' . $album['cover_image']) }}"
+                         alt="{{ $album['title'] }}"
+                         loading="lazy">
+                    <span class="album-category">{{ $album['category'] }}</span>
                     <div class="album-preview">
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=100" alt=""></div>
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1544441893-675973e31985?w=100" alt=""></div>
-                        <div class="album-preview-more">+22</div>
+                        @foreach(array_slice($album['preview_images'] ?? [], 0, 2) as $thumb)
+                        <div class="album-preview-thumb">
+                            <img src="{{ asset('storage/' . $thumb) }}" alt="" loading="lazy">
+                        </div>
+                        @endforeach
+                        @if(!empty($album['more_count']))
+                        <div class="album-preview-more">+{{ $album['more_count'] }}</div>
+                        @endif
                     </div>
                 </div>
                 <div class="album-content">
-                    <h3>En coulisses - Hiver 2024</h3>
-                    <p>Les moments exclusifs des préparatifs avant le défilé.</p>
+                    <h3>{{ $album['title'] }}</h3>
+                    <p>{{ $album['description'] }}</p>
                     <div class="album-meta">
-                        <span class="date"><i class="fas fa-calendar"></i> Déc 2024</span>
-                        <span class="count"><i class="fas fa-images"></i> 24 photos</span>
+                        <span class="date">
+                            <i class="fas fa-calendar"></i>
+                            {{ $album['date'] }}
+                        </span>
+                        <span class="count">
+                            <i class="fas fa-images"></i>
+                            {{ $album['photos_count'] }} photos
+                        </span>
                     </div>
                 </div>
             </div>
-            
-            <!-- Album 2 -->
-            <div class="album-card">
-                <div class="album-cover">
-                    <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600" alt="Exposition">
-                    <span class="album-category">Événement</span>
-                    <div class="album-preview">
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=100" alt=""></div>
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=100" alt=""></div>
-                        <div class="album-preview-more">+35</div>
-                    </div>
-                </div>
-                <div class="album-content">
-                    <h3>Exposition "Racines & Modernité"</h3>
-                    <p>Notre exposition à la Galerie d'Art de Brazzaville.</p>
-                    <div class="album-meta">
-                        <span class="date"><i class="fas fa-calendar"></i> Nov 2024</span>
-                        <span class="count"><i class="fas fa-images"></i> 37 photos</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Album 3 -->
-            <div class="album-card">
-                <div class="album-cover">
-                    <img src="https://images.unsplash.com/photo-1558618047-f8a8b7f79c5e?w=600" alt="Collection">
-                    <span class="album-category">Collection</span>
-                    <div class="album-preview">
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100" alt=""></div>
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=100" alt=""></div>
-                        <div class="album-preview-more">+18</div>
-                    </div>
-                </div>
-                <div class="album-content">
-                    <h3>Lookbook Été 2024</h3>
-                    <p>Les plus belles pièces de notre collection estivale.</p>
-                    <div class="album-meta">
-                        <span class="date"><i class="fas fa-calendar"></i> Juin 2024</span>
-                        <span class="count"><i class="fas fa-images"></span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Album 4 -->
-            <div class="album-card">
-                <div class="album-cover">
-                    <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=600" alt="Atelier">
-                    <span class="album-category">Atelier</span>
-                    <div class="album-preview">
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt=""></div>
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=100" alt=""></div>
-                        <div class="album-preview-more">+12</div>
-                    </div>
-                </div>
-                <div class="album-content">
-                    <h3>Atelier de Création</h3>
-                    <p>Découvrez notre atelier et nos artisans talentueux.</p>
-                    <div class="album-meta">
-                        <span class="date"><i class="fas fa-calendar"></i> Oct 2024</span>
-                        <span class="count"><i class="fas fa-images"></i> 15 photos</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Album 5 -->
-            <div class="album-card">
-                <div class="album-cover">
-                    <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600" alt="Shooting">
-                    <span class="album-category">Shooting</span>
-                    <div class="album-preview">
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=100" alt=""></div>
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1544441893-675973e31985?w=100" alt=""></div>
-                        <div class="album-preview-more">+28</div>
-                    </div>
-                </div>
-                <div class="album-content">
-                    <h3>Shooting Campagne 2024</h3>
-                    <p>Les coulisses de notre campagne publicitaire.</p>
-                    <div class="album-meta">
-                        <span class="date"><i class="fas fa-calendar"></i> Sept 2024</span>
-                        <span class="count"><i class="fas fa-images"></i> 32 photos</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Album 6 -->
-            <div class="album-card">
-                <div class="album-cover">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600" alt="Défilé">
-                    <span class="album-category">Défilé</span>
-                    <div class="album-preview">
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=100" alt=""></div>
-                        <div class="album-preview-thumb"><img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=100" alt=""></div>
-                        <div class="album-preview-more">+45</div>
-                    </div>
-                </div>
-                <div class="album-content">
-                    <h3>Fashion Week Pointe-Noire</h3>
-                    <p>Notre participation à la Fashion Week locale.</p>
-                    <div class="album-meta">
-                        <span class="date"><i class="fas fa-calendar"></i> Avril 2024</span>
-                        <span class="count"><i class="fas fa-images"></i> 48 photos</span>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </section>
-@endsection
 
+@endsection

@@ -533,7 +533,7 @@
             <div class="product-card">
                 {{-- Image --}}
                 <div class="product-image">
-                    <img src="{{ isset($product->mainImage) ? $product->mainImage->url : ($product->main_image ? Storage::url($product->main_image) : asset('images/placeholder-product.jpg')) }}" 
+                    <img src="{{ isset($product->mainImage) ? $product->mainImage->url : ($product->main_image ? Storage::url($product->main_image) : asset('storage/catalogue/vetements/chemise-01.jpeg')) }}"
                          alt="{{ $product->title }}">
                     
                     {{-- Badge créateur --}}

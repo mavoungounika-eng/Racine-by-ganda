@@ -321,7 +321,7 @@
     <div class="container">
         <div class="featured-event">
             <div class="featured-event-image">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" alt="Événement à la une">
+                <img src="{{ asset('storage/showroom/gallery/gallery-03.jpeg') }}" alt="Événement à la une">
             </div>
             <div class="featured-event-content">
                 <span class="featured-badge"><i class="fas fa-star"></i> Prochain Événement</span>
@@ -376,7 +376,7 @@
             <!-- Event 1 -->
             <div class="event-card">
                 <div class="event-image">
-                    <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600" alt="Exposition">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-07.jpeg') }}" alt="Exposition">
                     <div class="event-date-badge">
                         <div class="day">20</div>
                         <div class="month">Jan</div>
@@ -399,7 +399,7 @@
             <!-- Event 2 -->
             <div class="event-card">
                 <div class="event-image">
-                    <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=600" alt="Atelier">
+                    <img src="{{ asset('storage/showroom/gallery/gallery-04.jpeg') }}" alt="Atelier">
                     <div class="event-date-badge">
                         <div class="day">28</div>
                         <div class="month">Jan</div>
@@ -422,7 +422,7 @@
             <!-- Event 3 -->
             <div class="event-card">
                 <div class="event-image">
-                    <img src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=600" alt="Vente Privée">
+                    <img src="{{ asset('storage/showroom/hero/showroom-hero-03.jpeg') }}" alt="Vente Privée">
                     <div class="event-date-badge">
                         <div class="day">05</div>
                         <div class="month">Fév</div>
@@ -445,7 +445,7 @@
             <!-- Event 4 -->
             <div class="event-card">
                 <div class="event-image">
-                    <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600" alt="Rencontre">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-08.jpeg') }}" alt="Rencontre">
                     <div class="event-date-badge">
                         <div class="day">10</div>
                         <div class="month">Fév</div>

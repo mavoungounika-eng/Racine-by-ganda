@@ -465,7 +465,7 @@
                          alt="{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}" 
                          class="featured-img">
                 @else
-                    <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=800" 
+                    <img src="{{ asset('storage/showroom/hero/showroom-hero-02.jpeg') }}"
                          alt="Créatrice vedette" class="featured-img">
                 @endif
                 <span class="featured-badge">⭐ Créateur vedette</span>

@@ -470,7 +470,7 @@
                 </p>
             </div>
             <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=1000&fit=crop" alt="Artisanat Africain" class="hero-img-main">
+                <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Artisanat Africain" class="hero-img-main">
                 <div class="hero-img-overlay">
                     <h4>2019</h4>
                     <span>Année de création</span>
@@ -486,13 +486,13 @@
         <div class="story-grid">
             <div class="story-images">
                 <div class="story-img">
-                    <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600" alt="Création">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-01.jpeg') }}" alt="Création">
                 </div>
                 <div class="story-img">
-                    <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=400" alt="Tissu">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-02.jpeg') }}" alt="Tissu">
                 </div>
                 <div class="story-img">
-                    <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400" alt="Atelier">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-03.jpeg') }}" alt="Atelier">
                 </div>
             </div>
             <div class="story-content">
@@ -564,7 +564,7 @@
         <div class="team-grid">
             <div class="team-card">
                 <div class="team-img">
-                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=faces" alt="Fondatrice">
+                    <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Fondatrice">
                 </div>
                 <div class="team-info">
                     <h3>{{ config('app.company.ceo') }}</h3>
@@ -574,7 +574,7 @@
             </div>
             <div class="team-card">
                 <div class="team-img">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=faces" alt="Directeur">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-04.jpeg') }}" alt="Directeur des Opérations">
                 </div>
                 <div class="team-info">
                     <h3>Moussa Diallo</h3>
@@ -584,7 +584,7 @@
             </div>
             <div class="team-card">
                 <div class="team-img">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=faces" alt="Designer">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-05.jpeg') }}" alt="Cheffe Styliste">
                 </div>
                 <div class="team-info">
                     <h3>Fatou Ndiaye</h3>

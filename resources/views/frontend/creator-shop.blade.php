@@ -146,7 +146,7 @@
                        class="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
                         {{-- Image --}}
                         <div class="relative h-64 overflow-hidden">
-                            <img src="{{ $product->main_image ?? 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop' }}" 
+                            <img src="{{ $product->main_image ?? asset('storage/catalogue/vetements/soiree-01.jpeg') }}"
                                  alt="{{ $product->title }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                             
