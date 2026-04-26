@@ -295,7 +295,8 @@ class OrderService
         });
 
         // Calculer les frais de livraison (free_shipping promo écrase la méthode)
-        $shipping = ($promoFreeShipping || $shippingMethod === 'showroom_pickup') ? 0 : 2000;
+        $shippingCost = (int) config("payments.shipping.{$shippingMethod}", config('payments.shipping.home_delivery', 2000));
+        $shipping = ($promoFreeShipping || $shippingMethod === 'showroom_pickup') ? 0 : $shippingCost;
 
         // Appliquer la réduction promo sans descendre sous 0
         $discount = min($promoDiscount, $subtotal);
