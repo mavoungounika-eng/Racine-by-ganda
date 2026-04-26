@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('creator.settings.payment-preferences.stripe.save') }}" method="POST">
+                    <form action="{{ route('creator.settings.payment-preferences.stripe.connect') }}" method="POST">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label text-muted">Stripe Secret Key (sk_...)</label>
@@ -131,7 +131,7 @@
                         <h6 class="text-danger mb-1">Désactiver mes passerelles</h6>
                         <p class="mb-0 text-muted small">Vos produits ne pourront plus être achetés en ligne tant qu'aucune passerelle n'est active.</p>
                     </div>
-                    <form action="{{ route('creator.settings.payment-preferences.disconnect') }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment déconnecter vos paiements directs ?');">
+                    <form action="{{ route('creator.settings.payment-preferences.stripe.disconnect') }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment déconnecter vos paiements directs ?');">
                         @csrf
                         <button type="submit" class="btn btn-danger btn-sm">Déconnecter tout</button>
                     </form>

@@ -108,6 +108,7 @@ Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(
         
         // Finances (Dashboard Financier - Phase 4)
         Route::get('/finances', [\App\Http\Controllers\Creator\CreatorFinanceDashboardController::class, 'index'])->name('finances.index');
+        Route::post('/finances/kyc-submit', [\App\Http\Controllers\Creator\CreatorFinanceController::class, 'submitKycDocument'])->name('finances.kyc-submit');
         
         // Paramètres (V1.5)
         Route::prefix('settings')->name('settings.')->group(function () {
@@ -619,6 +620,9 @@ Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('po
     Route::prefix('analytics')->name('analytics.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'index'])->name('index');
         Route::post('/daily', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDailyReport'])->name('daily');
+        Route::post('/period', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getPeriodReport'])->name('period');
+        Route::post('/discrepancy', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDiscrepancyReport'])->name('discrepancy');
+        Route::get('/export', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'exportCsv'])->name('export');
     });
 });
 

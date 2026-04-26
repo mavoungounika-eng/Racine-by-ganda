@@ -273,16 +273,16 @@ document.getElementById('load-report').addEventListener('click', async function(
     let url, data;
 
     if (type === 'daily') {
-        url = '{{ route("admin.pos.analytics.daily") }}';
+        url = '{{ route("pos.interface.analytics.daily") }}';
         data = { date: document.getElementById('single-date').value };
     } else if (type === 'period') {
-        url = '{{ route("admin.pos.analytics.period") }}';
+        url = '{{ route("pos.interface.analytics.period") }}';
         data = {
             start_date: document.getElementById('start-date').value,
             end_date: document.getElementById('end-date').value
         };
     } else {
-        url = '{{ route("admin.pos.analytics.discrepancy") }}';
+        url = '{{ route("pos.interface.analytics.discrepancy") }}';
         data = {
             start_date: document.getElementById('start-date').value,
             end_date: document.getElementById('end-date').value,
@@ -462,7 +462,7 @@ document.getElementById('export-csv').addEventListener('click', function() {
     const startDate = document.getElementById('start-date').value || document.getElementById('single-date').value;
     const endDate = document.getElementById('end-date').value || document.getElementById('single-date').value;
 
-    window.location.href = `{{ route('admin.pos.analytics.export') }}?start_date=${startDate}&end_date=${endDate}`;
+    window.location.href = `{{ route('pos.interface.analytics.export') }}?start_date=${startDate}&end_date=${endDate}`;
 });
 
 // Initialiser graphiques au chargement

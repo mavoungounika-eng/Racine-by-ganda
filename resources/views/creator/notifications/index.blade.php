@@ -123,7 +123,7 @@
                         </a>
                         
                         @if($unreadCount > 0)
-                        <form action="{{ route('creator.notifications.markAllAsRead') }}" method="POST">
+                        <form action="{{ route('creator.notifications.marquer-tout-lu') }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="btn btn-success filter-btn shadow-sm">
@@ -171,7 +171,7 @@
                             @endif
                             
                             @if(!$notification->is_read)
-                            <form action="{{ route('creator.notifications.markAsRead', $notification) }}" method="POST">
+                            <form action="{{ route('creator.notifications.marquer-lu', $notification) }}" method="POST">
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="btn btn-sm btn-light border rounded-pill font-weight-bold" title="Marquer comme lu">
