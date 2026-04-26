@@ -243,7 +243,7 @@
         <div class="modal-content" style="background: rgba(22, 13, 12, 0.95); border: 1px solid rgba(212, 165, 116, 0.3);">
             <div class="modal-header border-0">
                 <h5 class="modal-title text-white">Commande créée avec succès !</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
+                <button type="button" class="close text-white" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -255,7 +255,7 @@
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 <a href="#" id="view-order-link" class="btn btn-primary">Voir la commande</a>
             </div>
         </div>
@@ -395,7 +395,7 @@ function showAlert(type, message) {
     alertContainer.innerHTML = `
         <div class="alert alert-${type} alert-pos alert-dismissible fade show">
             ${message}
-            <button type="button" class="close" data-dismiss="alert">
+            <button type="button" class="close" data-bs-dismiss="alert">
                 <span>&times;</span>
             </button>
         </div>

@@ -336,24 +336,30 @@ Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 
 ## Ce qui reste à faire
 
-### Priorité haute
+### Priorité haute (variables d'environnement à configurer)
 1. EXCHANGE_RATE_API_KEY — obtenir sur exchangerate-api.com (free tier)
 2. URLs Monetbil prod — MONETBIL_NOTIFY_URL et MONETBIL_RETURN_URL avec vrai domaine
 3. RECAPTCHA_SITE_KEY + RECAPTCHA_SECRET_KEY — Google reCAPTCHA v3
+4. SENTRY_LARAVEL_DSN — configurer sur sentry.io
 
 ### Priorité moyenne — Code
 - Refactorer QueueCircuitBreaker/QueueRateLimiter : utiliser Cache:: au lieu de Redis::
   pour respecter CACHE_STORE=array en tests (fix flaky tests)
-- Audit Trail — non implémenté
-- Sentry — SENTRY_LARAVEL_DSN à configurer
-- CI/CD GitHub Actions — à compléter
 
 ### Terminé (ne plus refaire)
+- ✅ CI/CD GitHub Actions — workflow complet avec Redis, suite entière, PHP 8.3
 - ✅ webhook updatePaymentAndOrder — implémenté dans PaymentEventMapperService
 - ✅ POS refund (statut refunded + restauration stock)
 - ✅ Audit P1/P2/P3 (paiements, tests, queue, auth_version)
 - ✅ Namespace AI jobs (Ai → AI)
 - ✅ Frontend CreatorProfile::active()
+- ✅ Monetbil production — normalizeStatus numeric codes, checkPayment(), 200 webhook, lockForUpdate
+- ✅ Exchange Rate API — convertViaApi() avec cache 1h et fallback statique
+- ✅ reCAPTCHA v3 — mobile money form (controller + vue + JS)
+- ✅ StripeSyncPlans — commande Artisan committed
+- ✅ 15 routes manquantes dans les vues — corrigées ou ajoutées
+- ✅ Bootstrap 4 → Bootstrap 5 — data-dismiss/toggle/target dans 5 vues admin
+- ✅ CheckoutTimeoutTest flaky — test_cleanup_handles_multiple_orders_correctly stabilisé
 
 ### Tests skipped légitimes (ne pas forcer)
 - CreatorPayoutAccountingTest — architecture SaaS pur, hors scope

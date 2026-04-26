@@ -233,7 +233,7 @@
                                             data-provider="{{ $event['provider'] }}" 
                                             data-id="{{ $event['id'] }}"
                                             title="Reset requeue window (réactive le requeue)"
-                                            data-toggle="tooltip" 
+                                            data-bs-toggle="tooltip" 
                                             data-placement="top">
                                         <i class="fas fa-unlock"></i>
                                     </button>
@@ -242,7 +242,7 @@
                                             class="btn btn-sm btn-secondary" 
                                             disabled 
                                             title="{{ $event['blocked_message'] ?? 'Limite de requeue atteinte' }}"
-                                            data-toggle="tooltip" 
+                                            data-bs-toggle="tooltip" 
                                             data-placement="top">
                                         <i class="fas fa-ban"></i>
                                     </button>

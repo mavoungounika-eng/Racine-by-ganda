@@ -238,18 +238,22 @@ class CheckoutTimeoutTest extends TestCase
 
         // Créer 3 commandes expirées
         $expiredOrders = Order::factory()->count(3)->create([
-            'user_id' => $user->id,
-            'status' => 'pending',
-            'total_amount' => 100.00,
-            'created_at' => now()->subMinutes(35),
+            'user_id'        => $user->id,
+            'status'         => 'pending',
+            'payment_status' => 'pending',
+            'payment_method' => 'card',
+            'total_amount'   => 100.00,
+            'created_at'     => now()->subMinutes(35),
         ]);
 
         // Créer 2 commandes récentes
         $recentOrders = Order::factory()->count(2)->create([
-            'user_id' => $user->id,
-            'status' => 'pending',
-            'total_amount' => 100.00,
-            'created_at' => now()->subMinutes(10),
+            'user_id'        => $user->id,
+            'status'         => 'pending',
+            'payment_status' => 'pending',
+            'payment_method' => 'card',
+            'total_amount'   => 100.00,
+            'created_at'     => now()->subMinutes(10),
         ]);
 
         // Exécuter le cleanup
