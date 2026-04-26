@@ -185,21 +185,77 @@ class MonetbilService
     }
 
     /**
-     * Normaliser le statut Monetbil vers notre format interne
+     * Normaliser le statut Monetbil vers notre format interne.
      *
-     * @param string $status Statut reçu de Monetbil
-     * @return string Statut normalisé (success/cancelled/failed)
+     * Codes numériques Monetbil :
+     *   Production : 1 = success, -1 = cancelled,  0 = failed
+     *   Test       : 7 = success,  8 = failed,      9 = cancelled
+     *
+     * @param string|int $status Statut reçu de Monetbil (numérique ou texte)
+     * @return string 'success' | 'cancelled' | 'failed'
      */
-    public function normalizeStatus(string $status): string
+    public function normalizeStatus(string|int $status): string
     {
-        $status = strtolower(trim($status));
+        // Codes numériques (production et test)
+        if (is_numeric($status)) {
+            return match ((int) $status) {
+                1, 7    => 'success',
+                -1, 9   => 'cancelled',
+                default => 'failed',  // 0, 8 et tout inconnu
+            };
+        }
 
-        return match ($status) {
+        return match (strtolower(trim((string) $status))) {
             'success', 'successful', 'paid', 'completed' => 'success',
-            'cancelled', 'canceled', 'aborted' => 'cancelled',
-            'failed', 'error', 'rejected' => 'failed',
-            default => 'failed',
+            'cancelled', 'canceled', 'aborted'           => 'cancelled',
+            default                                       => 'failed',
         };
+    }
+
+    /**
+     * Vérifier le statut d'un paiement via l'API Monetbil checkPayment.
+     *
+     * Utile pour les cas où le webhook n'est pas reçu (timeout, réseau).
+     *
+     * @param string $paymentRef Référence de paiement (order_number)
+     * @return array{status: string, amount: mixed, currency: mixed, operator: mixed, transaction_id: mixed, raw: array}
+     */
+    public function checkPayment(string $paymentRef): array
+    {
+        $baseUrl = config('services.monetbil.base_url', 'https://api.monetbil.com/payment/v1.1');
+
+        try {
+            $response = Http::timeout(15)->post("{$baseUrl}/checkPayment", [
+                'serviceKey' => $this->serviceKey,
+                'paymentRef' => $paymentRef,
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Monetbil checkPayment HTTP error', [
+                    'status'     => $response->status(),
+                    'body'       => $response->body(),
+                    'paymentRef' => $paymentRef,
+                ]);
+                return ['status' => 'unknown', 'raw' => []];
+            }
+
+            $data = $response->json() ?? [];
+
+            return [
+                'status'         => $this->normalizeStatus($data['status'] ?? 0),
+                'amount'         => $data['amount'] ?? null,
+                'currency'       => $data['currency'] ?? null,
+                'operator'       => $data['operator'] ?? null,
+                'transaction_id' => $data['transaction_id'] ?? null,
+                'raw'            => $data,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Monetbil checkPayment exception', [
+                'paymentRef' => $paymentRef,
+                'error'      => $e->getMessage(),
+            ]);
+            return ['status' => 'unknown', 'raw' => []];
+        }
     }
 
     /**

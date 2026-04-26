@@ -4,6 +4,8 @@ namespace App\Services\Currency;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CurrencyService
 {
@@ -85,10 +87,83 @@ class CurrencyService
         return config('currency.default', 'XAF');
     }
 
+    /**
+     * Convertir un montant en utilisant l'Exchange Rate API (exchangerate-api.com).
+     *
+     * Tente d'abord la clé configurée (EXCHANGE_RATE_API_KEY), sinon
+     * retombe sur les taux statiques de config/currency.php.
+     * Résultat mis en cache 1 heure pour limiter les appels API.
+     *
+     * @param float  $amount Montant à convertir
+     * @param string $from   Devise source (ex: 'EUR')
+     * @param string $to     Devise cible (ex: 'XAF')
+     * @return float Montant converti, arrondi selon la devise cible
+     */
+    public function convertViaApi(float $amount, string $from, string $to): float
+    {
+        if ($from === $to) {
+            return $amount;
+        }
+
+        $apiKey = config('services.exchange_rate.api_key');
+
+        if (empty($apiKey)) {
+            // Pas de clé API → taux statiques
+            return $this->convert($amount, $from, $to);
+        }
+
+        $cacheKey = "exchange_rate:{$from}:{$to}";
+
+        $rate = Cache::remember($cacheKey, 3600, function () use ($apiKey, $from, $to) {
+            $baseUrl = rtrim(config('services.exchange_rate.url', 'https://v6.exchangerate-api.com/v6'), '/');
+            $url     = "{$baseUrl}/{$apiKey}/pair/{$from}/{$to}";
+
+            try {
+                $response = Http::timeout(10)->get($url);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+
+                    if (($data['result'] ?? '') === 'success' && isset($data['conversion_rate'])) {
+                        return (float) $data['conversion_rate'];
+                    }
+
+                    Log::warning('Exchange Rate API unexpected response', [
+                        'from' => $from,
+                        'to'   => $to,
+                        'body' => $response->body(),
+                    ]);
+                } else {
+                    Log::error('Exchange Rate API HTTP error', [
+                        'status' => $response->status(),
+                        'from'   => $from,
+                        'to'     => $to,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Exchange Rate API exception', [
+                    'from'  => $from,
+                    'to'    => $to,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // Fallback : taux statique depuis config
+            return config("currency.rates.{$from}.{$to}", null);
+        });
+
+        if ($rate === null) {
+            throw new \InvalidArgumentException("Taux inconnu : {$from} → {$to}");
+        }
+
+        $decimals = config("currency.decimals.{$to}", 2);
+        return round($amount * (float) $rate, $decimals);
+    }
+
     public function toStripeCents(float $amountXaf): int
     {
         // XAF → EUR → centimes Stripe
-        $eur = $this->convert($amountXaf, 'XAF', 'EUR');
+        $eur = $this->convertViaApi($amountXaf, 'XAF', 'EUR');
         return (int) round($eur * 100);
     }
 }

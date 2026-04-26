@@ -2,6 +2,12 @@
 
 @section('title', 'Paiement Mobile Money - RACINE BY GANDA')
 
+@if(!empty($recaptchaSiteKey))
+@push('head')
+<script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaSiteKey }}" defer></script>
+@endpush
+@endif
+
 @section('content')
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -27,8 +33,9 @@
                     </div>
                     @endif
 
-                    <form action="{{ route('checkout.mobile-money.pay', $order) }}" method="POST">
+                    <form action="{{ route('checkout.mobile-money.pay', $order) }}" method="POST" id="momo-form">
                         @csrf
+                        <input type="hidden" name="recaptcha_token" id="recaptcha_token" value="">
                         
                         {{-- Opérateur --}}
                         <div class="form-group">
@@ -81,4 +88,21 @@
         </div>
     </div>
 </div>
+@if(!empty($recaptchaSiteKey))
+@push('scripts')
+<script>
+document.getElementById('momo-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    grecaptcha.ready(function() {
+        grecaptcha.execute('{{ $recaptchaSiteKey }}', {action: 'mobile_money_pay'}).then(function(token) {
+            document.getElementById('recaptcha_token').value = token;
+            form.submit();
+        });
+    });
+});
+</script>
+@endpush
+@endif
+
 @endsection

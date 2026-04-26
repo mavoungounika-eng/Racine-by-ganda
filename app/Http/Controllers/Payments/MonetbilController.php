@@ -53,10 +53,23 @@ class MonetbilController extends Controller
         // Vérifier l'accès à la commande
         $this->authorize('view', $order);
 
-        // ✅ CORRECTION 2 : Lock commande avant paiement pour éviter double paiement
-        $lockedOrder = Order::where('id', $order->id)
-            ->lockForUpdate()
-            ->first();
+        // Lock dans une transaction pour que lockForUpdate soit effectif
+        $lockedOrder = null;
+        $alreadyProcessed = false;
+
+        DB::transaction(function () use ($order, &$lockedOrder, &$alreadyProcessed) {
+            $lockedOrder = Order::where('id', $order->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$lockedOrder) {
+                return;
+            }
+
+            if ($lockedOrder->payment_status !== 'pending') {
+                $alreadyProcessed = true;
+            }
+        });
 
         if (!$lockedOrder) {
             return redirect()
@@ -64,8 +77,7 @@ class MonetbilController extends Controller
                 ->with('error', 'La commande n\'existe plus.');
         }
 
-        // ✅ CORRECTION 2 : Vérifier payment_status sous lock
-        if ($lockedOrder->payment_status !== 'pending') {
+        if ($alreadyProcessed) {
             return redirect()
                 ->route('checkout.success', ['order' => $lockedOrder->id])
                 ->with('info', 'Cette commande est déjà payée ou n\'est plus valide.');
@@ -109,9 +121,20 @@ class MonetbilController extends Controller
                 }
             }
 
-            // ✅ MULTI-DEVISE : Détecter la devise par téléphone (XAF/XOF)
+            // MULTI-DEVISE : Détecter la devise cible par téléphone (XAF/XOF)
             $currencyService = app(\App\Services\Currency\CurrencyService::class);
-            $detectedCurrency = $currencyService->detectCurrencyFromPhone($lockedOrder->customer_phone);
+            $detectedCurrency = $currencyService->detectCurrencyFromPhone($lockedOrder->customer_phone ?? '');
+
+            // Convertir via Exchange Rate API si le montant n'est pas dans la devise cible
+            $orderCurrency = $lockedOrder->currency ?? config('services.monetbil.currency', 'XAF');
+            $amountInTargetCurrency = $orderCurrency !== $detectedCurrency
+                ? $currencyService->convertViaApi($lockedOrder->total_amount, $orderCurrency, $detectedCurrency)
+                : $lockedOrder->total_amount;
+
+            // XAF et XOF sont des devises sans décimales — arrondi à l'entier
+            if (in_array($detectedCurrency, ['XAF', 'XOF'], true)) {
+                $amountInTargetCurrency = (int) round($amountInTargetCurrency);
+            }
 
             // Créer ou mettre à jour la transaction en pending
             $transaction = PaymentTransaction::updateOrCreate(
@@ -121,7 +144,7 @@ class MonetbilController extends Controller
                 ],
                 [
                     'provider' => 'monetbil',
-                    'amount' => $lockedOrder->total_amount,
+                    'amount' => $amountInTargetCurrency,
                     'currency' => $detectedCurrency,
                     'status' => 'pending',
                     'raw_payload' => [],
@@ -140,7 +163,7 @@ class MonetbilController extends Controller
 
             // Construire le payload
             $payload = [
-                'amount' => $lockedOrder->total_amount,
+                'amount' => $amountInTargetCurrency,
                 'phone' => $lockedOrder->customer_phone,
                 'currency' => $detectedCurrency,
                 'payment_ref' => $paymentRef,
@@ -499,29 +522,29 @@ class MonetbilController extends Controller
 
             return response()->json(['message' => 'Invalid payload'], 400);
         } catch (\Exception $e) {
-            // Erreur serveur inattendue (uniquement pour erreurs non prévues)
+            // Erreur serveur inattendue — toujours 200 pour que Monetbil ne retire pas
             Log::error('Monetbil notification: Processing error', [
-                'ip' => $ip,
-                'route' => $route,
-                'user_agent' => $userAgent,
-                'error' => $e->getMessage(),
+                'ip'              => $ip,
+                'route'           => $route,
+                'user_agent'      => $userAgent,
+                'error'           => $e->getMessage(),
                 'exception_class' => get_class($e),
-                'reason' => 'unexpected_error',
+                'reason'          => 'unexpected_error',
             ]);
 
-            // Track critical failure
             if (isset($paymentRef)) {
                 $this->deduplicationService->recordFailure(
                     'monetbil',
                     $params['status'] ?? 'processing_error',
-                    (string)$paymentRef,
+                    (string) $paymentRef,
                     $params,
                     $params['sign'] ?? '',
                     $e->getMessage()
                 );
             }
 
-            return response()->json(['message' => 'Internal error'], 500);
+            // HTTP 200 obligatoire : Monetbil rejouera le webhook si on retourne une erreur
+            return response()->json(['status' => 'error', 'message' => 'Internal error logged'], 200);
         }
     }
 }
