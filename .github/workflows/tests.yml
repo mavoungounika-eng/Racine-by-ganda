@@ -5,15 +5,15 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, security/**]
+    branches: [main, develop, "12.x", "security/**"]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, "12.x"]
 
 jobs:
   tests:
-    name: CI Sanity Tests (PHP 8.2)
+    name: Full Test Suite (PHP 8.3)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     services:
       mysql:
@@ -29,17 +29,34 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP 8.2
+      - name: Setup PHP 8.3
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: mbstring, pdo, pdo_mysql
+          php-version: "8.3"
+          extensions: mbstring, pdo, pdo_mysql, redis, pcntl
           coverage: none
           tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles("composer.lock") }}
+          restore-keys: composer-
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -49,17 +66,41 @@ jobs:
           cp .env.example .env.testing
           php artisan key:generate --env=testing
 
-      - name: Configure database
+      - name: Configure test environment
         run: |
-          echo "DB_CONNECTION=mysql" >> .env.testing
-          echo "DB_HOST=127.0.0.1" >> .env.testing
-          echo "DB_PORT=3306" >> .env.testing
-          echo "DB_DATABASE=testing" >> .env.testing
-          echo "DB_USERNAME=root" >> .env.testing
-          echo "DB_PASSWORD=password" >> .env.testing
+          {
+            echo "APP_ENV=testing"
+            echo "DB_CONNECTION=mysql"
+            echo "DB_HOST=127.0.0.1"
+            echo "DB_PORT=3306"
+            echo "DB_DATABASE=testing"
+            echo "DB_USERNAME=root"
+            echo "DB_PASSWORD=password"
+            echo "CACHE_STORE=array"
+            echo "QUEUE_CONNECTION=sync"
+            echo "SESSION_DRIVER=array"
+            echo "MAIL_MAILER=array"
+            echo "REDIS_HOST=127.0.0.1"
+            echo "REDIS_PORT=6379"
+            echo "BROADCAST_CONNECTION=log"
+            echo "RECAPTCHA_ENABLED=false"
+            echo "RECAPTCHA_SKIP_FOR_TESTING=true"
+            echo "LEGACY_WEBHOOKS_ENABLED=true"
+          } >> .env.testing
 
       - name: Run migrations
         run: php artisan migrate --env=testing --force
 
-      - name: Run CI sanity test
-        run: php artisan test --env=testing tests/Unit/ExampleTest.php
+      - name: Flush Redis before tests
+        run: redis-cli -h 127.0.0.1 FLUSHDB
+
+      - name: Run full test suite
+        run: php artisan test --env=testing --parallel --processes=4 2>&1
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: storage/logs/
+          retention-days: 3
