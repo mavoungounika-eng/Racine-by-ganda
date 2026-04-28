@@ -119,3 +119,11 @@ Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'
     ->where('provider', 'google|apple|facebook')
     ->name('auth.social.callback');
 
+
+// ============================================
+// CGU - Acceptation obligatoire
+// ============================================
+Route::middleware('auth')->group(function () {
+    Route::get('/terms/accept', [\App\Http\Controllers\Auth\TermsController::class, 'show'])->name('terms.accept');
+    Route::post('/terms/accept', [\App\Http\Controllers\Auth\TermsController::class, 'accept'])->name('terms.accept.post');
+});

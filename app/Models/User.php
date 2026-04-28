@@ -103,6 +103,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'trusted_device_expires_at',
         'locale',
         'preferred_currency',
+        'terms_accepted_at',
     ];
 
     protected $hidden = [
@@ -129,6 +130,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_required' => 'boolean',
         'trusted_device_expires_at' => 'datetime',
         'auth_version' => 'integer',
+        'terms_accepted_at' => 'datetime',
     ];
 
     /**

@@ -66,6 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureAuthenticated::class . ':admin,super_admin',
             'role' => \App\Http\Middleware\EnsureAuthenticated::class,
             'role.creator' => \App\Http\Middleware\EnsureAuthenticated::class . ':createur',
+            'terms' => \App\Http\Middleware\EnsureTermsAccepted::class,
         ]);
 
 
@@ -84,6 +85,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Group 'web' configuration
         $middleware->web(append: [
+            \App\Http\Middleware\EnsureTermsAccepted::class,
             \App\Http\Middleware\DetectUserCurrency::class,
         ]);
 
