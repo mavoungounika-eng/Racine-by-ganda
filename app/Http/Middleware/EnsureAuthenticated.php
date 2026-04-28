@@ -84,6 +84,11 @@ class EnsureAuthenticated
             }
 
             // Step 3: Validate auth_version (prevent privilege escalation)
+            // If session context has null auth_version, regenerate it from DB
+            if ($context->authVersion === null && $user->auth_version !== null) {
+                $context = $this->contextResolver->resolve($user);
+                $this->contextResolver->storeInSession($context);
+            }
             if (!$this->contextResolver->validateSession($user, $context)) {
                 // auth_version mismatch - user context changed in DB
                 Log::warning('EnsureAuthenticated: auth_version mismatch (privilege escalation prevented)', [
