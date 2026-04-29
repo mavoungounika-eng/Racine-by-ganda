@@ -153,7 +153,7 @@
                     Affichage de {{ $orders->firstItem() ?? 0 }} à {{ $orders->lastItem() ?? 0 }} sur {{ $orders->total() }} résultats
                 </div>
                 <div>
-                    {{ $orders->links() }}
+                    {{ $orders->links('vendor.pagination.bootstrap-5') }}
                 </div>
             </div>
         </div>

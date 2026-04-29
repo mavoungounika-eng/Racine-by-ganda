@@ -163,7 +163,7 @@
                     Affichage de {{ $categories->firstItem() ?? 0 }} à {{ $categories->lastItem() ?? 0 }} sur {{ $categories->total() }} résultats
                 </div>
                 <div>
-                    {{ $categories->links() }}
+                    {{ $categories->links('vendor.pagination.bootstrap-5') }}
                 </div>
             </div>
         </div>

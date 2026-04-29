@@ -217,7 +217,7 @@
                     Affichage de {{ $promoCodes->firstItem() ?? 0 }} à {{ $promoCodes->lastItem() ?? 0 }} sur {{ $promoCodes->total() }} résultats
                 </div>
                 <div>
-                    {{ $promoCodes->links() }}
+                    {{ $promoCodes->links('vendor.pagination.bootstrap-5') }}
                 </div>
             </div>
         </div>

@@ -143,7 +143,7 @@
                 </table>
             </div>
 
-            {{ $accounts->links() }}
+            {{ $accounts->links('vendor.pagination.bootstrap-5') }}
         </div>
     </div>
 </div>

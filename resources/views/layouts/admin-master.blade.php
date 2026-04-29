@@ -429,8 +429,8 @@
 <script src="{{ asset('racine/js/jquery.min.js') }}"></script>
 <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
 
-{{-- CHATBOT AMIRA --}}
-@include('assistant::chat')
+{{-- CHATBOT AMIRA — désactivé sur interface admin (widget client uniquement) --}}
+{{-- @include('assistant::chat') --}}
 
 @stack('scripts')
 </body>

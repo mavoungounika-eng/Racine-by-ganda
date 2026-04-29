@@ -273,7 +273,7 @@
             {{-- Pagination --}}
             @if($paginated->hasPages())
             <div class="mt-3">
-                {{ $paginated->links() }}
+                {{ $paginated->links('vendor.pagination.bootstrap-5') }}
             </div>
             @endif
         </form>

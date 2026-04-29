@@ -209,7 +209,7 @@
         </div>
         @if($stripeEvents->hasPages())
             <div class="card-footer bg-transparent">
-                {{ $stripeEvents->links() }}
+                {{ $stripeEvents->links('vendor.pagination.bootstrap-5') }}
             </div>
         @endif
     </div>
@@ -273,7 +273,7 @@
         </div>
         @if($monetbilEvents->hasPages())
             <div class="card-footer bg-transparent">
-                {{ $monetbilEvents->links() }}
+                {{ $monetbilEvents->links('vendor.pagination.bootstrap-5') }}
             </div>
         @endif
     </div>

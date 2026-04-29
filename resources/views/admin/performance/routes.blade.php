@@ -87,7 +87,7 @@
 
                         {{-- Pagination --}}
                         <div class="mt-3">
-                            {{ $routeStats->links() }}
+                            {{ $routeStats->links('vendor.pagination.bootstrap-5') }}
                         </div>
                     @endif
                 </div>

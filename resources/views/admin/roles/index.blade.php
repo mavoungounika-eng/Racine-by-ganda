@@ -198,7 +198,7 @@
 
         @if($roles->hasPages())
         <div class="px-6 py-4 border-t border-slate-700">
-            {{ $roles->links() }}
+            {{ $roles->links('vendor.pagination.bootstrap-5') }}
         </div>
         @endif
     </div>

@@ -206,7 +206,7 @@
 
         @if($users->hasPages())
         <div class="px-6 py-4 border-t border-slate-700">
-            {{ $users->links() }}
+            {{ $users->links('vendor.pagination.bootstrap-5') }}
         </div>
         @endif
     </div>
