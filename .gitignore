@@ -59,5 +59,13 @@ tests_backup_*/
 
 # Claude Code / OMX local state (ne pas versionner)
 .omx/
+.claude/worktrees/
+.claire/
 /CLAUDE.md.backup
 *.backup
+NUL
+-
+id,
+true]
+"Erreur lors de la connexion. Veuillez contacter le support.],"
+"Votre compte est inactif ou suspendu.],"
