@@ -4,7 +4,7 @@ namespace Tests\Unit\Services\Queue;
 
 use App\Services\Queue\QueueMonitor;
 use App\Services\Queue\QueueCircuitBreaker;
-use Illuminate\Support\Facades\Queue;
+use App\Services\Queue\QueueRateLimiter;
 use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -13,21 +13,17 @@ use Mockery;
 class QueueMonitorTest extends TestCase
 {
     protected QueueMonitor $monitor;
-    protected $queueMock;
     protected $circuitBreakerMock;
+    protected $rateLimiterMock;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Mock dependencies
-        $this->queueMock = Mockery::mock('alias:' . Queue::class);
         $this->circuitBreakerMock = Mockery::mock(QueueCircuitBreaker::class);
-        
-        $this->app->instance(QueueCircuitBreaker::class, $this->circuitBreakerMock);
+        $this->rateLimiterMock = Mockery::mock(QueueRateLimiter::class);
 
-        // Create instance
-        $this->monitor = new QueueMonitor();
+        $this->monitor = new QueueMonitor($this->circuitBreakerMock, $this->rateLimiterMock);
     }
 
     protected function tearDown(): void
@@ -35,244 +31,229 @@ class QueueMonitorTest extends TestCase
         Mockery::close();
         parent::tearDown();
     }
+
+    /**
+     * Set up Redis mocks required for collect() / checkThresholds() calls.
+     */
+    private function mockRedisForCollect(int $queueSize = 10, array $processingTimes = [], int $total = 0, int $failed = 0): void
+    {
+        Redis::shouldReceive('llen')->andReturn($queueSize);
+        Redis::shouldReceive('lrange')->andReturn(array_map('strval', $processingTimes));
+        Redis::shouldReceive('get')
+            ->with(Mockery::pattern('/total_jobs/'))
+            ->andReturn($total ?: null);
+        Redis::shouldReceive('get')
+            ->with(Mockery::pattern('/failed_jobs/'))
+            ->andReturn($failed ?: null);
+        Redis::shouldReceive('keys')->andReturn([]);
+    }
+
+    private function mockDependenciesForCollect(string $cbState = 'closed'): void
+    {
+        $this->circuitBreakerMock->shouldReceive('getMetrics')
+            ->andReturn([
+                'state' => $cbState,
+                'failure_count' => 0,
+                'success_count' => 0,
+                'opened_at' => null,
+                'failure_threshold' => 10,
+                'success_threshold' => 5,
+                'timeout' => 60,
+                'current_timeout' => 60,
+                'retry_count' => 0,
+            ]);
+        $this->rateLimiterMock->shouldReceive('getMetrics')
+            ->andReturn([
+                'job_type' => 'default',
+                'limit' => '500/minute',
+                'max_attempts' => 500,
+                'decay_seconds' => 60,
+                'current' => 0,
+                'remaining' => 500,
+                'available_in' => 0,
+            ]);
+    }
+
     #[Test]
     public function collects_queue_size()
     {
-        // Arrange
-        $queueName = 'default';
         $expectedSize = 42;
+        $this->mockRedisForCollect(queueSize: $expectedSize);
+        $this->mockDependenciesForCollect();
 
-        $this->queueMock->shouldReceive('size')
-            ->with($queueName)
-            ->andReturn($expectedSize);
-
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
-
-        // Act
         $metrics = $this->monitor->collect();
 
-        // Assert
-        $this->assertArrayHasKey($queueName, $metrics);
-        $this->assertEquals($expectedSize, $metrics[$queueName]['size']);
+        $this->assertArrayHasKey('default', $metrics);
+        $this->assertEquals($expectedSize, $metrics['default']['queue_size']);
     }
+
     #[Test]
     public function collects_processing_time()
     {
-        // Arrange
-        $queueName = 'default';
+        $this->mockRedisForCollect();
+        $this->mockDependenciesForCollect();
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn(10);
-
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
-
-        // Act
         $metrics = $this->monitor->collect();
 
-        // Assert
-        $this->assertArrayHasKey($queueName, $metrics);
-        $this->assertArrayHasKey('processing_time', $metrics[$queueName]);
-        $this->assertIsFloat($metrics[$queueName]['processing_time']);
+        $this->assertArrayHasKey('default', $metrics);
+        $this->assertArrayHasKey('processing_time', $metrics['default']);
+        $this->assertArrayHasKey('avg', $metrics['default']['processing_time']);
+        $this->assertArrayHasKey('p95', $metrics['default']['processing_time']);
     }
+
     #[Test]
     public function collects_failure_rate()
     {
-        // Arrange
-        $queueName = 'default';
+        $this->mockRedisForCollect();
+        $this->mockDependenciesForCollect();
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn(10);
-
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
-
-        // Act
         $metrics = $this->monitor->collect();
 
-        // Assert
-        $this->assertArrayHasKey($queueName, $metrics);
-        $this->assertArrayHasKey('failure_rate', $metrics[$queueName]);
-        $this->assertIsFloat($metrics[$queueName]['failure_rate']);
-        $this->assertGreaterThanOrEqual(0, $metrics[$queueName]['failure_rate']);
-        $this->assertLessThanOrEqual(1, $metrics[$queueName]['failure_rate']);
+        $this->assertArrayHasKey('default', $metrics);
+        $this->assertArrayHasKey('failure_rate', $metrics['default']);
+        $this->assertIsFloat($metrics['default']['failure_rate']);
+        $this->assertGreaterThanOrEqual(0, $metrics['default']['failure_rate']);
     }
+
     #[Test]
     public function collects_circuit_breaker_state()
     {
-        // Arrange
-        $queueName = 'default';
+        $this->mockRedisForCollect();
+        $this->mockDependenciesForCollect(cbState: 'open');
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn(10);
-
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->with($queueName)
-            ->andReturn(true);
-
-        // Act
         $metrics = $this->monitor->collect();
 
-        // Assert
-        $this->assertArrayHasKey($queueName, $metrics);
-        $this->assertArrayHasKey('circuit_breaker_state', $metrics[$queueName]);
-        $this->assertEquals('open', $metrics[$queueName]['circuit_breaker_state']);
+        $this->assertArrayHasKey('default', $metrics);
+        $this->assertEquals('open', $metrics['default']['circuit_breaker']['state']);
     }
+
     #[Test]
     public function exports_prometheus_format()
     {
-        // Arrange
-        $this->queueMock->shouldReceive('size')
-            ->andReturn(10);
+        $this->mockRedisForCollect(queueSize: 10);
+        $this->mockDependenciesForCollect();
 
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
-
-        // Act
         $prometheus = $this->monitor->exportPrometheus();
 
-        // Assert
         $this->assertIsString($prometheus);
-        $this->assertStringContainsString('# HELP', $prometheus);
-        $this->assertStringContainsString('# TYPE', $prometheus);
-        $this->assertStringContainsString('queue_size', $prometheus);
+        $this->assertStringContainsString('queue_size{queue=', $prometheus);
+        $this->assertStringContainsString('circuit_breaker_state{queue=', $prometheus);
     }
+
     #[Test]
     public function prometheus_metrics_syntax_valid()
     {
-        // Arrange
-        $this->queueMock->shouldReceive('size')
-            ->andReturn(25);
+        $this->mockRedisForCollect(queueSize: 25);
+        $this->mockDependenciesForCollect();
 
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
-
-        // Act
         $prometheus = $this->monitor->exportPrometheus();
+        $lines = array_filter(explode("\n", trim($prometheus)));
 
-        // Assert - Check Prometheus format
-        $lines = explode("\n", $prometheus);
-        
+        $this->assertNotEmpty($lines);
         foreach ($lines as $line) {
-            if (empty($line) || str_starts_with($line, '#')) {
-                continue;
-            }
-            
-            // Metric lines should have format: metric_name{labels} value
+            // Each line: metric_name{labels} value
             $this->assertMatchesRegularExpression(
-                '/^[a-z_]+(\{[^}]+\})?\s+[\d.]+$/',
+                '/^[a-z_0-9]+\{[^}]+\}\s+[-\d.]+$/',
                 $line,
                 "Invalid Prometheus format: {$line}"
             );
         }
     }
+
     #[Test]
     public function detects_queue_size_warning()
     {
-        // Arrange
-        $warningThreshold = config('queue-protection.monitoring.size_warning', 500);
+        $warningThreshold = config('queue-protection.monitoring.thresholds.queue_size.warning', 500);
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn($warningThreshold + 10);
+        Redis::shouldReceive('llen')->andReturn($warningThreshold + 10);
+        Redis::shouldReceive('lrange')->andReturn([]);
+        Redis::shouldReceive('get')->andReturn(null);
+        Redis::shouldReceive('keys')->andReturn([]);
 
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
+        $alerts = $this->monitor->checkThresholds();
 
-        // Act
-        $alerts = $this->monitor->getAlerts();
+        $sizeAlerts = array_filter($alerts, fn($a) => $a['metric'] === 'queue_size');
+        $this->assertNotEmpty($sizeAlerts);
 
-        // Assert
-        $this->assertNotEmpty($alerts);
-        $this->assertStringContainsString('warning', strtolower($alerts[0]['severity']));
-        $this->assertStringContainsString('size', strtolower($alerts[0]['message']));
+        $severities = array_column(array_values($sizeAlerts), 'severity');
+        $this->assertContains('warning', $severities);
     }
+
     #[Test]
     public function detects_queue_size_critical()
     {
-        // Arrange
-        $criticalThreshold = config('queue-protection.monitoring.size_critical', 1000);
+        $criticalThreshold = config('queue-protection.monitoring.thresholds.queue_size.critical', 1000);
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn($criticalThreshold + 100);
+        Redis::shouldReceive('llen')->andReturn($criticalThreshold + 100);
+        Redis::shouldReceive('lrange')->andReturn([]);
+        Redis::shouldReceive('get')->andReturn(null);
+        Redis::shouldReceive('keys')->andReturn([]);
 
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
+        $alerts = $this->monitor->checkThresholds();
 
-        // Act
-        $alerts = $this->monitor->getAlerts();
+        $sizeAlerts = array_filter($alerts, fn($a) => $a['metric'] === 'queue_size');
+        $this->assertNotEmpty($sizeAlerts);
 
-        // Assert
-        $this->assertNotEmpty($alerts);
-        $this->assertStringContainsString('critical', strtolower($alerts[0]['severity']));
+        $severities = array_column(array_values($sizeAlerts), 'severity');
+        $this->assertContains('critical', $severities);
     }
+
     #[Test]
     public function detects_processing_time_warning()
     {
-        // Arrange
-        $warningThreshold = config('queue-protection.monitoring.processing_time_warning', 5.0);
+        $criticalP95 = config('queue-protection.monitoring.thresholds.processing_time.critical', 10.0);
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn(10);
+        // Return processing times that result in p95 above critical
+        $times = array_fill(0, 100, (string) ($criticalP95 + 5.0));
+        Redis::shouldReceive('llen')->andReturn(10);
+        Redis::shouldReceive('lrange')->andReturn($times);
+        Redis::shouldReceive('get')->andReturn(null);
+        Redis::shouldReceive('keys')->andReturn([]);
 
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
+        $alerts = $this->monitor->checkThresholds();
 
-        // Mock slow processing time
-        // Note: This would require injecting processing time data
-        // For now, we'll test the threshold logic exists
-
-        // Act
-        $metrics = $this->monitor->collect();
-
-        // Assert
-        $this->assertArrayHasKey('default', $metrics);
-        $this->assertArrayHasKey('processing_time', $metrics['default']);
+        $timeAlerts = array_filter($alerts, fn($a) => $a['metric'] === 'processing_time_p95');
+        $this->assertNotEmpty($timeAlerts);
     }
+
     #[Test]
     public function detects_failure_rate_critical()
     {
-        // Arrange
-        $criticalThreshold = config('queue-protection.monitoring.failure_rate_critical', 0.10);
+        $criticalRate = config('queue-protection.monitoring.thresholds.failure_rate.critical', 0.10);
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn(100);
+        Redis::shouldReceive('llen')->andReturn(10);
+        Redis::shouldReceive('lrange')->andReturn([]);
+        // Simulate high failure rate: 50 total, 20 failed = 40%
+        Redis::shouldReceive('get')
+            ->with(Mockery::pattern('/total_jobs/'))
+            ->andReturn('50');
+        Redis::shouldReceive('get')
+            ->with(Mockery::pattern('/failed_jobs/'))
+            ->andReturn('30');
+        Redis::shouldReceive('keys')->andReturn([]);
 
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(false);
+        $alerts = $this->monitor->checkThresholds();
 
-        // Mock high failure rate
-        // Note: This would require injecting failure data
-        // For now, we'll test the threshold logic exists
-
-        // Act
-        $metrics = $this->monitor->collect();
-
-        // Assert
-        $this->assertArrayHasKey('default', $metrics);
-        $this->assertArrayHasKey('failure_rate', $metrics['default']);
+        $rateAlerts = array_filter($alerts, fn($a) => $a['metric'] === 'failure_rate');
+        $this->assertNotEmpty($rateAlerts);
+        $this->assertEquals('critical', array_values($rateAlerts)[0]['severity']);
     }
+
     #[Test]
     public function generates_alerts_for_threshold_violations()
     {
-        // Arrange
-        $criticalSize = config('queue-protection.monitoring.size_critical', 1000);
+        $criticalSize = config('queue-protection.monitoring.thresholds.queue_size.critical', 1000);
 
-        $this->queueMock->shouldReceive('size')
-            ->andReturn($criticalSize + 500);
+        Redis::shouldReceive('llen')->andReturn($criticalSize + 500);
+        Redis::shouldReceive('lrange')->andReturn([]);
+        Redis::shouldReceive('get')->andReturn(null);
+        Redis::shouldReceive('keys')->andReturn([]);
 
-        $this->circuitBreakerMock->shouldReceive('isOpen')
-            ->andReturn(true); // Circuit is also open
+        $alerts = $this->monitor->checkThresholds();
 
-        // Act
-        $alerts = $this->monitor->getAlerts();
-
-        // Assert
-        $this->assertNotEmpty($alerts, 'Should generate alerts for threshold violations');
-        $this->assertGreaterThan(0, count($alerts));
-        
-        // Should have alerts for both queue size and circuit breaker
-        $alertMessages = array_column($alerts, 'message');
-        $this->assertNotEmpty($alertMessages);
+        $this->assertIsArray($alerts);
+        $this->assertNotEmpty($alerts);
+        $this->assertArrayHasKey('severity', $alerts[0]);
+        $this->assertArrayHasKey('metric', $alerts[0]);
     }
 }
