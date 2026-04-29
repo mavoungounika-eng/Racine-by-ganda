@@ -91,11 +91,19 @@ class AuthHardeningTest extends TestCase
     }
 
     /**
-     * Test : Staff sans permission ERP → 403
+     * Test : User without ERP role (client/createur) → redirected away from ERP routes
      */
     public function test_staff_without_erp_permission_gets_403(): void
     {
-        $this->markTestSkipped('ERP routes (/erp/dashboard) not implemented yet. TODO: Create ERP module routes and permission gates.');
+        $creator = User::factory()->create([
+            'role' => 'createur',
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($creator)->get('/erp');
+
+        // EnsureAuthenticated:staff,admin,super_admin redirects non-authorized roles to login
+        $response->assertRedirect(route('login'));
     }
 
     /**

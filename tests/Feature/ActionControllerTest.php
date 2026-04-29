@@ -36,9 +36,29 @@ class ActionControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Skip tous les tests de cette classe
-        $this->markTestSkipped('Configuration autorisation admin complexe requise. Voir docblock de la classe.');
+
+        $adminRole = \App\Models\Role::firstOrCreate(
+            ['slug' => 'admin'],
+            ['name' => 'Admin', 'description' => 'Admin role', 'is_active' => true]
+        );
+        $this->adminUser = User::firstOrCreate(
+            ['email' => 'admin-actions@test.com'],
+            [
+                'name' => 'Admin Actions Test',
+                'password' => bcrypt('password'),
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
+                'auth_version' => 1,
+                'status' => 'active',
+            ]
+        );
+    }
+
+    private function adminSession(): array
+    {
+        return ['2fa_verified' => true, 'auth_version' => $this->adminUser->auth_version];
     }
     #[Test]
     public function it_returns_pending_actions()
@@ -58,6 +78,7 @@ class ActionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->getJson('/admin/actions/pending');
 
         $response->assertStatus(200)
@@ -85,6 +106,7 @@ class ActionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->postJson("/admin/actions/creator/{$creator->id}/propose");
 
         $response->assertStatus(201)
@@ -112,6 +134,7 @@ class ActionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->postJson("/admin/actions/{$actionDecision->id}/approve", [
                 'decision_reason' => 'Action approved for testing',
             ]);
@@ -143,6 +166,7 @@ class ActionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->postJson("/admin/actions/{$actionDecision->id}/reject", [
                 'decision_reason' => 'Action not needed',
             ]);
@@ -185,6 +209,7 @@ class ActionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->postJson("/admin/actions/{$actionDecision->id}/execute");
 
         $response->assertStatus(200)
@@ -213,6 +238,7 @@ class ActionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->postJson("/admin/actions/{$actionDecision->id}/execute");
 
         $response->assertStatus(400)
@@ -241,6 +267,7 @@ class ActionControllerTest extends TestCase
 
         // Sans confirmation
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->postJson("/admin/actions/{$actionDecision->id}/execute");
 
         $response->assertStatus(400)
@@ -268,6 +295,7 @@ class ActionControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->adminUser)
+            ->withSession($this->adminSession())
             ->getJson('/admin/actions/history');
 
         $response->assertStatus(200)
