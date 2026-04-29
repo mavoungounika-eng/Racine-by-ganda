@@ -11,7 +11,7 @@
     {{-- Bootstrap 5 chargé via Vite (app.scss) — Bootstrap 4 legacy supprimé --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin-enhanced.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     <style nonce="{{ csp_nonce() }}">
         :root {

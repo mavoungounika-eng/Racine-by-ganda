@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     
     {{-- Font Awesome --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     <style nonce="{{ csp_nonce() }}">
         /* Specificity 0,1,1 > Bootstrap body 0,0,1 → gradient survives */
