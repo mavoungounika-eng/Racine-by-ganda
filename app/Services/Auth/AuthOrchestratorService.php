@@ -96,6 +96,7 @@ class AuthOrchestratorService
 
         // Step 6: Resolve UserContext (SINGLE SOURCE OF TRUTH)
         try {
+            $user->refresh(); // Ensure auth_version is current after saved hook
             $context = $this->contextResolver->resolve($user);
         } catch (\Throwable $e) {
             // Failed to resolve context - logout and fail

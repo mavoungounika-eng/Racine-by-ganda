@@ -146,6 +146,11 @@ class PosPayment extends Model
      */
     public function confirm(int $confirmedBy, ?string $externalReference = null): void
     {
+        // Idempotence : ne rien faire si déjà confirmé
+        if (!$this->isPending()) {
+            return;
+        }
+
         $this->update([
             'status' => self::STATUS_CONFIRMED,
             'confirmed_at' => now(),

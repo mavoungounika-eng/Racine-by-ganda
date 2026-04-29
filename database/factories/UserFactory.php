@@ -38,6 +38,7 @@ class UserFactory extends Factory
             'is_admin' => false,
             'status' => 'active',
             'auth_version' => 1, // Default auth_version
+            'terms_accepted_at' => now(),
         ];
     }
 

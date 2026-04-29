@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Responses\PosApiResponse;
 use App\Traits\AuditsPosOperations;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Modules\POSSync\Models\PosDevice;
 use Modules\POSSync\Services\DeviceAuthService;
 
@@ -103,6 +106,65 @@ class PosAuthController extends Controller
             ],
             'token' => $token,
         ], 'Login successful');
+    }
+
+    /**
+     * Renouveler le JWT device (même si expiré, tant que la signature est valide).
+     *
+     * Ce endpoint existe pour deux raisons :
+     * 1. Le JWT du terminal expire après 7 jours — le POS doit pouvoir le renouveler sans se réenregistrer.
+     * 2. Après une migration DB, le device doit se ré-enregistrer : si le device n'existe plus,
+     *    on renvoie 401 et le frontend efface le token pour déclencher un nouvel enregistrement.
+     */
+    public function refreshDeviceToken(Request $request): JsonResponse
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return PosApiResponse::unauthorized('Missing bearer token');
+        }
+
+        $secret = config('jwt.secret');
+        $algo   = config('jwt.algo', 'HS256');
+
+        if (empty($secret)) {
+            return PosApiResponse::error('SERVER_ERROR', 'JWT not configured', [], 500);
+        }
+
+        // Extraire le machine_id même si le token est expiré
+        $machineId = null;
+        try {
+            $decoded   = JWT::decode($token, new Key($secret, $algo));
+            $machineId = $decoded->sub ?? null;
+        } catch (ExpiredException $e) {
+            // Token expiré mais signature valide — extraire le payload manuellement
+            $parts = explode('.', $token);
+            if (count($parts) === 3) {
+                $payload   = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+                $machineId = $payload['sub'] ?? null;
+            }
+        } catch (\Exception $e) {
+            return PosApiResponse::unauthorized('Invalid token');
+        }
+
+        if (!$machineId) {
+            return PosApiResponse::unauthorized('Invalid token payload');
+        }
+
+        $device = PosDevice::where('machine_id', $machineId)->first();
+
+        if (!$device) {
+            // Device supprimé de la DB → frontend doit se ré-enregistrer
+            return PosApiResponse::unauthorized('Device not registered');
+        }
+
+        if (!$device->isActive()) {
+            return PosApiResponse::error('DEVICE_NOT_ACTIVE', 'Device not active', ['status' => $device->status], 403);
+        }
+
+        $newToken = app(DeviceAuthService::class)->generateToken($machineId);
+
+        return PosApiResponse::success(['token' => $newToken], 'Token refreshed');
     }
 
     /**

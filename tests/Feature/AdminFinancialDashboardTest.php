@@ -10,6 +10,7 @@ use App\Models\CreatorSubscription;
 use App\Models\CreatorSubscriptionInvoice;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -27,7 +28,8 @@ class AdminFinancialDashboardTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+        Cache::flush();
+
         // Créer un utilisateur admin avec 2FA activé
         $adminRole = \App\Models\Role::firstOrCreate(
             ['slug' => 'admin'],
@@ -182,19 +184,19 @@ class AdminFinancialDashboardTest extends TestCase
                 'creator_profile_id' => $creator->id,
                 'creator_plan_id' => $plan->id,
                 'status' => 'active',
-                'started_at' => now()->subMonths(2),
+                'started_at' => now()->subMonths(3)->startOfDay(),
             ]);
         }
 
-        // 2 abonnements annulÃ©s le mois dernier
+        // 2 abonnements annulés le mois dernier
         for ($i = 0; $i < 2; $i++) {
             $creator = CreatorProfile::factory()->create();
             CreatorSubscription::factory()->create([
                 'creator_profile_id' => $creator->id,
                 'creator_plan_id' => $plan->id,
                 'status' => 'canceled',
-                'started_at' => now()->subMonths(2),
-                'canceled_at' => now()->subMonth(),
+                'started_at' => now()->subMonths(3)->startOfDay(),
+                'canceled_at' => now()->subMonth()->startOfDay(),
             ]);
         }
 

@@ -365,7 +365,7 @@ Route::get('/language/{locale}', [\App\Http\Controllers\LanguageController::clas
 Route::redirect('/faq', '/pages/faq', 301);
 Route::redirect('/contact-old', '/pages/contact', 301); // Eviter conflit avec /contact existant si souhaité
 
-Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
+Route::middleware('throttle:web')->name('frontend.')->group(function () {
     Route::get('/', [FrontendController::class, 'home'])->name('home');
     Route::get('/boutique', [FrontendController::class, 'shop'])->name('shop');
     Route::get('/search', [\App\Http\Controllers\Front\SearchController::class, 'index'])->name('search');
@@ -706,7 +706,7 @@ Route::post('/payment/card/webhook', [\App\Http\Controllers\Front\CardPaymentCon
 Route::post('/payment/mobile-money/{provider}/callback', [\App\Http\Controllers\Front\MobileMoneyPaymentController::class, 'callback'])->name('payment.mobile-money.callback');
 
 // Monetbil Payment Routes
-Route::post('/payment/monetbil/start/{order}', [\App\Http\Controllers\Payments\MonetbilController::class, 'start'])->middleware(['auth'])->name('payment.monetbil.start');
+Route::match(['GET', 'POST'], '/payment/monetbil/start/{order}', [\App\Http\Controllers\Payments\MonetbilController::class, 'start'])->middleware(['auth'])->name('payment.monetbil.start');
 Route::match(['GET', 'POST'], '/payment/monetbil/notify', [\App\Http\Controllers\Payments\MonetbilController::class, 'notify'])->name('payment.monetbil.notify');
 
 // ============================================

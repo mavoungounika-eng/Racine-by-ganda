@@ -204,7 +204,8 @@ class SocialAuthController extends Controller
         $contextResolver = app(\App\Services\Auth\UserContextResolver::class);
         $decisionEngine = app(\App\Services\Auth\PostLoginDecisionEngine::class);
 
-        // Résoudre le contexte utilisateur
+        // Résoudre le contexte utilisateur (refresh depuis DB pour avoir le bon auth_version)
+        $user->refresh();
         $context = $contextResolver->resolve($user);
         $contextResolver->storeInSession($context);
 

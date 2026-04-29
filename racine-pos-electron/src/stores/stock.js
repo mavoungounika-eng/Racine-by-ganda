@@ -113,20 +113,23 @@ export const useStockStore = defineStore('stock', {
 
     /** Traitement alerte stock bas */
     _handleStockLowAlert(data) {
-      // Dédupliquer
-      const exists = this.alerts.find(
+      const existingIndex = this.alerts.findIndex(
         a => a.product_id === data.product_id && a.type === 'low_stock'
       )
-      if (!exists) {
-        this._addAlert({
-          type: 'low_stock',
-          product_id: data.product_id,
-          product_name: data.product_name,
-          current_stock: data.current_stock,
-          threshold: data.threshold,
-          source: data.source,
-          timestamp: data.timestamp,
-        })
+      const alert = {
+        type: 'low_stock',
+        product_id: data.product_id,
+        product_name: data.product_name,
+        current_stock: data.current_stock,
+        threshold: data.threshold,
+        source: data.source,
+        timestamp: data.timestamp,
+      }
+      if (existingIndex !== -1) {
+        // Mettre à jour le stock actuel dans l'alerte existante
+        this.alerts[existingIndex] = alert
+      } else {
+        this._addAlert(alert)
       }
     },
 

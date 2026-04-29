@@ -49,13 +49,13 @@ class PublicAuthController extends Controller
             
             // Charger la relation roleRelation avant la redirection
             $user->load('roleRelation');
-            
+
             // Sauvegarder le style visuel si fourni
             if ($request->has('visual_style')) {
                 $settings = \App\Models\UserSetting::forUser($user->id);
                 $settings->update(['visual_style' => $request->visual_style]);
             }
-            
+
             return $this->redirectByRole($user);
         }
 
@@ -111,6 +111,7 @@ class PublicAuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role_id' => $role->id,
+            'auth_version' => 1,
         ]);
 
         // Charger la relation roleRelation avant la redirection
@@ -118,8 +119,15 @@ class PublicAuthController extends Controller
 
         // Connecter automatiquement l'utilisateur
         Auth::login($user);
+        // Envoyer email de vérification
+        $user->sendEmailVerificationNotification();
+        // Stocker UserContext en session (refresh depuis DB pour avoir le bon auth_version)
+        $user->refresh();
+        $contextResolver = app(\App\Services\Auth\UserContextResolver::class);
+        $context = $contextResolver->resolve($user);
+        $contextResolver->storeInSession($context);
 
-        return $this->redirectByRole($user);
+        return redirect()->route('verification.notice');
     }
 
     /**

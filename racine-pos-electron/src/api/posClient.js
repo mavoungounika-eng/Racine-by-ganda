@@ -110,7 +110,12 @@ export class PosApiClient {
         return true;
       }
       return false;
-    } catch {
+    } catch (err) {
+      // Si le device n'existe plus en DB (401 "Device not registered" ou autre),
+      // effacer le token invalide pour forcer un re-enregistrement au prochain passage sur /login.
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        this.setToken?.(null);
+      }
       return false;
     }
   }

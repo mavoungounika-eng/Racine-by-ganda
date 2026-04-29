@@ -63,6 +63,11 @@ export const useAuthStore = defineStore('auth', {
           this.operator = res.data.operator;
           this.operatorToken = res.data.token;
           this.persist();
+          // Rafraîchir les headers Echo/WebSocket avec le nouveau token opérateur
+          try {
+            const { refreshEchoAuth } = await import('../plugins/echo.js');
+            refreshEchoAuth();
+          } catch (e) { /* echo indisponible — POS continue */ }
           return res;
         }
         throw new Error(res?.error?.message || 'Login failed');

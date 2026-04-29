@@ -288,7 +288,7 @@ barcodeInput.addEventListener('keypress', async function(e) {
 
 async function searchProduct(code) {
     try {
-        const response = await fetch('{{ route("admin.pos.search-product") }}', {
+        const response = await fetch('{{ route("pos.interface.search-product") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -439,7 +439,7 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
     }))));
 
     try {
-        const response = await fetch('{{ route("admin.pos.create-order") }}', {
+        const response = await fetch('{{ route("pos.interface.create-order") }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content

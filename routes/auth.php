@@ -127,3 +127,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/terms/accept', [\App\Http\Controllers\Auth\TermsController::class, 'show'])->name('terms.accept');
     Route::post('/terms/accept', [\App\Http\Controllers\Auth\TermsController::class, 'accept'])->name('terms.accept.post');
 });
+
+// ============================================
+// VÉRIFICATION EMAIL
+// ============================================
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'resend'])->middleware('throttle:6,1')->name('verification.send');
+});

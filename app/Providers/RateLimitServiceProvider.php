@@ -22,6 +22,23 @@ class RateLimitServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Limiteur web : généreux pour les users authentifiés (par ID), strict pour les guests (par IP)
+        RateLimiter::for('web', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(200)->by($request->user()->id)
+                : Limit::perMinute(60)->by($request->ip());
+        });
+
+        // Limiteur auth : strict sur les routes sensibles (login, register, password)
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip())
+                ->response(function () {
+                    return response()->json([
+                        'message' => 'Trop de tentatives, réessayez dans 1 minute.',
+                    ], 429);
+                });
+        });
+
         // Rate limiting pour checkout (10 requêtes par minute)
         RateLimiter::for('checkout', function (Request $request) {
             return Limit::perMinute(10)

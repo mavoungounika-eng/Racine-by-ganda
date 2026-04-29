@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\LoyaltyTransaction;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -28,6 +29,17 @@ class User extends Authenticatable implements MustVerifyEmail
         parent::boot();
 
         static::saving(function ($user) {
+            // DEBUG: capturer toute écriture de email_verified_at (CREATE et UPDATE)
+            if ($user->isDirty('email_verified_at') && $user->email_verified_at !== null) {
+                \Log::warning('[DEBUG-EVA] email_verified_at being set', [
+                    'user_id' => $user->id ?? 'NEW',
+                    'is_new' => !$user->exists,
+                    'value' => $user->email_verified_at,
+                    'trace' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15))
+                        ->map(fn($f) => ($f['class'] ?? '') . '::' . ($f['function'] ?? '') . ' L' . ($f['line'] ?? ''))
+                        ->implode(' → ')
+                ]);
+            }
             // SYNC LEGACY ROLE STRING -> ROLE_ID
             // If 'role' (string) is changing
             if ($user->isDirty('role')) {
@@ -426,6 +438,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function loyaltyPoints()
     {
         return $this->hasMany(LoyaltyPoint::class, 'customer_id');
+    }
+
+    /**
+     * Transactions de fidélité.
+     */
+    public function loyaltyTransactions()
+    {
+        return $this->hasMany(LoyaltyTransaction::class, 'user_id');
     }
 
     /**

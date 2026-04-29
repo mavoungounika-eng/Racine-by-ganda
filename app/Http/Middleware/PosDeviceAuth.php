@@ -21,7 +21,6 @@ class PosDeviceAuth
             'url' => $request->fullUrl(),
             'method' => $request->method(),
             'bearer_token' => $request->bearerToken() ? 'present' : 'missing',
-            'headers' => $request->headers->all(),
         ]);
 
         $token = $request->bearerToken();

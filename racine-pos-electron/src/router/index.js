@@ -24,12 +24,18 @@ const router = createRouter({
   routes,
 });
 
+let authInitialized = false;
+
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
   const session = useSessionStore();
   const offline = useOfflineStore();
 
-  auth.loadFromStorage();
+  // Ne charger le storage qu'une seule fois par session app
+  if (!authInitialized) {
+    auth.loadFromStorage();
+    authInitialized = true;
+  }
 
   if (offline.isOffline && to.path !== '/offline') return '/offline';
   if (!auth.isAuthenticated && to.path !== '/login') return '/login';

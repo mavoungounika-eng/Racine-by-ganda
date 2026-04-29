@@ -357,16 +357,18 @@ class PosOfflineService
      */
     private function queueOfflineConflict(string $deviceId, array $saleData): void
     {
-        PosOfflineQueue::updateOrCreate(
-            ['sale_data->uuid' => $saleData['uuid']],
-            [
-                'machine_id' => $deviceId,
-                'sale_data' => $saleData,
-                'status' => 'conflict',
-                'queued_at' => now(),
-                'error_message' => 'SYNC_CONFLICT_STOCK'
-            ]
-        );
+        // Utiliser la syntaxe Laravel JSON (cross-DB: MySQL json_unquote + SQLite json_extract)
+        $existing = PosOfflineQueue::query()
+            ->where('sale_data->uuid', $saleData['uuid'])
+            ->first();
+
+        $record = $existing ?? new PosOfflineQueue();
+        $record->machine_id   = $deviceId;
+        $record->sale_data    = $saleData;
+        $record->status       = 'conflict';
+        $record->queued_at    = now();
+        $record->error_message = 'SYNC_CONFLICT_STOCK';
+        $record->save();
     }
 
     /**
@@ -374,7 +376,7 @@ class PosOfflineService
      */
     public function resolveConflict(string $saleUuid, string $resolution, int $userId): bool
     {
-        $queueItem = clone PosOfflineQueue::query()
+        $queueItem = PosOfflineQueue::query()
             ->where('sale_data->uuid', $saleUuid)
             ->where('status', 'conflict')
             ->first();

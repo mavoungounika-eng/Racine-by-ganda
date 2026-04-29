@@ -103,6 +103,7 @@ class AppServiceProvider extends ServiceProvider
         // =====================================================
         // Politique de mots de passe globale (appliquée via Password::defaults())
         // Utilisée dans tous les validators avec la règle Password::defaults()
+
         Password::defaults(function () {
             return Password::min(12)
                 ->mixedCase()    // Au moins 1 majuscule + 1 minuscule

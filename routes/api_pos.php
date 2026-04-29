@@ -20,6 +20,8 @@ Route::post('/register', [PosAuthController::class, 'registerTerminal']);
 // côté front au lieu de la page HTML par défaut de Laravel.
 Route::prefix('auth')->middleware(['throttle:pos_operator_login'])->group(function () {
     Route::post('/operator/login', [PosAuthController::class, 'login']);
+    // Renouvellement JWT device (expiré ou même après migration DB)
+    Route::post('/refresh', [PosAuthController::class, 'refreshDeviceToken']);
 });
 
 Route::middleware(['pos.auth', 'throttle:pos_device'])->group(function () {

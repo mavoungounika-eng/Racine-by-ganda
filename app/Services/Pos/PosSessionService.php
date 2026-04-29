@@ -267,13 +267,22 @@ class PosSessionService
             ->flatMap(fn($sale) => $sale->payments)
             ->filter(fn($payment) => $payment->isCash() && $payment->isPending());
 
+        $confirmed = 0;
         foreach ($pendingCashPayments as $payment) {
-            $payment->confirm($userId, 'SESSION_CLOSE');
+            try {
+                $payment->confirm($userId, 'SESSION_CLOSE');
+                $confirmed++;
+            } catch (\Exception $e) {
+                Log::warning('Failed to confirm cash payment on session close', [
+                    'payment_id' => $payment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         Log::info('All cash payments confirmed on session close', [
             'session_id' => $session->id,
-            'payments_confirmed' => $pendingCashPayments->count(),
+            'payments_confirmed' => $confirmed,
         ]);
     }
 

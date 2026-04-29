@@ -56,6 +56,11 @@ export const useCartStore = defineStore('cart', {
 
       try {
         const res = await this.client().post('/api/pos/sales', saleData, idempotencyKey);
+        // posClient peut retourner une réponse offline transparente
+        if (res.offline || res.queued) {
+          this.clearCart();
+          return { success: true, offline: true, queued: true };
+        }
         this.lastSale = res.data?.sale || null;
         this.lastPayment = res.data?.sale?.payment || null;
         this.clearCart();
@@ -92,10 +97,7 @@ export const useCartStore = defineStore('cart', {
   },
   getters: {
     displayTotal(state) {
-      const { useCurrencyStore } = require('./currency');
-      const currencyStore = useCurrencyStore();
-      const converted = currencyStore.getConvertedTotal(state.total);
-      return currencyStore.format(converted);
+      return new Intl.NumberFormat('fr-FR').format(Math.round(state.total)) + ' FCFA';
     }
   }
 });

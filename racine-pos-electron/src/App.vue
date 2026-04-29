@@ -29,20 +29,43 @@ onMounted(() => {
 </script>
 
 <style>
+/* ============================================================
+   CHARTE GRAPHIQUE — RACINE BY GANDA
+   Noir #160D0C | Orange #ED5F1E | Jaune #FFB800 | Blanc #FFFFFF
+   Polices : Coco Gothic (corps) · Aileron (accent) · Aleppo (titres)
+   ============================================================ */
 :root {
-  --background: #101010;
-  --surface: #1c1b1b;
-  --surface-high: #2a2a2a;
-  --primary: #f2ca50;
-  --primary-dim: #d4af37;
-  --on-surface: #e5e2e1;
-  --outline-variant: #4d4635;
+  /* Surfaces sombres (dérivées du noir charte #160D0C) */
+  --background:       #0D0907;
+  --surface:          #1A1210;
+  --surface-high:     #231815;
+  --surface-overlay:  rgba(26, 18, 16, 0.97);
 
-  --bg: var(--background);
-  --card: var(--surface);
-  --text: var(--on-surface);
-  --accent: var(--primary-dim);
-  --danger: #ffb4ab;
+  /* Couleurs charte */
+  --primary:          #ED5F1E;   /* Orange Racine — CTA principal */
+  --primary-dim:      #C94E16;   /* Orange foncé — hover/pressed */
+  --accent:           #FFB800;   /* Jaune Racine — highlights */
+  --on-primary:       #FFFFFF;
+
+  /* Textes */
+  --on-surface:       #F5EFE8;   /* Blanc chaud lisible */
+  --on-surface-muted: #B8A89A;   /* Texte secondaire */
+  --on-surface-faint: #7A6A62;   /* Texte tertiaire */
+
+  /* Bordures */
+  --outline-variant:  rgba(237, 95, 30, 0.2);
+  --border:           rgba(237, 95, 30, 0.15);
+
+  /* États */
+  --danger:           #FF6B6B;
+  --success:          #34D399;
+  --warning:          #FFB800;
+
+  /* Alias legacy (compatibilité composants existants) */
+  --bg:               var(--background);
+  --card:             var(--surface);
+  --text:             var(--on-surface);
+  --text-muted:       var(--on-surface-muted);
 }
 
 * {
@@ -59,9 +82,11 @@ body,
 }
 
 body {
-  font-family: 'Manrope', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  /* Coco Gothic > Century Gothic > system-ui comme fallback Electron */
+  font-family: 'Coco Gothic', 'Century Gothic', 'Futura', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 .app {
@@ -80,6 +105,13 @@ button,
 input,
 select {
   font-size: 16px;
+  font-family: inherit;
+}
+
+/* Focus global accessible */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 </style>
 

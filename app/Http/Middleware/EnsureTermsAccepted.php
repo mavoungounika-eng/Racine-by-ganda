@@ -26,8 +26,13 @@ class EnsureTermsAccepted
             return $next($request);
         }
 
-        // Exempter les routes d'acceptation et logout
-        if ($request->routeIs('terms.accept', 'terms.accept.post', 'logout')) {
+        // Exempter les routes d'acceptation, vérification email et logout
+        if ($request->routeIs('terms.accept', 'terms.accept.post', 'logout', 'verification.notice', 'verification.verify', 'verification.send')) {
+            return $next($request);
+        }
+
+        // Exempter les routes admin/erp/staff — leur propre RBAC gère la redirection
+        if ($request->routeIs('admin.*', 'erp.*', 'staff.*') || $request->is('admin/*', 'erp/*', 'staff/*')) {
             return $next($request);
         }
 

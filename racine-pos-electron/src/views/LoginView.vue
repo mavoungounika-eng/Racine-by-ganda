@@ -149,18 +149,19 @@ const login = async () => {
 <style scoped>
 .login-shell {
   height: 100%;
-  min-height: 0;
-  display: grid;
-  grid-template-rows: 72px 1fr 72px;
+  display: flex;
+  flex-direction: column;
   background:
-    radial-gradient(circle at 15% 15%, rgba(242, 202, 80, 0.16) 0%, transparent 35%),
-    radial-gradient(circle at 90% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 32%),
-    #101010;
+    radial-gradient(circle at 15% 15%, rgba(237, 95, 30, 0.14) 0%, transparent 38%),
+    radial-gradient(circle at 88% 72%, rgba(255, 184, 0, 0.08) 0%, transparent 32%),
+    var(--background);
   color: var(--on-surface);
   overflow: hidden;
 }
 
 .topbar {
+  flex-shrink: 0;
+  height: 64px;
   padding: 0 22px;
   display: flex;
   align-items: center;
@@ -201,11 +202,13 @@ const login = async () => {
   height: 8px;
   border-radius: 50%;
   background: var(--primary);
-  box-shadow: 0 0 10px rgba(242, 202, 80, 0.7);
+  box-shadow: 0 0 10px rgba(237, 95, 30, 0.65);
   flex-shrink: 0;
 }
 
 .canvas {
+  flex: 1;
+  min-height: 0;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -268,7 +271,7 @@ input::placeholder {
 input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(242, 202, 80, 0.18);
+  box-shadow: 0 0 0 3px rgba(237, 95, 30, 0.2);
 }
 
 button {
@@ -277,8 +280,16 @@ button {
   border: none;
   border-radius: 12px;
   font-weight: 800;
-  color: #3a2d00;
-  background: linear-gradient(180deg, #f2ca50 0%, #d4af37 100%);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--on-primary);
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dim) 100%);
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+button:not(:disabled):hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 button:disabled {
@@ -299,6 +310,7 @@ button:disabled {
 }
 
 .footer {
+  flex-shrink: 0;
   border-top: 1px solid var(--outline-variant);
   background: rgba(16, 16, 16, 0.95);
   color: #d0c5af;

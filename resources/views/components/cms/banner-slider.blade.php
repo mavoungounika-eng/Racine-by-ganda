@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="hero-slider-track">
                         @foreach(range(1, 7) as $i)
                         <div class="hero-slide {{ $i === 1 ? 'active' : '' }}">
-                            <img src="{{ asset('storage/hero/slide-' . $i . '.jpg') }}" alt="Look {{ $i }}" loading="{{ $i === 1 ? 'eager' : 'lazy' }}">
+                            <img src="{{ asset('storage/hero/hero-' . sprintf('%02d', $i) . '.jpeg') }}" alt="Look {{ $i }}" loading="{{ $i === 1 ? 'eager' : 'lazy' }}">
                         </div>
                         @endforeach
                     </div>

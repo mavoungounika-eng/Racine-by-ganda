@@ -40,7 +40,8 @@ let timer = null;
 
 const sync = async () => {
   await offline.syncNow();
-  if (offline.lastSyncResult && offline.lastSyncResult.failed === 0) {
+  const result = offline.lastSyncResult;
+  if (result && result.failed === 0 && (result.synced > 0 || result.processed > 0)) {
     showSuccess.value = true;
     setTimeout(() => { showSuccess.value = false; }, 3000);
   }
