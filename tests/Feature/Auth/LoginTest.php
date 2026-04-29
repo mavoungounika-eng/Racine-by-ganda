@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
@@ -15,9 +16,13 @@ class LoginTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed roles before each test
         $this->seed(\Database\Seeders\RolesTableSeeder::class);
+
+        // Clear rate limiter state to avoid cross-test pollution
+        RateLimiter::clear('login|test@example.com');
+        RateLimiter::clear('login|127.0.0.1');
     }
 
     /**
