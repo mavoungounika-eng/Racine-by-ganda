@@ -205,9 +205,9 @@ Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(
         
         // Notifications
         Route::get('notifications', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'index'])->name('notifications.index');
-        Route::patch('notifications/{notification}/marquer-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-        Route::patch('notifications/marquer-tout-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAllAsRead'])->name('notifications.marquer-tout-lu');
         
+        Route::patch('notifications/marquer-tout-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAllAsRead'])->name('notifications.marquer-tout-lu');
+        Route::patch('notifications/{notification}/marquer-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAsRead'])->name('notifications.marquer-lu');
         // Profil (route legacy - redirige vers la route unifiée)
         Route::get('profil', function () {
             return redirect()->route('profile.edit');

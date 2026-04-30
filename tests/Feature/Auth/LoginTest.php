@@ -21,6 +21,9 @@ class LoginTest extends TestCase
         $this->seed(\Database\Seeders\RolesTableSeeder::class);
 
         // Clear rate limiter state to avoid cross-test pollution
+        // Key format: login:email:ip (see AuthOrchestratorService::isRateLimited)
+        RateLimiter::clear('login:test@example.com:127.0.0.1');
+        RateLimiter::clear('login:test@example.com:::1');
         RateLimiter::clear('login|test@example.com');
         RateLimiter::clear('login|127.0.0.1');
     }
