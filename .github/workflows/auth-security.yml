@@ -30,6 +30,7 @@ jobs:
           cp .env.example .env.testing
           php artisan key:generate --env=testing
           touch database/database.sqlite
+          php artisan migrate --env=testing --force
 
       # CHECK 1: No routes with 'auth' without 'ensure'
       - name: Validate Route Middleware
@@ -37,15 +38,26 @@ jobs:
           php artisan route:list --json > routes.json
           
           # Check for routes with 'auth' but not 'ensure'
-          INVALID_ROUTES=$(jq -r '.[] | select(.middleware | type == "array") | select(.middleware | contains(["auth"]) and (contains(["ensure"]) | not)) | .uri' routes.json)
-          
-          if [ ! -z "$INVALID_ROUTES" ]; then
+          # Normalize middleware to array (handles null, string, or array values)
+          INVALID_ROUTES=$(jq -r '
+            .[] |
+            .uri as $uri |
+            (.middleware // [] | if type == "string" then [.] else . end) as $mw |
+            select($mw | map(test("^auth(:|$)")) | any) |
+            select($mw | map(test("^ensure")) | any | not) |
+            $uri
+          ' routes.json)
+
+          CHECKED=$(jq 'length' routes.json)
+          echo "Routes checked: $CHECKED"
+
+          if [ -n "$INVALID_ROUTES" ]; then
             echo "❌ ERROR: Routes with 'auth' middleware must use 'ensure'"
             echo "Invalid routes:"
             echo "$INVALID_ROUTES"
             exit 1
           fi
-          
+
           echo "✅ All protected routes use 'ensure' middleware"
       
       # CHECK 2: PHPStan auth rules

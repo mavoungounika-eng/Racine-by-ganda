@@ -98,7 +98,7 @@ Ne jamais :
 - Heredocs bash instables → toujours utiliser Python pour écrire des fichiers
 - Fichiers > 300 lignes → lire par tranches, ne jamais assumer le contenu
 - Si une commande ne retourne rien → WSL peut être bloqué, signaler immédiatement
-- Chemin projet : /home/nika/projects/racine-backend
+- Chemin projet : racine-backend (utiliser `pwd` pour chemin absolu courant)
 - Ne jamais utiliser wsl.localhost paths dans les commandes bash
 - Toujours utiliser des chemins relatifs depuis la racine projet
 - Queue : Redis en prod, sync en test (QUEUE_CONNECTION=sync dans .env.testing)
