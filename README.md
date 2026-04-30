@@ -10,7 +10,7 @@ Marketplace e-commerce Congo avec gestion créateurs, boutiques physiques (POS),
 - **Paiements** : Stripe + Mobile Money (Monetbil)
 - **Authentification** : OAuth (Google Socialite), 2FA (Google Authenticator), RBAC
 - **File d'attente** : Laravel Queues
-- **Tests** : PHPUnit (133 tests)
+- **Tests** : PHPUnit (895 tests)
 
 ## Installation Locale
 
@@ -101,7 +101,7 @@ php test_accounts_login.php   # Tester comptes test
 **STATUT : PRODUCTION-READY**
 
 - ✅ Backend DONE (RBAC verrouillé, Auth complet, Paiements opérationnels)
-- ✅ Tests CI (133 tests couvrant core features)
+- ✅ Tests CI (895 tests couvrant core features)
 - ❄️ **FEATURE FREEZE** actif - Voir [FEATURE_FREEZE.md](./FEATURE_FREEZE.md)
 
 ## Production

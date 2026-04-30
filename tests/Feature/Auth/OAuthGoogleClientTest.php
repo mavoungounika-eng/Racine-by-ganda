@@ -81,7 +81,7 @@ class OAuthGoogleClientTest extends TestCase
         // Vérifier que le UserContext est en session
         $this->assertTrue(Session::has('user_context'));
         $contextArray = Session::get('user_context');
-        $context = \App\DTOs\Auth\UserContext::fromArray($contextArray);
+        $context = \App\DTO\Auth\UserContext::fromArray($contextArray);
         $this->assertEquals('client', $context->role);
 
         // Redirection vers le dashboard client (via PostLoginDecisionEngine)

@@ -50,10 +50,10 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Copy environment
-        run: cp .env.example .env
+        run: cp .env.example .env.testing
 
       - name: Generate key
-        run: php artisan key:generate
+        run: php artisan key:generate --env=testing
 
       - name: Run Governance Tests
         env:
@@ -67,6 +67,7 @@ jobs:
           php artisan migrate --force
           php artisan migrate --path=modules/Accounting/database/migrations --force
           php artisan db:seed --class=RolesTableSeeder --force
+          php artisan db:seed --class=TestUsersSeeder --force
           php artisan db:seed --class=CreatorPlanSeeder --force
           php artisan test --filter=GovernanceHardeningTest --stop-on-failure
           php artisan test --filter=SaasPurInvariantsTest --stop-on-failure

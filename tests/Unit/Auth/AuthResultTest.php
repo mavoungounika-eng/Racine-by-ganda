@@ -4,7 +4,7 @@ namespace Tests\Unit\Auth;
 
 use PHPUnit\Framework\Attributes\Test;
 
-use App\DTOs\Auth\AuthResult;
+use App\DTO\Auth\AuthResult;
 use App\Models\User;
 use Tests\TestCase;
 
@@ -134,9 +134,9 @@ class AuthResultTest extends TestCase
     #[Test]
     public function it_distinguishes_between_captcha_and_2fa()
     {
-        $captchaResult = AuthResult::requiresCaptcha();
+        $captchaResult = AuthResult::captchaRequired();
         $user = User::factory()->make(['id' => 1]);
-        $twoFAResult = AuthResult::requires2FA($user, '/2fa');
+        $twoFAResult = AuthResult::twoFactorRequired($user, '/2fa');
 
         $this->assertTrue($captchaResult->requiresCaptcha());
         $this->assertFalse($captchaResult->requires2FA());

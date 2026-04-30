@@ -10,9 +10,9 @@ paths:
 # Règles — Monetbil / Mobile Money (XAF)
 
 ## Variables d environnement requises
-MONETBIL_SERVICE_ID=9nz1NImduWunYrct5p8gucGRPaaZuUzp
-MONETBIL_SERVICE_KEY=GgifAl9Oey...
-MONETBIL_SERVICE_SECRET=[configuré]
+MONETBIL_SERVICE_ID=[CONFIDENTIEL — renseigner dans .env]
+MONETBIL_SERVICE_KEY=[CONFIDENTIEL — renseigner dans .env]
+MONETBIL_SERVICE_SECRET=[CONFIDENTIEL — renseigner dans .env]
 MONETBIL_CURRENCY=XAF
 MONETBIL_COUNTRY=CG
 MONETBIL_NOTIFY_URL=[URL prod à configurer]

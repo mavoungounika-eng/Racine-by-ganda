@@ -39,11 +39,18 @@ jobs:
     name: Tests Auth (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
 
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     # Stratégie : Tester sur version PHP projet uniquement
     strategy:
       fail-fast: true  # CRITIQUE : Arrêter immédiatement si échec
       matrix:
-        php: ['8.2']
+        php: ['8.3']
 
     steps:
       # ============================================
@@ -85,9 +92,6 @@ jobs:
       # ============================================
       # 5. PREPARE ENVIRONMENT
       # ============================================
-      - name: Copy .env.testing
-        run: cp .env.example .env.testing
-
       - name: Generate application key
         run: php artisan key:generate --env=testing
 
@@ -116,8 +120,7 @@ jobs:
                            tests/Feature/Auth/LogoutTest.php \
                            tests/Feature/Auth/DashboardAccessTest.php \
                            tests/Feature/Auth/AuthEdgeCasesTest.php \
-                           --stop-on-failure \
-                           --verbose
+                           --stop-on-failure
 
       # ============================================
       # 8. REPORT (SI ÉCHEC)

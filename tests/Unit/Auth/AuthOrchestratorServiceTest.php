@@ -4,7 +4,7 @@ namespace Tests\Unit\Auth;
 
 use PHPUnit\Framework\Attributes\Test;
 
-use App\DTOs\Auth\AuthResult;
+use App\DTO\Auth\AuthResult;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthOrchestratorService;
