@@ -12,10 +12,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-class LedgerService
+/**
+ * LedgerService - Point unique de création d'écritures comptables
+ * 
+ * ARCHITECTURE RULE:
+ * Cette classe est FINAL et représente le SEUL point autorisé pour créer
+ * des AccountingEntry. Toute création directe via AccountingEntry::create()
+ * est bloquée par le guard du modèle.
+ * 
+ * @see AccountingEntry::booted() pour le guard de création
+ */
+final class LedgerService
 {
     /**
      * Créer une écriture comptable
+     * 
+     * Cette méthode est le SEUL point d'entrée autorisé pour créer une écriture.
      */
     public function createEntry(array $data): AccountingEntry
     {
@@ -27,9 +39,19 @@ class LedgerService
                 throw new LedgerException("Exercice {$fiscalYear->name} est clôturé");
             }
             
+            // ✅ SAAS PUR : Verrouillage comptable
+            // Interdiction formelle de créer une écriture si la référence appartient à un créateur
+            if (isset($data['reference_type']) && $data['reference_type'] === 'order' && isset($data['reference_id'])) {
+                $order = \App\Models\Order::find($data['reference_id']);
+                if ($order && $order->creator_id !== null) {
+                    throw new LedgerException("SÉCURITÉ SAAS PUR : Tentative d'écriture comptable pour une commande créateur initiée.");
+                }
+            }
+
             $entryNumber = $this->generateEntryNumber($journal, $data['entry_date']);
             
-            return AccountingEntry::create([
+            // Autoriser temporairement la création via le container
+            return $this->authorizedCreate([
                 'entry_number' => $entryNumber,
                 'journal_id' => $data['journal_id'],
                 'fiscal_year_id' => $data['fiscal_year_id'],
@@ -41,6 +63,22 @@ class LedgerService
                 'created_by' => Auth::id() ?? 1,
             ]);
         });
+    }
+
+    /**
+     * Création autorisée d'AccountingEntry
+     * 
+     * Cette méthode pose le flag 'ledger.creating.allowed' dans le container
+     * pour autoriser le guard du modèle à laisser passer la création.
+     */
+    private function authorizedCreate(array $attributes): AccountingEntry
+    {
+        try {
+            app()->instance('ledger.creating.allowed', true);
+            return AccountingEntry::create($attributes);
+        } finally {
+            app()->forgetInstance('ledger.creating.allowed');
+        }
     }
 
     /**
@@ -129,6 +167,11 @@ class LedgerService
         float $totalTTC,
         float $vatRate = 18.0
     ): AccountingEntry {
+        // ✅ SAAS PUR : Verrouillage immédiat
+        if ($order && $order->creator_id !== null) {
+            throw new LedgerException("SÉCURITÉ SAAS PUR : RACINE ne comptabilise pas les ventes des créateurs.");
+        }
+
         return DB::transaction(function () use ($order, $journalCode, $debitAccount, $creditAccount, $totalTTC, $vatRate) {
             $journal = Journal::where('code', $journalCode)->firstOrFail();
             $fiscalYear = $this->getCurrentFiscalYear();
@@ -159,45 +202,6 @@ class LedgerService
         });
     }
 
-    /**
-     * Créer écriture vente marketplace (avec commission et TVA)
-     */
-    public function createMarketplaceSaleEntry(
-        $order,
-        string $journalCode,
-        string $debitAccount,
-        float $totalTTC,
-        float $commissionRate = 0.15,
-        float $vatRate = 18.0
-    ): AccountingEntry {
-        return DB::transaction(function () use ($order, $journalCode, $debitAccount, $totalTTC, $commissionRate, $vatRate) {
-            $journal = Journal::where('code', $journalCode)->firstOrFail();
-            $fiscalYear = $this->getCurrentFiscalYear();
-            
-            $amountHT = $totalTTC / (1 + $vatRate / 100);
-            $vatAmount = $totalTTC - $amountHT;
-            $commissionHT = $amountHT * $commissionRate;
-            $creatorAmountHT = $amountHT - $commissionHT;
-            
-            $entry = $this->createEntry([
-                'journal_id' => $journal->id,
-                'fiscal_year_id' => $fiscalYear->id,
-                'entry_date' => now()->toDateString(),
-                'description' => "Vente marketplace commande #{$order->id}",
-                'reference_type' => 'order',
-                'reference_id' => $order->id,
-            ]);
-            
-            $this->addLine($entry, $debitAccount, $totalTTC, 0, "Encaissement marketplace");
-            $this->addLine($entry, '4671', 0, $creatorAmountHT, "Dette créateur");
-            $this->addLine($entry, '7013', 0, $commissionHT, "Commission marketplace");
-            $this->addLine($entry, '4421', 0, $vatAmount, "TVA collectée {$vatRate}%");
-            
-            $this->postEntry($entry);
-            
-            return $entry;
-        });
-    }
 
     /**
      * Contre-passation (annulation écriture)
@@ -206,6 +210,16 @@ class LedgerService
     {
         if (!$originalEntry->is_posted) {
             throw new LedgerException("Seules les écritures postées peuvent être contre-passées");
+        }
+        
+        // ✅ GOVERNANCE C6: Vérifier creator_id sur l'order référencé
+        if ($originalEntry->reference_type === 'order' && $originalEntry->reference_id) {
+            $order = \App\Models\Order::find($originalEntry->reference_id);
+            if ($order && $order->creator_id !== null) {
+                throw new LedgerException(
+                    "SÉCURITÉ SAAS PUR : Contre-passation interdite pour commande créateur #{$order->id}."
+                );
+            }
         }
         
         return DB::transaction(function () use ($originalEntry, $reason) {
@@ -253,17 +267,20 @@ class LedgerService
 
     private function recalculateTotals(AccountingEntry $entry): void
     {
-        $totals = $entry->lines()
-            ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
-            ->first();
+        // Use separate sum() calls to avoid MySQL strict mode GROUP BY issues
+        $totalDebit = $entry->lines()->sum('debit');
+        $totalCredit = $entry->lines()->sum('credit');
         
         $entry->update([
-            'total_debit' => $totals->total_debit ?? 0,
-            'total_credit' => $totals->total_credit ?? 0,
+            'total_debit' => $totalDebit ?? 0,
+            'total_credit' => $totalCredit ?? 0,
         ]);
     }
 
-    private function getCurrentFiscalYear(): FiscalYear
+    /**
+     * Obtenir l'exercice fiscal courant
+     */
+    public function getCurrentFiscalYear(): FiscalYear
     {
         return FiscalYear::where('is_closed', false)
             ->where('start_date', '<=', now())

@@ -19,10 +19,10 @@
         </div>
         <div>
             <a href="{{ route('creator.analytics.sales') }}" class="btn btn-primary">
-                <i class="fas fa-chart-line mr-2"></i>
+                <i class="fas fa-chart-line me-2"></i>
                 Détails ventes
             </a>
-            <a href="{{ route('creator.analytics.index', ['refresh' => 1]) }}" class="btn btn-outline-secondary ml-2" title="Actualiser les données">
+            <a href="{{ route('creator.analytics.index', ['refresh' => 1]) }}" class="btn btn-outline-secondary ms-2" title="Actualiser les données">
                 <i class="fas fa-sync-alt"></i>
             </a>
         </div>
@@ -77,7 +77,7 @@
         <div class="col-12">
             <div class="card-racine">
                 <h3 class="h5 font-weight-bold mb-3">
-                    <i class="fas fa-star mr-2 text-warning"></i>
+                    <i class="fas fa-star me-2 text-warning"></i>
                     Top 10 Produits
                 </h3>
                 @if(!empty($stats['top_products']))
@@ -86,8 +86,8 @@
                             <thead>
                                 <tr>
                                     <th>Produit</th>
-                                    <th class="text-right">Quantité vendue</th>
-                                    <th class="text-right">CA généré</th>
+                                    <th class="text-end">Quantité vendue</th>
+                                    <th class="text-end">CA généré</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -96,10 +96,10 @@
                                         <td>
                                             <strong>{{ $product['name'] }}</strong>
                                         </td>
-                                        <td class="text-right">
-                                            <span class="badge badge-primary">{{ $product['total_quantity'] }}</span>
+                                        <td class="text-end">
+                                            <span class="badge bg-primary">{{ $product['total_quantity'] }}</span>
                                         </td>
-                                        <td class="text-right">
+                                        <td class="text-end">
                                             <strong>{{ number_format($product['total_revenue'], 0, ',', ' ') }} FCFA</strong>
                                         </td>
                                     </tr>
@@ -123,7 +123,7 @@
             <div class="col-12">
                 <div class="card-racine">
                     <h3 class="h5 font-weight-bold mb-3">
-                        <i class="fas fa-chart-line mr-2 text-primary"></i>
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
                         Évolution des ventes
                     </h3>
                     <div class="table-responsive">
@@ -131,16 +131,16 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th class="text-right">Commandes</th>
-                                    <th class="text-right">CA</th>
+                                    <th class="text-end">Commandes</th>
+                                    <th class="text-end">CA</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($stats['timeline']['labels'] as $index => $date)
                                     <tr>
                                         <td>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</td>
-                                        <td class="text-right">{{ $stats['timeline']['orders'][$index] ?? 0 }}</td>
-                                        <td class="text-right">
+                                        <td class="text-end">{{ $stats['timeline']['orders'][$index] ?? 0 }}</td>
+                                        <td class="text-end">
                                             {{ number_format($stats['timeline']['revenue'][$index] ?? 0, 0, ',', ' ') }} FCFA
                                         </td>
                                     </tr>

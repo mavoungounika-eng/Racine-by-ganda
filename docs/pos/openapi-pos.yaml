@@ -1,0 +1,741 @@
+openapi: 3.0.3
+info:
+  title: Racine POS API
+  version: 1.0.0
+  description: REST API for Racine POS Electron application
+
+servers:
+  - url: http://127.0.0.1:8000
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Meta:
+      type: object
+      properties:
+        request_id: { type: string, format: uuid }
+        timestamp: { type: string, format: date-time }
+
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { type: object, nullable: true }
+
+    ApiResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { type: object, nullable: true }
+        error:
+          nullable: true
+          $ref: '#/components/schemas/Error'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    Session:
+      type: object
+      properties:
+        id: { type: integer }
+        machine_id: { type: string }
+        status: { type: string, enum: [open, closing, closed] }
+        opening_cash: { type: number }
+        closing_cash: { type: number, nullable: true }
+        expected_cash: { type: number, nullable: true }
+        discrepancy: { type: number, nullable: true }
+        opened_at: { type: string, format: date-time }
+        closed_at: { type: string, format: date-time, nullable: true }
+
+    Sale:
+      type: object
+      properties:
+        id: { type: integer }
+        session_id: { type: integer }
+        payment_method: { type: string, enum: [cash, card, mobile_money] }
+        status: { type: string, enum: [pending, confirmed, cancelled] }
+        total: { type: number }
+        idempotency_key: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    Payment:
+      type: object
+      properties:
+        id: { type: integer }
+        sale_id: { type: integer }
+        method: { type: string, enum: [cash, card, mobile_money] }
+        status: { type: string, enum: [pending, confirmed, cancelled] }
+        amount: { type: number }
+        transaction_id: { type: string, nullable: true }
+        cancel_reason: { type: string, nullable: true }
+
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        sku: { type: string, nullable: true }
+        barcode: { type: string, nullable: true }
+        price: { type: number }
+        stock_quantity: { type: integer }
+        in_stock: { type: boolean }
+        low_stock: { type: boolean }
+        is_active: { type: boolean }
+        thumbnail: { type: string, nullable: true }
+        category:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+
+    OfflineQueueItem:
+      type: object
+      properties:
+        id: { type: integer }
+        machine_id: { type: string }
+        status: { type: string, enum: [pending, processed, failed] }
+        attempts: { type: integer }
+        sale_data: { type: object }
+        error_message: { type: string, nullable: true }
+        age_minutes: { type: integer }
+        created_at: { type: string, format: date-time }
+
+paths:
+  /api/pos/offline-status:
+    get:
+      summary: Get offline status (legacy)
+      tags: [Offline]
+      responses:
+        '200':
+          description: Offline status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/pos/offline/status:
+    get:
+      summary: Get detailed offline status for machine
+      tags: [Offline]
+      responses:
+        '200':
+          description: Detailed offline status
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/offline/queue:
+    get:
+      summary: List queued offline sales
+      tags: [Offline]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processed, failed]
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Paginated queue items
+        '401':
+          description: UNAUTHORIZED
+    delete:
+      summary: Clear old processed/failed items
+      tags: [Offline]
+      responses:
+        '200':
+          description: "{ deleted: int }"
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/offline/queue/flush:
+    post:
+      summary: Process all pending queue items
+      tags: [Offline]
+      responses:
+        '200':
+          description: "{ processed: int, failed: int, errors: [] }"
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/offline/queue/{item}/submit:
+    post:
+      summary: Process a single queued item
+      tags: [Offline]
+      parameters:
+        - name: item
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Processed sale result
+        '403':
+          description: MACHINE_MISMATCH
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sessions/open:
+    post:
+      summary: Open a new POS session
+      tags: [Sessions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [opening_cash]
+              properties:
+                opening_cash: { type: number, example: 50000 }
+                machine_id:
+                  type: string
+                  description: Auto-injected from device JWT if omitted
+      responses:
+        '200':
+          description: Session opened
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '409':
+          description: SESSION_ALREADY_OPEN
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sessions/current:
+    get:
+      summary: Get current open session for machine
+      tags: [Sessions]
+      responses:
+        '200':
+          description: Current session
+        '404':
+          description: SESSION_NOT_FOUND
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sessions/{session}/prepare-close:
+    get:
+      summary: Get reconciliation summary before closing
+      tags: [Sessions]
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Reconciliation summary
+        '404':
+          description: SESSION_NOT_FOUND
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sessions/{session}/close:
+    post:
+      summary: Close a POS session
+      tags: [Sessions]
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [closing_cash]
+              properties:
+                closing_cash: { type: number, example: 75000 }
+                notes: { type: string, nullable: true }
+      responses:
+        '200':
+          description: Session closed
+        '409':
+          description: SESSION_ALREADY_CLOSED
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sessions/{session}/z-report:
+    get:
+      summary: Get Z-report for closed session
+      tags: [Sessions]
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Z-report data
+        '404':
+          description: Z_REPORT_UNAVAILABLE
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sessions/{session}/adjustments:
+    post:
+      summary: Add cash adjustment to session
+      tags: [Sessions]
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, direction, reason]
+              properties:
+                amount: { type: number, example: 5000 }
+                direction: { type: string, enum: [in, out] }
+                reason: { type: string }
+      responses:
+        '200':
+          description: Adjustment created
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sessions/{session}/sales:
+    get:
+      summary: List sales for a session
+      tags: [Sessions]
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Sales list
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sales:
+    post:
+      summary: Create a new POS sale
+      tags: [Sales]
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: Unique key to prevent duplicate sales on retry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items, payment_method]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [product_id, quantity]
+                    properties:
+                      product_id: { type: integer }
+                      quantity: { type: integer, minimum: 1 }
+                payment_method:
+                  type: string
+                  enum: [cash, card, mobile_money]
+                machine_id:
+                  type: string
+                  description: Auto-injected from device JWT if omitted
+      responses:
+        '201':
+          description: Sale created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '422':
+          description: VALIDATION_ERROR
+        '400':
+          description: SALE_CREATION_FAILED
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sales/{sale}:
+    get:
+      summary: Get sale details
+      tags: [Sales]
+      parameters:
+        - name: sale
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Sale details
+        '404':
+          description: NOT_FOUND
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/sales/{sale}/cancel:
+    post:
+      summary: Cancel a pending sale
+      tags: [Sales]
+      parameters:
+        - name: sale
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '200':
+          description: Sale cancelled
+        '409':
+          description: SALE_ALREADY_CONFIRMED
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/payments/{payment}/status:
+    get:
+      summary: Get payment status
+      tags: [Payments]
+      parameters:
+        - name: payment
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Payment status
+        '404':
+          description: NOT_FOUND
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/payments/{payment}/confirm-card:
+    post:
+      summary: Confirm a card payment
+      tags: [Payments]
+      parameters:
+        - name: payment
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id: { type: string, nullable: true }
+                receipt_number: { type: string, nullable: true }
+      responses:
+        '200':
+          description: Payment confirmed
+        '409':
+          description: PAYMENT_ALREADY_CONFIRMED
+        '400':
+          description: PAYMENT_CONFIRM_FAILED
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/products:
+    get:
+      summary: List products for POS catalog
+      tags: [Products]
+      parameters:
+        - name: category_id
+          in: query
+          schema: { type: integer }
+        - name: in_stock
+          in: query
+          schema: { type: boolean }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: sort_by
+          in: query
+          schema: { type: string, enum: [name, price, created_at] }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Paginated product list
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/products/search:
+    get:
+      summary: Quick product search (name/sku/barcode)
+      tags: [Products]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+          description: Search query (name, SKU, or barcode)
+      responses:
+        '200':
+          description: Up to 10 matching products
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/products/categories:
+    get:
+      summary: List all active categories
+      tags: [Products]
+      responses:
+        '200':
+          description: Categories list
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/products/{product}:
+    get:
+      summary: Get full product details
+      tags: [Products]
+      parameters:
+        - name: product
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Product details with images
+        '404':
+          description: NOT_FOUND
+        '401':
+          description: UNAUTHORIZED
+
+  /api/pos/auth/operator/login:
+    post:
+      summary: Operator login (Sanctum token)
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Role not allowed for POS
+
+  /api/pos/auth/operator/logout:
+    post:
+      summary: Operator logout
+      tags: [Auth]
+      responses:
+        '200':
+          description: Logged out
+
+  /api/pos/auth/operator/me:
+    get:
+      summary: Get current operator info
+      tags: [Auth]
+      responses:
+        '200':
+          description: Operator profile
+
+  /api/pos/analytics/daily:
+    get:
+      tags:
+        - POS Analytics
+      summary: Get daily summary
+      description: Returns revenue, transactions, and average basket size for the given day and machine.
+      parameters:
+        - name: machine_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+
+  /api/pos/analytics/sessions:
+    get:
+      tags:
+        - POS Analytics
+      summary: Get active sessions
+      description: Returns currently open POS sessions with revenue so far.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+
+  /api/pos/analytics/top-products:
+    get:
+      tags:
+        - POS Analytics
+      summary: Get top products
+      description: Returns the top selling products by revenue.
+      parameters:
+        - name: machine_id
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+
+  /api/pos/analytics/period:
+    get:
+      tags:
+        - POS Analytics
+      summary: Get period report
+      description: Returns sales grouped by day, week, or month.
+      parameters:
+        - name: machine_id
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: group_by
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+
+  /api/pos/analytics/low-stock:
+    get:
+      tags:
+        - POS Analytics
+      summary: Get low stock alerts
+      description: Returns products falling below the provided threshold.
+      parameters:
+        - name: threshold
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+
+  /api/pos/analytics/export:
+    get:
+      tags:
+        - POS Analytics
+      summary: Export sessions data
+      description: Downloads a CSV or Excel report of POS sessions.
+      parameters:
+        - name: machine_id
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [csv, excel]
+      responses:
+        "200":
+          description: File download
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+

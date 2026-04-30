@@ -18,8 +18,8 @@ class SubscriptionCheckoutTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
     }
-
     #[Test]
     public function it_displays_available_plans()
     {
@@ -53,7 +53,6 @@ class SubscriptionCheckoutTest extends TestCase
         $response->assertSee('Plan Basic');
         $response->assertSee('Plan Premium');
     }
-
     #[Test]
     public function it_redirects_to_stripe_checkout()
     {
@@ -87,7 +86,6 @@ class SubscriptionCheckoutTest extends TestCase
 
         $response->assertRedirect('https://checkout.stripe.com/test');
     }
-
     #[Test]
     public function it_handles_successful_checkout_return()
     {
@@ -113,10 +111,9 @@ class SubscriptionCheckoutTest extends TestCase
             'session_id' => 'cs_test_123',
         ]));
 
-        $response->assertRedirect(route('creator.dashboard'));
-        $response->assertSessionHas('success');
+        $response->assertOk();
+        $response->assertViewIs('creator.subscriptions.success');
     }
-
     #[Test]
     public function it_handles_checkout_cancellation()
     {
@@ -142,4 +139,34 @@ class SubscriptionCheckoutTest extends TestCase
         $response->assertRedirect(route('creator.subscription.plans'));
         $response->assertSessionHas('info');
     }
+    #[Test]
+    public function it_does_not_call_stripe_checkout_for_free_plan()
+    {
+        $service = Mockery::mock(CreatorSubscriptionService::class);
+        $service->shouldNotReceive('createCheckoutSession');
+        $this->app->instance(CreatorSubscriptionService::class, $service);
+
+        $user = User::factory()->create(['role' => 'createur']);
+        CreatorProfile::create([
+            'user_id' => $user->id,
+            'brand_name' => 'Test Brand',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $plan = CreatorPlan::create([
+            'code' => 'free',
+            'name' => 'Plan Gratuit',
+            'price' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('creator.subscription.checkout', $plan));
+
+        $response->assertRedirect(route('creator.subscription.plans'));
+        $response->assertSessionHas('info');
+    }
 }
+

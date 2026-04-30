@@ -12,7 +12,6 @@ use Tests\TestCase;
 class AuthTest extends TestCase
 {
     use RefreshDatabase;
-
     #[Test]
     public function user_can_login_with_valid_credentials(): void
     {
@@ -29,7 +28,6 @@ class AuthTest extends TestCase
         $response->assertRedirect();
         $this->assertAuthenticatedAs($user);
     }
-
     #[Test]
     public function user_cannot_login_with_invalid_credentials(): void
     {
@@ -46,12 +44,12 @@ class AuthTest extends TestCase
         $response->assertSessionHasErrors('email');
         $this->assertGuest();
     }
-
     #[Test]
     public function user_is_redirected_based_on_role_after_login(): void
     {
+        $role = \App\Models\Role::firstOrCreate(['slug' => 'staff'], ['name' => 'Staff']);
         $staff = User::factory()->create([
-            'role' => 'staff',
+            'role_id' => $role->id,
             'password' => Hash::make('password123'),
         ]);
 
@@ -62,12 +60,12 @@ class AuthTest extends TestCase
 
         $response->assertRedirect(route('staff.dashboard'));
     }
-
     #[Test]
     public function client_is_redirected_to_account_dashboard(): void
     {
+        $role = \App\Models\Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client']);
         $client = User::factory()->create([
-            'role' => 'client',
+            'role_id' => $role->id,
             'password' => Hash::make('password123'),
         ]);
 
@@ -78,12 +76,12 @@ class AuthTest extends TestCase
 
         $response->assertRedirect(route('account.dashboard'));
     }
-
     #[Test]
     public function creator_is_redirected_to_creator_dashboard(): void
     {
+        $role = \App\Models\Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur']);
         $creator = User::factory()->create([
-            'role' => 'createur',
+            'role_id' => $role->id,
             'password' => Hash::make('password123'),
         ]);
 
@@ -100,7 +98,6 @@ class AuthTest extends TestCase
 
         $response->assertRedirect(route('creator.dashboard'));
     }
-
     #[Test]
     public function inactive_user_cannot_login(): void
     {
@@ -117,7 +114,6 @@ class AuthTest extends TestCase
         $response->assertSessionHasErrors('email');
         $this->assertGuest();
     }
-
     #[Test]
     public function user_can_logout(): void
     {
@@ -129,10 +125,12 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('frontend.home'));
         $this->assertGuest();
     }
-
     #[Test]
     public function login_has_rate_limiting(): void
     {
+        // Désactiver le CAPTCHA pour ce test afin d'atteindre le rate limit (429)
+        config(['recaptcha.skip_for_testing' => true]);
+
         $user = User::factory()->create([
             'password' => Hash::make('password123'),
         ]);

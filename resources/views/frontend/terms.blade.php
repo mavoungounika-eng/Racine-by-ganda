@@ -3,9 +3,9 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Conditions Générales de Vente - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .legal-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 4rem 0;
         margin-top: -70px;
         padding-top: calc(4rem + 70px);
@@ -25,7 +25,7 @@
     
     .legal-content {
         padding: 4rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .legal-container {
@@ -48,10 +48,10 @@
     .legal-nav h3 {
         font-size: 1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
         padding-bottom: 0.75rem;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .legal-nav ul {
@@ -67,7 +67,7 @@
     .legal-nav a {
         display: block;
         padding: 0.5rem 0.75rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         text-decoration: none;
         border-radius: 8px;
         font-size: 0.9rem;
@@ -75,8 +75,8 @@
     }
     
     .legal-nav a:hover, .legal-nav a.active {
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
     }
     
     .legal-body {
@@ -88,7 +88,7 @@
     .legal-section {
         margin-bottom: 2.5rem;
         padding-bottom: 2.5rem;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .legal-section:last-child {
@@ -101,7 +101,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.25rem;
         display: flex;
         align-items: center;
@@ -114,7 +114,7 @@
         justify-content: center;
         width: 36px;
         height: 36px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 10px;
         font-family: 'Cormorant Garamond', serif;
@@ -124,12 +124,12 @@
     .legal-section h3 {
         font-size: 1.15rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin: 1.5rem 0 0.75rem;
     }
     
     .legal-section p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         margin-bottom: 1rem;
     }
@@ -140,14 +140,14 @@
     }
     
     .legal-section li {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         margin-bottom: 0.5rem;
     }
     
     .highlight-box {
-        background: rgba(212, 165, 116, 0.1);
-        border-left: 4px solid #D4A574;
+        background: rgba(237, 95, 30, 0.08);
+        border-start: 4px solid #FFB800;
         padding: 1.25rem;
         border-radius: 0 12px 12px 0;
         margin: 1.5rem 0;
@@ -160,11 +160,11 @@
     
     .update-date {
         text-align: center;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         margin-top: 2rem;
         padding-top: 2rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     @media (max-width: 1024px) {

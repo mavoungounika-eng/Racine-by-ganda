@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ERPProduction;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ERPProduction\Models\ProductionOrder;
@@ -31,7 +32,7 @@ class ProductionOrderTest extends TestCase
 
         $this->product = Product::factory()->create(['name' => 'Robe Pagne Luxe']);
         
-        // Créer BOM avec items
+        // CrÃ©er BOM avec items
         $this->bom = Bom::create([
             'product_id' => $this->product->id,
             'version' => '1.0',
@@ -50,8 +51,7 @@ class ProductionOrderTest extends TestCase
 
         $this->productionOrderService = app(ProductionOrderService::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_create_production_order()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -67,8 +67,7 @@ class ProductionOrderTest extends TestCase
         $this->assertEquals($this->bom->id, $order->bom_id);
         $this->assertStringStartsWith('PO-', $order->order_number);
     }
-
-    /** @test */
+    #[Test]
     public function it_transitions_from_draft_to_planned()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -83,8 +82,7 @@ class ProductionOrderTest extends TestCase
 
         $this->assertEquals('planned', $plannedOrder->status);
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_work_steps_automatically_when_planned()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -100,15 +98,14 @@ class ProductionOrderTest extends TestCase
         $order->refresh();
         $this->assertGreaterThan(0, $order->steps->count());
         
-        // Vérifier étapes standard
+        // VÃ©rifier Ã©tapes standard
         $stepNames = $order->steps->pluck('name')->toArray();
         $this->assertContains('Coupe tissu', $stepNames);
         $this->assertContains('Assemblage/Couture', $stepNames);
         $this->assertContains('Finitions', $stepNames);
         $this->assertContains('Contrôle qualité', $stepNames);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_start_production()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -124,8 +121,7 @@ class ProductionOrderTest extends TestCase
         $this->assertEquals('in_progress', $startedOrder->status);
         $this->assertNotNull($startedOrder->actual_start_date);
     }
-
-    /** @test */
+    #[Test]
     public function it_completes_work_steps_sequentially()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -140,23 +136,22 @@ class ProductionOrderTest extends TestCase
         $order->refresh();
         $steps = $order->steps()->orderBy('sequence')->get();
 
-        // Démarrer première étape
+        // DÃ©marrer premiÃ¨re Ã©tape
         $firstStep = $steps->first();
         $this->assertTrue($firstStep->canStart());
         
         $this->productionOrderService->startWorkStep($firstStep);
         $this->assertEquals('in_progress', $firstStep->fresh()->status);
 
-        // Compléter première étape
+        // ComplÃ©ter premiÃ¨re Ã©tape
         $this->productionOrderService->completeWorkStep($firstStep->fresh());
         $this->assertEquals('completed', $firstStep->fresh()->status);
 
-        // Deuxième étape peut maintenant démarrer
+        // DeuxiÃ¨me Ã©tape peut maintenant dÃ©marrer
         $secondStep = $steps->skip(1)->first();
         $this->assertTrue($secondStep->canStart());
     }
-
-    /** @test */
+    #[Test]
     public function it_can_finish_production()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -170,8 +165,8 @@ class ProductionOrderTest extends TestCase
 
         $finishedOrder = $this->productionOrderService->finishProductionOrder(
             $order->fresh(),
-            9, // Quantité produite
-            1  // Quantité rejetée
+            9, // QuantitÃ© produite
+            1  // QuantitÃ© rejetÃ©e
         );
 
         $this->assertEquals('finished', $finishedOrder->status);
@@ -179,8 +174,7 @@ class ProductionOrderTest extends TestCase
         $this->assertEquals(1, $finishedOrder->quantity_rejected);
         $this->assertNotNull($finishedOrder->actual_end_date);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_progress_percentage()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -192,10 +186,10 @@ class ProductionOrderTest extends TestCase
         $this->productionOrderService->planProductionOrder($order);
         $order->refresh();
 
-        // Aucune étape complétée
+        // Aucune Ã©tape complÃ©tÃ©e
         $this->assertEquals(0, $order->getProgressPercentage());
 
-        // Compléter première étape
+        // ComplÃ©ter premiÃ¨re Ã©tape
         $firstStep = $order->steps()->orderBy('sequence')->first();
         $firstStep->update(['status' => 'completed']);
 
@@ -205,8 +199,7 @@ class ProductionOrderTest extends TestCase
         
         $this->assertEquals($expectedProgress, $order->getProgressPercentage());
     }
-
-    /** @test */
+    #[Test]
     public function it_prevents_starting_order_without_complete_bom()
     {
         // BOM sans items
@@ -228,8 +221,7 @@ class ProductionOrderTest extends TestCase
 
         $this->assertFalse($order->fresh()->canStart());
     }
-
-    /** @test */
+    #[Test]
     public function it_tracks_actual_duration()
     {
         $order = $this->productionOrderService->createProductionOrder(

@@ -7,7 +7,7 @@
     <div class="container">
         <div class="row no-gutters slider-text align-items-center justify-content-center">
             <div class="col-md-9 ftco-animate text-center">
-                <p class="breadcrumbs"><span class="mr-2"><a href="{{ route('frontend.home') }}">Accueil</a></span> <span>Paramètres</span></p>
+                <p class="breadcrumbs"><span class="me-2"><a href="{{ route('frontend.home') }}">Accueil</a></span> <span>Paramètres</span></p>
                 <h1 class="mb-0 bread">Réglages d'Apparence</h1>
             </div>
         </div>
@@ -20,13 +20,13 @@
             <div class="col-md-10 ftco-animate">
                 <div class="bg-white p-5">
                     <div class="mb-5">
-                        <h2 class="h3 mb-3"><i class="ion-ios-color-palette mr-2"></i> Personnalisation</h2>
+                        <h2 class="h3 mb-3"><i class="ion-ios-color-palette me-2"></i> Personnalisation</h2>
                         <p class="text-muted">Personnalisez l'apparence du site selon vos préférences.</p>
                     </div>
 
                     @if(session('success'))
                     <div class="alert alert-success mb-4">
-                        <i class="ion-ios-checkmark-circle mr-2"></i> {{ session('success') }}
+                        <i class="ion-ios-checkmark-circle me-2"></i> {{ session('success') }}
                     </div>
                     @endif
 
@@ -36,7 +36,7 @@
                         {{-- Mode d'affichage --}}
                         <div class="card mb-4">
                             <div class="card-header bg-white font-weight-bold">
-                                <i class="ion-ios-sunny mr-2"></i> Mode d'Affichage
+                                <i class="ion-ios-sunny me-2"></i> Mode d'Affichage
                             </div>
                             <div class="card-body">
                                 <div class="row text-center">
@@ -74,7 +74,7 @@
                         {{-- Palette d'accent --}}
                         <div class="card mb-4">
                             <div class="card-header bg-white font-weight-bold">
-                                <i class="ion-ios-brush mr-2"></i> Palette d'Accent
+                                <i class="ion-ios-brush me-2"></i> Palette d'Accent
                             </div>
                             <div class="card-body">
                                 <div class="row text-center">
@@ -121,7 +121,7 @@
                         {{-- Style visuel --}}
                         <div class="card mb-4">
                             <div class="card-header bg-white font-weight-bold">
-                                <i class="ion-ios-person mr-2"></i> Style Visuel
+                                <i class="ion-ios-person me-2"></i> Style Visuel
                             </div>
                             <div class="card-body">
                                 <div class="row text-center">
@@ -167,7 +167,7 @@
     </div>
 </section>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     .peer-checked-active {
         transition: all 0.3s ease;
     }

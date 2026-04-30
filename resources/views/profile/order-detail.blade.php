@@ -25,14 +25,14 @@
                             $statusConfig = [
                                 'pending' => ['label' => 'En attente', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.2)'],
                                 'processing' => ['label' => 'En traitement', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.2)'],
-                                'paid' => ['label' => 'Payée', 'color' => '#0EA5E9', 'bg' => 'rgba(14, 165, 233, 0.2)'],
-                                'shipped' => ['label' => 'Expédiée', 'color' => '#0EA5E9', 'bg' => 'rgba(14, 165, 233, 0.2)'],
+                                'paid' => ['label' => 'Payée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.2)'],
+                                'shipped' => ['label' => 'Expédiée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.2)'],
                                 'completed' => ['label' => 'Complétée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.2)'],
                                 'delivered' => ['label' => 'Livrée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.2)'],
                                 'cancelled' => ['label' => 'Annulée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.2)'],
                                 'failed' => ['label' => 'Échouée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.2)'],
                             ];
-                            $status = $statusConfig[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.2)'];
+                            $status = $statusConfig[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#160D0C', 'bg' => 'rgba(22,13,12,0.1)'];
                         @endphp
                         <span class="badge" style="background: {{ $status['bg'] }}; color: {{ $status['color'] }}; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; font-size: 1rem; border: 2px solid {{ $status['color'] }}40;">
                             {{ $status['label'] }}
@@ -47,7 +47,7 @@
             <div class="col-lg-6 mb-4">
                 <!-- LIVRAISON -->
                 <div class="card-racine"
-                    <div class="card-header bg-white border-0 py-4" style="border-bottom: 2px solid #f0f0f0;">
+                    <div class="card-header bg-white border-0 py-4" style="border-bottom: 2px solid rgba(22,13,12,0.1);">
                         <h5 class="mb-0" style="font-weight: 600; color: #160D0C;">
                             <i class="fas fa-truck me-2" style="color: #ED5F1E;"></i>
                             Informations de Livraison
@@ -58,18 +58,18 @@
                             <div class="mb-3">
                                 <strong style="color: #160D0C; font-size: 1.1rem;">{{ $order->address->first_name }} {{ $order->address->last_name }}</strong>
                             </div>
-                            <p class="mb-2" style="color: #6c757d;">
+                            <p class="mb-2" style="color: rgba(22,13,12,0.5);">
                                 {{ $order->address->address_line_1 }}
                             </p>
                             @if($order->address->address_line_2)
-                                <p class="mb-2" style="color: #6c757d;">
+                                <p class="mb-2" style="color: rgba(22,13,12,0.5);">
                                     {{ $order->address->address_line_2 }}
                                 </p>
                             @endif
-                            <p class="mb-2" style="color: #6c757d;">
+                            <p class="mb-2" style="color: rgba(22,13,12,0.5);">
                                 {{ $order->address->city }}{{ $order->address->postal_code ? ', ' . $order->address->postal_code : '' }}
                             </p>
-                            <p class="mb-3" style="color: #6c757d;">
+                            <p class="mb-3" style="color: rgba(22,13,12,0.5);">
                                 {{ $order->address->country }}
                             </p>
                             @if($order->address->phone)
@@ -86,7 +86,7 @@
 
                 <!-- PAIEMENT -->
                 <div class="card-racine"
-                    <div class="card-header bg-white border-0 py-4" style="border-bottom: 2px solid #f0f0f0;">
+                    <div class="card-header bg-white border-0 py-4" style="border-bottom: 2px solid rgba(22,13,12,0.1);">
                         <h5 class="mb-0" style="font-weight: 600; color: #160D0C;">
                             <i class="fas fa-credit-card me-2" style="color: #ED5F1E;"></i>
                             Informations de Paiement
@@ -94,7 +94,7 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-3">
-                            <strong style="color: #6c757d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Statut :</strong>
+                            <strong style="color: rgba(22,13,12,0.5); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Statut :</strong>
                             <div class="mt-2">
                                 @if($order->payment_status === 'paid')
                                     <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #22C55E; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(34, 197, 94, 0.2);">
@@ -112,13 +112,13 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <strong style="color: #6c757d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Méthode :</strong>
+                            <strong style="color: rgba(22,13,12,0.5); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Méthode :</strong>
                             <p class="mb-0 mt-2" style="color: #160D0C; font-weight: 500;">
                                 {{ $order->payment_method ?? 'Non spécifiée' }}
                             </p>
                         </div>
                         <div>
-                            <strong style="color: #6c757d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Montant total :</strong>
+                            <strong style="color: rgba(22,13,12,0.5); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Montant total :</strong>
                             <p class="mb-0 mt-2" style="color: #ED5F1E; font-size: 1.75rem; font-weight: 700;">
                                 {{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA
                             </p>
@@ -130,7 +130,7 @@
             <!-- COLONNE DROITE : Articles -->
             <div class="col-lg-6 mb-4">
                 <div class="card-racine"
-                    <div class="card-header bg-white border-0 py-4" style="border-bottom: 2px solid #f0f0f0;">
+                    <div class="card-header bg-white border-0 py-4" style="border-bottom: 2px solid rgba(22,13,12,0.1);">
                         <h5 class="mb-0" style="font-weight: 600; color: #160D0C;">
                             <i class="fas fa-box me-2" style="color: #ED5F1E;"></i>
                             Articles Commandés
@@ -139,17 +139,17 @@
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
-                                <thead style="background: #f8f9fa;">
+                                <thead style="background: rgba(22,13,12,0.05);">
                                     <tr>
-                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef;">Produit</th>
-                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef; text-align: center;">Qté</th>
-                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef; text-align: right;">Prix unit.</th>
-                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid #e9ecef; text-align: right;">Total</th>
+                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Produit</th>
+                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1); text-align: center;">Qté</th>
+                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1); text-align: right;">Prix unit.</th>
+                                        <th style="padding: 1rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1); text-align: right;">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($order->items as $item)
-                                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <tr style="border-bottom: 1px solid rgba(22,13,12,0.1);">
                                         <td style="padding: 1rem;">
                                             <strong style="color: #160D0C;">{{ $item->product->title ?? 'Produit' }}</strong>
                                             @if($item->product && $item->product->sku)
@@ -161,7 +161,7 @@
                                             <span style="font-weight: 500; color: #160D0C;">{{ $item->quantity }}</span>
                                         </td>
                                         <td style="padding: 1rem; text-align: right; vertical-align: middle;">
-                                            <span style="color: #6c757d;">{{ number_format($item->price ?? 0, 0, ',', ' ') }} FCFA</span>
+                                            <span style="color: rgba(22,13,12,0.5);">{{ number_format($item->price ?? 0, 0, ',', ' ') }} FCFA</span>
                                         </td>
                                         <td style="padding: 1rem; text-align: right; vertical-align: middle;">
                                             <strong style="color: #ED5F1E;">{{ number_format(($item->price ?? 0) * $item->quantity, 0, ',', ' ') }} FCFA</strong>
@@ -169,12 +169,12 @@
                                     </tr>
                                     @endforeach
                                 </tbody>
-                                <tfoot style="background: #f8f9fa;">
+                                <tfoot style="background: rgba(22,13,12,0.05);">
                                     <tr>
-                                        <td colspan="3" style="padding: 1.25rem; text-align: right; font-weight: 600; color: #160D0C; border-top: 2px solid #e9ecef;">
+                                        <td colspan="3" style="padding: 1.25rem; text-align: right; font-weight: 600; color: #160D0C; border-top: 2px solid rgba(22,13,12,0.1);">
                                             <strong>Total :</strong>
                                         </td>
-                                        <td style="padding: 1.25rem; text-align: right; border-top: 2px solid #e9ecef;">
+                                        <td style="padding: 1.25rem; text-align: right; border-top: 2px solid rgba(22,13,12,0.1);">
                                             <strong style="color: #ED5F1E; font-size: 1.25rem;">
                                                 {{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA
                                             </strong>
@@ -192,7 +192,7 @@
         <div class="card-racine"
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 1rem;">
-                    <a href="{{ route('profile.orders') }}" class="btn" style="background: rgba(108, 117, 125, 0.1); color: #6c757d; border: 1px solid rgba(108, 117, 125, 0.3); border-radius: 12px; padding: 0.75rem 2rem; font-weight: 500; transition: all 0.3s;">
+                    <a href="{{ route('profile.orders') }}" class="btn" style="background: rgba(22,13,12,0.05); color: rgba(22,13,12,0.6); border: 1px solid rgba(22,13,12,0.15); border-radius: 12px; padding: 0.75rem 2rem; font-weight: 500; transition: all 0.3s;">
                         <i class="fas fa-arrow-left me-2"></i> Retour aux commandes
                     </a>
                     <div class="d-flex gap-2 flex-wrap">
@@ -201,13 +201,13 @@
                             $existingThread = \App\Models\Conversation::forOrder($order->id)->first();
                         @endphp
                         @if($existingThread)
-                            <a href="{{ route('messages.show', $existingThread->id) }}" class="btn" style="background: rgba(75, 29, 242, 0.1); color: #4B1DF2; border: 1px solid #4B1DF2; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; transition: all 0.3s;">
+                            <a href="{{ route('messages.show', $existingThread->id) }}" class="btn" style="background: rgba(237, 95, 30, 0.1); color: #ED5F1E; border: 1px solid #ED5F1E; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; transition: all 0.3s;">
                                 <i class="fas fa-comments me-2"></i> Voir la discussion
                             </a>
                         @else
                             <form action="{{ route('messages.create-order-thread', $order) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn" style="background: rgba(75, 29, 242, 0.1); color: #4B1DF2; border: 1px solid #4B1DF2; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; transition: all 0.3s;">
+                                <button type="submit" class="btn" style="background: rgba(237, 95, 30, 0.1); color: #ED5F1E; border: 1px solid #ED5F1E; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; transition: all 0.3s;">
                                     <i class="fas fa-comments me-2"></i> Contacter le support
                                 </button>
                             </form>
@@ -217,13 +217,13 @@
                             <i class="fas fa-star me-2"></i> Laisser un avis
                         </a>
                         @endif
-                        <a href="{{ route('profile.invoice.show', $order) }}" class="btn" style="background: rgba(14, 165, 233, 0.1); color: #0EA5E9; border: 1px solid #0EA5E9; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; transition: all 0.3s;" target="_blank">
+                        <a href="{{ route('profile.invoice.show', $order) }}" class="btn" style="background: rgba(22,13,12,0.05); color: #160D0C; border: 1px solid rgba(22,13,12,0.2); border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; transition: all 0.3s;" target="_blank">
                             <i class="fas fa-file-invoice me-2"></i> Voir la facture
                         </a>
                         <a href="{{ route('profile.invoice.download', $order) }}" class="btn" style="background: rgba(34, 197, 94, 0.1); color: #22C55E; border: 1px solid #22C55E; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; transition: all 0.3s;">
                             <i class="fas fa-download me-2"></i> Télécharger
                         </a>
-                        <a href="{{ route('frontend.shop') }}" class="btn" style="background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%); color: white; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3); transition: all 0.3s;">
+                        <a href="{{ route('frontend.shop') }}" class="btn" style="background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%); color: white; border-radius: 12px; padding: 0.75rem 2rem; font-weight: 600; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3); transition: all 0.3s;">
                             <i class="fas fa-store me-2"></i> Continuer mes achats
                         </a>
                     </div>
@@ -233,7 +233,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     .card {
         transition: transform 0.3s, box-shadow 0.3s;
     }

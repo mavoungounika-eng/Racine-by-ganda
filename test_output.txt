@@ -1,0 +1,367 @@
+
+   WARN  Metadata found in doc-comment for method Modules\ERP\Tests\Feature\ErpDashboardControllerTest::it_displays_dashboard_for_authorized_user(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Modules\ERP\Tests\Feature\ErpDashboardControllerTest::it_shows_dashboard_statistics(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Modules\ERP\Tests\Feature\ErpSupplierControllerTest::it_can_list_suppliers(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Modules\ERP\Tests\Feature\ErpSupplierControllerTest::it_can_create_supplier(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Modules\ERP\Tests\Feature\ErpSupplierControllerTest::it_validates_supplier_creation(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+"Query 1: select * from "users" where "id" = ? limit 1" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => 1
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 2: select * from "roles" where "roles"."id" in (1)" // tests/Feature/AdminDashboardPerformanceTest.php:149
+[] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 3: select "permissions".*, "permission_role"."role_id" as "pivot_role_id", "permission_role"."permission_id" as "pivot_permission_id" from "permissions" inner join "permission_role" on "permissions"."id" = "permission_role"."permission_id" where "permission_role"."role_id" in (1)" // tests/Feature/AdminDashboardPerformanceTest.php:149
+[] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 4: select * from "users" where "id" = ? limit 1" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => 1
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 5: select * from "roles" where "roles"."id" in (1)" // tests/Feature/AdminDashboardPerformanceTest.php:149
+[] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 6: select sum("total_amount") as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "status" in (?, ?) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => "2026-02-23"
+  1 => "completed"
+  2 => "processing"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 7: select sum("total_amount") as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "status" in (?, ?) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => "2026-02-22"
+  1 => "completed"
+  2 => "processing"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 8: select avg("total_amount") as aggregate from "orders" where "created_at" >= ? and "status" in (?, ?) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => Illuminate\Support\Carbon @1771209143 {#12162
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "0000000000002f820000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-02-16 02:32:23.982535 UTC (+00:00)
+  }
+  1 => "completed"
+  2 => "processing"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 9: select count(*) as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-23"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 10: select count(*) as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-22"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 11: select avg("total_amount") as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "status" != ? and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:2 [
+  0 => "2026-02-23"
+  1 => "cancelled"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 12: select avg("total_amount") as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "status" != ? and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:2 [
+  0 => "2026-02-22"
+  1 => "cancelled"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 13: select count(*) as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-23"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 14: select count(*) as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-22"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 15: select count(*) as aggregate from "orders" where "status" = ? and "created_at" < ? and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:2 [
+  0 => "pending"
+  1 => Illuminate\Support\Carbon @1771727543 {#12170
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "0000000000002f8a0000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-02-22 02:32:23.986376 UTC (+00:00)
+  }
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 16: select count(*) as aggregate from "orders" where "status" in (?, ?) and "expected_delivery_date" < ? and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => "processing"
+  1 => "confirmed"
+  2 => Illuminate\Support\Carbon @1771813943 {#12171
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "0000000000002f8b0000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-02-23 02:32:23.986890 UTC (+00:00)
+  }
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 17: select count(*) as aggregate from "products" where "stock" < ? and "products"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => 5
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 18: select count(*) as aggregate from "payments" where "status" = ? and "created_at" >= ?" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:2 [
+  0 => "failed"
+  1 => Illuminate\Support\Carbon @1771727543 {#12154
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "0000000000002f7a0000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-02-22 02:32:23.987587 UTC (+00:00)
+  }
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 19: select count(*) as aggregate from "users" where "role" = ? and not exists (select * from "products" where "users"."id" = "products"."user_id" and exists (select * from "order_items" where "products"."id" = "order_items"."product_id" and "created_at" >= ?) and "products"."deleted_at" is null) and exists (select * from "products" where "users"."id" = "products"."user_id" and "stock" > ? and "products"."deleted_at" is null) and "users"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => "createur"
+  1 => Illuminate\Support\Carbon @1769221943 {#12194
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "0000000000002fa20000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-01-24 02:32:23.988271 UTC (+00:00)
+  }
+  2 => 0
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 20: select count(*) as aggregate from "orders" where strftime('%Y-%m-%d', "created_at") = cast(? as text) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-23"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 21: select "products"."title" as "name", COUNT(order_items.id) as sales_count, SUM(order_items.price * order_items.quantity) as revenue from "order_items" inner join "products" on "order_items"."product_id" = "products"."id" inner join "orders" on "order_items"."order_id" = "orders"."id" where "products"."user_id" is null and strftime('%Y-%m-%d', "orders"."created_at") = cast(? as text) group by "products"."id", "products"."title" order by "sales_count" desc limit 5" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-23"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 22: select "products"."title" as "name", COUNT(order_items.id) as sales_count, SUM(order_items.price * order_items.quantity) as revenue from "order_items" inner join "products" on "order_items"."product_id" = "products"."id" inner join "orders" on "order_items"."order_id" = "orders"."id" where "products"."user_id" is not null and strftime('%Y-%m-%d', "orders"."created_at") = cast(? as text) group by "products"."id", "products"."title" order by "sales_count" desc limit 5" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-23"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 23: select sum(order_items.price * order_items.quantity) as aggregate from "order_items" inner join "products" on "order_items"."product_id" = "products"."id" inner join "orders" on "order_items"."order_id" = "orders"."id" where "products"."user_id" is not null and strftime('%Y-%m-%d', "orders"."created_at") = cast(? as text) and "orders"."status" in (?, ?)" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => "2026-02-23"
+  1 => "completed"
+  2 => "processing"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 24: select count(distinct "orders"."id") as aggregate from "orders" inner join "order_items" on "orders"."id" = "order_items"."order_id" inner join "products" on "order_items"."product_id" = "products"."id" where "products"."user_id" is not null and strftime('%Y-%m-%d', "orders"."created_at") = cast(? as text)" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "2026-02-23"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 25: select count(*) as aggregate from "users" where "role" = ? and "users"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "createur"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 26: select count(*) as aggregate from "orders" where "status" = ? and "prepared_at" is null and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => "confirmed"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 27: select count(*) as aggregate from "orders" where "status" = ? and "shipped_at" is null and "prepared_at" < ? and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:2 [
+  0 => "prepared"
+  1 => Illuminate\Support\Carbon @1771727544 {#12176
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "0000000000002f900000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-02-22 02:32:24.005712 UTC (+00:00)
+  }
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 28: select count(*) as aggregate from "orders" where "status" in (?, ?) and "orders"."deleted_at" is null" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:2 [
+  0 => "return_requested"
+  1 => "return_in_progress"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 29: select count(*) as aggregate from "pos_sessions" where "status" = ? and ABS(cash_difference) >= 100.00 and "closed_at" >= ?" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:2 [
+  0 => "closed"
+  1 => Illuminate\Support\Carbon @1771209144 {#13376
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "00000000000034400000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-02-16 02:32:24.008872 UTC (+00:00)
+  }
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 30: select DATE(created_at) as date, SUM(total_amount) as revenue from "orders" where "created_at" >= ? and "status" in (?, ?) and "orders"."deleted_at" is null group by "date" order by "date" asc" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => Illuminate\Support\Carbon @1771209144 {#13378
+    #endOfTime: false
+    #startOfTime: false
+    #constructedObjectId: "00000000000034420000000000000000"
+    -clock: null
+    #localMonthsOverflow: null
+    #localYearsOverflow: null
+    #localStrictModeEnabled: null
+    #localHumanDiffOptions: null
+    #localToStringFormat: null
+    #localSerializer: null
+    #localMacros: null
+    #localGenericMacros: null
+    #localFormatFunction: null
+    #localTranslator: null
+    #dumpProperties: array:3 [
+      0 => "date"
+      1 => "timezone_type"
+      2 => "timezone"
+    ]
+    #dumpLocale: null
+    #dumpDateProperties: null
+    date: 2026-02-16 02:32:24.009654 UTC (+00:00)
+  }
+  1 => "completed"
+  2 => "processing"
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 31: select "permissions".*, "permission_role"."role_id" as "pivot_role_id", "permission_role"."permission_id" as "pivot_permission_id" from "permissions" inner join "permission_role" on "permissions"."id" = "permission_role"."permission_id" where "permission_role"."role_id" = ?" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:1 [
+  0 => 1
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+"Query 32: select count(*) as aggregate from "conversation_participants" where "user_id" = ? and "is_archived" = ? and "unread_count" > ?" // tests/Feature/AdminDashboardPerformanceTest.php:149
+array:3 [
+  0 => 1
+  1 => false
+  2 => 0
+] // tests/Feature/AdminDashboardPerformanceTest.php:149
+
+   FAIL  Tests\Feature\AdminDashboardPerformanceTest
+  ⨯ admin dashboard no n1 queries                                        2.18s  
+  ✓ admin dashboard uses cache                                           0.27s  
+  ✓ admin dashboard is fast                                              0.41s  
+  ✓ admin dashboard contains expected data                               0.24s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\AdminDashboardPerformanceTest > admin dashboard no…    
+  Trop de requêtes pour le dashboard admin
+Failed asserting that 32 is equal to 20 or is less than 20.
+
+  at tests/Feature/AdminDashboardPerformanceTest.php:154
+    150▕             }
+    151▕         }
+    152▕         
+    153▕         // Vérifier qu'il n'y a pas trop de requêtes (max 20 pour un dashboard complexe)
+  ➜ 154▕         $this->assertLessThanOrEqual(20, count($queries), "Trop de requêtes pour le dashboard admin");
+    155▕         
+    156▕         $response->assertStatus(200);
+    157▕     }
+    158▕ }
+
+  1   tests/Feature/AdminDashboardPerformanceTest.php:154
+
+
+  Tests:    1 failed, 3 passed (16 assertions)
+  Duration: 3.57s
+

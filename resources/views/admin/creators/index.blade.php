@@ -21,7 +21,7 @@
     <div class="d-flex gap-2">
         <a href="{{ route('admin.creators.index', ['status' => 'pending']) }}" class="btn btn-outline-warning">
             <i class="fas fa-clock me-2"></i>
-            En attente ({{ \App\Models\CreatorProfile::where('status', 'pending')->count() }})
+            En attente ({{ \App\Models\CreatorProfile::where('is_verified', false)->count() }})
         </a>
         <a href="{{ route('admin.creators.export.csv') }}" class="btn btn-outline-primary">
             <i class="fas fa-download me-2"></i>
@@ -39,7 +39,7 @@
     @php
         $totalCreators = \App\Models\CreatorProfile::count();
         $verifiedCreators = \App\Models\CreatorProfile::where('is_verified', true)->count();
-        $pendingCreators = \App\Models\CreatorProfile::where('status', 'pending')->count();
+        $pendingCreators = \App\Models\CreatorProfile::where('is_verified', false)->count();
         $activeCreators = \App\Models\CreatorProfile::where('status', 'active')->where('is_active', true)->count();
     @endphp
     
@@ -291,7 +291,7 @@
                     Affichage de {{ $creators->firstItem() ?? 0 }} à {{ $creators->lastItem() ?? 0 }} sur {{ $creators->total() }} résultats
                 </div>
                 <div>
-                    {{ $creators->links() }}
+                    {{ $creators->links('vendor.pagination.bootstrap-5') }}
                 </div>
             </div>
         </div>

@@ -4,7 +4,11 @@ namespace Modules\POSSync\Services;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Redis;
 use Modules\POSSync\Models\PosDevice;
+use Modules\POSSync\Notifications\DeviceBlockedNotification;
 
 class DeviceAuthService
 {
@@ -17,18 +21,23 @@ class DeviceAuthService
     public function generateToken(string $machineId): string
     {
         $device = PosDevice::where('machine_id', $machineId)->firstOrFail();
+        $secret = $this->getJwtSecret();
+
+        if (empty($secret)) {
+            throw new \RuntimeException('JWT secret is not configured. Set JWT_SECRET.');
+        }
 
         $payload = [
             'iss' => config('app.name'),
             'sub' => $machineId,
             'iat' => time(),
-            'exp' => time() + (7 * 24 * 60 * 60), // 7 jours
+            'exp' => time() + $this->getJwtTtl(),
             'device_id' => $device->id,
             'device_name' => $device->name,
             'permissions' => ['sync_events', 'download_catalog'],
         ];
 
-        return JWT::encode($payload, config('jwt.secret'), 'HS256');
+        return JWT::encode($payload, $secret, config('jwt.algo', 'HS256'));
     }
 
     /**
@@ -44,7 +53,13 @@ class DeviceAuthService
         }
 
         try {
-            $decoded = JWT::decode($token, new Key(config('jwt.secret'), 'HS256'));
+            $secret = $this->getJwtSecret();
+            if (empty($secret)) {
+                Log::error('JWT validation failed: missing JWT secret');
+                return null;
+            }
+
+            $decoded = JWT::decode($token, new Key($secret, config('jwt.algo', 'HS256')));
             
             // Vérifier que le device existe et est actif
             $device = PosDevice::where('machine_id', $decoded->sub)->first();
@@ -61,7 +76,7 @@ class DeviceAuthService
             return $device;
 
         } catch (\Exception $e) {
-            \Log::warning('JWT validation failed', [
+            Log::warning('JWT validation failed', [
                 'error' => $e->getMessage(),
                 'token' => substr($token, 0, 20) . '...'
             ]);
@@ -85,8 +100,8 @@ class DeviceAuthService
             
             // Notifier admin (email + SMS si critique)
             if (str_contains($reason, 'signature') || str_contains($reason, 'fraud')) {
-                \Notification::route('mail', config('pos.admin_email'))
-                    ->notify(new \Modules\POSSync\Notifications\DeviceBlockedNotification($device, $reason));
+                Notification::route('mail', config('possync.pos.admin_email', 'admin@racine-by-ganda.com'))
+                    ->notify(new DeviceBlockedNotification($device, $reason));
             }
         }
     }
@@ -116,9 +131,9 @@ class DeviceAuthService
     public function revokeToken(string $machineId, int $issuedAt): void
     {
         $key = "jwt:blacklist:{$machineId}:{$issuedAt}";
-        $ttl = 7 * 24 * 60 * 60; // 7 jours (durée de vie max du JWT)
+        $ttl = $this->getJwtTtl();
         
-        \Redis::setex($key, $ttl, '1');
+        Redis::setex($key, $ttl, '1');
     }
 
     /**
@@ -131,7 +146,7 @@ class DeviceAuthService
     private function isTokenBlacklisted(string $machineId, int $issuedAt): bool
     {
         $key = "jwt:blacklist:{$machineId}:{$issuedAt}";
-        return \Redis::exists($key);
+        return (bool) Redis::exists($key);
     }
 
     /**
@@ -150,5 +165,15 @@ class DeviceAuthService
 
         // Générer nouveau token
         return $this->generateToken($device->machine_id);
+    }
+
+    private function getJwtSecret(): ?string
+    {
+        return config('jwt.secret');
+    }
+
+    private function getJwtTtl(): int
+    {
+        return (int) config('possync.pos.jwt_ttl', 7 * 24 * 60 * 60);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use App\Services\AuditService;
 
 /**
  * Service de logging pour les événements d'authentification
@@ -17,18 +18,39 @@ use Illuminate\Support\Facades\Log;
  */
 class AuthLogger
 {
+    protected AuditService $auditService;
+
+    public function __construct(AuditService $auditService)
+    {
+        $this->auditService = $auditService;
+    }
+
     /**
      * Log une tentative de connexion
+     * PHASE 2 : Événement typé pour meilleure traçabilité
      */
     public function logLoginAttempt(string $email, bool $success, ?string $ip = null): void
     {
-        Log::channel('auth')->info('Login attempt', [
+        $eventType = $success ? 'LOGIN_SUCCESS' : 'LOGIN_FAILED';
+        
+        Log::channel('auth')->info($eventType, [
             'email' => $email,
             'success' => $success,
             'ip' => $ip ?? request()->ip(),
             'user_agent' => request()->userAgent(),
             'timestamp' => now()->toIso8601String(),
         ]);
+
+        if ($success) {
+            $user = User::where('email', $email)->first();
+            $this->auditService->log('auth_login_success', 'User', $user?->id ?? 0, $user, [
+                'email' => $email,
+            ]);
+        } else {
+            $this->auditService->log('auth_login_failed', 'User', 0, null, [
+                'email' => $email,
+            ]);
+        }
     }
 
     /**
@@ -43,6 +65,10 @@ class AuthLogger
             'ip' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'timestamp' => now()->toIso8601String(),
+        ]);
+
+        $this->auditService->log('auth_2fa_change', 'User', $user->id, $user, [
+            'action' => $action,
         ]);
     }
 
@@ -75,6 +101,12 @@ class AuthLogger
             'ip' => request()->ip(),
             'timestamp' => now()->toIso8601String(),
         ]);
+
+        $this->auditService->log('auth_role_changed', 'User', $user->id, $changedBy, [
+            'old_role' => $oldRole,
+            'new_role' => $newRole,
+            'email' => $user->email,
+        ]);
     }
 
     /**
@@ -105,14 +137,45 @@ class AuthLogger
 
     /**
      * Log un blocage de compte
+     * PHASE 2 : Événement typé ACCOUNT_LOCKED
      */
     public function logAccountLocked(string $email, int $attempts): void
     {
-        Log::channel('auth')->warning('Account locked', [
+        Log::channel('auth')->warning('ACCOUNT_LOCKED', [
             'email' => $email,
             'failed_attempts' => $attempts,
             'ip' => request()->ip(),
             'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+    
+    /**
+     * Log un déclenchement de CAPTCHA
+     * PHASE 2 : Nouveau type d'événement
+     */
+    public function logCaptchaTriggered(string $email, int $attempts): void
+    {
+        Log::channel('auth')->info('CAPTCHA_TRIGGERED', [
+            'email' => $email,
+            'failed_attempts' => $attempts,
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+    
+    /**
+     * Log une alerte de sécurité envoyée
+     * PHASE 2 : Nouveau type d'événement
+     */
+    public function logSecurityAlertSent(string $email, string $alertType, array $context = []): void
+    {
+        Log::channel('auth')->warning('SECURITY_ALERT_SENT', [
+            'email' => $email,
+            'alert_type' => $alertType,
+            'ip' => request()->ip(),
+            'timestamp' => now()->toIso8601String(),
+            ...$context
         ]);
     }
 

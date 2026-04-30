@@ -3,7 +3,7 @@
 @section('title', 'Codes de Récupération - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .recovery-page {
         min-height: 100vh;
         background: linear-gradient(135deg, #1a0f09 0%, #2C1810 50%, #1a0f09 100%);
@@ -253,7 +253,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 const codes = @json($recoveryCodes);
 const appName = '{{ config("app.name") }}';
 const userEmail = '{{ $user->email }}';

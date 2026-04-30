@@ -4,7 +4,7 @@
 @section('page-title', 'Détail Commande #' . str_pad($order->id, 6, '0', STR_PAD_LEFT))
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -107,7 +107,7 @@
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-white" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-shopping-bag text-racine-orange mr-2"></i>
+            <i class="fas fa-shopping-bag text-racine-orange me-2"></i>
             Commande #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
         </h2>
         <a href="{{ route('admin.orders.index') }}"
@@ -123,7 +123,7 @@
             <!-- Articles -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-box text-racine-orange mr-2"></i>
+                    <i class="fas fa-box text-racine-orange me-2"></i>
                     Articles commandés
                 </h3>
                 <div class="overflow-x-auto">
@@ -133,7 +133,7 @@
                                 <th>Produit</th>
                                 <th>Prix unitaire</th>
                                 <th>Quantité</th>
-                                <th class="text-right">Total</th>
+                                <th class="text-end">Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -156,7 +156,7 @@
                                 </td>
                                 <td class="text-slate-300">{{ number_format($item->price, 0, ',', ' ') }} F</td>
                                 <td class="text-slate-300 font-semibold">{{ $item->quantity }}</td>
-                                <td class="text-right">
+                                <td class="text-end">
                                     <p class="font-bold text-racine-orange">{{ number_format($item->price * $item->quantity, 0, ',', ' ') }} F</p>
                                 </td>
                             </tr>
@@ -164,10 +164,10 @@
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-racine-orange/20">
-                                <td colspan="3" class="py-4 text-right font-bold text-white text-lg">
+                                <td colspan="3" class="py-4 text-end font-bold text-white text-lg">
                                     Total
                                 </td>
-                                <td class="py-4 text-right">
+                                <td class="py-4 text-end">
                                     <p class="text-2xl font-bold text-racine-orange" style="font-family: 'Playfair Display', serif;">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} F</p>
                                 </td>
                             </tr>
@@ -182,7 +182,7 @@
             <!-- Statut -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-sync-alt text-racine-orange mr-2"></i>
+                    <i class="fas fa-sync-alt text-racine-orange me-2"></i>
                     Statut de la commande
                 </h3>
                 <form action="{{ route('admin.orders.update', $order) }}" method="POST">
@@ -209,7 +209,7 @@
             @if($order->payments && $order->payments->count() > 0)
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-credit-card text-green-400 mr-2"></i>
+                    <i class="fas fa-credit-card text-green-400 me-2"></i>
                     Paiements
                 </h3>
                 <div class="space-y-4">
@@ -219,12 +219,12 @@
                             <div class="flex items-center gap-2">
                                 @if($payment->channel === 'card')
                                     <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-semibold">
-                                        <i class="fas fa-credit-card mr-1"></i>
+                                        <i class="fas fa-credit-card me-1"></i>
                                         CB - {{ ucfirst($payment->provider) }}
                                     </span>
                                 @elseif($payment->channel === 'mobile_money')
                                     <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">
-                                        <i class="fas fa-mobile-alt mr-1"></i>
+                                        <i class="fas fa-mobile-alt me-1"></i>
                                         Mobile Money
                                     </span>
                                 @else
@@ -277,7 +277,7 @@
             <!-- Infos Client -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-user text-racine-orange mr-2"></i>
+                    <i class="fas fa-user text-racine-orange me-2"></i>
                     Informations Client
                 </h3>
                 <dl class="space-y-4">
@@ -315,7 +315,7 @@
             <!-- QR Code -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-qrcode text-racine-orange mr-2"></i>
+                    <i class="fas fa-qrcode text-racine-orange me-2"></i>
                     QR Code de la commande
                 </h3>
                 <div class="flex flex-col items-center">

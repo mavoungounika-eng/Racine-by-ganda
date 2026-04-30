@@ -3,9 +3,9 @@
 @section('title', 'Laisser un avis - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .review-create-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 3rem 0;
         margin-top: -70px;
         padding-top: calc(3rem + 70px);
@@ -13,7 +13,7 @@
     
     .review-create-content {
         padding: 3rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 60vh;
     }
     
@@ -26,7 +26,7 @@
     }
     
     .product-review-item {
-        background: #f8f9fa;
+        background: rgba(22,13,12,0.05);
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
@@ -60,7 +60,7 @@
     .product-review-title {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.25rem;
     }
     
@@ -100,13 +100,13 @@
     
     .form-label {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .form-control {
         border-radius: 12px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid rgba(22,13,12,0.1);
         padding: 0.75rem 1rem;
         transition: all 0.3s;
     }
@@ -117,7 +117,7 @@
     }
     
     .btn-submit-review {
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -208,8 +208,8 @@
         @else
             <div class="review-form-card text-center">
                 <i class="fas fa-check-circle" style="font-size: 4rem; color: #22C55E; margin-bottom: 1rem;"></i>
-                <h3 style="color: #2C1810; margin-bottom: 0.5rem;">Tous les produits ont déjà été notés</h3>
-                <p style="color: #8B7355; margin-bottom: 2rem;">
+                <h3 style="color: #160D0C; margin-bottom: 0.5rem;">Tous les produits ont déjà été notés</h3>
+                <p style="color: rgba(22,13,12,0.5); margin-bottom: 2rem;">
                     Vous avez déjà laissé un avis pour tous les produits de cette commande.
                 </p>
                 <a href="{{ route('profile.orders.show', $order) }}" class="btn-submit-review" style="display: inline-flex; align-items: center; text-decoration: none;">

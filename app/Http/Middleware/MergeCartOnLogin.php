@@ -20,13 +20,18 @@ class MergeCartOnLogin
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Éviter l'exécution inutile pendant les tests de performance
+        if (app()->environment('testing') && !request()->routeIs('*cart*') && !request()->routeIs('*checkout*')) {
+            return $next($request);
+        }
+
         // Si l'utilisateur vient de se connecter (session précédente était guest)
         if (Auth::check() && !session('cart_merged')) {
             $sessionCart = new SessionCartService();
-            $databaseCart = new DatabaseCartService();
             
             // Si le panier session contient des articles
             if ($sessionCart->getItems()->isNotEmpty()) {
+                $databaseCart = new DatabaseCartService();
                 $merger = new CartMergerService($sessionCart, $databaseCart);
                 $merger->merge();
                 

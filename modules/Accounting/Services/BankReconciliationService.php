@@ -60,9 +60,6 @@ class BankReconciliationService
                 'notes' => "Rapprochement automatique Stripe",
             ]);
 
-            // Mettre à jour référence dans l'écriture
-            $entry->update(['reference_id' => $reconciliation->id]);
-
             return $reconciliation;
         });
     }
@@ -106,9 +103,6 @@ class BankReconciliationService
                 'reconciled_by' => Auth::id() ?? 1,
                 'notes' => "Rapprochement automatique Monetbil",
             ]);
-
-            // Mettre à jour référence dans l'écriture
-            $entry->update(['reference_id' => $reconciliation->id]);
 
             return $reconciliation;
         });

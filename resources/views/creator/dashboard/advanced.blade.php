@@ -5,7 +5,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creator-hero {
         background: linear-gradient(135deg, var(--racine-black) 0%, var(--racine-black-soft) 100%);
         padding: 2.5rem 0;
@@ -25,7 +25,7 @@
         border-radius: var(--radius-xl);
         padding: 2rem;
         box-shadow: var(--shadow-md);
-        border-left: 4px solid var(--racine-orange);
+        border-start: 4px solid var(--racine-orange);
     }
     
     .stat-card-value {
@@ -68,27 +68,27 @@
     {{-- STATS ADVANCED --}}
     <div class="stats-grid">
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Produits Publiés</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Produits Publiés</div>
             <div class="stat-card-value">{{ $stats['products_count'] ?? 0 }}</div>
-            <div style="font-size: 0.875rem; color: #8B7355;">{{ $stats['active_products_count'] ?? 0 }} actifs</div>
+            <div style="font-size: 0.875rem; color: #160D0C;">{{ $stats['active_products_count'] ?? 0 }} actifs</div>
         </div>
         
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Ventes Total</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Ventes Total</div>
             <div class="stat-card-value" style="font-size: 1.75rem;">
                 {{ number_format($stats['total_sales'] ?? 0, 0, ',', ' ') }}<small style="font-size: 0.6em;"> FCFA</small>
             </div>
         </div>
         
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Revenus ce Mois</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Revenus ce Mois</div>
             <div class="stat-card-value" style="font-size: 1.75rem;">
                 {{ number_format($stats['monthly_sales'] ?? 0, 0, ',', ' ') }}<small style="font-size: 0.6em;"> FCFA</small>
             </div>
         </div>
         
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Commandes en Attente</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Commandes en Attente</div>
             <div class="stat-card-value">{{ $stats['pending_orders'] ?? 0 }}</div>
         </div>
     </div>
@@ -106,30 +106,30 @@
     {{-- RECENT ORDERS --}}
     @if(isset($recentOrders) && $recentOrders->count() > 0)
     <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-md);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #F8F6F3;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #FFFFFF;">
             <h3 style="margin: 0; font-size: 1.5rem; color: var(--racine-black);">
                 <i class="fas fa-shopping-bag" style="color: var(--racine-orange);"></i> Commandes Récentes
             </h3>
-            <a href="{{ route('creator.orders.index') }}" style="color: #D4A574; text-decoration: none; font-weight: 500;">Voir tout <i class="fas fa-arrow-right"></i></a>
+            <a href="{{ route('creator.orders.index') }}" style="color: #FFB800; text-decoration: none; font-weight: 500;">Voir tout <i class="fas fa-arrow-right"></i></a>
         </div>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse;">
-                <thead style="background: #F8F6F3;">
+                <thead style="background: #FFFFFF;">
                     <tr>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Commande</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Client</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Montant</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Statut</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Date</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Commande</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Client</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Montant</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Statut</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($recentOrders->take(5) as $order)
-                    <tr style="border-bottom: 1px solid #F8F6F3;">
-                        <td style="padding: 1rem;"><a href="{{ route('creator.orders.show', $order) }}" style="color: #D4A574; text-decoration: none; font-weight: 600;">#{{ $order->id }}</a></td>
+                    <tr style="border-bottom: 1px solid #FFFFFF;">
+                        <td style="padding: 1rem;"><a href="{{ route('creator.orders.show', $order) }}" style="color: #FFB800; text-decoration: none; font-weight: 600;">#{{ $order->id }}</a></td>
                         <td style="padding: 1rem;">{{ $order->customer_name ?? ($order->user->name ?? 'N/A') }}</td>
                         <td style="padding: 1rem;"><strong>{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</strong></td>
-                        <td style="padding: 1rem;"><span style="padding: 0.375rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(34, 197, 94, 0.1); color: #22c55e;">{{ ucfirst($order->status ?? 'En attente') }}</span></td>
+                        <td style="padding: 1rem;"><span style="padding: 0.375rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(34, 197, 94, 0.1); color: #FFB800;">{{ ucfirst($order->status ?? 'En attente') }}</span></td>
                         <td style="padding: 1rem;">{{ $order->created_at->format('d/m/Y') }}</td>
                     </tr>
                     @endforeach
@@ -143,7 +143,7 @@
 @if(isset($salesData) && $user->hasCapability('can_view_analytics'))
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
+<script nonce="{{ csp_nonce() }}">
     const ctx = document.getElementById('salesChart');
     if (ctx) {
         new Chart(ctx, {

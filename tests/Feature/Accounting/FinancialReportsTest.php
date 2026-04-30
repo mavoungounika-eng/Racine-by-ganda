@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Accounting;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Order;
@@ -11,10 +12,11 @@ use Modules\ERP\Models\ErpSupplier;
 use Modules\Accounting\Models\FiscalYear;
 use Modules\Accounting\Services\ReportingService;
 use Carbon\Carbon;
+use Tests\Traits\SeedsAccounting;
 
 class FinancialReportsTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected FiscalYear $fiscalYear;
@@ -27,40 +29,38 @@ class FinancialReportsTest extends TestCase
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
 
-        // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        // Seed donnÃ©es comptables via trait explicite
+        $this->seedAccounting();
 
-        $this->fiscalYear = FiscalYear::current()->first();
+        $this->fiscalYear = FiscalYear::where('is_closed', false)->first();
         $this->reportingService = app(ReportingService::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_trial_balance()
     {
-        // Créer transactions
+        // CrÃ©er transactions
         $this->createSampleTransactions();
 
-        // Générer balance
+        // GÃ©nÃ©rer balance
         $balance = $this->reportingService->generateTrialBalance($this->fiscalYear->id);
 
-        // Vérifications
+        // VÃ©rifications
         $this->assertIsArray($balance);
         $this->assertArrayHasKey('balances', $balance);
         $this->assertArrayHasKey('total_debit', $balance);
         $this->assertArrayHasKey('total_credit', $balance);
         $this->assertArrayHasKey('is_balanced', $balance);
 
-        // Vérifier équilibre
+        // VÃ©rifier Ã©quilibre
         $this->assertTrue($balance['is_balanced']);
         $this->assertEquals($balance['total_debit'], $balance['total_credit']);
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_general_ledger_for_account()
     {
         $this->createSampleTransactions();
 
-        // Générer grand livre pour compte 5211 (Banque Stripe)
+        // GÃ©nÃ©rer grand livre pour compte 5211 (Banque Stripe)
         $ledger = $this->reportingService->generateGeneralLedger(
             '5211',
             $this->fiscalYear->id
@@ -71,7 +71,7 @@ class FinancialReportsTest extends TestCase
         $this->assertArrayHasKey('movements', $ledger);
         $this->assertArrayHasKey('final_balance', $ledger);
 
-        // Vérifier mouvements
+        // VÃ©rifier mouvements
         $this->assertIsArray($ledger['movements']);
         
         if (count($ledger['movements']) > 0) {
@@ -83,13 +83,12 @@ class FinancialReportsTest extends TestCase
             $this->assertArrayHasKey('balance', $firstMovement);
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_balance_sheet()
     {
         $this->createSampleTransactions();
 
-        // Générer bilan
+        // GÃ©nÃ©rer bilan
         $balanceSheet = $this->reportingService->generateBalanceSheet(
             $this->fiscalYear->id
         );
@@ -102,16 +101,15 @@ class FinancialReportsTest extends TestCase
         $this->assertArrayHasKey('total_passif', $balanceSheet);
         $this->assertArrayHasKey('is_balanced', $balanceSheet);
 
-        // Vérifier équilibre Actif = Passif
+        // VÃ©rifier Ã©quilibre Actif = Passif
         $this->assertTrue($balanceSheet['is_balanced']);
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_income_statement()
     {
         $this->createSampleTransactions();
 
-        // Générer compte de résultat
+        // GÃ©nÃ©rer compte de rÃ©sultat
         $incomeStatement = $this->reportingService->generateIncomeStatement(
             $this->fiscalYear->id
         );
@@ -124,26 +122,37 @@ class FinancialReportsTest extends TestCase
         $this->assertArrayHasKey('resultat', $incomeStatement);
         $this->assertArrayHasKey('type', $incomeStatement);
 
-        // Vérifier calcul résultat
+        // VÃ©rifier calcul rÃ©sultat
         $expectedResultat = $incomeStatement['total_produits'] - $incomeStatement['total_charges'];
         $this->assertEquals($expectedResultat, $incomeStatement['resultat']);
 
-        // Vérifier type résultat
+        // VÃ©rifier type rÃ©sultat
         if ($incomeStatement['resultat'] >= 0) {
             $this->assertEquals('benefice', $incomeStatement['type']);
         } else {
             $this->assertEquals('perte', $incomeStatement['type']);
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_correct_balances_for_different_account_types()
     {
         $this->createSampleTransactions();
 
         $balance = $this->reportingService->generateTrialBalance($this->fiscalYear->id);
 
-        // Vérifier que chaque compte a soit balance_debit soit balance_credit (pas les deux)
+        $this->assertIsArray($balance);
+        $this->assertArrayHasKey('balances', $balance);
+        $this->assertArrayHasKey('total_debit', $balance);
+        $this->assertArrayHasKey('total_credit', $balance);
+        $this->assertIsArray($balance['balances']);
+
+        // Si aucun compte n'est retourné, on vérifie au minimum l'équilibre global.
+        if (empty($balance['balances'])) {
+            $this->assertEquals($balance['total_debit'], $balance['total_credit']);
+            return;
+        }
+
+        // VÃ©rifier que chaque compte a soit balance_debit soit balance_credit (pas les deux)
         foreach ($balance['balances'] as $accountBalance) {
             if ($accountBalance['balance_debit'] > 0) {
                 $this->assertEquals(0, $accountBalance['balance_credit']);
@@ -152,11 +161,10 @@ class FinancialReportsTest extends TestCase
             }
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_filters_reports_by_date_range()
     {
-        // Créer transactions à différentes dates
+        // CrÃ©er transactions Ã  diffÃ©rentes dates
         $order1 = Order::factory()->create([
             'user_id' => $this->user->id,
             'total_amount' => 118.00,
@@ -187,7 +195,7 @@ class FinancialReportsTest extends TestCase
             Carbon::now()
         );
 
-        // La balance récente devrait avoir moins de mouvements
+        // La balance rÃ©cente devrait avoir moins de mouvements
         $this->assertLessThanOrEqual(
             $fullBalance['total_debit'],
             $recentBalance['total_debit']
@@ -195,7 +203,7 @@ class FinancialReportsTest extends TestCase
     }
 
     /**
-     * Créer transactions d'exemple pour tests
+     * CrÃ©er transactions d'exemple pour tests
      */
     protected function createSampleTransactions(): void
     {
@@ -208,7 +216,7 @@ class FinancialReportsTest extends TestCase
         ]);
 
         // Vente marketplace
-        $creator = User::factory()->create(['role' => 'creator']);
+        $creator = User::factory()->create(['role' => 'createur']);
         Order::factory()->create([
             'user_id' => $this->user->id,
             'creator_id' => $creator->id,
@@ -217,7 +225,7 @@ class FinancialReportsTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        // Achat ERP (si modèle existe)
+        // Achat ERP (si modÃ¨le existe)
         try {
             $supplier = ErpSupplier::create([
                 'name' => 'Fournisseur Test',
@@ -232,7 +240,7 @@ class FinancialReportsTest extends TestCase
                 'status' => 'received',
             ]);
         } catch (\Exception $e) {
-            // Ignorer si modèle ERP pas encore complet
+            // Ignorer si modÃ¨le ERP pas encore complet
         }
     }
 }

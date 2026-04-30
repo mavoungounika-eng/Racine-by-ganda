@@ -11,6 +11,7 @@ use App\Services\AnalyticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AnalyticsServiceTest extends TestCase
@@ -25,7 +26,6 @@ class AnalyticsServiceTest extends TestCase
         $this->service = new AnalyticsService();
         Cache::flush();
     }
-
     #[Test]
     public function it_returns_funnel_stats(): void
     {
@@ -53,7 +53,6 @@ class AnalyticsServiceTest extends TestCase
         $this->assertEquals(1, $stats['counts']['product_added_to_cart']);
         $this->assertEquals(1, $stats['counts']['checkout_started']);
     }
-
     #[Test]
     public function it_returns_sales_stats(): void
     {
@@ -83,7 +82,6 @@ class AnalyticsServiceTest extends TestCase
         $this->assertEquals(10000, $stats['kpis']['revenue_total']);
         $this->assertEquals(1, $stats['kpis']['orders_count']);
     }
-
     #[Test]
     public function it_caches_funnel_stats(): void
     {
@@ -101,7 +99,6 @@ class AnalyticsServiceTest extends TestCase
         $stats2 = $this->service->getFunnelStats($startDate, $endDate);
         $this->assertEquals($stats1, $stats2);
     }
-
     #[Test]
     public function it_returns_creator_stats(): void
     {
@@ -135,4 +132,3 @@ class AnalyticsServiceTest extends TestCase
         $this->assertGreaterThan(0, $stats['kpis']['revenue_total']);
     }
 }
-

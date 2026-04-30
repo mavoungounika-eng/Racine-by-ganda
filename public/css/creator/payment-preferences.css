@@ -4,15 +4,15 @@
 
 :root {
     /* Couleurs principales */
-    --color-primary: #FF6B35;
-    --color-primary-dark: #E85A2A;
-    --color-success: #10B981;
-    --color-warning: #F59E0B;
-    --color-danger: #EF4444;
-    --color-info: #3B82F6;
+    --color-primary: #ED5F1E;
+    --color-primary-dark: #ED5F1E;
+    --color-success: #FFB800;
+    --color-warning: #FFB800;
+    --color-danger: #ED5F1E;
+    --color-info: #160D0C;
 
     /* Couleurs de fond */
-    --bg-base: #F9FAFB;
+    --bg-base: #FFFFFF;
     --bg-card: rgba(255, 255, 255, 0.7);
     --bg-card-hover: rgba(255, 255, 255, 0.85);
 
@@ -57,13 +57,13 @@
 .payment-title {
     font-size: 2rem;
     font-weight: 700;
-    color: #1F2937;
+    color: #160D0C;
     margin: 0 0 0.5rem 0;
 }
 
 .payment-subtitle {
     font-size: 1rem;
-    color: #6B7280;
+    color: #160D0C;
     margin: 0;
 }
 
@@ -99,18 +99,18 @@
 }
 
 .status-badge--success {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    background: linear-gradient(135deg, #FFB800 0%, #FFB800 100%);
     color: white;
 }
 
 .status-badge--warning {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
     color: white;
 }
 
 .status-badge--disabled {
-    background: #E5E7EB;
-    color: #6B7280;
+    background: #FFFFFF;
+    color: #160D0C;
 }
 
 .status-badge--sm {
@@ -194,49 +194,49 @@
 }
 
 .payment-card-icon--success {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    background: linear-gradient(135deg, #FFB800 0%, #FFB800 100%);
     color: white;
 }
 
 .payment-card-icon--warning {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
     color: white;
 }
 
 .payment-card-icon--orange {
-    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     color: white;
 }
 
 .payment-card-icon--gray {
-    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     color: white;
 }
 
 .payment-card-icon--blue {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     color: white;
 }
 
 .payment-card-icon--green {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    background: linear-gradient(135deg, #FFB800 0%, #FFB800 100%);
     color: white;
 }
 
 .payment-card-icon--purple {
-    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     color: white;
 }
 
 .payment-card-icon--red {
-    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     color: white;
 }
 
 .payment-card-title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1F2937;
+    color: #160D0C;
     margin: 0 0 0.25rem 0;
     display: flex;
     align-items: center;
@@ -245,12 +245,12 @@
 
 .payment-card-subtitle {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: #160D0C;
     margin: 0;
 }
 
 .payment-card-description {
-    color: #4B5563;
+    color: #160D0C;
     margin-bottom: 1.5rem;
     line-height: 1.6;
 }
@@ -260,7 +260,7 @@
    ============================================ */
 
 .badge-principal {
-    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
@@ -271,7 +271,7 @@
 }
 
 .badge-secondary {
-    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
@@ -303,37 +303,37 @@
 .alert-success {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
     border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #065F46;
+    color: #160D0C;
 }
 
 .alert-danger {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
     border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #991B1B;
+    color: #ED5F1E;
 }
 
 .alert-warning {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
     border: 1px solid rgba(245, 158, 11, 0.3);
-    color: #92400E;
+    color: #ED5F1E;
 }
 
 .alert-warning-light {
     background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(232, 90, 42, 0.08) 100%);
     border: 1px solid rgba(255, 107, 53, 0.2);
-    color: #92400E;
+    color: #ED5F1E;
 }
 
 .alert-info-light {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%);
     border: 1px solid rgba(59, 130, 246, 0.2);
-    color: #1E40AF;
+    color: #160D0C;
 }
 
 .alert-danger-light {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%);
     border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #991B1B;
+    color: #ED5F1E;
 }
 
 .alert-dismissible {
@@ -375,20 +375,20 @@
 }
 
 .btn-payment--primary {
-    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     color: white;
     box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .btn-payment--primary:hover {
-    background: linear-gradient(135deg, #E85A2A 0%, #D94F1F 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
     transform: translateY(-2px);
 }
 
 .btn-payment--secondary {
     background: rgba(107, 114, 128, 0.1);
-    color: #374151;
+    color: #160D0C;
     border: 1px solid rgba(107, 114, 128, 0.2);
 }
 
@@ -398,13 +398,13 @@
 }
 
 .btn-payment--danger {
-    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     color: white;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-payment--danger:hover {
-    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
     transform: translateY(-2px);
 }
@@ -418,14 +418,14 @@
     justify-content: center;
     background: rgba(107, 114, 128, 0.1);
     border: 1px solid rgba(107, 114, 128, 0.2);
-    color: #6B7280;
+    color: #160D0C;
     cursor: pointer;
     transition: var(--transition-fast);
 }
 
 .btn-icon:hover {
     background: rgba(107, 114, 128, 0.15);
-    color: #374151;
+    color: #160D0C;
 }
 
 .payment-link {
@@ -465,14 +465,14 @@
 .form-group label {
     display: block;
     font-weight: 600;
-    color: #374151;
+    color: #160D0C;
     margin-bottom: 0.5rem;
 }
 
 .form-control {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid #D1D5DB;
+    border: 1px solid #FFFFFF;
     border-radius: 0.5rem;
     font-size: 0.875rem;
     transition: var(--transition-fast);
@@ -523,7 +523,7 @@
 
 .info-label {
     font-size: 0.75rem;
-    color: #6B7280;
+    color: #160D0C;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 0.25rem;
@@ -532,7 +532,7 @@
 .info-value {
     font-size: 1rem;
     font-weight: 600;
-    color: #1F2937;
+    color: #160D0C;
 }
 
 /* ============================================
@@ -548,7 +548,7 @@
 .radio-card {
     position: relative;
     padding: 1.25rem;
-    border: 2px solid #E5E7EB;
+    border: 2px solid #FFFFFF;
     border-radius: 0.75rem;
     cursor: pointer;
     transition: var(--transition-base);
@@ -583,7 +583,7 @@
     align-items: center;
     gap: 0.75rem;
     font-size: 1rem;
-    color: #1F2937;
+    color: #160D0C;
 }
 
 .radio-card-header i {
@@ -592,7 +592,7 @@
 
 .radio-card-description {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: #160D0C;
     margin: 0;
 }
 
@@ -608,7 +608,7 @@
 .threshold-value {
     font-size: 2.5rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -622,7 +622,7 @@
     width: 100%;
     height: 8px;
     border-radius: 9999px;
-    background: linear-gradient(to right, #10B981 0%, #F59E0B 50%, #EF4444 100%);
+    background: linear-gradient(to right, #FFB800 0%, #FFB800 50%, #ED5F1E 100%);
     outline: none;
     -webkit-appearance: none;
 }
@@ -666,7 +666,7 @@
     justify-content: space-between;
     margin-top: 0.5rem;
     font-size: 0.75rem;
-    color: #6B7280;
+    color: #160D0C;
 }
 
 /* ============================================
@@ -689,7 +689,7 @@
 
 .toggle-label {
     font-weight: 600;
-    color: #1F2937;
+    color: #160D0C;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -698,7 +698,7 @@
 
 .toggle-description {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: #160D0C;
     margin: 0;
 }
 
@@ -723,7 +723,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #D1D5DB;
+    background-color: #FFFFFF;
     transition: var(--transition-base);
     border-radius: 9999px;
 }
@@ -741,7 +741,7 @@
 }
 
 .toggle-switch input:checked+.toggle-slider {
-    background: linear-gradient(135deg, #FF6B35 0%, #E85A2A 100%);
+    background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
 }
 
 .toggle-switch input:checked+.toggle-slider:before {
@@ -789,13 +789,13 @@
 
 .transaction-title {
     font-weight: 600;
-    color: #1F2937;
+    color: #160D0C;
     margin-bottom: 0.25rem;
 }
 
 .transaction-subtitle {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: #160D0C;
 }
 
 .transaction-amount {
@@ -811,7 +811,7 @@
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    color: #9CA3AF;
+    color: #160D0C;
 }
 
 .empty-state i {
@@ -829,7 +829,7 @@
 }
 
 .text-muted {
-    color: #6B7280 !important;
+    color: #160D0C !important;
 }
 
 .text-success {
@@ -867,7 +867,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 0;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid #FFFFFF;
 }
 
 .feature-list li:last-child {

@@ -86,16 +86,39 @@ class NavigationComposer
      */
     public function getBreadcrumbItems(): array
     {
+        $request = request();
         $currentRoute = Route::currentRouteName();
         $items = [];
         
-        // Dashboard
+        // Dashboard (Home)
         $items[] = [
             'label' => 'Accueil',
             'url' => route('frontend.home'),
         ];
+
+        // 1. Tenter le breadcrumb dynamique via CategoryService
+        try {
+            if ($request->filled('category')) {
+                $category = \App\Models\Category::where('slug', $request->category)->first();
+                if ($category) {
+                    $cmsBreadcrumb = app(\App\Services\Cms\CategoryService::class)->getBreadcrumb($category);
+                    if (!empty($cmsBreadcrumb)) {
+                        // Transformer le format CMS [name, url, slug] vers le format interne [label, url]
+                        foreach ($cmsBreadcrumb as $cb) {
+                            $items[] = [
+                                'label' => $cb['name'],
+                                'url' => $cb['url'] ?? null
+                            ];
+                        }
+                        return $items;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fallback silencieux
+        }
         
-        // Mapping des routes vers leurs breadcrumbs
+        // 2. Mapping statique si pas de catégorie CMS
         $breadcrumbMap = [
             'account.dashboard' => [
                 ['label' => 'Mon Compte', 'url' => null],
@@ -174,6 +197,9 @@ class NavigationComposer
             'checkout' => [
                 ['label' => 'Panier', 'url' => route('cart.index')],
                 ['label' => 'Commande', 'url' => null],
+            ],
+            'frontend.page.show' => [
+                ['label' => 'Information', 'url' => null],
             ],
         ];
         

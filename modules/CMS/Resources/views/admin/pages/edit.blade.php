@@ -126,9 +126,9 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="meta_title" class="form-label">Titre SEO</label>
-                                    <input type="text" class="form-control @error('meta_title') is-invalid @enderror" 
-                                           id="meta_title" name="meta_title" 
-                                           value="{{ old('meta_title', $page->meta['title'] ?? '') }}"
+                                    <input type="text" class="form-control @error('meta_title') is-invalid @enderror"
+                                           id="meta_title" name="meta_title"
+                                           value="{{ old('meta_title', $page->meta_title ?? '') }}"
                                            maxlength="70">
                                     @error('meta_title')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -137,9 +137,9 @@
 
                                 <div class="mb-3">
                                     <label for="meta_description" class="form-label">Description SEO</label>
-                                    <textarea class="form-control @error('meta_description') is-invalid @enderror" 
+                                    <textarea class="form-control @error('meta_description') is-invalid @enderror"
                                               id="meta_description" name="meta_description" rows="3"
-                                              maxlength="160">{{ old('meta_description', $page->meta['description'] ?? '') }}</textarea>
+                                              maxlength="160">{{ old('meta_description', $page->meta_description ?? '') }}</textarea>
                                     @error('meta_description')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror

@@ -4,6 +4,7 @@ namespace Modules\ERPProduction\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 use Modules\ERP\Models\ErpRawMaterial;
 use App\Models\Product;
 use App\Models\User;
@@ -13,6 +14,8 @@ class StockMovement extends Model
     protected $table = 'erp_stock_movements';
 
     protected $fillable = [
+        'stockable_type',
+        'stockable_id',
         'material_id',
         'product_id',
         'production_order_id',
@@ -23,6 +26,7 @@ class StockMovement extends Model
         'total_cost',
         'description',
         'created_by',
+        'user_id',
     ];
 
     protected $casts = [
@@ -30,6 +34,32 @@ class StockMovement extends Model
         'unit_cost' => 'decimal:2',
         'total_cost' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $movement): void {
+            $authId = Auth::id();
+
+            if (empty($movement->user_id)) {
+                $movement->user_id = $movement->created_by ?? $authId;
+            }
+
+            if (empty($movement->created_by)) {
+                $movement->created_by = $movement->user_id ?? $authId;
+            }
+
+            // Backward compatibility with legacy writes that only set material_id/product_id.
+            if (empty($movement->stockable_type) || empty($movement->stockable_id)) {
+                if (!empty($movement->material_id)) {
+                    $movement->stockable_type = ErpRawMaterial::class;
+                    $movement->stockable_id = $movement->material_id;
+                } elseif (!empty($movement->product_id)) {
+                    $movement->stockable_type = Product::class;
+                    $movement->stockable_id = $movement->product_id;
+                }
+            }
+        });
+    }
 
     /**
      * Relations

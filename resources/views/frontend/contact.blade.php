@@ -3,9 +3,9 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Contact - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .contact-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -28,7 +28,7 @@
     
     .contact-section {
         padding: 5rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .contact-grid {
@@ -61,7 +61,7 @@
     .info-icon {
         width: 60px;
         height: 60px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 16px;
         display: flex;
         align-items: center;
@@ -75,18 +75,18 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .info-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 1rem;
         line-height: 1.6;
     }
     
     .info-content a {
-        color: #8B5A2B;
+        color: #160D0C;
         text-decoration: none;
         font-weight: 500;
     }
@@ -97,7 +97,7 @@
     
     /* SOCIAL */
     .social-card {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         border-radius: 20px;
         padding: 2rem;
         color: white;
@@ -134,7 +134,7 @@
     }
     
     .social-link:hover {
-        background: #D4A574;
+        background: #FFB800;
         transform: translateY(-3px);
     }
     
@@ -154,12 +154,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .form-header p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     .form-row {
@@ -175,7 +175,7 @@
     .form-group label {
         display: block;
         font-weight: 500;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
@@ -184,21 +184,21 @@
     .form-group textarea {
         width: 100%;
         padding: 1rem 1.25rem;
-        border: 1.5px solid #E5DDD3;
+        border: 1.5px solid rgba(22,13,12,0.1);
         border-radius: 12px;
         font-size: 1rem;
         font-family: inherit;
         transition: all 0.3s;
-        background: #FAFAFA;
+        background: rgba(22,13,12,0.02);
     }
     
     .form-group input:focus,
     .form-group select:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: #D4A574;
+        border-color: #FFB800;
         background: white;
-        box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
+        box-shadow: 0 0 0 4px rgba(237, 95, 30, 0.08);
     }
     
     .form-group textarea {
@@ -209,7 +209,7 @@
     .btn-submit {
         width: 100%;
         padding: 1.1rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -225,13 +225,13 @@
     
     .btn-submit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 15px 40px rgba(44, 24, 16, 0.3);
+        box-shadow: 0 15px 40px rgba(22,13,12, 0.3);
     }
     
     /* MAP */
     .map-section {
         padding: 0 0 5rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .map-wrapper {
@@ -260,8 +260,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -275,7 +275,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .faq-grid {
@@ -287,7 +287,7 @@
     }
     
     .faq-item {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 16px;
         padding: 1.5rem;
     }
@@ -295,7 +295,7 @@
     .faq-item h4 {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
@@ -303,11 +303,11 @@
     }
     
     .faq-item h4 i {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .faq-item p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -348,7 +348,7 @@
                     <div class="info-content">
                         <h3>Email</h3>
                         <p>Pour toute question générale</p>
-                        <a href="mailto:contact@racine-ganda.com">contact@racine-ganda.com</a>
+                        <a href="mailto:{{ config('app.company.email') }}">{{ config('app.company.email') }}</a>
                     </div>
                 </div>
                 
@@ -357,7 +357,7 @@
                     <div class="info-content">
                         <h3>Téléphone</h3>
                         <p>Du lundi au vendredi, 9h-18h</p>
-                        <a href="tel:+33123456789">+33 1 23 45 67 89</a>
+                        <a href="tel:{{ str_replace(' ', '', config('app.company.phone')) }}">{{ config('app.company.phone') }}</a>
                     </div>
                 </div>
                 
@@ -366,7 +366,7 @@
                     <div class="info-content">
                         <h3>Showroom</h3>
                         <p>Sur rendez-vous uniquement</p>
-                        <span>15 Rue de la Mode, 75003 Paris</span>
+                        <span>République du Congo, Pointe-Noire, Galerie NF</span>
                     </div>
                 </div>
                 
@@ -388,8 +388,14 @@
                     <h2>Envoyez-nous un message</h2>
                     <p>Nous vous répondrons dans les 24 heures</p>
                 </div>
-                
-                <form action="#" method="POST">
+
+                @if(session('success'))
+                    <div class="alert alert-success" style="background:rgba(34, 197, 94, 0.1);color:#22C55E;padding:15px;border-radius:8px;margin-bottom:20px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('frontend.contact.submit') }}" method="POST">
                     @csrf
                     <div class="form-row">
                         <div class="form-group">

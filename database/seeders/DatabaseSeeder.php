@@ -30,6 +30,8 @@ class DatabaseSeeder extends Seeder
             // V2 : Seeders pour add-ons et bundles
             CreatorAddonSeeder::class,
             CreatorBundleSeeder::class,
+            // Création des utilisateurs de test complets
+            TestUsersSeeder::class,
         ]);
 
         /**

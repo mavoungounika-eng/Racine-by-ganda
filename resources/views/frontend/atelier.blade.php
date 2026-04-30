@@ -3,11 +3,11 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'L\'Atelier - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .atelier-hero {
         min-height: 80vh;
-        background: linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 9, 0.98) 100%),
-                    url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600') center/cover;
+        background: linear-gradient(135deg, rgba(22,13,12, 0.95) 0%, rgba(26, 15, 9, 0.98) 100%),
+                    url('{{ asset("storage/showroom/gallery/gallery-01.jpeg") }}') center/cover;
         display: flex;
         align-items: center;
         position: relative;
@@ -30,14 +30,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(212, 165, 116, 0.2);
+        background: rgba(237, 95, 30, 0.1);
         border: 1px solid rgba(212, 165, 116, 0.4);
         padding: 0.6rem 1.5rem;
         border-radius: 30px;
         font-size: 0.85rem;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 1.5rem;
     }
     
@@ -50,7 +50,7 @@
     }
     
     .hero-title .highlight {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .hero-description {
@@ -70,7 +70,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -80,7 +80,7 @@
     
     .btn-primary-hero:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(212, 165, 116, 0.3);
+        box-shadow: 0 15px 40px rgba(255, 184, 0, 0.3);
         color: white;
     }
     
@@ -100,7 +100,7 @@
     
     .btn-outline-hero:hover {
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border-color: white;
     }
     
@@ -124,7 +124,7 @@
         transform: translate(-50%, -50%);
         width: 80px;
         height: 80px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -144,7 +144,7 @@
     /* PROCESS */
     .process-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .section-header {
@@ -154,8 +154,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -169,12 +169,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
     }
     
     .section-subtitle {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 1.1rem;
         max-width: 600px;
         margin: 0 auto;
@@ -194,7 +194,7 @@
         left: 15%;
         right: 15%;
         height: 2px;
-        background: linear-gradient(90deg, #D4A574, #8B5A2B);
+        background: linear-gradient(90deg, #FFB800, #160D0C);
         z-index: 0;
     }
     
@@ -208,7 +208,7 @@
         width: 80px;
         height: 80px;
         background: white;
-        border: 3px solid #D4A574;
+        border: 3px solid #FFB800;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -216,7 +216,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
         font-weight: 700;
-        color: #D4A574;
+        color: #FFB800;
         margin: 0 auto 1.5rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
@@ -225,12 +225,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
     }
     
     .process-step p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -277,7 +277,7 @@
     .gallery-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(44, 24, 16, 0.8) 0%, transparent 50%);
+        background: linear-gradient(to top, rgba(22,13,12, 0.8) 0%, transparent 50%);
         display: flex;
         align-items: flex-end;
         padding: 1.5rem;
@@ -297,7 +297,7 @@
     /* SERVICES */
     .services-section {
         padding: 6rem 0;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     }
     
     .services-header {
@@ -306,7 +306,7 @@
     }
     
     .services-header .section-tag {
-        background: rgba(212, 165, 116, 0.2);
+        background: rgba(237, 95, 30, 0.1);
     }
     
     .services-header .section-title {
@@ -340,7 +340,7 @@
     .service-icon {
         width: 80px;
         height: 80px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 20px;
         display: flex;
         align-items: center;
@@ -368,7 +368,7 @@
     .service-price {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .service-price span {
@@ -380,7 +380,7 @@
     /* TESTIMONIAL */
     .testimonial-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .testimonial-content {
@@ -391,7 +391,7 @@
     
     .quote-icon {
         font-size: 4rem;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 2rem;
     }
     
@@ -399,7 +399,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
         font-style: italic;
-        color: #2C1810;
+        color: #160D0C;
         line-height: 1.6;
         margin-bottom: 2rem;
     }
@@ -420,18 +420,18 @@
     
     .author-info h4 {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .author-info span {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
     /* CTA */
     .cta-section {
         padding: 5rem 0;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         text-align: center;
     }
     
@@ -454,7 +454,7 @@
         gap: 0.75rem;
         padding: 1rem 2.5rem;
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border-radius: 50px;
         text-decoration: none;
         font-weight: 600;
@@ -464,7 +464,7 @@
     .btn-cta:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        color: #2C1810;
+        color: #160D0C;
     }
     
     @media (max-width: 1024px) {
@@ -513,8 +513,9 @@
                 </div>
             </div>
             <div class="hero-video">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" alt="Atelier">
-                <button class="play-btn"><i class="fas fa-play"></i></button>
+                <video autoplay muted loop playsinline style="width:100%;height:450px;object-fit:cover;">
+                    <source src="{{ asset('storage/atelier/atelier-chemise-01.mp4') }}" type="video/mp4">
+                </video>
             </div>
         </div>
     </div>
@@ -564,25 +565,42 @@
 
         <div class="gallery-grid">
             <div class="gallery-item large">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600" alt="Atelier">
+                <img src="{{ asset('storage/showroom/gallery/gallery-01.jpeg') }}" alt="Atelier de couture">
                 <div class="gallery-overlay"><span>Atelier de couture</span></div>
-                    </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="Tissus">
+                <img src="{{ asset('storage/showroom/gallery/gallery-02.jpeg') }}" alt="Sélection des tissus">
                 <div class="gallery-overlay"><span>Sélection des tissus</span></div>
-                    </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400" alt="Création">
+                <img src="{{ asset('storage/showroom/gallery/gallery-03.jpeg') }}" alt="Travail manuel">
                 <div class="gallery-overlay"><span>Travail manuel</span></div>
-                </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=400" alt="Finitions">
+                <img src="{{ asset('storage/showroom/gallery/gallery-04.jpeg') }}" alt="Finitions soignées">
                 <div class="gallery-overlay"><span>Finitions soignées</span></div>
-                    </div>
+            </div>
             <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400" alt="Résultat">
+                <img src="{{ asset('storage/showroom/gallery/gallery-05.jpeg') }}" alt="Résultat final">
                 <div class="gallery-overlay"><span>Résultat final</span></div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- VIDEOS ATELIER -->
+<section style="padding: 4rem 0; background: rgba(22,13,12,0.03);">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Coulisses</span>
+            <h2 class="section-title">L'atelier en vidéo</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+            @foreach(['atelier-chemise-02.mp4','atelier-kimono-01.mp4','atelier-kimono-02.mp4','atelier-soiree-01.mp4','atelier-soiree-02.mp4'] as $video)
+            <video controls style="width:100%;border-radius:16px;background:#160D0C;" preload="none">
+                <source src="{{ asset('storage/atelier/' . $video) }}" type="video/mp4">
+            </video>
+            @endforeach
         </div>
     </div>
 </section>
@@ -630,7 +648,7 @@
                 et une équipe à l'écoute."
             </p>
             <div class="testimonial-author">
-                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=faces" alt="Cliente">
+                <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Cliente" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
                 <div class="author-info">
                     <h4>Marie-Claire Diop</h4>
                     <span>Mariée en Juin 2024</span>

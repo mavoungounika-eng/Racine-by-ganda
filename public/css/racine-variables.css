@@ -7,30 +7,36 @@
    ============================================= */
 
 :root {
-    /* ===== COULEURS OFFICIELLES RACINE ===== */
+    /* ===== COULEURS OFFICIELLES RACINE =====
+       Charte stricte : 4 couleurs base (#160D0C noir, #ED5F1E orange,
+       #FFB800 jaune, #FFFFFF blanc). Les variantes ci-dessous sont
+       dérivées par transparence (rgba) pour créer de la profondeur
+       visuelle sans sortir de la charte. Seuls les *-dark utilisent
+       une couleur légèrement assombrie, indispensable pour les états
+       hover/active (l'opacité seule ne peut pas assombrir sur fond clair). */
     --racine-black: #160D0C;
-    --racine-black-soft: #2A1A18;
-    --racine-black-lighter: #3D2D2B;
+    --racine-black-soft: rgba(22, 13, 12, 0.88);      /* surfaces secondaires */
+    --racine-black-lighter: rgba(22, 13, 12, 0.65);   /* textes secondaires, dividers */
 
     --racine-orange: #ED5F1E;
-    --racine-orange-dark: #C94D15;
-    --racine-orange-light: #F17A45;
-    --racine-orange-ultra-light: #FFF5F0;
+    --racine-orange-dark: #C44E17;                    /* hover buttons (-15%) */
+    --racine-orange-light: rgba(237, 95, 30, 0.82);   /* backgrounds doux, overlays */
+    --racine-orange-ultra-light: rgba(237, 95, 30, 0.05);
 
     --racine-yellow: #FFB800;
-    --racine-yellow-light: #FFC933;
-    --racine-yellow-dark: #CC9300;
-    --racine-yellow-ultra-light: #FFF9E6;
+    --racine-yellow-dark: #CC9300;                    /* hover (-20%) */
+    --racine-yellow-light: rgba(255, 184, 0, 0.82);   /* highlights, focus rings */
+    --racine-yellow-ultra-light: rgba(255, 184, 0, 0.08);
 
     --racine-white: #FFFFFF;
-    --racine-cream: #FFF8F0;
-    --racine-beige: #F5E6D3;
+    --racine-cream: rgba(237, 95, 30, 0.05);
+    --racine-beige: rgba(255, 184, 0, 0.1);
 
     /* Couleurs supplémentaires pour l'espace créateur */
-    --racine-brown: #8B7355;
-    --racine-beige-light: #F8F6F3;
-    --racine-border: #E5DDD3;
-    --racine-gold: #D4A574;
+    --racine-brown: rgba(22,13,12,0.5);
+    --racine-beige-light: rgba(22,13,12,0.05);
+    --racine-border: rgba(22,13,12,0.1);
+    --racine-gold: #FFB800;
 
     /* ===== COULEURS BOOTSTRAP OVERRIDE ===== */
     --primary: #ED5F1E;
@@ -40,15 +46,15 @@
     --dark: #160D0C;
     --dark-rgb: 22, 13, 12;
 
-    --success: #2ECC71;
+    --success: #22C55E;
     --warning: #FFB800;
-    --danger: #E74C3C;
-    --info: #3498DB;
+    --danger: #DC2626;
+    --info: #ED5F1E;
 
     /* ===== TYPOGRAPHIE OFFICIELLE ===== */
-    --font-heading: 'Aleppo', 'Georgia', serif;
-    --font-body: 'Coco Gothic', 'Helvetica Neue', sans-serif;
-    --font-accent: 'Aileron', 'Arial', sans-serif;
+    --font-heading: 'Aleppo', 'Cormorant Garamond', 'Aileron', serif;
+    --font-body: 'Coco Gothic', 'Nunito', 'Aileron', 'Helvetica Neue', sans-serif;
+    --font-accent: 'Aileron', 'Nunito', 'Arial', sans-serif;
 
     --font-size-xs: 0.75rem;
     /* 12px */

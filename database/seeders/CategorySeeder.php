@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
@@ -13,6 +14,12 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
+        // Idempotent : skip si les catégories existent déjà
+        if (Category::count() > 0) {
+            $this->command->info('✅ Catégories déjà présentes (' . Category::count() . '), skip.');
+            return;
+        }
+
         // Clear existing categories
         Category::query()->delete();
 
@@ -116,26 +123,46 @@ class CategorySeeder extends Seeder
             ],
         ];
 
+        $now = now();
         $displayOrder = 1;
         foreach ($femmeCategories as $categoryData) {
-            $parent = Category::create([
-                'name' => $categoryData['name'],
-                'slug' => Str::slug($categoryData['name']),
-                'gender' => 'femme',
-                'display_order' => $displayOrder++,
-                'is_active' => true,
+            $parentSlug = Str::slug($categoryData['name']);
+            DB::table('categories')->insertOrIgnore([
+                'name'          => $categoryData['name'],
+                'slug'          => $parentSlug,
+                'gender'        => 'femme',
+                'display_order' => $displayOrder,
+                'is_active'     => true,
+                'level'         => 0,
+                'path'          => null,
+                'created_at'    => $now,
+                'updated_at'    => $now,
             ]);
+            $parent = Category::where('slug', $parentSlug)->first();
+            // Mettre à jour path (ID)
+            DB::table('categories')->where('id', $parent->id)->update(['path' => (string)$parent->id]);
+            $displayOrder++;
 
             $childOrder = 1;
             foreach ($categoryData['children'] as $childName) {
-                Category::create([
-                    'name' => $childName,
-                    'slug' => Str::slug($parent->slug . '-' . $childName), // Prefix with parent slug
-                    'gender' => 'femme',
-                    'parent_id' => $parent->id,
-                    'display_order' => $childOrder++,
-                    'is_active' => true,
+                $childSlug = Str::slug($parentSlug . '-' . $childName);
+                DB::table('categories')->insertOrIgnore([
+                    'name'          => $childName,
+                    'slug'          => $childSlug,
+                    'gender'        => 'femme',
+                    'parent_id'     => $parent->id,
+                    'display_order' => $childOrder,
+                    'is_active'     => true,
+                    'level'         => 1,
+                    'path'          => null,
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
                 ]);
+                $child = Category::where('slug', $childSlug)->first();
+                if ($child) {
+                    DB::table('categories')->where('id', $child->id)->update(['path' => $parent->id . '/' . $child->id]);
+                }
+                $childOrder++;
             }
         }
 
@@ -225,24 +252,42 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($hommeCategories as $categoryData) {
-            $parent = Category::create([
-                'name' => $categoryData['name'],
-                'slug' => Str::slug($categoryData['name']),
-                'gender' => 'homme',
-                'display_order' => $displayOrder++,
-                'is_active' => true,
+            $parentSlug = Str::slug($categoryData['name']);
+            DB::table('categories')->insertOrIgnore([
+                'name'          => $categoryData['name'],
+                'slug'          => $parentSlug,
+                'gender'        => 'homme',
+                'display_order' => $displayOrder,
+                'is_active'     => true,
+                'level'         => 0,
+                'path'          => null,
+                'created_at'    => $now,
+                'updated_at'    => $now,
             ]);
+            $parent = Category::where('slug', $parentSlug)->first();
+            DB::table('categories')->where('id', $parent->id)->update(['path' => (string)$parent->id]);
+            $displayOrder++;
 
             $childOrder = 1;
             foreach ($categoryData['children'] as $childName) {
-                Category::create([
-                    'name' => $childName,
-                    'slug' => Str::slug($parent->slug . '-' . $childName), // Prefix with parent slug
-                    'gender' => 'homme',
-                    'parent_id' => $parent->id,
-                    'display_order' => $childOrder++,
-                    'is_active' => true,
+                $childSlug = Str::slug($parentSlug . '-' . $childName);
+                DB::table('categories')->insertOrIgnore([
+                    'name'          => $childName,
+                    'slug'          => $childSlug,
+                    'gender'        => 'homme',
+                    'parent_id'     => $parent->id,
+                    'display_order' => $childOrder,
+                    'is_active'     => true,
+                    'level'         => 1,
+                    'path'          => null,
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
                 ]);
+                $child = Category::where('slug', $childSlug)->first();
+                if ($child) {
+                    DB::table('categories')->where('id', $child->id)->update(['path' => $parent->id . '/' . $child->id]);
+                }
+                $childOrder++;
             }
         }
 

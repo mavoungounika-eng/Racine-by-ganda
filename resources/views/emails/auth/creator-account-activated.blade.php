@@ -37,7 +37,7 @@
         }
         .success-box {
             background: rgba(34, 197, 94, 0.1);
-            border-left: 4px solid #22c55e;
+            border-start: 4px solid #22c55e;
             padding: 20px;
             margin: 20px 0;
             border-radius: 8px;
@@ -50,7 +50,7 @@
         }
         .highlight-box {
             background: rgba(212, 165, 116, 0.1);
-            border-left: 4px solid #D4A574;
+            border-start: 4px solid #D4A574;
             padding: 20px;
             margin: 20px 0;
             border-radius: 8px;
@@ -141,6 +141,11 @@
     </div>
 </body>
 </html>
+
+
+
+
+
 
 
 

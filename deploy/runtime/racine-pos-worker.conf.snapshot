@@ -1,0 +1,16 @@
+[program:racine-pos-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=/usr/bin/env bash -lc 'cd /home/nika/projects/racine-backend && exec /usr/bin/php artisan queue:work --queue=default,pos --sleep=3 --tries=3 --max-time=3600 --timeout=120'
+autostart=true
+autorestart=true
+startsecs=5
+startretries=10
+user=nika
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/home/nika/projects/racine-backend/storage/logs/worker.log
+stdout_logfile_maxbytes=50MB
+stdout_logfile_backups=10
+stopwaitsecs=3600
+killasgroup=true
+stopasgroup=true

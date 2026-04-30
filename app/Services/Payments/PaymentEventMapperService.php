@@ -128,6 +128,55 @@ class PaymentEventMapperService
 
             $newPaymentStatus = $paymentStatusMap[$newStatus];
 
+            // Charger la commande avant update pour gérer les downgrades contradictoires
+            $order = null;
+            if ($lockedPayment->order_id) {
+                $order = Order::lockForUpdate()->find($lockedPayment->order_id);
+
+                if (!$order) {
+                    Log::debug('PaymentEventMapperService: Order not found', [
+                        'payment_id' => $lockedPayment->id,
+                        'order_id' => $lockedPayment->order_id,
+                    ]);
+                }
+            }
+
+            // Protection anti-downgrade: si déjà payé, ignorer un event "failed" tardif
+            if ($order && $order->payment_status === 'paid' && $newPaymentStatus === 'failed') {
+                Log::debug('PaymentEventMapperService: Skipping contradictory downgrade from paid to failed', [
+                    'payment_id' => $lockedPayment->id,
+                    'order_id' => $order->id,
+                    'order_payment_status' => $order->payment_status,
+                    'current_payment_status' => $lockedPayment->status,
+                ]);
+                return;
+            }
+
+            // Protection des statuts de commande terminaux/non modifiables par webhook
+            if ($order && in_array($order->status, ['cancelled', 'shipped', 'delivered'], true)) {
+                // 🚨 ALERTE SÉCURITÉ : Paiement reçu pour une commande DÉJÀ ANNULÉE
+                // Cas : worker down > 24h et le cron de nettoyage est passé avant le webhook.
+                if ($newPaymentStatus === 'paid') {
+                    Log::critical("ORPHANED PAYMENT DETECTED: Order #{$order->id} is {$order->status} but a 'paid' webhook was just received.", [
+                        'payment_id' => $lockedPayment->id,
+                        'order_id' => $order->id,
+                        'stripe_id' => $lockedPayment->stripe_id,
+                        'action_required' => 'Manual reconciliation or refund required.'
+                    ]);
+                    
+                    // Optionnel : Déclencher un événement pour notification admin
+                    event(new \App\Events\OrphanedPaymentDetected($order, $lockedPayment));
+                }
+
+                Log::debug('PaymentEventMapperService: Skipping update for terminal order status', [
+                    'payment_id' => $lockedPayment->id,
+                    'order_id' => $order->id,
+                    'order_status' => $order->status,
+                    'incoming_payment_status' => $newPaymentStatus,
+                ]);
+                return;
+            }
+
             // Préparer les données de mise à jour
             $updateData = ['status' => $newPaymentStatus];
 
@@ -145,21 +194,13 @@ class PaymentEventMapperService
                 'new_status' => $newPaymentStatus,
             ]);
 
-            // Récupérer l'Order via payment.order_id avec lockForUpdate()
-            if (!$lockedPayment->order_id) {
-                Log::debug('PaymentEventMapperService: Payment has no order_id', [
-                    'payment_id' => $lockedPayment->id,
-                ]);
-                return;
-            }
-
-            $order = Order::lockForUpdate()->find($lockedPayment->order_id);
-            
+            // Pas de commande liée: statut payment uniquement
             if (!$order) {
-                Log::debug('PaymentEventMapperService: Order not found', [
-                    'payment_id' => $lockedPayment->id,
-                    'order_id' => $lockedPayment->order_id,
-                ]);
+                if (!$lockedPayment->order_id) {
+                    Log::debug('PaymentEventMapperService: Payment has no order_id', [
+                        'payment_id' => $lockedPayment->id,
+                    ]);
+                }
                 return;
             }
 
@@ -282,5 +323,3 @@ class PaymentEventMapperService
         };
     }
 }
-
-

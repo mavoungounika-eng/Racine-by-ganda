@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -27,7 +28,20 @@ class CreatorDashboardController extends Controller
     public function index(): View
     {
         $user = Auth::user();
-        $user->load('creatorProfile.validationChecklist');
+        
+        // ✅ OPTIMISATION N+1: Eager load subscription avec plan et capabilities
+        // Évite 50+ requêtes dans getDashboardLayout() et CreatorCapabilityService
+        $user->load([
+            'creatorProfile.validationChecklist',
+            'creatorProfile.subscription' => function ($query) {
+                $query->whereIn('status', ['active', 'trialing'])
+                      ->where(function ($q) {
+                          $q->whereNull('ends_at')
+                            ->orWhere('ends_at', '>', now());
+                      })
+                      ->with(['plan.capabilities']);
+            }
+        ]);
         
         $creatorProfile = $user->creatorProfile;
         
@@ -38,17 +52,37 @@ class CreatorDashboardController extends Controller
             $creatorProfile->status = 'active';
         }
         
-        // Statistiques
-        $stats = [
-            'products_count' => Product::where('user_id', $user->id)->count(),
-            'active_products_count' => Product::where('user_id', $user->id)
-                ->where('is_active', true)
-                ->count(),
-            'collections_count' => Collection::where('user_id', $user->id)->count(),
-            'total_sales' => $this->calculateTotalSales($user->id),
-            'monthly_sales' => $this->calculateMonthlySales($user->id),
-            'pending_orders' => $this->getPendingOrdersCount($user->id),
-        ];
+        // ✅ C3: Calculer le score si nécessaire (jamais calculé ou > 24h)
+        if ($creatorProfile && $creatorProfile->exists) {
+            $shouldCalculate = !$creatorProfile->last_score_calculated_at 
+                || $creatorProfile->last_score_calculated_at->lt(now()->subDay());
+            
+            if ($shouldCalculate) {
+                $scoringService = app(\App\Services\CreatorScoringService::class);
+                $scoringService->updateScores($creatorProfile);
+                $creatorProfile->refresh();
+            }
+        }
+        
+        // ✅ OPTIMISATION C2: Statistiques avec cache (TTL 10 min)
+        $stats = Cache::remember("creator_dashboard_stats_{$user->id}", 600, function () use ($user) {
+            // Requête agrégée unique pour les produits
+            $productStats = Product::where('user_id', $user->id)
+                ->selectRaw('
+                    COUNT(*) as products_count,
+                    SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_products_count
+                ')
+                ->first();
+            
+            return [
+                'products_count' => $productStats->products_count ?? 0,
+                'active_products_count' => $productStats->active_products_count ?? 0,
+                'collections_count' => Collection::where('user_id', $user->id)->count(),
+                'total_sales' => $this->calculateTotalSales($user->id),
+                'monthly_sales' => $this->calculateMonthlySales($user->id),
+                'pending_orders' => $this->getPendingOrdersCount($user->id),
+            ];
+        });
 
         // Produits récents
         $recentProducts = Product::where('user_id', $user->id)

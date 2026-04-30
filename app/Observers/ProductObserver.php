@@ -5,6 +5,8 @@ namespace App\Observers;
 use App\Models\Product;
 use App\Services\NotificationService;
 use App\Services\ProductCodeService;
+use App\Jobs\AI\GenerateProductDescription;
+use Illuminate\Support\Facades\Cache;
 
 class ProductObserver
 {
@@ -24,6 +26,12 @@ class ProductObserver
     {
         // Générer automatiquement SKU et code-barres
         $this->productCodeService->createOrUpdateProductDetails($product->id);
+        Cache::forget("pos:product:{$product->id}");
+
+        // IA: Générer description si vide (uniquement pour marketplace)
+        if ($product->isMarketplace() && empty($product->description)) {
+            GenerateProductDescription::dispatch($product)->onQueue('ai');
+        }
     }
 
     /**
@@ -31,9 +39,16 @@ class ProductObserver
      */
     public function updated(Product $product): void
     {
+        Cache::forget("pos:product:{$product->id}");
+
         // Vérifier si le stock a changé
         if ($product->isDirty('stock')) {
             $this->handleStockChange($product);
+        }
+
+        // IA: Régénérer si le titre change et description vide
+        if ($product->isDirty('title') && empty($product->description)) {
+            GenerateProductDescription::dispatch($product)->onQueue('ai');
         }
     }
 
@@ -71,4 +86,5 @@ class ProductObserver
         }
     }
 }
+
 

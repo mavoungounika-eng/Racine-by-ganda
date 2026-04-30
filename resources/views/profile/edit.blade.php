@@ -23,7 +23,7 @@
 @endif
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .profile-edit-container {
         max-width: 900px;
         margin: 0 auto;
@@ -35,13 +35,13 @@
         padding: 2rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         margin-bottom: 1.5rem;
-        border: 1px solid #E5DDD3;
+        border: 1px solid rgba(22,13,12,0.1);
     }
     
     .profile-avatar-section {
         text-align: center;
         padding: 2rem;
-        background: linear-gradient(135deg, #F8F6F3 0%, #E5DDD3 100%);
+        background: rgba(22,13,12,0.03);
         border-radius: 16px;
         margin-bottom: 2rem;
     }
@@ -67,10 +67,10 @@
         font-family: 'Libre Baskerville', serif;
         font-size: 1.5rem;
         font-weight: 400;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
-        border-bottom: 2px solid #E5DDD3;
+        border-bottom: 2px solid rgba(22,13,12,0.1);
         display: flex;
         align-items: center;
         gap: 0.75rem;
@@ -83,12 +83,12 @@
     
     .form-label {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .form-control, .form-select {
-        border: 1px solid #D4A574;
+        border: 1px solid rgba(22,13,12,0.15);
         border-radius: 8px;
         padding: 0.75rem 1rem;
         transition: all 0.3s;
@@ -137,14 +137,14 @@
     
     .badge-admin {
         background: rgba(255, 184, 0, 0.1);
-        color: #B8860B;
+        color: #160D0C;
         border: 2px solid rgba(255, 184, 0, 0.2);
     }
     
     .badge-staff {
-        background: rgba(14, 165, 233, 0.1);
-        color: #0EA5E9;
-        border: 2px solid rgba(14, 165, 233, 0.2);
+        background: rgba(237, 95, 30, 0.1);
+        color: #ED5F1E;
+        border: 2px solid rgba(237, 95, 30, 0.2);
     }
     
     .badge-creator {
@@ -154,9 +154,9 @@
     }
     
     .badge-client {
-        background: rgba(139, 92, 246, 0.1);
-        color: #8B5CF6;
-        border: 2px solid rgba(139, 92, 246, 0.2);
+        background: rgba(22, 13, 12, 0.05);
+        color: #160D0C;
+        border: 2px solid rgba(22,13,12,0.1);
     }
 </style>
 @endpush
@@ -168,7 +168,7 @@
         <div class="profile-avatar">
             {{ strtoupper(substr($user->name, 0, 1)) }}
         </div>
-        <h2 style="font-family: 'Libre Baskerville', serif; color: #2C1810; margin-bottom: 0.5rem;">
+        <h2 style="font-family: 'Libre Baskerville', serif; color: #160D0C; margin-bottom: 0.5rem;">
             {{ $user->name }}
         </h2>
         <span class="badge-role badge-{{ str_replace('_', '-', $roleSlug) }}">
@@ -467,7 +467,7 @@
 
             <hr class="my-4">
 
-            <h4 class="h5 mb-3" style="color: #2C1810;">
+            <h4 class="h5 mb-3" style="color: #160D0C;">
                 <i class="fas fa-globe me-2"></i>Réseaux sociaux & Site web
             </h4>
 

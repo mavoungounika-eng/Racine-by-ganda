@@ -4,7 +4,7 @@
 @section('page-title', 'Modifier le Produit')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -107,7 +107,7 @@
     <div class="premium-card">
         <div class="mb-8 pb-6 border-b-2 border-slate-700">
             <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-edit text-racine-orange mr-2"></i>
+                <i class="fas fa-edit text-racine-orange me-2"></i>
                 Modifier le produit
             </h2>
             <p class="text-slate-400">Modifiez les informations du produit ci-dessous</p>
@@ -123,7 +123,7 @@
                         <i class="fas fa-barcode text-racine-orange"></i>
                         <span class="text-white font-mono font-semibold">{{ $product->sku ?? 'Non généré' }}</span>
                         @if($product->sku)
-                        <button onclick="copyToClipboard('{{ $product->sku }}')" class="ml-2 text-racine-orange hover:text-racine-gold" title="Copier">
+                        <button onclick="copyToClipboard('{{ $product->sku }}')" class="ms-2 text-racine-orange hover:text-racine-gold" title="Copier">
                             <i class="fas fa-copy"></i>
                         </button>
                         @endif
@@ -135,7 +135,7 @@
                         <i class="fas fa-qrcode text-racine-orange"></i>
                         <span class="text-white font-mono font-semibold">{{ $product->barcode ?? 'Non généré' }}</span>
                         @if($product->barcode)
-                        <button onclick="copyToClipboard('{{ $product->barcode }}')" class="ml-2 text-racine-orange hover:text-racine-gold" title="Copier">
+                        <button onclick="copyToClipboard('{{ $product->barcode }}')" class="ms-2 text-racine-orange hover:text-racine-gold" title="Copier">
                             <i class="fas fa-copy"></i>
                         </button>
                         @endif
@@ -260,13 +260,13 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
         // Afficher une notification de succès
         const notification = document.createElement('div');
         notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-        notification.innerHTML = '<i class="fas fa-check mr-2"></i>Copié : ' + text;
+        notification.innerHTML = '<i class="fas fa-check me-2"></i>Copié : ' + text;
         document.body.appendChild(notification);
         
         setTimeout(() => {

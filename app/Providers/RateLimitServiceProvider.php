@@ -22,6 +22,23 @@ class RateLimitServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Limiteur web : généreux pour les users authentifiés (par ID), strict pour les guests (par IP)
+        RateLimiter::for('web', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(200)->by($request->user()->id)
+                : Limit::perMinute(60)->by($request->ip());
+        });
+
+        // Limiteur auth : strict sur les routes sensibles (login, register, password)
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip())
+                ->response(function () {
+                    return response()->json([
+                        'message' => 'Trop de tentatives, réessayez dans 1 minute.',
+                    ], 429);
+                });
+        });
+
         // Rate limiting pour checkout (10 requêtes par minute)
         RateLimiter::for('checkout', function (Request $request) {
             return Limit::perMinute(10)
@@ -33,9 +50,9 @@ class RateLimitServiceProvider extends ServiceProvider
                 });
         });
 
-        // Rate limiting pour webhooks (100 requêtes par minute par IP)
+        // Rate limiting pour webhooks (60 requêtes par minute par IP)
         RateLimiter::for('webhooks', function (Request $request) {
-            return Limit::perMinute(100)
+            return Limit::perMinute(60)
                 ->by($request->ip())
                 ->response(function () {
                     return response()->json([
@@ -48,6 +65,34 @@ class RateLimitServiceProvider extends ServiceProvider
         RateLimiter::for('api-checkout', function (Request $request) {
             return Limit::perMinute(20)
                 ->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiting par device POS
+        RateLimiter::for('pos_device', function (Request $request) {
+            $deviceId = $request->posDevice?->id ?? $request->ip();
+
+            return Limit::perMinute(300)->by('pos_device_' . $deviceId);
+        });
+
+        // Rate limiting pour login opérateur POS.
+        // 20/min par IP : laisse passer les miss-clics et la saisie itérative
+        // de dev, tout en bloquant un brute-force naïf. Retry-After est ajouté
+        // automatiquement par Laravel et la réponse JSON est i18n-friendly.
+        RateLimiter::for('pos_operator_login', function (Request $request) {
+            return Limit::perMinute(20)
+                ->by($request->ip())
+                ->response(function (Request $request, array $headers) {
+                    $retryAfter = (int) ($headers['Retry-After'] ?? 60);
+
+                    return response()->json([
+                        'success' => false,
+                        'error' => [
+                            'code' => 'TOO_MANY_ATTEMPTS',
+                            'message' => 'Trop de tentatives de connexion. Réessayez dans ' . $retryAfter . ' seconde(s).',
+                            'retry_after' => $retryAfter,
+                        ],
+                    ], 429, $headers);
+                });
         });
     }
 }

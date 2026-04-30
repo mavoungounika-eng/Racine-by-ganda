@@ -34,7 +34,7 @@ class RegisterRequest extends FormRequest
                     ->uncompromised(),
             ],
             'account_type' => ['required', 'in:client,creator'],
-            'terms' => ['required', 'accepted'],
+            'g-recaptcha-response' => ['required', new \App\Rules\Recaptcha('register_client')],
         ];
     }
 
@@ -53,8 +53,6 @@ class RegisterRequest extends FormRequest
             'password.min' => 'Le mot de passe doit contenir au moins 12 caractères avec lettres majuscules, minuscules, chiffres et symboles.',
             'account_type.required' => 'Veuillez choisir un type de compte.',
             'account_type.in' => 'Le type de compte sélectionné est invalide.',
-            'terms.required' => 'Vous devez accepter les conditions d\'utilisation.',
-            'terms.accepted' => 'Vous devez accepter les conditions d\'utilisation.',
         ];
     }
 }

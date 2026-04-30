@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -45,8 +47,7 @@ class ActionProposalServiceTest extends TestCase
             $alertService
         );
     }
-
-    /** @test */
+    #[Test]
     public function it_proposes_actions_for_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -73,8 +74,7 @@ class ActionProposalServiceTest extends TestCase
         $this->assertIsArray($result['proposals']);
         $this->assertGreaterThan(0, $result['total_count']);
     }
-
-    /** @test */
+    #[Test]
     public function it_proposes_suspension_for_high_risk_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -99,8 +99,7 @@ class ActionProposalServiceTest extends TestCase
         $this->assertNotNull($suspensionProposal);
         $this->assertEquals('high', $suspensionProposal['risk_level']);
     }
-
-    /** @test */
+    #[Test]
     public function it_proposes_monitor_when_no_critical_actions()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -133,8 +132,7 @@ class ActionProposalServiceTest extends TestCase
         $monitorProposal = collect($result['proposals'])->firstWhere('action', 'MONITOR');
         $this->assertNotNull($monitorProposal);
     }
-
-    /** @test */
+    #[Test]
     public function it_includes_justification_for_each_proposal()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -162,8 +160,7 @@ class ActionProposalServiceTest extends TestCase
             $this->assertArrayHasKey('target_id', $proposal);
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_sorts_proposals_by_priority()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -190,6 +187,11 @@ class ActionProposalServiceTest extends TestCase
         }
     }
 }
+
+
+
+
+
 
 
 

@@ -114,7 +114,9 @@ class CreatorAuthController extends Controller
             'tiktok_url' => ['nullable', 'url', 'max:255'],
             'type' => ['nullable', 'string', 'max:100'],
             'legal_status' => ['nullable', 'string', 'max:100'],
+            'legal_status' => ['nullable', 'string', 'max:100'],
             'registration_number' => ['nullable', 'string', 'max:100'],
+            'g-recaptcha-response' => ['required', new \App\Rules\Recaptcha('register_creator')],
         ]);
 
         // Créer l'utilisateur avec le rôle créateur

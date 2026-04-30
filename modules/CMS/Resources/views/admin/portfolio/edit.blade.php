@@ -110,16 +110,40 @@
                                     <label for="featured_image" class="form-label">Image mise en avant</label>
                                     @if($portfolio->featured_image)
                                         <div class="mb-2">
-                                            <img src="{{ asset('storage/' . $portfolio->featured_image) }}" 
+                                            <img src="{{ asset('storage/' . $portfolio->featured_image) }}"
                                                  alt="Image actuelle" class="img-thumbnail" style="max-height: 100px;">
                                         </div>
                                     @endif
-                                    <input type="file" class="form-control @error('featured_image') is-invalid @enderror" 
+                                    <input type="file" class="form-control @error('featured_image') is-invalid @enderror"
                                            id="featured_image" name="featured_image" accept="image/*">
                                     @error('featured_image')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="mb-3">
+                                    <label for="gallery" class="form-label">Ajouter des images galerie</label>
+                                    <input type="file" class="form-control @error('gallery.*') is-invalid @enderror"
+                                           id="gallery" name="gallery[]" accept="image/*" multiple>
+                                    <small class="form-text text-muted">Les nouvelles images s'ajoutent aux existantes</small>
+                                    @error('gallery.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                @if(!empty($portfolio->gallery))
+                                <div class="mb-3">
+                                    <label class="form-label">Galerie existante ({{ count($portfolio->gallery) }})</label>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach($portfolio->gallery as $img)
+                                            <img src="{{ asset('storage/' . $img) }}"
+                                                 alt=""
+                                                 class="img-thumbnail"
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>

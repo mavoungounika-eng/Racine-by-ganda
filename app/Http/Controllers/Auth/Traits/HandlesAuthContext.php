@@ -18,13 +18,16 @@ trait HandlesAuthContext
      * Priorité :
      * 1. Paramètre query `context` si présent et valide
      * 2. Session `{type}_context` si présente et valide
-     * 3. null (contexte neutre)
+     * 3. 'boutique' (contexte par défaut pour utilisateurs publics)
+     * 
+     * FIX : Par défaut, afficher le contexte boutique pour les utilisateurs publics
+     * L'espace équipe est accessible uniquement via /admin/login
      * 
      * @param Request $request
      * @param string $type Type de contexte ('login', 'register', etc.)
-     * @return string|null Retourne 'boutique', 'equipe' ou null
+     * @return string Retourne 'boutique', 'equipe' ou 'boutique' par défaut
      */
-    protected function resolveContext(Request $request, string $type = 'login'): ?string
+    protected function resolveContext(Request $request, string $type = 'login'): string
     {
         $sessionKey = "{$type}_context";
         
@@ -47,8 +50,8 @@ trait HandlesAuthContext
         // Nettoyer la session si contexte invalide
         session()->forget($sessionKey);
 
-        // Priorité 3: Contexte neutre
-        return null;
+        // Priorité 3: Contexte boutique par défaut (FIX: utilisateurs publics)
+        return 'boutique';
     }
 
     /**

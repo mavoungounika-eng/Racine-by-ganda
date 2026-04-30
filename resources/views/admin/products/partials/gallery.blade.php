@@ -89,7 +89,7 @@
 
         {{-- Sortable.js pour réorganiser --}}
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-        <script>
+        <script nonce="{{ csp_nonce() }}">
             document.addEventListener('DOMContentLoaded', function() {
                 const grid = document.getElementById('images-grid');
                 if (grid) {
@@ -114,8 +114,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
-                                    // Afficher notification succès
-                                    console.log('Ordre mis à jour');
+                                    // Ordre mis à jour avec succès
                                 }
                             });
                         }

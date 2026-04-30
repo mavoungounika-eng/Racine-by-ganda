@@ -210,7 +210,7 @@
                     Affichage de {{ $products->firstItem() ?? 0 }} à {{ $products->lastItem() ?? 0 }} sur {{ $products->total() }} résultats
                 </div>
                 <div>
-                    {{ $products->links() }}
+                    {{ $products->links('vendor.pagination.bootstrap-5') }}
                 </div>
             </div>
         </div>
@@ -221,7 +221,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
         // Notification de succès

@@ -7,10 +7,85 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Log;
+use Laravel\Sanctum\HasApiTokens;
+use App\Models\LoyaltyTransaction;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+
+    /**
+     * CRITICAL SECURITY: Auto-increment auth_version on security changes
+     * 
+     * This Observer ensures all active sessions are invalidated when:
+     * - role_id changes (escalation/downgrade)
+     * - status changes (suspension/activation)
+     * 
+     * Uses 'saved' event with DB update to avoid infinite loop.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($user) {
+            // DEBUG: capturer toute écriture de email_verified_at (CREATE et UPDATE)
+            if ($user->isDirty('email_verified_at') && $user->email_verified_at !== null) {
+                \Log::warning('[DEBUG-EVA] email_verified_at being set', [
+                    'user_id' => $user->id ?? 'NEW',
+                    'is_new' => !$user->exists,
+                    'value' => $user->email_verified_at,
+                    'trace' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15))
+                        ->map(fn($f) => ($f['class'] ?? '') . '::' . ($f['function'] ?? '') . ' L' . ($f['line'] ?? ''))
+                        ->implode(' → ')
+                ]);
+            }
+            // SYNC LEGACY ROLE STRING -> ROLE_ID
+            // If 'role' (string) is changing
+            if ($user->isDirty('role')) {
+                // Only sync role_id from role slug when role_id is absent or null.
+                // If an explicit role_id is provided, preserve it.
+                if (!$user->isDirty('role_id') || $user->role_id === null) {
+                    $slug = $user->role;
+                    $roleModel = Role::where('slug', $slug)->first();
+                    if ($roleModel) {
+                        $user->role_id = $roleModel->id;
+                    }
+                }
+            }
+        });
+
+        static::saved(function ($user) {
+            $changes = $user->getChanges();
+            
+            // CRITICAL: Check 'role' string change OR 'role_id' change OR 'password' change
+            $roleChanged = array_key_exists('role_id', $changes) || array_key_exists('role', $changes);
+            $statusChanged = array_key_exists('status', $changes);
+            $passwordChanged = array_key_exists('password', $changes);
+            $twoFactorChanged = array_key_exists('two_factor_secret', $changes)
+                || array_key_exists('two_factor_confirmed_at', $changes)
+                || array_key_exists('two_factor_required', $changes);
+
+            if ($roleChanged || $statusChanged || $passwordChanged || $twoFactorChanged) {
+                // Use raw DB update to avoid triggering events
+                \DB::table('users')
+                    ->where('id', $user->id)
+                    ->increment('auth_version');
+                
+                // Synchroniser avec l'instance en mémoire (crucial pour les tests)
+                // On récupère la vraie valeur en base car elle peut différer de l'instance (non-fillable)
+                $user->auth_version = \DB::table('users')->where('id', $user->id)->value('auth_version');
+
+                \Log::info('[AUDIT] auth_version incremented', [
+                    'user_id' => $user->id,
+                    'new_version' => $user->auth_version,
+                    'changed_fields' => $changes,
+                    'changed_by' => \Auth::id(),
+                ]);
+            }
+        });
+    }
+
 
     protected $fillable = [
         'name',
@@ -20,6 +95,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'professional_email',
         'professional_email_verified',
         'professional_email_verified_at',
+        'professional_email_token',
         'email_preferences',
         'email_notifications_enabled',
         'email_messaging_enabled',
@@ -38,6 +114,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'trusted_device_token',
         'trusted_device_expires_at',
         'locale',
+        'preferred_currency',
+        'terms_accepted_at',
     ];
 
     protected $hidden = [
@@ -46,6 +124,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_secret',
         'two_factor_recovery_codes',
         'trusted_device_token',
+        'auth_version',
+        'google_id',
     ];
 
     protected $casts = [
@@ -61,6 +141,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_required' => 'boolean',
         'trusted_device_expires_at' => 'datetime',
+        'auth_version' => 'integer',
+        'terms_accepted_at' => 'datetime',
     ];
 
     /**
@@ -135,12 +217,27 @@ class User extends Authenticatable implements MustVerifyEmail
             });
     }
 
-    /**
-     * Get the creator profile associated with the user.
-     */
     public function creatorProfile()
     {
         return $this->hasOne(CreatorProfile::class);
+    }
+
+    /**
+     * Adhésions à des organisations Creator (Multi-Account)
+     */
+    public function memberships()
+    {
+        return $this->hasMany(CreatorMember::class);
+    }
+
+    /**
+     * Organisations auxquelles l'utilisateur appartient
+     */
+    public function creatorProfiles()
+    {
+        return $this->belongsToMany(CreatorProfile::class, 'creator_members')
+            ->withPivot('role', 'is_active')
+            ->withTimestamps();
     }
 
     /**
@@ -187,7 +284,20 @@ class User extends Authenticatable implements MustVerifyEmail
         }
         
         // Priority 2: direct role attribute
-        return $this->attributes['role'] ?? null;
+        if (!empty($this->attributes['role'])) {
+            return $this->attributes['role'];
+        }
+
+        // Priority 3: infer creator role from a creator profile if present
+        if ($this->relationLoaded('creatorProfile')) {
+            return $this->creatorProfile ? 'createur' : null;
+        }
+
+        if ($this->creatorProfile()->exists()) {
+            return 'createur';
+        }
+
+        return null;
     }
 
     /**
@@ -217,6 +327,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Check if the user is part of the team (super_admin, admin, staff).
+     * POS access is restricted to RACINE internal team only.
      */
     public function isTeamMember(): bool
     {
@@ -229,6 +340,37 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isClient(): bool
     {
         return $this->getRoleSlug() === 'client';
+    }
+
+    /**
+     * Vérifier si l'utilisateur a une permission
+     * 
+     * @param string $permission Slug de la permission (ex: 'view-stock-analytics')
+     * @return bool
+     */
+    public function hasPermission(string $permission): bool
+    {
+        // Super admin bypass
+        if ($this->getRoleSlug() === 'super_admin') {
+            return true;
+        }
+
+        // Charger relation si nécessaire
+        if (!$this->relationLoaded('roleRelation')) {
+            $this->load('roleRelation.permissions');
+        }
+
+        // Vérifier si le rôle a la permission
+        $has = $this->roleRelation
+            ?->permissions
+            ?->pluck('slug')
+            ?->contains($permission) ?? false;
+
+        if (config('app.debug')) {
+            Log::debug("[PermissionCheck] User {$this->id} ({$this->getRoleSlug()}) checking for '{$permission}': " . ($has ? 'YES' : 'NO'));
+        }
+        
+        return $has;
     }
 
     /**
@@ -263,21 +405,47 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Product::class, 'user_id');
     }
 
+    /**
+     * Get the collections created by this user (for creators).
+     */
+    public function collections()
+    {
+        return $this->hasMany(Collection::class, 'user_id');
+    }
+
 
     /**
-     * Get the user's loyalty points.
+     * Segments CRM du client.
      */
-    public function loyaltyPoints()
+    public function segments()
     {
-        return $this->hasOne(LoyaltyPoint::class);
+        return $this->belongsToMany(CustomerSegment::class, 'customer_segment_members', 'customer_id', 'segment_id')
+            ->withTimestamps();
     }
 
     /**
-     * Get the user's loyalty transactions.
+     * Tags CRM du client.
+     */
+    public function tags()
+    {
+        return $this->belongsToMany(CustomerTag::class, 'customer_tag_members', 'customer_id', 'tag_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Points de fidélité (grand livre).
+     */
+    public function loyaltyPoints()
+    {
+        return $this->hasMany(LoyaltyPoint::class, 'customer_id');
+    }
+
+    /**
+     * Transactions de fidélité.
      */
     public function loyaltyTransactions()
     {
-        return $this->hasMany(LoyaltyTransaction::class);
+        return $this->hasMany(LoyaltyTransaction::class, 'user_id');
     }
 
     /**

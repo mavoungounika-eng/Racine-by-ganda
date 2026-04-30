@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\MonetbilCallbackEvent;
 use App\Models\Payment;
+use App\Services\AuditService;
 use App\Services\Payments\PaymentEventMapperService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -11,6 +12,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Jobs\Middleware\CircuitBreakerJob;
+use App\Jobs\Middleware\RateLimitedJob;
+use App\Services\Queue\QueueCircuitBreaker;
+use App\Services\Queue\QueueMonitor;
+use App\Services\Queue\QueueRateLimiter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -60,6 +66,19 @@ class ProcessMonetbilCallbackEventJob implements ShouldQueue, ShouldBeUnique
      * Durée de l'unicité (secondes) - 5 minutes
      */
     public int $uniqueFor = 300;
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware(): array
+    {
+        return [
+            new CircuitBreakerJob(app(QueueCircuitBreaker::class), app(QueueMonitor::class)),
+            new RateLimitedJob(app(QueueRateLimiter::class)),
+        ];
+    }
 
     /**
      * Exécuter le job
@@ -184,6 +203,21 @@ class ProcessMonetbilCallbackEventJob implements ShouldQueue, ShouldBeUnique
             }
 
             $mapperService->updatePaymentAndOrder($payment, $status);
+
+            // Log webhook retry and refund events to audit trail
+            if ($status === 'refunded') {
+                app(AuditService::class)->logWebhookRetry(
+                    webhookFailureId: $event->id,
+                    provider: 'monetbil',
+                    eventType: $event->payload['status'] ?? $event->payload['event_type'] ?? 'unknown',
+                    additionalData: [
+                        'payment_id' => $payment->id,
+                        'order_id' => $payment->order_id,
+                        'amount' => $payment->amount,
+                        'transaction_id' => $event->transaction_id,
+                    ]
+                );
+            }
 
             // Marquer l'événement comme traité
             $event->update([

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ERPProduction;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ERPProduction\Models\ProductionOrder;
@@ -10,6 +11,9 @@ use Modules\ERPProduction\Models\QualityCheck;
 use Modules\ERPProduction\Models\QualityDefect;
 use Modules\ERPProduction\Services\ProductionOrderService;
 use Modules\ERPProduction\Services\QualityControlService;
+use Modules\ERPProduction\Events\QualityCheckPassed;
+use Modules\ERPProduction\Events\QualityCheckReworked;
+use Modules\ERPProduction\Events\QualityCheckRejected;
 use App\Models\Product;
 use App\Models\User;
 use Modules\ERP\Models\ErpRawMaterial;
@@ -34,7 +38,7 @@ class QualityControlTest extends TestCase
 
         $this->product = Product::factory()->create(['name' => 'Robe Pagne Luxe']);
         
-        // Créer BOM
+        // CrÃ©er BOM
         $this->bom = Bom::create([
             'product_id' => $this->product->id,
             'version' => '1.0',
@@ -54,8 +58,7 @@ class QualityControlTest extends TestCase
         $this->productionOrderService = app(ProductionOrderService::class);
         $this->qualityControlService = app(QualityControlService::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_inspect_complete_production_order()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -78,8 +81,7 @@ class QualityControlTest extends TestCase
         $this->assertEquals(9, $check->quantity_passed);
         $this->assertEquals(90, $check->getPassRate());
     }
-
-    /** @test */
+    #[Test]
     public function it_blocks_on_critical_defect()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -96,20 +98,19 @@ class QualityControlTest extends TestCase
             'quantity_rejected' => 10,
         ]);
 
-        // Enregistrer défaut critique
+        // Enregistrer dÃ©faut critique
         $this->qualityControlService->recordDefect($check, [
             'defect_code' => 'CRIT-001',
             'defect_category' => 'material',
             'severity' => 'critical',
-            'description' => 'Tissu défectueux',
+            'description' => 'Tissu dÃ©fectueux',
         ]);
 
         $this->assertTrue($check->hasCriticalDefect());
         $this->assertTrue($this->qualityControlService->hasBlockingDefect($order));
         $this->assertFalse($this->qualityControlService->canProceedToFinish($order));
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_rework_with_wip_return()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -130,8 +131,7 @@ class QualityControlTest extends TestCase
         $this->assertEquals(3, $check->quantity_reworked);
         $this->assertEquals(30, $check->getReworkRate());
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_reject_with_traceability()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -146,7 +146,7 @@ class QualityControlTest extends TestCase
             'quantity_passed' => 0,
             'quantity_reworked' => 0,
             'quantity_rejected' => 10,
-            'notes' => 'Lot complet défectueux',
+            'notes' => 'Lot complet dÃ©fectueux',
         ]);
 
         // Enregistrer causes
@@ -154,22 +154,21 @@ class QualityControlTest extends TestCase
             'defect_code' => 'MAT-001',
             'defect_category' => 'material',
             'severity' => 'major',
-            'description' => 'Tissu déchiré',
+            'description' => 'Tissu dÃ©chirÃ©',
         ]);
 
         $this->qualityControlService->recordDefect($check, [
             'defect_code' => 'PROC-002',
             'defect_category' => 'process',
             'severity' => 'minor',
-            'description' => 'Couture irrégulière',
+            'description' => 'Couture irrÃ©guliÃ¨re',
         ]);
 
         $this->assertEquals('reject', $check->status);
         $this->assertEquals(100, $check->getRejectionRate());
         $this->assertCount(2, $check->defects);
     }
-
-    /** @test */
+    #[Test]
     public function it_dispatches_quality_check_events()
     {
         Event::fake([
@@ -214,8 +213,7 @@ class QualityControlTest extends TestCase
 
         Event::assertDispatched(QualityCheckRejected::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_prevents_closure_without_quality_check()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -224,10 +222,10 @@ class QualityControlTest extends TestCase
             10
         );
 
-        // Aucun contrôle qualité
+        // Aucun contrÃ´le qualitÃ©
         $this->assertFalse($this->qualityControlService->canProceedToFinish($order));
 
-        // Après contrôle
+        // AprÃ¨s contrÃ´le
         $this->qualityControlService->approve([
             'production_order_id' => $order->id,
             'quantity_checked' => 10,
@@ -235,8 +233,7 @@ class QualityControlTest extends TestCase
 
         $this->assertTrue($this->qualityControlService->canProceedToFinish($order));
     }
-
-    /** @test */
+    #[Test]
     public function it_validates_quantity_coherence()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -253,14 +250,13 @@ class QualityControlTest extends TestCase
             'quantity_rejected' => 1,
         ]);
 
-        // Vérifier contrainte: checked = passed + reworked + rejected
+        // VÃ©rifier contrainte: checked = passed + reworked + rejected
         $this->assertEquals(
             $check->quantity_checked,
             $check->quantity_passed + $check->quantity_reworked + $check->quantity_rejected
         );
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_quality_summary()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -269,13 +265,13 @@ class QualityControlTest extends TestCase
             10
         );
 
-        // Contrôle 1
+        // ContrÃ´le 1
         $this->qualityControlService->approve([
             'production_order_id' => $order->id,
             'quantity_checked' => 10,
         ]);
 
-        // Contrôle 2 (reprise)
+        // ContrÃ´le 2 (reprise)
         $this->qualityControlService->markForRework([
             'production_order_id' => $order->id,
             'quantity_checked' => 5,

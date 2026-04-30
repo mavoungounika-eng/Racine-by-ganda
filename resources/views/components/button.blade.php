@@ -29,14 +29,14 @@ $classes = $baseClasses . ' ' . $sizeClasses[$size] . ' ' . $variantClasses[$var
 @if($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
         @if($icon)
-            <i class="{{ $icon }} mr-2"></i>
+            <i class="{{ $icon }} me-2"></i>
         @endif
         {{ $slot }}
     </a>
 @else
     <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
         @if($icon)
-            <i class="{{ $icon }} mr-2"></i>
+            <i class="{{ $icon }} me-2"></i>
         @endif
         {{ $slot }}
     </button>

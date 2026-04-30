@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\Auth\TwoFactorRecoveryCodeService;
 use App\Services\TwoFactorService;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -69,14 +70,12 @@ class TwoFactorController extends Controller
         
         // Activer le 2FA
         $this->twoFactorService->enableTwoFactor($user, $secret);
-        
-        // Supprimer le secret de la session
+
         Session::forget('2fa_setup_secret');
-        
-        // Récupérer les codes de récupération à afficher
-        $recoveryCodes = $this->twoFactorService->getRecoveryCodes($user);
-        
-        // Ajouter/mettre à jour le contact CRM
+
+        $recoveryService = app(TwoFactorRecoveryCodeService::class);
+        $recoveryCodes = $recoveryService->generateRecoveryCodes($user);
+
         $this->syncToCrm($user);
         
         return view('auth.2fa.recovery-codes', [
@@ -91,12 +90,15 @@ class TwoFactorController extends Controller
     public function manage()
     {
         $user = Auth::user();
-        
+        $recoveryService = app(TwoFactorRecoveryCodeService::class);
+        $recoveryCount = $recoveryService->getRemainingCodesCount($user) ?: count($this->twoFactorService->getRecoveryCodes($user));
+
         return view('auth.2fa.manage', [
             'user' => $user,
             'isEnabled' => $this->twoFactorService->isEnabled($user),
             'isRequired' => $this->twoFactorService->isRequired($user),
-            'recoveryCodesCount' => count($this->twoFactorService->getRecoveryCodes($user)),
+            'recoveryCodesCount' => $recoveryCount,
+            'recoveryCodesLow' => $recoveryCount > 0 && $recoveryCount < 3,
         ]);
     }
     
@@ -108,10 +110,11 @@ class TwoFactorController extends Controller
         $request->validate([
             'password' => 'required|current_password',
         ]);
-        
+
         $user = Auth::user();
-        $recoveryCodes = $this->twoFactorService->regenerateRecoveryCodes($user);
-        
+        $recoveryService = app(TwoFactorRecoveryCodeService::class);
+        $recoveryCodes = $recoveryService->generateRecoveryCodes($user);
+
         return view('auth.2fa.recovery-codes', [
             'recoveryCodes' => $recoveryCodes,
             'user' => $user,
@@ -284,8 +287,8 @@ class TwoFactorController extends Controller
         return match($roleSlug) {
             'super_admin' => redirect()->route('admin.dashboard'),
             'admin' => redirect()->route('admin.dashboard'),
-            'staff' => redirect()->route('dashboard.staff'),
-            'createur' => redirect()->route('dashboard.createur'),
+            'staff' => redirect()->route('staff.dashboard'),
+            'createur' => redirect()->route('creator.dashboard'),
             'client' => redirect()->route('account.dashboard'),
             default => redirect()->route('frontend.home'),
         };

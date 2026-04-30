@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - RACINE BY GANDA</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -75,7 +75,7 @@
         .alert-reassuring {
             background: rgba(212, 165, 116, 0.15);
             border: 1px solid rgba(212, 165, 116, 0.3);
-            border-left: 4px solid #D4A574;
+            border-start: 4px solid #D4A574;
             border-radius: 12px;
             padding: 1.25rem;
             margin-bottom: 2rem;
@@ -317,6 +317,18 @@
     <div class="noise"></div>
     
     <div class="container">
+        {{-- Boutons de navigation --}}
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <a href="javascript:history.back()" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); text-decoration: none;">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+            <a href="{{ route('frontend.home') }}" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(212, 165, 116, 0.1); border: 1px solid rgba(212, 165, 116, 0.2); border-radius: 12px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); text-decoration: none;">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+        </div>
+        
         <div class="register-header">
             <h1 class="register-title">Créer un compte</h1>
             <p class="register-subtitle">Rejoignez l'univers RACINE BY GANDA</p>
@@ -425,15 +437,15 @@
                 
                 <div class="oauth-section">
                     <div class="oauth-divider">ou</div>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'creator']) }}" class="btn-oauth google">
+                    <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'createur']) }}" class="btn-oauth google">
                         <i class="fab fa-google"></i>
                         <span>Google</span>
                     </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'creator']) }}" class="btn-oauth apple">
+                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'createur']) }}" class="btn-oauth apple">
                         <i class="fab fa-apple"></i>
                         <span>Apple</span>
                     </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'creator']) }}" class="btn-oauth facebook">
+                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'createur']) }}" class="btn-oauth facebook">
                         <i class="fab fa-facebook-f"></i>
                         <span>Facebook</span>
                     </a>
@@ -446,7 +458,7 @@
                     </p>
                     <p style="margin-top: 0.5rem;">
                         Déjà un compte ? 
-                        <a href="{{ route('creator.login') }}">Se connecter</a>
+                        <a href="{{ route('login') }}">Se connecter</a>
                     </p>
                 </div>
             </div>
@@ -550,4 +562,9 @@
     </div>
 </body>
 </html>
+
+
+
+
+
 

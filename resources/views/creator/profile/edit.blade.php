@@ -4,7 +4,7 @@
 @section('page-title', 'Mon Profil')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: white;
         border-radius: 24px;
@@ -37,14 +37,14 @@
         font-size: 3.5rem;
         font-weight: 700;
         color: white;
-        font-family: 'Playfair Display', serif;
+        font-family: var(--font-heading, 'Cormorant Garamond', serif);
     }
     
     .profile-name {
         font-family: 'Libre Baskerville', serif;
         font-size: 2rem;
         font-weight: 400;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
     }
     
@@ -64,7 +64,7 @@
         font-family: 'Libre Baskerville', serif;
         font-size: 1.5rem;
         font-weight: 400;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
         border-bottom: 2px solid #E5DDD3;
@@ -110,7 +110,7 @@
     .info-value {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .premium-btn {
@@ -138,7 +138,7 @@
     
     .premium-btn-secondary {
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border: 2px solid #E5DDD3;
         border-radius: 12px;
         padding: 0.875rem 2rem;
@@ -154,7 +154,7 @@
     .premium-btn-secondary:hover {
         background: #F8F6F3;
         border-color: #D4A574;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .link-premium {
@@ -238,7 +238,7 @@
             <i class="fas fa-align-left"></i>
             À propos
         </h3>
-        <p style="color: #2C1810; line-height: 1.8; font-size: 1.05rem; padding: 1.5rem; background: linear-gradient(135deg, #F8F6F3 0%, white 100%); border-radius: 16px; border: 1px solid #E5DDD3;">{{ $creatorProfile->bio }}</p>
+        <p style="color: #160D0C; line-height: 1.8; font-size: 1.05rem; padding: 1.5rem; background: linear-gradient(135deg, #F8F6F3 0%, white 100%); border-radius: 16px; border: 1px solid #E5DDD3;">{{ $creatorProfile->bio }}</p>
     </div>
     @endif
 
@@ -257,7 +257,7 @@
                 <div class="info-value">
                     <a href="{{ $creatorProfile->website }}" target="_blank" class="link-premium">
                         {{ $creatorProfile->website }}
-                        <i class="fas fa-external-link-alt ml-2" style="font-size: 0.75rem;"></i>
+                        <i class="fas fa-external-link-alt ms-2" style="font-size: 0.75rem;"></i>
                     </a>
                 </div>
             </div>
@@ -269,7 +269,7 @@
                 <div class="info-value">
                     <a href="https://instagram.com/{{ $creatorProfile->instagram }}" target="_blank" class="link-premium">
                         @{{ $creatorProfile->instagram }}
-                        <i class="fas fa-external-link-alt ml-2" style="font-size: 0.75rem;"></i>
+                        <i class="fas fa-external-link-alt ms-2" style="font-size: 0.75rem;"></i>
                     </a>
                 </div>
             </div>
@@ -281,7 +281,7 @@
                 <div class="info-value">
                     <a href="https://facebook.com/{{ $creatorProfile->facebook }}" target="_blank" class="link-premium">
                         {{ $creatorProfile->facebook }}
-                        <i class="fas fa-external-link-alt ml-2" style="font-size: 0.75rem;"></i>
+                        <i class="fas fa-external-link-alt ms-2" style="font-size: 0.75rem;"></i>
                     </a>
                 </div>
             </div>
@@ -315,7 +315,7 @@
         @if($creatorProfile->payout_details)
         <div style="margin-top: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, #F8F6F3 0%, white 100%); border-radius: 16px; border: 1px solid #E5DDD3;">
             <div class="info-label mb-3">Détails de paiement</div>
-            <pre style="margin: 0; color: #2C1810; font-size: 0.9rem; white-space: pre-wrap; font-family: 'Inter', sans-serif;">{{ json_encode($creatorProfile->payout_details, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+            <pre style="margin: 0; color: #160D0C; font-size: 0.9rem; white-space: pre-wrap; font-family: var(--font-accent, 'Aileron', sans-serif);">{{ json_encode($creatorProfile->payout_details, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
         </div>
         @endif
     </div>

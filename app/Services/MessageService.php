@@ -6,6 +6,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\ConversationParticipant;
 use App\Models\MessageAttachment;
+use App\Models\Role;
 use App\Services\NotificationService;
 use App\Services\EmailMessagingService;
 use Illuminate\Http\UploadedFile;
@@ -165,7 +166,7 @@ class MessageService
 
         // Vérifier que l'utilisateur est l'auteur ou admin
         $user = \App\Models\User::find($userId);
-        $isAdmin = $user && in_array($user->getRoleSlug(), ['super_admin', 'admin']);
+        $isAdmin = $user && in_array($user->getRoleSlug(), [Role::SUPER_ADMIN, Role::ADMIN]);
 
         if ($message->user_id !== $userId && !$isAdmin) {
             throw new \Exception('Vous ne pouvez supprimer que vos propres messages.');
@@ -206,8 +207,6 @@ class MessageService
      */
     protected function createThumbnail(MessageAttachment $attachment, UploadedFile $file): void
     {
-        // Thumbnail désactivé pour l'instant (nécessite intervention/image)
-        // Peut être activé plus tard si le package est installé
         try {
             // Détecter les dimensions si possible
             if (function_exists('getimagesize')) {
@@ -220,21 +219,101 @@ class MessageService
                 }
             }
 
-            // TODO: Créer thumbnail si intervention/image est installé
-            // $image = Image::make($file);
-            // $thumbnail = $image->resize(300, 300, function ($constraint) {
-            //     $constraint->aspectRatio();
-            //     $constraint->upsize();
-            // });
-            // $thumbnailPath = 'messages/thumbnails/' . basename($attachment->file_path);
-            // Storage::disk('public')->put($thumbnailPath, $thumbnail->encode());
-            // $attachment->update(['thumbnail_path' => $thumbnailPath]);
+            $thumbnailBinary = $this->buildSquareThumbnail(
+                $file->getRealPath(),
+                $attachment->mime_type
+            );
+
+            if ($thumbnailBinary === null) {
+                return;
+            }
+
+            $pathInfo = pathinfo($attachment->file_name);
+            $baseName = $pathInfo['filename'] ?? Str::random(20);
+            $extension = $this->thumbnailExtensionForMimeType($attachment->mime_type);
+            $thumbnailPath = "messages/thumbnails/{$baseName}_thumb.{$extension}";
+
+            Storage::disk('public')->put($thumbnailPath, $thumbnailBinary);
+            $attachment->update(['thumbnail_path' => $thumbnailPath]);
         } catch (\Exception $e) {
             Log::warning('Failed to create thumbnail', [
                 'attachment_id' => $attachment->id,
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Build a centered 200x200 thumbnail for common image mime-types.
+     */
+    protected function buildSquareThumbnail(string $filePath, ?string $mimeType): ?string
+    {
+        if (!extension_loaded('gd') || !is_file($filePath)) {
+            return null;
+        }
+
+        $source = match ($mimeType) {
+            'image/jpeg', 'image/jpg' => @imagecreatefromjpeg($filePath),
+            'image/png' => @imagecreatefrompng($filePath),
+            'image/gif' => @imagecreatefromgif($filePath),
+            'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($filePath) : false,
+            default => false,
+        };
+
+        if ($source === false) {
+            return null;
+        }
+
+        $srcWidth = imagesx($source);
+        $srcHeight = imagesy($source);
+
+        if ($srcWidth <= 0 || $srcHeight <= 0) {
+            imagedestroy($source);
+            return null;
+        }
+
+        $thumb = imagecreatetruecolor(200, 200);
+        if ($thumb === false) {
+            imagedestroy($source);
+            return null;
+        }
+
+        if (in_array($mimeType, ['image/png', 'image/gif', 'image/webp'], true)) {
+            imagealphablending($thumb, false);
+            imagesavealpha($thumb, true);
+            $transparent = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
+            imagefill($thumb, 0, 0, $transparent);
+        }
+
+        $cropSize = min($srcWidth, $srcHeight);
+        $srcX = (int) floor(($srcWidth - $cropSize) / 2);
+        $srcY = (int) floor(($srcHeight - $cropSize) / 2);
+
+        imagecopyresampled($thumb, $source, 0, 0, $srcX, $srcY, 200, 200, $cropSize, $cropSize);
+
+        ob_start();
+        match ($mimeType) {
+            'image/png' => imagepng($thumb, null, 7),
+            'image/gif' => imagegif($thumb),
+            'image/webp' => function_exists('imagewebp') ? imagewebp($thumb, null, 80) : imagejpeg($thumb, null, 85),
+            default => imagejpeg($thumb, null, 85),
+        };
+        $binary = ob_get_clean();
+
+        imagedestroy($thumb);
+        imagedestroy($source);
+
+        return $binary !== false ? $binary : null;
+    }
+
+    protected function thumbnailExtensionForMimeType(?string $mimeType): string
+    {
+        return match ($mimeType) {
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            default => 'jpg',
+        };
     }
 
     /**
@@ -295,4 +374,3 @@ class MessageService
         }
     }
 }
-

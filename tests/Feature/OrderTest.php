@@ -31,7 +31,6 @@ class OrderTest extends TestCase
             'is_active' => true,
         ]);
     }
-
     #[Test]
     public function user_can_create_order_from_cart(): void
     {
@@ -71,7 +70,6 @@ class OrderTest extends TestCase
             'price' => 10000,
         ]);
     }
-
     #[Test]
     public function order_creation_reduces_product_stock(): void
     {
@@ -95,7 +93,6 @@ class OrderTest extends TestCase
         $this->product->refresh();
         $this->assertEquals($initialStock - $quantity, $this->product->stock);
     }
-
     #[Test]
     public function cannot_create_order_with_insufficient_stock(): void
     {
@@ -120,7 +117,6 @@ class OrderTest extends TestCase
             'user_id' => $this->user->id,
         ]);
     }
-
     #[Test]
     public function order_total_is_calculated_correctly(): void
     {
@@ -148,7 +144,6 @@ class OrderTest extends TestCase
         // Sous-total : 20000 + 15000 = 35000, Livraison : 2000, Total : 37000
         $this->assertEquals(37000, $order->total_amount);
     }
-
     #[Test]
     public function order_has_unique_order_number(): void
     {
@@ -170,7 +165,6 @@ class OrderTest extends TestCase
         $this->assertNotNull($order->order_number);
         $this->assertStringStartsWith('CMD-', $order->order_number);
     }
-
     #[Test]
     public function order_has_qr_token(): void
     {

@@ -22,7 +22,7 @@
                     {{-- Message d'information --}}
                     <div class="alert alert-warning">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-exclamation-triangle fa-2x mr-3"></i>
+                            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
                             <div>
                                 <strong>Que s'est-il passé ?</strong>
                                 <p class="mb-0">Vous avez annulé le paiement ou la transaction a été interrompue. Votre commande est toujours en attente et n'a pas été annulée.</p>
@@ -47,7 +47,7 @@
                             <div class="row">
                                 <div class="col-12">
                                     <p class="text-muted mb-1">Statut</p>
-                                    <span class="badge badge-warning">En attente de paiement</span>
+                                    <span class="badge bg-warning">En attente de paiement</span>
                                 </div>
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                             @csrf
                             <input type="hidden" name="order_id" value="{{ $order->id }}">
                             <button type="submit" class="btn btn-primary btn-lg btn-block">
-                                <i class="fas fa-credit-card mr-2"></i>
+                                <i class="fas fa-credit-card me-2"></i>
                                 Réessayer le paiement
                             </button>
                         </form>
@@ -67,13 +67,13 @@
                         <div class="row">
                             <div class="col-md-6 mb-2">
                                 <a href="{{ route('cart.index') }}" class="btn btn-outline-secondary btn-block">
-                                    <i class="fas fa-shopping-cart mr-2"></i>
+                                    <i class="fas fa-shopping-cart me-2"></i>
                                     Retour au panier
                                 </a>
                             </div>
                             <div class="col-md-6 mb-2">
                                 <a href="{{ route('frontend.home') }}" class="btn btn-outline-secondary btn-block">
-                                    <i class="fas fa-home mr-2"></i>
+                                    <i class="fas fa-home me-2"></i>
                                     Retour à l'accueil
                                 </a>
                             </div>

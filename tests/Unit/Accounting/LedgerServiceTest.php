@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Accounting;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Accounting\Services\LedgerService;
@@ -73,8 +75,7 @@ class LedgerServiceTest extends TestCase
             'is_active' => true,
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_create_an_accounting_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -89,8 +90,7 @@ class LedgerServiceTest extends TestCase
         $this->assertEquals('Test entry', $entry->description);
         $this->assertFalse($entry->is_posted);
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_sequential_entry_numbers()
     {
         $entry1 = $this->ledgerService->createEntry([
@@ -110,8 +110,7 @@ class LedgerServiceTest extends TestCase
         $this->assertEquals('TST-2025-001', $entry1->entry_number);
         $this->assertEquals('TST-2025-002', $entry2->entry_number);
     }
-
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_fiscal_year_is_closed()
     {
         $this->fiscalYear->update(['is_closed' => true]);
@@ -126,8 +125,7 @@ class LedgerServiceTest extends TestCase
             'description' => 'Test entry',
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_add_line_to_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -150,8 +148,7 @@ class LedgerServiceTest extends TestCase
         $this->assertEquals(0, $line->credit);
         $this->assertEquals(1, $line->line_number);
     }
-
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_adding_line_with_both_debit_and_credit()
     {
         $entry = $this->ledgerService->createEntry([
@@ -166,8 +163,7 @@ class LedgerServiceTest extends TestCase
 
         $this->ledgerService->addLine($entry, '5210', 100.00, 50.00);
     }
-
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_adding_line_with_neither_debit_nor_credit()
     {
         $entry = $this->ledgerService->createEntry([
@@ -181,8 +177,7 @@ class LedgerServiceTest extends TestCase
 
         $this->ledgerService->addLine($entry, '5210', 0, 0);
     }
-
-    /** @test */
+    #[Test]
     public function it_recalculates_totals_when_adding_lines()
     {
         $entry = $this->ledgerService->createEntry([
@@ -202,8 +197,7 @@ class LedgerServiceTest extends TestCase
         $this->assertEquals(100.00, $entry->total_debit);
         $this->assertEquals(100.00, $entry->total_credit);
     }
-
-    /** @test */
+    #[Test]
     public function it_validates_balanced_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -218,8 +212,7 @@ class LedgerServiceTest extends TestCase
 
         $this->assertTrue($this->ledgerService->validateBalance($entry));
     }
-
-    /** @test */
+    #[Test]
     public function it_detects_unbalanced_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -234,8 +227,7 @@ class LedgerServiceTest extends TestCase
 
         $this->assertFalse($this->ledgerService->validateBalance($entry));
     }
-
-    /** @test */
+    #[Test]
     public function it_can_post_balanced_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -255,8 +247,7 @@ class LedgerServiceTest extends TestCase
         $this->assertNotNull($entry->posted_at);
         $this->assertEquals($this->user->id, $entry->posted_by);
     }
-
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_posting_unbalanced_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -274,8 +265,7 @@ class LedgerServiceTest extends TestCase
 
         $this->ledgerService->postEntry($entry);
     }
-
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_posting_already_posted_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -294,8 +284,7 @@ class LedgerServiceTest extends TestCase
 
         $this->ledgerService->postEntry($entry);
     }
-
-    /** @test */
+    #[Test]
     public function it_prevents_adding_lines_to_posted_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -314,8 +303,7 @@ class LedgerServiceTest extends TestCase
 
         $this->ledgerService->addLine($entry, '5210', 50.00, 0);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_vat_in_entry_lines()
     {
         $entry = $this->ledgerService->createEntry([
@@ -342,8 +330,7 @@ class LedgerServiceTest extends TestCase
         $this->assertEquals(18.00, $line->vat_amount);
         $this->assertEquals(18.00, $line->vat_rate);
     }
-
-    /** @test */
+    #[Test]
     public function it_creates_sale_entry_with_vat()
     {
         $order = (object) ['id' => 123];
@@ -377,8 +364,7 @@ class LedgerServiceTest extends TestCase
         // Vérifier équilibre
         $this->assertTrue($entry->isBalanced());
     }
-
-    /** @test */
+    #[Test]
     public function it_can_reverse_posted_entry()
     {
         $entry = $this->ledgerService->createEntry([
@@ -405,8 +391,7 @@ class LedgerServiceTest extends TestCase
         $reversalCreditLine = $reversalEntry->lines->where('account_code', '5210')->first();
         $this->assertEquals(100.00, $reversalCreditLine->credit);
     }
-
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_reversing_unposted_entry()
     {
         $entry = $this->ledgerService->createEntry([

@@ -11,16 +11,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests Feature - Admin Dashboard Global
+ * Tests du Dashboard Admin Global
  * 
- * PRIORITÉ 4 - Admin Dashboards (Performance)
- * 
- * Scénarios OBLIGATOIRES :
- * - Performance
- * - Cache
- * - Cohérence
+ * Tests de performance, cache et cohérence des données pour le dashboard administrateur.
  */
 class AdminDashboardGlobalTest extends TestCase
 {
@@ -31,13 +27,25 @@ class AdminDashboardGlobalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Créer un admin
-        $this->admin = User::factory()->create([
-            'role' => 'admin',
-            'status' => 'active',
-            'two_factor_enabled' => true,
-        ]);
+
+        // Créer un utilisateur admin avec 2FA activé
+        $adminRole = \App\Models\Role::firstOrCreate(
+            ['slug' => 'admin'],
+            ['name' => 'Admin', 'description' => 'Admin role', 'is_active' => true]
+        );
+        $this->admin = User::firstOrCreate(
+            ['email' => 'admin-dashboard@test.com'],
+            [
+                'name' => 'Admin Dashboard Test',
+                'password' => bcrypt('password'),
+                'role_id' => $adminRole->id,
+                'two_factor_secret' => 'base32secret',
+                'two_factor_confirmed_at' => now(),
+                'is_admin' => true,
+                'auth_version' => 1,
+                'status' => 'active',
+            ]
+        );
     }
 
     /**
@@ -50,11 +58,14 @@ class AdminDashboardGlobalTest extends TestCase
         Product::factory()->count(15)->create();
         Payment::factory()->count(10)->create();
         
-        Auth::login($this->admin);
-        
         $startTime = microtime(true);
         
-        $response = $this->get('/admin/dashboard');
+        $response = $this->actingAs($this->admin)
+            ->withSession([
+                'auth_version' => $this->admin->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->get(route('admin.dashboard'));
         
         $endTime = microtime(true);
         $responseTime = ($endTime - $startTime) * 1000; // Convertir en ms
@@ -75,12 +86,15 @@ class AdminDashboardGlobalTest extends TestCase
         Order::factory()->count(20)->create();
         Product::factory()->count(15)->create();
         
-        Auth::login($this->admin);
-        
         // Compter les requêtes DB
         DB::enableQueryLog();
         
-        $this->get('/admin/dashboard');
+        $this->actingAs($this->admin)
+            ->withSession([
+                'auth_version' => $this->admin->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->get(route('admin.dashboard'));
         
         $queries = DB::getQueryLog();
         $queryCount = count($queries);
@@ -97,24 +111,32 @@ class AdminDashboardGlobalTest extends TestCase
         // Créer des données de test
         Order::factory()->count(10)->create();
         
-        Auth::login($this->admin);
-        
         // Vider le cache
         Cache::flush();
         
         // Première requête (devrait mettre en cache)
-        $response1 = $this->get('/admin/dashboard');
+        $response1 = $this->actingAs($this->admin)
+            ->withSession([
+                'auth_version' => $this->admin->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->get(route('admin.dashboard'));
         $response1->assertStatus(200);
         
         // Vérifier que le cache existe
-        $this->assertTrue(Cache::has('admin.dashboard.stats'));
+        $this->assertTrue(Cache::has('dashboard.global_state'));
         
         // Deuxième requête (devrait utiliser le cache)
-        $response2 = $this->get('/admin/dashboard');
+        $response2 = $this->actingAs($this->admin)
+            ->withSession([
+                'auth_version' => $this->admin->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->get(route('admin.dashboard'));
         $response2->assertStatus(200);
         
         // Vérifier que les données sont identiques (cache utilisé)
-        $this->assertTrue(Cache::has('admin.dashboard.stats'));
+        $this->assertTrue(Cache::has('dashboard.global_state'));
     }
 
     /**
@@ -125,18 +147,21 @@ class AdminDashboardGlobalTest extends TestCase
         // Créer des données de test
         $order = Order::factory()->create();
         
-        Auth::login($this->admin);
-        
         // Charger le dashboard (met en cache)
-        $this->get('/admin/dashboard');
-        $this->assertTrue(Cache::has('admin.dashboard.stats'));
+        $this->actingAs($this->admin)
+            ->withSession([
+                'auth_version' => $this->admin->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->get(route('admin.dashboard'));
+        $this->assertTrue(Cache::has('dashboard.global_state'));
         
         // Modifier une commande (mutation)
         $order->update(['status' => 'completed']);
         
         // Vérifier que le cache est toujours présent (invalidation manuelle si nécessaire)
         // Note: L'invalidation automatique dépend de l'implémentation
-        $this->assertTrue(Cache::has('admin.dashboard.stats'));
+        $this->assertTrue(Cache::has('dashboard.global_state'));
     }
 
     /**
@@ -151,10 +176,13 @@ class AdminDashboardGlobalTest extends TestCase
         $productsCount = 10;
         Product::factory()->count($productsCount)->create();
         
-        Auth::login($this->admin);
-        
         // Charger le dashboard
-        $response = $this->get('/admin/dashboard');
+        $response = $this->actingAs($this->admin)
+            ->withSession([
+                'auth_version' => $this->admin->auth_version,
+                '2fa_verified' => true,
+            ])
+            ->get(route('admin.dashboard'));
         $response->assertStatus(200);
         
         // Vérifier que les KPI correspondent aux données réelles
@@ -166,6 +194,11 @@ class AdminDashboardGlobalTest extends TestCase
         }
     }
 }
+
+
+
+
+
 
 
 

@@ -11,44 +11,43 @@
     $isComplete = $percentage === 100;
     $level = $completion['level'];
     $alerts = $completion['alerts'];
+
+    // Couleurs basées sur le niveau
+    $levelColor = $level === 'poor' ? '#EF4444' : ($level === 'fair' ? '#F59E0B' : '#10B981');
+    $levelBg = $level === 'poor' ? '#FEF2F2' : ($level === 'fair' ? '#FFFBEB' : '#ECFDF5');
 @endphp
 
 @if(!$isComplete)
-<div class="mb-6 p-6 rounded-2xl border-2 border-dashed" 
-     style="background: linear-gradient(135deg, #FFF7ED 0%, #FFFBF5 100%); border-color: {{ $level === 'poor' ? '#EF4444' : ($level === 'fair' ? '#F59E0B' : '#10B981') }};">
+<div class="creator-card mb-4 border-dashed" 
+     style="background: linear-gradient(135deg, #FFF7ED 0%, #FFFBF5 100%); border: 2px dashed {{ $levelColor }};">
     
     {{-- En-tête --}}
-    <div class="flex items-start justify-between mb-4">
-        <div class="flex-1">
-            <h3 class="text-xl font-bold text-[#2C1810] mb-1" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-rocket text-[#ED5F1E] mr-2"></i>
+    <div class="d-flex align-items-start justify-content-between mb-3">
+        <div>
+            <h3 class="mb-1" style="font-family: var(--font-heading, 'Cormorant Garamond', serif); font-weight: 700; color: #160D0C; font-size: 1.5rem;">
+                <i class="fas fa-rocket text-orange-500 me-2" style="color: var(--racine-orange);"></i>
                 Complétez votre profil
             </h3>
-            <p class="text-sm text-[#8B7355]">
+            <p class="text-muted mb-0" style="color: #8B7355 !important;">
                 {{ $completion['completed_count'] }} sur {{ $completion['total_count'] }} étapes complétées
             </p>
         </div>
-        <div class="text-right">
-            <div class="text-3xl font-bold" 
-                 style="font-family: 'Playfair Display', serif; color: {{ $level === 'poor' ? '#EF4444' : ($level === 'fair' ? '#F59E0B' : ($level === 'good' ? '#10B981' : '#ED5F1E')) }};">
+        <div class="text-end">
+            <div class="h2 mb-0 font-weight-bold" 
+                 style="font-family: var(--font-heading, 'Cormorant Garamond', serif); color: {{ $levelColor }}; font-weight: 900;">
                 {{ round($percentage) }}%
             </div>
-            <span class="text-xs text-[#8B7355]">
-                @if($level === 'poor') Débutant
-                @elseif($level === 'fair') En cours
-                @elseif($level === 'good') Avancé
-                @else Excellent
-                @endif
+            <span class="badge" style="background-color: {{ $levelColor }}; color: white; font-size: 0.7rem; text-transform: uppercase;">
+                {{ $level === 'poor' ? 'Débutant' : ($level === 'fair' ? 'En cours' : ($level === 'good' ? 'Avancé' : 'Excellent')) }}
             </span>
         </div>
     </div>
 
     {{-- Barre de progression --}}
-    <div class="mb-6 h-3 bg-white rounded-full overflow-hidden shadow-inner">
-        <div class="h-full rounded-full transition-all duration-500" 
-             style="width: {{ $percentage }}%; background: linear-gradient(90deg, 
-                {{ $level === 'poor' ? '#EF4444' : ($level === 'fair' ? '#F59E0B' : '#10B981') }} 0%, 
-                {{ $level === 'poor' ? '#DC2626' : ($level === 'fair' ? '#D97706' : '#059669') }} 100%);">
+    <div class="progress mb-4" style="height: 12px; border-radius: 6px; background-color: rgba(0,0,0,0.05); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+        <div class="progress-bar transition-all duration-500" role="progressbar" 
+             style="width: {{ $percentage }}%; border-radius: 6px; background: linear-gradient(90deg, {{ $levelColor }} 0%, {{ $levelColor }} 100%);" 
+             aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100">
         </div>
     </div>
 
@@ -56,18 +55,22 @@
     @if(count($alerts) > 0)
         <div class="space-y-3 mb-4">
             @foreach($alerts as $alert)
-                <div class="flex items-start gap-3 p-4 rounded-xl {{ $alert['type'] === 'critical' ? 'bg-red-50 border border-red-200' : ($alert['type'] === 'warning' ? 'bg-orange-50 border border-orange-200' : 'bg-green-50 border border-green-200') }}">
-                    <span class="text-2xl">{{ $alert['icon'] }}</span>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-[#2C1810] mb-1">{{ $alert['title'] }}</h4>
-                        <p class="text-sm text-[#8B7355]">{{ $alert['message'] }}</p>
+                @php
+                    $alertColor = $alert['type'] === 'critical' ? '#EF4444' : ($alert['type'] === 'warning' ? '#F59E0B' : '#10B981');
+                    $alertBg = $alert['type'] === 'critical' ? '#FEF2F2' : ($alert['type'] === 'warning' ? '#FFFBEB' : '#ECFDF5');
+                @endphp
+                <div class="d-flex align-items-start gap-3 p-3 rounded-3 mb-3" style="background-color: {{ $alertBg }}; border: 1px solid {{ $alertColor }}44;">
+                    <span class="h4 mb-0 me-3">{{ $alert['icon'] }}</span>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-1 font-weight-bold" style="color: #160D0C; font-size: 1rem;">{{ $alert['title'] }}</h5>
+                        <p class="mb-0" style="color: #5D4037; font-size: 0.9rem;">{{ $alert['message'] }}</p>
                     </div>
                     @if($alert['action'])
                         <a href="{{ $alert['action'] }}" 
-                           class="flex-shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 whitespace-nowrap"
-                           style="background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%); color: white; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);">
+                           class="btn btn-sm ms-3"
+                           style="background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%); color: white; border: none; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.2);">
                             {{ $alert['action_label'] }}
-                            <i class="fas fa-arrow-right ml-2"></i>
+                            <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     @endif
                 </div>
@@ -81,16 +84,16 @@
     @endphp
     
     @if($incompleteSteps->count() > 0)
-        <div class="mt-4 pt-4 border-t-2 border-[#E5DDD3]">
-            <h4 class="text-sm font-bold text-[#2C1810] mb-3">Prochaines étapes :</h4>
-            <div class="space-y-2">
+        <div class="mt-3 pt-3 border-top" style="border-top: 2px solid #E5DDD3 !important;">
+            <h6 class="text-uppercase font-weight-bold mb-3" style="font-size: 0.75rem; letter-spacing: 1px; color: #160D0C;">Prochaines étapes :</h6>
+            <div class="list-unstyled">
                 @foreach($incompleteSteps as $step)
-                    <div class="flex items-center gap-3 text-sm">
-                        <div class="w-6 h-6 rounded-full border-2 border-[#8B7355] flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-circle text-[8px] text-[#8B7355]"></i>
+                    <div class="d-flex align-items-center mb-2" style="font-size: 0.9rem;">
+                        <div class="me-3 d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #8B7355;">
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #8B7355;"></div>
                         </div>
-                        <span class="text-[#2C1810]">{{ $step['title'] }}</span>
-                        <span class="text-[#8B7355] ml-auto">+{{ $step['points'] }} pts</span>
+                        <span style="color: #160D0C; font-weight: 500;">{{ $step['title'] }}</span>
+                        <span class="ms-auto text-muted" style="font-weight: 700; color: #8B7355 !important;">+{{ $step['points'] }} pts</span>
                     </div>
                 @endforeach
             </div>
@@ -98,4 +101,3 @@
     @endif
 </div>
 @endif
-

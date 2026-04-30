@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Cart\DatabaseCartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CheckoutCashOnDeliveryDebugTest extends TestCase
@@ -32,7 +33,6 @@ class CheckoutCashOnDeliveryDebugTest extends TestCase
             'is_active' => true,
         ]);
     }
-
     #[Test]
     public function it_creates_order_with_cash_on_delivery_and_redirects(): void
     {
@@ -61,6 +61,8 @@ class CheckoutCashOnDeliveryDebugTest extends TestCase
         // Vérifications de la réponse POST
         $response->assertStatus(302); // Redirection
         $response->assertRedirect();
+        $response->assertSessionHas('success');
+        $response->assertSessionHas('success', fn ($message) => is_string($message) && str_contains($message, 'enregistrée'));
         
         // Vérifier que la redirection pointe vers checkout.success
         $targetUrl = $response->getTargetUrl();
@@ -89,13 +91,7 @@ class CheckoutCashOnDeliveryDebugTest extends TestCase
         $successResponse->assertStatus(200);
         $successResponse->assertSee('Commande confirmée', false, 'Success page should show confirmation message');
         $successResponse->assertSee('Paiement à la livraison', false, 'Success page should show cash on delivery message');
-        $successResponse->assertSessionHas('success', 'Session should have success message');
-        
-        // Vérifier le contenu du message flash
-        $successMessage = session('success');
-        $this->assertStringContainsString('enregistrée', $successMessage, 'Success message should mention order is registered');
     }
-
     #[Test]
     public function it_handles_validation_errors(): void
     {
@@ -110,7 +106,6 @@ class CheckoutCashOnDeliveryDebugTest extends TestCase
         $response->assertStatus(302); // Redirection back
         $response->assertSessionHasErrors(['full_name', 'email', 'phone']);
     }
-
     #[Test]
     public function it_handles_empty_cart(): void
     {
@@ -133,4 +128,3 @@ class CheckoutCashOnDeliveryDebugTest extends TestCase
         $response->assertSessionHas('error');
     }
 }
-

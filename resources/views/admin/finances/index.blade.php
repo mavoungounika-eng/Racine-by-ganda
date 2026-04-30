@@ -99,9 +99,9 @@
                             <tbody>
                             @foreach($pendingPayouts as $payout)
                                 <tr>
-                                    <td>{{ $payout->vendor->name ?? 'Vendeur inconnu' }}</td>
-                                    <td>#{{ $payout->order_id }}</td>
-                                    <td class="fw-bold">{{ number_format($payout->vendor_payout ?? 0, 0, ',', ' ') }} FCFA</td>
+                                    <td>{{ $payout->creatorProfile->user->name ?? 'Créateur inconnu' }}</td>
+                                    <td>#{{ $payout->id }}</td>
+                                    <td class="fw-bold">{{ number_format($payout->amount ?? 0, 0, ',', ' ') }} FCFA</td>
                                 </tr>
                             @endforeach
                             </tbody>

@@ -1,0 +1,33 @@
+parameters:
+    level: 8
+    paths:
+        - app/Http/Controllers
+        - app/Http/Middleware
+        - app/Services/Auth
+    
+    # Block direct role access patterns
+    ignoreErrors:
+        # Allow in specific auth services only
+        - 
+            message: '#Access to property \$role(_id)? on App\\Models\\User#'
+            path: app/Services/Auth/*
+        -
+            message: '#Call to method role\(\) on App\\Models\\User#'
+            path: app/Services/Auth/*
+    
+    # Forbidden patterns (will cause CI failure)
+    reportUnmatchedIgnoredErrors: true
+    
+    # Custom rules
+    rules:
+        # Rule 1: No Auth::user()->role in controllers
+        - PHPStan\Rules\NoDirectRoleAccessInControllersRule
+        
+        # Rule 2: No Auth::user()->role_id in controllers
+        - PHPStan\Rules\NoDirectRoleIdAccessInControllersRule
+        
+        # Rule 3: Routes must use 'ensure' middleware
+        - PHPStan\Rules\RequireEnsureMiddlewareRule
+
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon

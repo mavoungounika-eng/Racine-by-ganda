@@ -11,23 +11,23 @@
     <div class="oauth-buttons">
         <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'client']) }}" 
            class="btn btn-outline-secondary btn-block mb-2">
-            <i class="fab fa-google mr-2"></i> Google
+            <i class="fab fa-google me-2"></i> Google
         </a>
         
         <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'client']) }}" 
            class="btn btn-outline-secondary btn-block mb-2">
-            <i class="fab fa-facebook mr-2"></i> Facebook
+            <i class="fab fa-facebook me-2"></i> Facebook
         </a>
         
         <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'client']) }}" 
            class="btn btn-outline-secondary btn-block">
-            <i class="fab fa-apple mr-2"></i> Apple
+            <i class="fab fa-apple me-2"></i> Apple
         </a>
     </div>
 </div>
 @endif
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 .oauth-divider {
     display: flex;
     align-items: center;

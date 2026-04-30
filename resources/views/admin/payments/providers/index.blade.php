@@ -60,9 +60,9 @@
                                     </td>
                                     <td>
                                         @if($configStatus['status'] === 'ok')
-                                            <span class="badge badge-success">OK</span>
+                                            <span class="badge bg-success">OK</span>
                                         @else
-                                            <span class="badge badge-danger">KO</span>
+                                            <span class="badge bg-danger">KO</span>
                                             @if(!empty($configStatus['missing_keys']))
                                                 <small class="d-block text-muted mt-1">
                                                     Manque: {{ implode(', ', $configStatus['missing_keys']) }}
@@ -72,13 +72,13 @@
                                     </td>
                                     <td>
                                         @if($provider->health_status === 'ok')
-                                            <span class="badge badge-success">OK</span>
+                                            <span class="badge bg-success">OK</span>
                                         @elseif($provider->health_status === 'degraded')
-                                            <span class="badge badge-warning">Dégradé</span>
+                                            <span class="badge bg-warning">Dégradé</span>
                                         @elseif($provider->health_status === 'down')
-                                            <span class="badge badge-danger">Down</span>
+                                            <span class="badge bg-danger">Down</span>
                                         @else
-                                            <span class="badge badge-secondary">Inconnu</span>
+                                            <span class="badge bg-secondary">Inconnu</span>
                                         @endif
                                     </td>
                                     <td>
@@ -95,7 +95,7 @@
                                         </form>
                                     </td>
                                     <td>
-                                        <span class="badge badge-info">{{ $provider->currency }}</span>
+                                        <span class="badge bg-info">{{ $provider->currency }}</span>
                                     </td>
                                     <td>
                                         @if($provider->last_event_at)
@@ -133,7 +133,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Modifier le provider</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -152,7 +152,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">Enregistrer</button>
                 </div>
             </form>
@@ -161,7 +161,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     function editProvider(providerId) {
         // Récupérer les données du provider via AJAX si nécessaire
         // Pour l'instant, on peut simplement ouvrir le modal avec les données existantes
@@ -172,6 +172,11 @@
 @endpush
 
 @endsection
+
+
+
+
+
 
 
 

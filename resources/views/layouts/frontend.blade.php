@@ -18,7 +18,7 @@
     <meta property="og:description" content="@yield('og-description', $__env->yieldContent('meta-description', 'RACINE BY GANDA - Mode africaine premium. Créations authentiques qui célèbrent l\'héritage africain avec une touche contemporaine.'))">
     <meta property="og:image" content="@yield('og-image', asset('images/og-image-racine.jpg'))">
     <meta property="og:url" content="@yield('canonical-url', url()->current())">
-    <meta property="og:site_name" content="RACINE BY GANDA">
+    <meta property="og:site_name" content="{{ config('app.company.name') }}">
     <meta property="og:locale" content="fr_FR">
     
     {{-- Twitter Card Meta Tags --}}
@@ -33,13 +33,13 @@
     <meta name="robots" content="@yield('robots', 'index, follow')">
     <meta name="theme-color" content="#ED5F1E">
     
-    {{-- Fonts --}}
-    {{-- Typographies Officielles RACINE --}}
-    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    {{-- Bootstrap 4 --}}
-    <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
-    
+    {{-- Fonts RACINE --}}
+    {{-- Aileron (accentué, disponible Google Fonts) --}}
+    {{-- Cormorant Garamond (fallback Aleppo) + Nunito (fallback Coco Gothic) --}}
+    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    {{-- Bootstrap 5 chargé via Vite (app.scss) — Bootstrap 4 legacy supprimé --}}
+
     {{-- RACINE Design System --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     
@@ -48,41 +48,206 @@
     <link rel="stylesheet" href="{{ asset('css/layout-components.css') }}">
     <link rel="stylesheet" href="{{ asset('css/layout-footer-cta.css') }}">
     
-    {{-- Font Awesome --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {{-- Page-specific CSS (chargement conditionnel pour performance) --}}
+    @if(request()->routeIs('home') || request()->routeIs('frontend.home'))
+        <link rel="stylesheet" href="{{ asset('css/frontend-home.css') }}">
+    @endif
+    @if(request()->routeIs('frontend.shop'))
+        <link rel="stylesheet" href="{{ asset('css/frontend-shop.css') }}">
+    @endif
     
-    <style>
-        /* Styles inline minimaux si nécessaire - La majorité du CSS a été extraite vers fichiers externes */
-        /* Tous les styles sont maintenant dans :
-         * - layout-navigation.css (navigation, navbar, dropdowns)
-         * - layout-components.css (hero, product cards, buttons)
-         * - layout-footer-cta.css (footer, CTA section)
-         */
+    {{-- Font Awesome --}}
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    
+    <style nonce="{{ csp_nonce() }}">
+        :root {
+            --racine-black: #160D0C;
+            --racine-orange: #ED5F1E;
+            --racine-yellow: #FFB800;
+            --racine-white: #FFFFFF;
+            --racine-font-heading: 'Aleppo', 'Cormorant Garamond', 'Aileron', serif;
+            --racine-font-body: 'Coco Gothic', 'Nunito', 'Aileron', 'Helvetica Neue', sans-serif;
+            --racine-font-accent: 'Aileron', 'Nunito', 'Helvetica Neue', sans-serif;
+        }
+
+        body.racine-frontend-layout {
+            background: var(--racine-white);
+            color: var(--racine-black);
+            font-family: var(--racine-font-body);
+        }
+
+        body.racine-frontend-layout h1,
+        body.racine-frontend-layout h2,
+        body.racine-frontend-layout h3,
+        body.racine-frontend-layout h4,
+        body.racine-frontend-layout h5,
+        body.racine-frontend-layout h6 {
+            font-family: var(--racine-font-heading);
+        }
+
+        .announcement-bar {
+            background: var(--racine-black);
+            color: var(--racine-yellow);
+        }
+
+        .announcement-text {
+            font-family: var(--racine-font-accent);
+        }
+
+        /* .navbar-racine base styles → layout-navigation.css */
+
+        .logo-text {
+            color: var(--racine-yellow);
+            font-family: var(--racine-font-heading);
+            letter-spacing: 0.08em;
+        }
+
+        .main-nav-racine .nav-link-racine,
+        .main-nav-racine .nav-dropdown-toggle.nav-link-racine {
+            color: var(--racine-white) !important;
+            font-family: var(--racine-font-accent);
+        }
+
+        .main-nav-racine .nav-link-racine:hover,
+        .main-nav-racine .nav-dropdown-toggle.nav-link-racine:hover {
+            color: var(--racine-yellow) !important;
+        }
+
+        .nav-dropdown-menu {
+            background: var(--racine-black);
+            border: 1px solid rgba(255, 184, 0, 0.35);
+        }
+
+        .nav-dropdown-menu a {
+            color: var(--racine-white);
+        }
+
+        .nav-dropdown-menu a:hover {
+            color: var(--racine-yellow);
+            background: rgba(255, 184, 0, 0.12);
+        }
+
+        .nav-icon-btn {
+            color: var(--racine-white);
+            border-color: rgba(255, 255, 255, 0.32);
+        }
+
+        .nav-icon-btn:hover {
+            background: var(--racine-orange);
+            border-color: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        .nav-icon-btn-primary {
+            background: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        #mobile-menu {
+            background: var(--racine-black) !important;
+        }
+
+        #mobile-menu a,
+        #mobile-menu p,
+        #mobile-menu button {
+            font-family: var(--racine-font-accent);
+        }
+
+        #mobile-menu .text-white-50 {
+            color: rgba(255, 255, 255, 0.78) !important;
+        }
+
+        #cta-racine .cta-title,
+        #cta-racine .cta-card-title {
+            font-family: var(--racine-font-heading);
+        }
+
+        #cta-racine .cta-subtitle,
+        #cta-racine .cta-card-text,
+        #cta-racine .cta-note {
+            font-family: var(--racine-font-body);
+        }
+
+        .footer-main {
+            background: var(--racine-black);
+            color: var(--racine-white);
+        }
+
+        .footer-brand span,
+        .footer-links-col h4,
+        .footer-contact-col h4 {
+            color: var(--racine-yellow);
+            font-family: var(--racine-font-heading);
+        }
+
+        .footer-main a {
+            color: var(--racine-white);
+        }
+
+        .footer-main a:hover {
+            color: var(--racine-yellow);
+        }
+
+        .social-link {
+            color: var(--racine-yellow);
+            border-color: rgba(255, 184, 0, 0.45);
+        }
+
+        .social-link:hover {
+            background: var(--racine-orange);
+            border-color: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        .footer-bottom {
+            background: var(--racine-orange);
+            color: var(--racine-white);
+        }
+
+        .footer-bottom a,
+        .footer-bottom strong,
+        .footer-bottom p {
+            color: var(--racine-white);
+        }
+
+        .footer-bottom a:hover {
+            color: var(--racine-yellow);
+        }
+
+        .footer-bottom .dev-separator,
+        .footer-bottom .legal-links span {
+            color: var(--racine-yellow);
+        }
     </style>
     
+    {{-- Vite assets --}}
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
     @stack('styles')
 </head>
-<body>
-    {{-- HEADER PREMIUM RACINE BY GANDA - VERSION ÉPURÉE --}}
-    <header role="banner" class="position-fixed w-100 top-0 shadow-lg" style="background: linear-gradient(135deg, #1c1412 0%, #261915 100%); z-index: 1050; border-bottom: 2px solid rgba(237, 95, 30, 0.2);">
+<body class="racine-frontend-layout">
+    {{-- ANNOUNCEMENT BAR PREMIUM --}}
+    <div class="announcement-bar" id="announcement-bar">
+        <div class="container text-center">
+            <span class="announcement-text">{{ $cmsBlocks['announcement'] ?? '✦ Livraison offerte dès 150€ · Collection "Héritage" disponible ✦' }}</span>
+        </div>
+    </div>
+
+    {{-- HEADER PREMIUM RACINE BY GANDA --}}
+    <header role="banner" class="navbar-racine sticky-top w-100" id="navbar-header">
         <div class="container">
-            <div class="d-flex align-items-center justify-content-between" style="height: 70px;">
+            <div class="navbar-inner d-flex align-items-center justify-content-between">
                 
-                {{-- LOGO + NOM (Extrémité gauche) avec animation hover --}}
-                <a href="{{ route('frontend.home') }}" class="d-flex align-items-center logo-navbar-wrapper" style="gap: 0.75rem; text-decoration: none; transition: all 0.3s; position: relative;">
-                    <div class="d-flex align-items-center justify-content-center overflow-hidden logo-navbar-container" style="height: 42px; width: 42px; border-radius: 10px; background: rgba(0, 0, 0, 0.7); border: 1px solid #ED5F1E; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); position: relative;">
-                        <img src="{{ asset('images/logo-racine.png') }}" alt="Logo RACINE BY GANDA" class="logo-navbar-img" style="height: 32px; width: 32px; object-fit: contain; position: relative; z-index: 2;">
-                        {{-- Animation hover --}}
-                                {{-- Animation hover désactivée --}}
-                                {{-- @include('components.racine-logo-animation', ['variant' => 'hover', 'theme' => 'dark']) --}}
+                {{-- LOGO + NOM --}}
+                <a href="{{ route('frontend.home') }}" class="logo-navbar-wrapper">
+                    <div class="logo-navbar-container">
+                        <img src="{{ asset('images/logo-racine.png') }}" alt="Logo RACINE BY GANDA" class="logo-navbar-img">
                     </div>
-                    <p class="mb-0 d-none d-md-block" style="font-size: 1rem; letter-spacing: 0.18em; font-weight: 700; color: #ED5F1E; transition: color 0.3s;">
-                        RACINE BY GANDA
-                    </p>
+                    <span class="logo-text d-none d-md-block">RACINE BY GANDA</span>
                 </a>
                 
-                {{-- MENU DESKTOP ÉPURÉ --}}
-                <nav role="navigation" aria-label="Navigation principale" class="d-none d-lg-flex align-items-center" style="gap: 2rem; font-size: 0.9rem; font-weight: 500;">
+                {{-- MENU DESKTOP --}}
+                <nav role="navigation" aria-label="Navigation principale" class="d-none d-lg-flex align-items-center main-nav-racine">
                     <a href="{{ route('frontend.home') }}" class="nav-link-racine">Accueil</a>
                     <a href="{{ route('frontend.atelier') }}" class="nav-link-racine">Atelier</a>
                     
@@ -104,7 +269,7 @@
                         <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                         <span>Panier</span>
                         @if(isset($cartCount) && $cartCount > 0)
-                          <span class="badge badge-danger" 
+                          <span class="badge bg-danger" 
                                 style="font-size: 0.65rem; padding: 0.2rem 0.4rem; border-radius: 10px; margin-left: 0.25rem;"
                                 id="cart-count-badge">{{ $cartCount }}</span>
                         @endif
@@ -114,6 +279,9 @@
                 {{-- ICÔNES DROITE --}}
                 <div class="d-flex align-items-center" style="gap: 0.75rem;">
                     
+                    {{-- Sélecteur de Devise --}}
+                    @include('components.currency-selector')
+
                     {{-- Dropdown Info (À propos + Contact) --}}
                     <div class="nav-dropdown d-none d-lg-block">
                         <button class="nav-icon-btn nav-dropdown-toggle" title="Informations" aria-label="Menu informations" aria-expanded="false" aria-haspopup="true">
@@ -127,10 +295,37 @@
                         </div>
                     </div>
                     
-                    {{-- Bouton Connexion --}}
-                    <a href="{{ route('auth.hub') }}" class="nav-icon-btn nav-icon-btn-primary" title="Connexion" aria-label="Se connecter ou créer un compte">
-                        <i class="fas fa-user" aria-hidden="true"></i>
-                    </a>
+                    @auth
+                        {{-- Dropdown Compte (Utilisateur Connecté) --}}
+                        <div class="nav-dropdown d-none d-lg-block">
+                            <button class="nav-icon-btn nav-icon-btn-primary nav-dropdown-toggle" title="Mon compte" aria-label="Menu mon compte" aria-expanded="false" aria-haspopup="true">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                            </button>
+                            <div class="nav-dropdown-menu nav-dropdown-menu-right">
+                                @if(auth()->user()->getRoleSlug() === 'createur')
+                                    <a href="{{ route('creator.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Espace créateur</a>
+                                @elseif(in_array(auth()->user()->getRoleSlug(), ['admin', 'super_admin', 'staff']))
+                                    <a href="{{ route('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Administration</a>
+                                @else
+                                    <a href="{{ route('account.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Mon compte</a>
+                                @endif
+                                <a href="{{ route('profile.edit') }}"><i class="fas fa-user-circle"></i> Mon profil</a>
+                                <a href="{{ route('profile.orders') }}"><i class="fas fa-shopping-bag"></i> Mes commandes</a>
+                                <div class="nav-dropdown-divider"></div>
+                                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                                    @csrf
+                                    <button type="submit" style="all: unset; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.8); cursor: pointer; width: 100%; transition: all 0.2s;">
+                                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        {{-- Bouton Connexion (Guest) --}}
+                        <a href="{{ route('login') }}" class="nav-icon-btn nav-icon-btn-primary" title="Connexion" aria-label="Se connecter ou créer un compte">
+                            <i class="fas fa-user" aria-hidden="true"></i>
+                        </a>
+                    @endauth
                     
                     {{-- Burger menu mobile --}}
                     <button id="mobile-menu-toggle" class="d-lg-none btn btn-link text-white p-0" style="font-size: 1.75rem; border: none; background: none;" aria-label="Ouvrir le menu mobile" aria-expanded="false" aria-controls="mobile-menu">
@@ -140,7 +335,7 @@
             </div>
             
             {{-- MENU MOBILE --}}
-            <div id="mobile-menu" class="d-lg-none pb-4" style="background: #1c1412; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+            <div id="mobile-menu" class="d-lg-none pb-4" style="background: #160D0C; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
                 <div class="d-flex flex-column" style="gap: 0.5rem;">
                     <a href="{{ route('frontend.home') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Accueil</a>
                     <a href="{{ route('frontend.atelier') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Atelier</a>
@@ -148,10 +343,10 @@
                     {{-- Boutique section --}}
                     <div class="py-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                         <p class="text-white mb-2" style="font-weight: 600; font-size: 0.9rem;">Boutique</p>
-                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
+                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
                             <i class="fas fa-store" style="margin-right: 0.5rem;"></i> RACINE BY GANDA
                         </a>
-                        <a href="{{ route('frontend.marketplace') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
+                        <a href="{{ route('frontend.marketplace') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
                             <i class="fas fa-shopping-bag" style="margin-right: 0.5rem;"></i> Marketplace
                         </a>
                     </div>
@@ -161,35 +356,51 @@
                     {{-- Info section --}}
                     <div class="py-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                         <p class="text-white mb-2" style="font-weight: 600; font-size: 0.9rem;">Informations</p>
-                        <a href="{{ route('frontend.about') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ À propos</a>
-                        <a href="{{ route('frontend.contact') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Contact</a>
-                        <a href="{{ route('frontend.help') }}" class="text-white-50 d-block pl-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Aide</a>
+                        <a href="{{ route('frontend.about') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ À propos</a>
+                        <a href="{{ route('frontend.contact') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Contact</a>
+                        <a href="{{ route('frontend.help') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Aide</a>
                     </div>
                     
                     <a href="{{ route('cart.index') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                         <span style="font-size: 1.25rem;">🛒</span> Panier
                     </a>
                     
-                    <a href="{{ route('auth.hub') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none;">
-                        <span style="font-size: 1.25rem;">👤</span> Connexion
-                    </a>
+                    
+                    @auth
+                        {{-- Options compte pour utilisateurs connectés (Mobile) --}}
+                        <a href="{{ route('account.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span style="font-size: 1.25rem;">🏠</span> Mon compte
+                        </a>
+                        <a href="{{ route('profile.orders') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span style="font-size: 1.25rem;">📦</span> Mes commandes
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                            @csrf
+                            <button type="submit" class="text-white d-flex align-items-center py-2 w-100 text-start" style="gap: 0.5rem; text-decoration: none; border: none; background: none; cursor: pointer; font-size: 1rem; font-family: inherit;">
+                                <span style="font-size: 1.25rem;">🚪</span> Déconnexion
+                            </button>
+                        </form>
+                    @else
+                        {{-- Bouton connexion pour invités (Mobile) --}}
+                        <a href="{{ route('login') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none;">
+                            <span style="font-size: 1.25rem;">👤</span> Connexion
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>
     </header>
     
-    {{-- Spacer pour compenser le header fixed --}}
-    <div style="height: 70px;"></div>
     
     {{-- CONTENT --}}
     <main role="main">
     {{-- Messages flash globaux --}}
     @if(session('success'))
         <div class="container mt-4">
-            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 4px solid #28a745; background: #f8f9fa; border-radius: 8px;">
-                <i class="fas fa-check-circle mr-2" style="color: #28a745;"></i>
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
+                <i class="fas fa-check-circle me-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('success') }}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -198,10 +409,10 @@
 
     @if(session('error'))
         <div class="container mt-4">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 4px solid #dc3545; background: #f8f9fa; border-radius: 8px;">
-                <i class="fas fa-exclamation-circle mr-2" style="color: #dc3545;"></i>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
+                <i class="fas fa-exclamation-circle me-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('error') }}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -315,7 +526,7 @@
                             <li><a href="{{ route('frontend.portfolio') }}"><i class="fas fa-chevron-right"></i> Portfolio</a></li>
                             <li><a href="{{ route('frontend.albums') }}"><i class="fas fa-chevron-right"></i> Albums</a></li>
                             <li><a href="{{ route('frontend.events') }}"><i class="fas fa-chevron-right"></i> Événements</a></li>
-                            <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> Amira Ganda</a></li>
+                            <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> {{ config('app.company.ceo') }}</a></li>
                         </ul>
                     </div>
                     
@@ -323,11 +534,21 @@
                     <div class="footer-links-col">
                         <h4>Informations</h4>
                         <ul>
-                            <li><a href="{{ route('frontend.about') }}"><i class="fas fa-chevron-right"></i> Notre histoire</a></li>
-                            <li><a href="{{ route('frontend.contact') }}"><i class="fas fa-chevron-right"></i> Contact</a></li>
-                            <li><a href="{{ route('frontend.shipping') }}"><i class="fas fa-chevron-right"></i> Livraison</a></li>
-                            <li><a href="{{ route('frontend.returns') }}"><i class="fas fa-chevron-right"></i> Retours & Échanges</a></li>
-                            <li><a href="{{ route('frontend.help') }}"><i class="fas fa-chevron-right"></i> FAQ & Aide</a></li>
+                            @if(!empty($cmsFooterPages) && $cmsFooterPages->where('footer_column', 'info')->count())
+                                @foreach($cmsFooterPages->where('footer_column', 'info') as $fp)
+                                    <li>
+                                        <a href="{{ route('frontend.page.show', $fp->slug) }}">
+                                            <i class="fas fa-chevron-right"></i> {{ $fp->title }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @else
+                                <li><a href="{{ route('frontend.about') }}"><i class="fas fa-chevron-right"></i> Notre histoire</a></li>
+                                <li><a href="{{ route('frontend.contact') }}"><i class="fas fa-chevron-right"></i> Contact</a></li>
+                                <li><a href="{{ route('frontend.shipping') }}"><i class="fas fa-chevron-right"></i> Livraison</a></li>
+                                <li><a href="{{ route('frontend.returns') }}"><i class="fas fa-chevron-right"></i> Retours & Échanges</a></li>
+                                <li><a href="{{ route('frontend.help') }}"><i class="fas fa-chevron-right"></i> FAQ & Aide</a></li>
+                            @endif
                         </ul>
                     </div>
                     
@@ -335,9 +556,16 @@
                     <div class="footer-links-col">
                         <h4>Légal</h4>
                         <ul>
-                            <li><a href="{{ route('frontend.terms') }}"><i class="fas fa-chevron-right"></i> Conditions Générales</a></li>
-                            <li><a href="{{ route('frontend.privacy') }}"><i class="fas fa-chevron-right"></i> Confidentialité</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Cookies</a></li>
+                            @if(!empty($cmsFooterPages) && $cmsFooterPages->count())
+                                {{-- On peut filtrer par type ou juste afficher tout ici si approprié --}}
+                                @foreach($cmsFooterPages->where('footer_column', 'legal') as $fp)
+                                    <li><a href="{{ route('frontend.page.show', $fp->slug) }}"><i class="fas fa-chevron-right"></i> {{ $fp->title }}</a></li>
+                                @endforeach
+                            @else
+                                <li><a href="{{ route('frontend.terms') }}"><i class="fas fa-chevron-right"></i> Conditions Générales</a></li>
+                                <li><a href="{{ route('frontend.privacy') }}"><i class="fas fa-chevron-right"></i> Confidentialité</a></li>
+                                <li><a href="{{ route('frontend.cookies') }}"><i class="fas fa-chevron-right"></i> Cookies</a></li>
+                            @endif
                         </ul>
                     </div>
                     
@@ -359,7 +587,7 @@
                                     <i class="fas fa-phone-alt"></i>
                                 </div>
                                 <div class="contact-text">
-                                    <span>+237 6XX XXX XXX</span>
+                                    <span>{{ config('app.company.phone') }}</span>
                                     <span>Lun-Sam: 9h-18h</span>
                                 </div>
                             </div>
@@ -368,8 +596,8 @@
                                     <i class="fas fa-envelope"></i>
                                 </div>
                                 <div class="contact-text">
-                                    <span>contact@racine.cm</span>
-                                    <span>support@racine.cm</span>
+                                    <span>{{ config('app.company.email') }}</span>
+                                    <span>support@racinebyganda.com</span>
                                 </div>
                             </div>
                         </div>
@@ -397,7 +625,9 @@
                         <span>•</span>
                         <a href="{{ route('frontend.privacy') }}">Confidentialité</a>
                         <span>•</span>
-                        <a href="#">Cookies</a>
+                        <a href="{{ route('frontend.cookies') }}">Cookies</a>
+                        <span>•</span>
+                        <a href="{{ route('frontend.legal') }}">Mentions légales</a>
                     </div>
                     <div class="payment-methods">
                         <span>Paiement sécurisé</span>
@@ -416,15 +646,85 @@
     {{-- CSS inline supprimé - Déjà extrait vers layout-footer-cta.css et layout-navigation.css --}}
     
     {{-- Scripts --}}
-    <script src="{{ asset('racine/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
+    {{-- Bootstrap 5 + JS chargés via Vite (app.js) — jQuery/Bootstrap 4 legacy supprimés --}}
     
     {{-- RACINE Navigation JavaScript (extrait du inline) --}}
     <script src="{{ asset('js/layout-navigation.js') }}"></script>
     
+    {{-- RACINE Core JavaScript (AXE E - namespace Racine.*) --}}
+    <script src="{{ asset('js/core/utilities.js') }}" defer></script>
+    <script src="{{ asset('js/core/ajax.js') }}" defer></script>
+    
+    {{-- Page-specific JS (chargement conditionnel pour performance) --}}
+    @if(request()->routeIs('frontend.shop'))
+        <script src="{{ asset('js/frontend-shop.js') }}"></script>
+    @endif
+    @if(request()->routeIs('cart.index'))
+        <script src="{{ asset('js/pages/cart.js') }}"></script>
+    @endif
+    @if(request()->routeIs('checkout.index'))
+        <script src="{{ asset('js/pages/checkout.js') }}"></script>
+    @endif
+    @if(request()->routeIs('frontend.product') || request()->routeIs('product.show'))
+        <script src="{{ asset('js/pages/product.js') }}"></script>
+    @endif
+    
     {{-- RACINE AJAX Spinner -- Désactivé --}}
     {{-- <script src="{{ asset('js/racine-ajax-spinner.js') }}"></script> --}}
-    
+
+    {{-- SCROLL REVEAL — Consolidé ici pour toutes les pages frontend --}}
+    {{-- Progressive enhancement : opacity:1 par défaut, JS ajoute reveal-js-ready sur <html> --}}
+    <script nonce="{{ csp_nonce() }}">
+    document.addEventListener('DOMContentLoaded', function () {
+        var items = document.querySelectorAll('.reveal-item');
+        if (!items.length) return;
+
+        // Active le masquage CSS (.reveal-js-ready .reveal-item { opacity:0 })
+        document.documentElement.classList.add('reveal-js-ready');
+
+        // Fallback immédiat : si IntersectionObserver absent ou échoue,
+        // révèle tout après 300ms (élimine tout risque de contenu invisible)
+        var fallbackTimer = setTimeout(function () {
+            items.forEach(function (el) { el.classList.add('revealed'); });
+        }, 300);
+
+        // Version optimale avec IntersectionObserver
+        if ('IntersectionObserver' in window) {
+            try {
+                var observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry, i) {
+                        if (entry.isIntersecting) {
+                            setTimeout(function () {
+                                entry.target.classList.add('revealed');
+                            }, i * 70);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
+
+                items.forEach(function (el) { observer.observe(el); });
+
+                // Observer actif : annuler le fallback brut
+                clearTimeout(fallbackTimer);
+
+                // Fallback de sécurité : si après 2s des items restent non-révélés,
+                // les révéler quand même (cas CSP partiel ou JS lent)
+                setTimeout(function () {
+                    items.forEach(function (el) {
+                        if (!el.classList.contains('revealed')) {
+                            el.classList.add('revealed');
+                        }
+                    });
+                }, 2000);
+
+            } catch (e) {
+                // IntersectionObserver échoue → révéler immédiatement
+                items.forEach(function (el) { el.classList.add('revealed'); });
+            }
+        }
+    });
+    </script>
+
     @stack('scripts')
     
     {{-- SPLASH SCREEN PREMIUM --}}
@@ -437,8 +737,10 @@
     {{-- TOAST NOTIFICATIONS --}}
     @include('components.toast')
     
-    {{-- CHATBOT AMIRA --}}
-    @include('assistant::chat')
+    {{-- CHATBOT AMIRA (VUE.JS) --}}
+    <div id="amira-app">
+        <amira-widget></amira-widget>
+    </div>
     
     {{-- SCROLL TO TOP BUTTON --}}
     @include('components.scroll-to-top')

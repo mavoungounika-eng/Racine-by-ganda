@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>403 - Accès Refusé</title>
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         * {
             margin: 0;
             padding: 0;
@@ -58,7 +58,7 @@
         
         .error-details {
             background: #f7fafc;
-            border-left: 4px solid #667eea;
+            border-start: 4px solid #667eea;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 40px;

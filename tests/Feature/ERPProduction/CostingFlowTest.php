@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ERPProduction;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ERPProduction\Models\ProductionOrder;
@@ -10,6 +11,7 @@ use Modules\ERPProduction\Models\ProductionCost;
 use Modules\ERPProduction\Services\ProductionOrderService;
 use Modules\ERPProduction\Services\QualityControlService;
 use Modules\ERPProduction\Services\CostingService;
+use Modules\ERPProduction\Events\ProductionCostCalculated;
 use App\Models\Product;
 use App\Models\User;
 use Modules\ERP\Models\ErpRawMaterial;
@@ -35,7 +37,7 @@ class CostingFlowTest extends TestCase
 
         $this->product = Product::factory()->create(['name' => 'Robe Pagne Luxe']);
         
-        // Créer BOM
+        // CrÃ©er BOM
         $this->bom = Bom::create([
             'product_id' => $this->product->id,
             'version' => '1.0',
@@ -52,7 +54,7 @@ class CostingFlowTest extends TestCase
         
         $this->bom->items()->create([
             'raw_material_id' => $rawMaterial->id,
-            'quantity' => 2.5, // 2.5m × 5000 = 12,500 FCFA/unité
+            'quantity' => 2.5, // 2.5m Ã— 5000 = 12,500 FCFA/unitÃ©
             'unit' => 'meter',
             'waste_percentage' => 0,
         ]);
@@ -61,8 +63,7 @@ class CostingFlowTest extends TestCase
         $this->qualityControlService = app(QualityControlService::class);
         $this->costingService = app(CostingService::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_real_cost_without_losses()
     {
         $order = $this->createAndCompleteOrder(10, 10, 0, 0);
@@ -70,48 +71,45 @@ class CostingFlowTest extends TestCase
         $cost = $this->costingService->calculateForOrder($order);
 
         $this->assertInstanceOf(ProductionCost::class, $cost);
-        $this->assertEquals(12500, $cost->theoretical_unit_cost); // 2.5m × 5000
+        $this->assertEquals(12500, $cost->theoretical_unit_cost); // 2.5m Ã— 5000
         $this->assertEquals(12500, $cost->actual_unit_cost); // Aucune perte
         $this->assertEquals(0, $cost->cost_variance);
-        $this->assertEquals(100, $cost->yield_rate); // 10/10 × 100
+        $this->assertEquals(100, $cost->yield_rate); // 10/10 Ã— 100
     }
-
-    /** @test */
+    #[Test]
     public function it_includes_scrap_cost_in_calculation()
     {
         $order = $this->createAndCompleteOrder(10, 8, 0, 2);
 
         $cost = $this->costingService->calculateForOrder($order);
 
-        // Coût matières: 10 × 12,500 = 125,000
-        // Coût rebuts: 2 × 12,500 = 25,000
+        // CoÃ»t matiÃ¨res: 10 Ã— 12,500 = 125,000
+        // CoÃ»t rebuts: 2 Ã— 12,500 = 25,000
         // Total: 150,000
-        // Coût unitaire: 150,000 / 8 = 18,750
+        // CoÃ»t unitaire: 150,000 / 8 = 18,750
 
         $this->assertEquals(12500, $cost->theoretical_unit_cost);
         $this->assertEquals(18750, $cost->actual_unit_cost);
         $this->assertEquals(6250, $cost->cost_variance); // 18,750 - 12,500
-        $this->assertEquals(80, $cost->yield_rate); // 8/10 × 100
+        $this->assertEquals(80, $cost->yield_rate); // 8/10 Ã— 100
     }
-
-    /** @test */
+    #[Test]
     public function it_includes_rework_cost_in_calculation()
     {
         $order = $this->createAndCompleteOrder(10, 9, 1, 0);
 
         $cost = $this->costingService->calculateForOrder($order);
 
-        // Coût matières: 10 × 12,500 = 125,000
-        // Coût reprises: 1 × 12,500 × 0.5 = 6,250
+        // CoÃ»t matiÃ¨res: 10 Ã— 12,500 = 125,000
+        // CoÃ»t reprises: 1 Ã— 12,500 Ã— 0.5 = 6,250
         // Total: 131,250
-        // Coût unitaire: 131,250 / 9 = 14,583.33
+        // CoÃ»t unitaire: 131,250 / 9 = 14,583.33
 
         $this->assertEquals(12500, $cost->theoretical_unit_cost);
         $this->assertEquals(14583.33, round($cost->actual_unit_cost, 2));
-        $this->assertEquals(90, $cost->yield_rate); // 9/10 × 100
+        $this->assertEquals(90, $cost->yield_rate); // 9/10 Ã— 100
     }
-
-    /** @test */
+    #[Test]
     public function it_compares_bom_vs_real()
     {
         $order = $this->createAndCompleteOrder(10, 7, 2, 1);
@@ -125,8 +123,7 @@ class CostingFlowTest extends TestCase
         $this->assertTrue($summary['is_over_budget']);
         $this->assertGreaterThan(0, $summary['variance_percentage']);
     }
-
-    /** @test */
+    #[Test]
     public function it_dispatches_production_cost_calculated_event()
     {
         Event::fake([ProductionCostCalculated::class]);
@@ -137,8 +134,7 @@ class CostingFlowTest extends TestCase
 
         Event::assertDispatched(ProductionCostCalculated::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_blocks_costing_if_quality_check_missing()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -152,14 +148,13 @@ class CostingFlowTest extends TestCase
         $this->productionOrderService->finishProductionOrder($order->fresh(), 10);
         $this->productionOrderService->closeProductionOrder($order->fresh());
 
-        // Pas de contrôle qualité
+        // Pas de contrÃ´le qualitÃ©
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Quality check required');
 
         $this->costingService->calculateForOrder($order->fresh());
     }
-
-    /** @test */
+    #[Test]
     public function it_blocks_costing_if_wip_not_closed()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -171,21 +166,20 @@ class CostingFlowTest extends TestCase
         $this->productionOrderService->planProductionOrder($order);
         $this->productionOrderService->startProductionOrder($order->fresh());
 
-        // Ordre pas terminé
+        // Ordre pas terminÃ©
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('must be closed');
 
         $this->costingService->calculateForOrder($order->fresh());
     }
-
-    /** @test */
+    #[Test]
     public function it_validates_quantity_coherence()
     {
         $order = $this->createAndCompleteOrder(10, 8, 1, 1);
 
         $cost = $this->costingService->calculateForOrder($order);
 
-        // Vérifier cohérence: planifié = produit + repris + rejeté
+        // VÃ©rifier cohÃ©rence: planifiÃ© = produit + repris + rejetÃ©
         $qualityChecks = $order->qualityChecks;
         $totalChecked = $qualityChecks->sum('quantity_checked');
         $totalPassed = $qualityChecks->sum('quantity_passed');
@@ -199,7 +193,7 @@ class CostingFlowTest extends TestCase
     }
 
     /**
-     * Helper: Créer et compléter ordre production
+     * Helper: CrÃ©er et complÃ©ter ordre production
      */
     protected function createAndCompleteOrder(
         int $quantityPlanned,
@@ -216,7 +210,7 @@ class CostingFlowTest extends TestCase
         $this->productionOrderService->planProductionOrder($order);
         $this->productionOrderService->startProductionOrder($order->fresh());
 
-        // Contrôle qualité
+        // ContrÃ´le qualitÃ©
         $this->qualityControlService->inspectOrder($order->fresh(), [
             'status' => $quantityRejected > 0 ? 'reject' : ($quantityReworked > 0 ? 'rework' : 'pass'),
             'quantity_checked' => $quantityPlanned,
@@ -225,7 +219,8 @@ class CostingFlowTest extends TestCase
             'quantity_rejected' => $quantityRejected,
         ]);
 
-        $quantityProduced = $quantityPassed + $quantityReworked;
+        // Seules les unités passées sont considérées comme production finie.
+        $quantityProduced = $quantityPassed;
         $this->productionOrderService->finishProductionOrder($order->fresh(), $quantityProduced, $quantityRejected);
         $this->productionOrderService->closeProductionOrder($order->fresh());
 

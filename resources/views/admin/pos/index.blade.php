@@ -4,7 +4,7 @@
 @section('page-title', 'Point de Vente - Boutique Physique')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .pos-container {
         display: grid;
         grid-template-columns: 1fr 400px;
@@ -150,7 +150,7 @@
         <!-- Section Scan -->
         <div class="scan-section">
             <h3 class="text-white mb-3">
-                <i class="fas fa-barcode text-warning mr-2"></i>
+                <i class="fas fa-barcode text-warning me-2"></i>
                 Scanner un produit
             </h3>
             <input 
@@ -168,7 +168,7 @@
         <!-- Liste des produits scannés -->
         <div class="scan-section" style="flex: 1;">
             <h3 class="text-white mb-3">
-                <i class="fas fa-shopping-cart text-warning mr-2"></i>
+                <i class="fas fa-shopping-cart text-warning me-2"></i>
                 Panier (<span id="cart-count">0</span>)
             </h3>
             <div id="product-grid" class="product-grid">
@@ -180,7 +180,7 @@
     <!-- Zone droite : Panier et paiement -->
     <div class="pos-right">
         <h3 class="text-white mb-3">
-            <i class="fas fa-receipt text-warning mr-2"></i>
+            <i class="fas fa-receipt text-warning me-2"></i>
             Récapitulatif
         </h3>
 
@@ -230,7 +230,7 @@
             </div>
 
             <button type="submit" class="btn-pos" id="submit-btn" disabled>
-                <i class="fas fa-check mr-2"></i>
+                <i class="fas fa-check me-2"></i>
                 Valider la vente
             </button>
         </form>
@@ -243,7 +243,7 @@
         <div class="modal-content" style="background: rgba(22, 13, 12, 0.95); border: 1px solid rgba(212, 165, 116, 0.3);">
             <div class="modal-header border-0">
                 <h5 class="modal-title text-white">Commande créée avec succès !</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
+                <button type="button" class="close text-white" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -255,7 +255,7 @@
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 <a href="#" id="view-order-link" class="btn btn-primary">Voir la commande</a>
             </div>
         </div>
@@ -264,7 +264,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 let cart = [];
 const barcodeInput = document.getElementById('barcode-input');
 const productGrid = document.getElementById('product-grid');
@@ -288,7 +288,7 @@ barcodeInput.addEventListener('keypress', async function(e) {
 
 async function searchProduct(code) {
     try {
-        const response = await fetch('{{ route("admin.pos.search-product") }}', {
+        const response = await fetch('{{ route("pos.interface.search-product") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -359,7 +359,7 @@ function updateCartDisplay() {
                     <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
                     <span class="text-white">${item.quantity}</span>
                     <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
-                    <button class="quantity-btn ml-auto" onclick="removeFromCart(${item.id})" style="background: rgba(220, 53, 69, 0.2); border-color: #dc3545; color: #dc3545;">
+                    <button class="quantity-btn ms-auto" onclick="removeFromCart(${item.id})" style="background: rgba(220, 53, 69, 0.2); border-color: #dc3545; color: #dc3545;">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -395,7 +395,7 @@ function showAlert(type, message) {
     alertContainer.innerHTML = `
         <div class="alert alert-${type} alert-pos alert-dismissible fade show">
             ${message}
-            <button type="button" class="close" data-dismiss="alert">
+            <button type="button" class="close" data-bs-dismiss="alert">
                 <span>&times;</span>
             </button>
         </div>
@@ -430,7 +430,7 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
     }
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Traitement...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Traitement...';
 
     const formData = new FormData(this);
     formData.append('items', JSON.stringify(cart.map(item => ({
@@ -439,7 +439,7 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
     }))));
 
     try {
-        const response = await fetch('{{ route("admin.pos.create-order") }}', {
+        const response = await fetch('{{ route("pos.interface.create-order") }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -465,9 +465,9 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
                 let borderColor = 'rgba(34, 197, 94, 0.3)';
                 
                 if (data.payment.status === 'paid') {
-                    message = `<i class="fas fa-check-circle text-success mr-2"></i>${data.payment.message || 'Paiement confirmé'}`;
+                    message = `<i class="fas fa-check-circle text-success me-2"></i>${data.payment.message || 'Paiement confirmé'}`;
                 } else if (data.payment.status === 'pending') {
-                    message = `<i class="fas fa-clock text-warning mr-2"></i>${data.payment.message || 'Paiement en attente'}`;
+                    message = `<i class="fas fa-clock text-warning me-2"></i>${data.payment.message || 'Paiement en attente'}`;
                     bgColor = 'rgba(251, 191, 36, 0.1)';
                     borderColor = 'rgba(251, 191, 36, 0.3)';
                     
@@ -475,7 +475,7 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
                         message += `<br><small class="text-muted">Transaction ID: ${data.payment.transaction_id}</small>`;
                     }
                 } else {
-                    message = `<i class="fas fa-exclamation-circle text-danger mr-2"></i>${data.payment.message || 'Erreur de paiement'}`;
+                    message = `<i class="fas fa-exclamation-circle text-danger me-2"></i>${data.payment.message || 'Erreur de paiement'}`;
                     bgColor = 'rgba(239, 68, 68, 0.1)';
                     borderColor = 'rgba(239, 68, 68, 0.3)';
                 }
@@ -505,13 +505,49 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
         console.error(error);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Valider la vente';
+        submitBtn.innerHTML = '<i class="fas fa-check me-2"></i> Valider la vente';
     }
 });
 
 // Réinitialiser après fermeture du modal
 $('#success-modal').on('hidden.bs.modal', function() {
     barcodeInput.focus();
+});
+</script>
+
+{{-- Script mode offline --}}
+<script src="{{ asset('js/pos-offline.js') }}"></script>
+<script nonce="{{ csp_nonce() }}">
+// Intégrer offline manager avec le formulaire POS
+const originalSubmitHandler = document.getElementById('pos-form').onsubmit;
+
+document.getElementById('pos-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const orderData = {
+        products: cart.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+        })),
+        customer_name: formData.get('customer_name'),
+        customer_email: formData.get('customer_email'),
+        customer_phone: formData.get('customer_phone'),
+        payment_method: formData.get('payment_method'),
+        payment_reference: formData.get('payment_reference')
+    };
+
+    // Si offline, ajouter à la queue
+    if (!window.posOfflineManager.checkOnline()) {
+        const offlineId = window.posOfflineManager.addToQueue(orderData);
+        showAlert('warning', `Mode offline: Vente enregistrée localement (${offlineId}). Sera synchronisée automatiquement.`);
+        resetCart();
+        return;
+    }
+
+    // Si online, procéder normalement
+    submitOrder(orderData);
 });
 </script>
 @endpush

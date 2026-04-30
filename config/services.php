@@ -32,18 +32,25 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
-        'currency' => env('STRIPE_CURRENCY', 'XAF'), // XAF = Franc CFA (CEMAC)
+        'currency' => env('STRIPE_CURRENCY', 'EUR'), // IMPORTANT: Toujours EUR pour Stripe
     ],
 
     'monetbil' => [
+        'service_id' => env('MONETBIL_SERVICE_ID'),
         'service_key' => env('MONETBIL_SERVICE_KEY'),
         'service_secret' => env('MONETBIL_SERVICE_SECRET'),
+        'base_url' => env('MONETBIL_BASE_URL', 'https://api.monetbil.com/payment/v1.1'),
         'widget_version' => env('MONETBIL_WIDGET_VERSION', 'v2.1'),
         'country' => env('MONETBIL_COUNTRY', 'CG'),
         'currency' => env('MONETBIL_CURRENCY', 'XAF'),
         'notify_url' => env('MONETBIL_NOTIFY_URL'),
         'return_url' => env('MONETBIL_RETURN_URL'),
         'allowed_ips' => env('MONETBIL_ALLOWED_IPS'),
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'organization' => env('OPENAI_ORGANIZATION'),
     ],
 
     'slack' => [
@@ -103,6 +110,26 @@ return [
             'sandbox' => 'https://openapiuat.airtel.africa',
             'production' => 'https://openapi.airtel.africa',
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Google reCAPTCHA v3
+    |--------------------------------------------------------------------------
+    */
+    'recaptcha' => [
+        'enabled' => env('RECAPTCHA_ENABLED', false),
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+        'threshold' => env('RECAPTCHA_THRESHOLD', 0.5),
+        'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
+        'timeout' => 5.0,
+        'skip_for_testing' => env('RECAPTCHA_SKIP_FOR_TESTING', false),
+    ],
+
+    'exchange_rate' => [
+        'api_key' => env('EXCHANGE_RATE_API_KEY'),
+        'url'     => env('EXCHANGE_RATE_URL', 'https://v6.exchangerate-api.com/v6'),
     ],
 
 ];

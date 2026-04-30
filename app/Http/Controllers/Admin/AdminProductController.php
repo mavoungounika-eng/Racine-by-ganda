@@ -80,6 +80,7 @@ class AdminProductController extends AdminController
     {
         $this->authorize('create', Product::class);
         $data = $request->validated();
+        $data['product_type'] = $data['product_type'] ?? 'brand';
 
         // Gestion de l'image
         if ($request->hasFile('main_image')) {

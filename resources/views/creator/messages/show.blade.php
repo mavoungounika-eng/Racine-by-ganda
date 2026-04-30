@@ -4,7 +4,7 @@
 @section('page-title', 'Conversation')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .chat-container {
         background: white;
         border-radius: 20px;
@@ -44,7 +44,7 @@
     }
 
     .message-sent {
-        background: linear-gradient(135deg, #2C1810 0%, #4A2C21 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #4A2C21 100%);
         color: white;
         margin-left: auto;
         border-bottom-right-radius: 4px;
@@ -94,7 +94,7 @@
 <div class="max-w-5xl mx-auto px-4 py-4">
     
     <div class="mb-4">
-        <a href="{{ route('creator.messages.index') }}" class="text-[#ED5F1E] hover:underline flex items-center gap-2">
+        <a href="{{ route('messages.index') }}" class="text-[#ED5F1E] hover:underline flex items-center gap-2">
             <i class="fas fa-arrow-left"></i> Retour aux messages
         </a>
     </div>
@@ -113,7 +113,7 @@
                     {{ $initial }}
                 </div>
                 <div>
-                    <h3 class="font-bold text-[#2C1810]">{{ $name }}</h3>
+                    <h3 class="font-bold text-[#160D0C]">{{ $name }}</h3>
                     <p class="text-xs text-gray-500">{{ $conversation->subject }}</p>
                 </div>
             </div>
@@ -121,11 +121,11 @@
             <div>
                 @if($conversation->type == 'order_thread' && $conversation->related_order_id)
                     <a href="{{ route('creator.orders.show', $conversation->related_order_id) }}" class="text-sm bg-teal-50 text-teal-700 px-3 py-1 rounded-full hover:bg-teal-100 transition">
-                        <i class="fas fa-eye mr-1"></i> Voir commande
+                        <i class="fas fa-eye me-1"></i> Voir commande
                     </a>
                 @elseif($conversation->type == 'product_thread' && $conversation->related_product_id)
                      <a href="{{ route('creator.products.edit', $conversation->related_product_id) }}" class="text-sm bg-orange-50 text-orange-700 px-3 py-1 rounded-full hover:bg-orange-100 transition">
-                        <i class="fas fa-eye mr-1"></i> Voir produit
+                        <i class="fas fa-eye me-1"></i> Voir produit
                     </a>
                 @endif
             </div>
@@ -161,7 +161,7 @@
                     <div class="message-meta">
                         {{ $msg->created_at->format('H:i') }}
                         @if($msg->user_id == Auth::id())
-                            <i class="fas fa-check-double ml-1 {{ $msg->read_by ? 'text-blue-300' : 'text-gray-400' }}"></i>
+                            <i class="fas fa-check-double ms-1 {{ $msg->read_by ? 'text-blue-300' : 'text-gray-400' }}"></i>
                         @endif
                     </div>
                 </div>
@@ -170,7 +170,7 @@
 
         {{-- Input Area --}}
         <div class="chat-input-area">
-            <form action="{{ route('creator.messages.store', $conversation) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('messages.send', $conversation) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="flex gap-4">
                     {{-- Attachment Button --}}
@@ -182,7 +182,7 @@
                     {{-- Text & Submit --}}
                     <div class="flex-1 relative">
                         <textarea name="content" rows="1" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#ED5F1E] resize-none" placeholder="Écrivez votre message..." required></textarea>
-                        <button type="submit" class="absolute right-2 top-2 bg-[#2C1810] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#ED5F1E] transition">
+                        <button type="submit" class="absolute right-2 top-2 bg-[#160D0C] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#ED5F1E] transition">
                             <i class="fas fa-paper-plane text-xs"></i>
                         </button>
                     </div>
@@ -193,7 +193,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Scroll to bottom on load
     const messagesList = document.getElementById('messagesList');
     messagesList.scrollTop = messagesList.scrollHeight;

@@ -123,4 +123,19 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Company Information
+    |--------------------------------------------------------------------------
+    |
+    | Official contact details for RACINE BY GANDA.
+    |
+    */
+    'company' => [
+        'name'  => env('COMPANY_NAME', 'RACINE BY GANDA'),
+        'email' => env('COMPANY_EMAIL', 'contact@racinebyganda.com'),
+        'phone' => env('COMPANY_PHONE', '+242 065166110'),
+        'ceo'   => env('COMPANY_CEO', 'AMIRA GANDA'),
+    ],
+
 ];

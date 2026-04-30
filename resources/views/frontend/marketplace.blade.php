@@ -3,9 +3,9 @@
 @section('title', 'Marketplace - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .marketplace-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0 3rem;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -40,7 +40,7 @@
         display: block;
         font-size: 2.5rem;
         font-weight: 700;
-        color: #D4A574;
+        color: #FFB800;
         font-family: 'Cormorant Garamond', serif;
     }
     
@@ -73,7 +73,7 @@
         width: 100%;
         padding: 0.75rem 1rem;
         padding-right: 3rem;
-        border: 2px solid #e0e0e0;
+        border: 2px solid rgba(22,13,12,0.1);
         border-radius: 10px;
         font-size: 0.95rem;
     }
@@ -83,12 +83,12 @@
         right: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     .filter-select {
         padding: 0.75rem 1rem;
-        border: 2px solid #e0e0e0;
+        border: 2px solid rgba(22,13,12,0.1);
         border-radius: 10px;
         font-size: 0.95rem;
         background: white;
@@ -106,21 +106,21 @@
         backdrop-filter: blur(10px);
         border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 8px 32px rgba(44, 24, 16, 0.08);
+        box-shadow: 0 8px 32px rgba(22,13,12, 0.08);
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid rgba(212, 165, 116, 0.1);
+        border: 1px solid rgba(237, 95, 30, 0.08);
     }
     
     .product-card:hover {
         transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 60px rgba(44, 24, 16, 0.15);
-        border-color: rgba(212, 165, 116, 0.3);
+        box-shadow: 0 20px 60px rgba(22,13,12, 0.15);
+        border-color: rgba(255, 184, 0, 0.3);
     }
     
     .product-image {
         position: relative;
         padding-top: 125%;
-        background: linear-gradient(135deg, #F8F6F3 0%, #E5DDD3 100%);
+        background: linear-gradient(135deg, rgba(22,13,12,0.05) 0%, rgba(22,13,12,0.1) 100%);
         overflow: hidden;
     }
     
@@ -142,7 +142,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, transparent 0%, rgba(44, 24, 16, 0.05) 100%);
+        background: linear-gradient(180deg, transparent 0%, rgba(22,13,12, 0.05) 100%);
         opacity: 0;
         transition: opacity 0.4s ease;
     }
@@ -166,7 +166,7 @@
         font-size: 0.8rem;
         font-weight: 600;
         box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        border: 1px solid rgba(212, 165, 116, 0.2);
+        border: 1px solid rgba(237, 95, 30, 0.1);
         transform: translateY(100%);
         opacity: 0;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -182,11 +182,11 @@
         height: 28px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid #D4A574;
+        border: 2px solid #FFB800;
     }
     
     .creator-badge span {
-        color: #2C1810;
+        color: #160D0C;
         font-family: 'Cormorant Garamond', serif;
     }
     
@@ -211,13 +211,13 @@
     }
     
     .badge-new {
-        background: linear-gradient(135deg, #ED5F1E 0%, #FF7A3D 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
     }
     
     .badge-limited {
-        background: linear-gradient(135deg, #FFB800 0%, #FFC933 100%);
-        color: #2C1810;
+        background: linear-gradient(135deg, #FFB800 0%, #FFB800 100%);
+        color: #160D0C;
     }
     
     .product-info {
@@ -228,7 +228,7 @@
     .product-info h3 {
         font-size: 1.15rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
         line-height: 1.4;
         font-family: 'Cormorant Garamond', serif;
@@ -242,7 +242,7 @@
     .product-price {
         font-size: 1.4rem;
         font-weight: 700;
-        background: linear-gradient(135deg, #D4A574 0%, #B8935F 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #FFB800 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -266,7 +266,7 @@
     .btn-view {
         flex: 1;
         padding: 0.9rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         text-align: center;
         border-radius: 12px;
@@ -274,11 +274,11 @@
         font-weight: 600;
         font-size: 0.9rem;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(44, 24, 16, 0.2);
+        box-shadow: 0 4px 15px rgba(22,13,12, 0.2);
     }
     
     .btn-view:hover {
-        background: linear-gradient(135deg, #ED5F1E 0%, #FF7A3D 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         text-decoration: none;
         transform: translateY(-2px);
@@ -287,17 +287,17 @@
     
     .btn-cart {
         padding: 0.9rem 1.1rem;
-        background: linear-gradient(135deg, #D4A574 0%, #B8935F 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #FFB800 100%);
         color: white;
         border: none;
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(212, 165, 116, 0.3);
+        box-shadow: 0 4px 15px rgba(255, 184, 0, 0.3);
     }
     
     .btn-cart:hover {
-        background: linear-gradient(135deg, #ED5F1E 0%, #FF7A3D 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         transform: translateY(-2px) scale(1.05);
         box-shadow: 0 6px 20px rgba(237, 95, 30, 0.4);
     }
@@ -330,13 +330,13 @@
         padding: 0.75rem 1.25rem;
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(212, 165, 116, 0.2);
+        border: 1px solid rgba(237, 95, 30, 0.1);
         border-radius: 12px;
-        color: #2C1810;
+        color: #160D0C;
         text-decoration: none;
         font-weight: 600;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 8px rgba(44, 24, 16, 0.08);
+        box-shadow: 0 2px 8px rgba(22,13,12, 0.08);
     }
     
     .pagination-premium .page-link-number {
@@ -348,7 +348,7 @@
     .pagination-premium .page-link-prev:hover,
     .pagination-premium .page-link-next:hover,
     .pagination-premium .page-link-number:hover {
-        background: linear-gradient(135deg, #ED5F1E 0%, #FF7A3D 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         border-color: #ED5F1E;
         transform: translateY(-2px);
@@ -356,24 +356,24 @@
     }
     
     .pagination-premium .page-item.active .page-link-number {
-        background: linear-gradient(135deg, #D4A574 0%, #B8935F 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #FFB800 100%);
         color: white;
-        border-color: #D4A574;
+        border-color: #FFB800;
         box-shadow: 0 4px 15px rgba(212, 165, 116, 0.4);
     }
     
     .pagination-premium .page-item.disabled .page-link-prev,
     .pagination-premium .page-item.disabled .page-link-next {
         background: rgba(255, 255, 255, 0.5);
-        color: #8B7355;
-        border-color: rgba(212, 165, 116, 0.1);
+        color: rgba(22,13,12,0.5);
+        border-color: rgba(237, 95, 30, 0.08);
         cursor: not-allowed;
         opacity: 0.6;
     }
     
     .pagination-info {
         text-align: center;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         font-weight: 500;
     }
@@ -385,18 +385,18 @@
     }
     
     .empty-state i {
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 1rem;
     }
     
     .empty-state h3 {
         font-size: 1.5rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .empty-state p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     @media (max-width: 1200px) {
@@ -467,7 +467,7 @@
         {{-- CTA Nos Créateurs --}}
         <div class="mt-4">
             <a href="{{ route('frontend.creators') }}" class="btn btn-outline-light btn-lg">
-                <i class="fas fa-users mr-2"></i>
+                <i class="fas fa-users me-2"></i>
                 Découvrir nos créateurs
             </a>
         </div>
@@ -475,7 +475,7 @@
 </section>
 
 {{-- Filtres & Produits --}}
-<section class="py-5" style="background: #F8F6F3;">
+<section class="py-5" style="background: rgba(22,13,12,0.05);">
     <div class="container">
         {{-- Filtres --}}
         <form method="GET" action="{{ route('frontend.marketplace') }}" class="marketplace-filters">
@@ -533,7 +533,7 @@
             <div class="product-card">
                 {{-- Image --}}
                 <div class="product-image">
-                    <img src="{{ isset($product->mainImage) ? $product->mainImage->url : ($product->main_image ? Storage::url($product->main_image) : asset('images/placeholder-product.jpg')) }}" 
+                    <img src="{{ isset($product->mainImage) ? $product->mainImage->url : ($product->main_image ? Storage::url($product->main_image) : asset('storage/catalogue/vetements/chemise-01.jpeg')) }}"
                          alt="{{ $product->title }}">
                     
                     {{-- Badge créateur --}}

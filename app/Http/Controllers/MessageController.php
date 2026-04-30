@@ -91,6 +91,9 @@ class MessageController extends Controller
             ]);
         }
 
+        // Layout dynamique selon rôle
+        $layout = $this->getLayoutForRole($user);
+
         return view('messages.index', compact(
             'conversations', 
             'unreadCount', 
@@ -103,7 +106,8 @@ class MessageController extends Controller
             'readConversations',
             'orderThreads',
             'productThreads',
-            'directConversations'
+            'directConversations',
+            'layout'
         ));
     }
 
@@ -135,9 +139,8 @@ class MessageController extends Controller
         // Charger les produits tagués
         $taggedProducts = $conversation->taggedProducts()->with(['taggedBy', 'product'])->get();
 
-        // Liste des produits disponibles pour tagging (si admin/staff) - avec cache
-        $availableProducts = null;
-        if ($user->isAdmin() || in_array($user->getRoleSlug(), ['staff', 'admin', 'super_admin'])) {
+        // Liste des produits disponibles pour tagging (si admin/staff avec permission) - avec cache
+        if ($user->hasPermission('view-all-orders')) {
             $availableProducts = \Illuminate\Support\Facades\Cache::remember(
                 'available_products_for_tagging',
                 300, // 5 minutes
@@ -161,7 +164,10 @@ class MessageController extends Controller
             ]);
         }
 
-        return view('messages.show', compact('conversation', 'messages', 'taggedProducts', 'availableProducts', 'previousUrl'));
+        // Layout dynamique selon rôle
+        $layout = $this->getLayoutForRole($user);
+
+        return view('messages.show', compact('conversation', 'messages', 'taggedProducts', 'availableProducts', 'previousUrl', 'layout'));
     }
 
     /**
@@ -398,8 +404,8 @@ class MessageController extends Controller
     {
         $user = Auth::user();
 
-        // Vérifier que l'utilisateur est propriétaire de la commande ou admin
-        if ($order->user_id !== $user->id && !$user->isAdmin()) {
+        // Vérifier que l'utilisateur est propriétaire de la commande ou admin/staff via Policy
+        if ($order->user_id !== $user->id && !$user->hasPermission('view-all-orders')) {
             abort(403, 'Vous n\'avez pas accès à cette commande.');
         }
 
@@ -505,8 +511,8 @@ class MessageController extends Controller
                 ], 404);
             }
 
-            // Seul celui qui a tagué ou un admin peut retirer
-            if ($tag->tagged_by !== $user->id && !$user->isAdmin()) {
+            // Seul celui qui a tagué ou un admin/staff peut retirer
+            if ($tag->tagged_by !== $user->id && !$user->hasPermission('view-all-orders')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Vous n\'avez pas la permission de retirer ce tag.',
@@ -571,5 +577,21 @@ class MessageController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    /**
+     * Helper : Retourne layout selon rôle utilisateur
+     * 
+     * @param User $user
+     * @return string
+     */
+    private function getLayoutForRole(User $user): string
+    {
+        return match($user->getRoleSlug()) {
+            'createur' => 'layouts.creator',
+            'admin', 'super_admin' => 'layouts.admin',
+            'staff' => 'layouts.admin', // Staff utilise layout admin
+            default => 'layouts.frontend', // Client et autres
+        };
     }
 }

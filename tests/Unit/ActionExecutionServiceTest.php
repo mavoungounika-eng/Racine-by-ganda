@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\AdminActionDecision;
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
@@ -27,8 +29,7 @@ class ActionExecutionServiceTest extends TestCase
         parent::setUp();
         $this->service = new ActionExecutionService();
     }
-
-    /** @test */
+    #[Test]
     public function it_executes_approved_action()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -41,7 +42,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test action',
@@ -58,8 +59,7 @@ class ActionExecutionServiceTest extends TestCase
         $this->assertEquals('executed', $actionDecision->status);
         $this->assertNotNull($actionDecision->executed_at);
     }
-
-    /** @test */
+    #[Test]
     public function it_blocks_execution_of_non_approved_action()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -72,7 +72,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'pending', // Pas approuvé
             'justification' => 'Test action',
@@ -83,8 +83,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $this->service->execute($actionDecision);
     }
-
-    /** @test */
+    #[Test]
     public function it_captures_state_before_and_after()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -104,7 +103,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test action',
@@ -120,8 +119,7 @@ class ActionExecutionServiceTest extends TestCase
         $this->assertIsArray($actionDecision->state_before);
         $this->assertIsArray($actionDecision->state_after);
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_execution_failure()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -135,7 +133,7 @@ class ActionExecutionServiceTest extends TestCase
         // Créer une action avec un type invalide pour forcer l'échec
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'INVALID_ACTION',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test action',
@@ -151,8 +149,7 @@ class ActionExecutionServiceTest extends TestCase
         $actionDecision->refresh();
         $this->assertEquals('failed', $actionDecision->status);
     }
-
-    /** @test */
+    #[Test]
     public function it_executes_monitor_action()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -165,7 +162,7 @@ class ActionExecutionServiceTest extends TestCase
 
         $actionDecision = AdminActionDecision::create([
             'action_type' => 'MONITOR',
-            'target_type' => 'creator',
+            'target_type' => 'createur',
             'target_id' => $creator->id,
             'status' => 'approved',
             'justification' => 'Test monitor',
@@ -179,6 +176,11 @@ class ActionExecutionServiceTest extends TestCase
         $this->assertEquals('logged', $result['result']['action']);
     }
 }
+
+
+
+
+
 
 
 

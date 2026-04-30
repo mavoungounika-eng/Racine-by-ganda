@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ERPProduction;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ERPProduction\Models\ProductionOrder;
@@ -11,14 +12,17 @@ use Modules\ERPProduction\Models\StockMovement;
 use Modules\ERPProduction\Services\ProductionOrderService;
 use Modules\ERPProduction\Services\WipService;
 use Modules\ERPProduction\Services\StockService;
+use Modules\ERPProduction\Events\FinishedGoodsProduced;
+use Modules\ERPProduction\Events\RawMaterialConsumed;
 use App\Models\Product;
 use App\Models\User;
 use Modules\ERP\Models\ErpRawMaterial;
 use Illuminate\Support\Facades\Event;
+use Tests\Traits\SeedsAccounting;
 
 class StockFlowTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected Product $product;
@@ -36,17 +40,17 @@ class StockFlowTest extends TestCase
         $this->actingAs($this->user);
 
         // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        $this->seedAccounting();
 
         $this->product = Product::factory()->create(['name' => 'Robe Pagne Luxe']);
         
-        // Créer matière première
+        // CrÃ©er matiÃ¨re premiÃ¨re
         $this->rawMaterial = ErpRawMaterial::factory()->create([
             'name' => 'Tissu Wax',
             'unit_cost' => 5000,
         ]);
 
-        // Créer BOM
+        // CrÃ©er BOM
         $this->bom = Bom::create([
             'product_id' => $this->product->id,
             'version' => '1.0',
@@ -60,14 +64,14 @@ class StockFlowTest extends TestCase
             'raw_material_id' => $this->rawMaterial->id,
             'quantity' => 2.5,
             'unit' => 'meter',
-            'waste_percentage' => 10.0, // 2.5 × 1.1 = 2.75m
+            'waste_percentage' => 10.0, // 2.5 Ã— 1.1 = 2.75m
         ]);
 
         $this->productionOrderService = app(ProductionOrderService::class);
         $this->wipService = app(WipService::class);
         $this->stockService = app(StockService::class);
 
-        // Initialiser stock matières premières
+        // Initialiser stock matiÃ¨res premiÃ¨res
         StockBalance::create([
             'material_id' => $this->rawMaterial->id,
             'stock_type' => 'raw',
@@ -76,8 +80,7 @@ class StockFlowTest extends TestCase
             'total_value' => 500000,
         ]);
     }
-
-    /** @test */
+    #[Test]
     public function it_consumes_raw_materials_on_production_start()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -89,20 +92,19 @@ class StockFlowTest extends TestCase
         $this->productionOrderService->planProductionOrder($order);
         $this->productionOrderService->startProductionOrder($order->fresh());
 
-        // Consommer matières
+        // Consommer matiÃ¨res
         $movements = $this->stockService->consumeRawMaterials($order->fresh());
 
         $this->assertCount(1, $movements);
         $this->assertEquals('out', $movements[0]->type);
         $this->assertEquals('raw', $movements[0]->source);
-        $this->assertEquals(27.5, $movements[0]->quantity); // 2.75m × 10 unités
+        $this->assertEquals(27.5, $movements[0]->quantity); // 2.75m Ã— 10 unitÃ©s
 
-        // Vérifier balance stock
+        // VÃ©rifier balance stock
         $balance = $this->stockService->getStockBalance($this->rawMaterial->id, null, 'raw');
         $this->assertEquals(72.5, $balance->quantity); // 100 - 27.5
     }
-
-    /** @test */
+    #[Test]
     public function it_increases_wip_on_production_start()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -123,13 +125,12 @@ class StockFlowTest extends TestCase
         $this->assertEquals('wip', $movement->source);
         $this->assertEquals(10, $movement->quantity);
 
-        // Vérifier balance WIP
+        // VÃ©rifier balance WIP
         $wipBalance = $this->stockService->getStockBalance(null, $this->product->id, 'wip');
         $this->assertEquals(10, $wipBalance->quantity);
         $this->assertGreaterThan(0, $wipBalance->average_cost);
     }
-
-    /** @test */
+    #[Test]
     public function it_decreases_wip_on_scrap()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -148,19 +149,18 @@ class StockFlowTest extends TestCase
         $scrapMovement = $this->stockService->decreaseWipOnScrap(
             $order->fresh(),
             2,
-            'Défaut tissu'
+            'DÃ©faut tissu'
         );
 
         $this->assertEquals('out', $scrapMovement->type);
         $this->assertEquals('wip', $scrapMovement->source);
         $this->assertEquals(2, $scrapMovement->quantity);
 
-        // Vérifier balance WIP
+        // VÃ©rifier balance WIP
         $wipBalance = $this->stockService->getStockBalance(null, $this->product->id, 'wip');
         $this->assertEquals(8, $wipBalance->quantity); // 10 - 2
     }
-
-    /** @test */
+    #[Test]
     public function it_increases_finished_goods_on_production_finish()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -184,23 +184,22 @@ class StockFlowTest extends TestCase
         $this->assertEquals('finished', $movement->source);
         $this->assertEquals(9, $movement->quantity);
 
-        // Vérifier balance produits finis
+        // VÃ©rifier balance produits finis
         $finishedBalance = $this->stockService->getStockBalance(null, $this->product->id, 'finished');
         $this->assertEquals(9, $finishedBalance->quantity);
 
-        // Vérifier WIP diminué
+        // VÃ©rifier WIP diminuÃ©
         $wipBalance = $this->stockService->getStockBalance(null, $this->product->id, 'wip');
         $this->assertEquals(1, $wipBalance->quantity); // 10 - 9
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_cmp_correctly()
     {
         // Stock initial: 100m @ 5000 FCFA = 500,000 FCFA
         $initialBalance = $this->stockService->getStockBalance($this->rawMaterial->id, null, 'raw');
         $this->assertEquals(5000, $initialBalance->average_cost);
 
-        // Entrée: 50m @ 6000 FCFA = 300,000 FCFA
+        // EntrÃ©e: 50m @ 6000 FCFA = 300,000 FCFA
         StockMovement::create([
             'material_id' => $this->rawMaterial->id,
             'type' => 'in',
@@ -230,14 +229,13 @@ class StockFlowTest extends TestCase
         $this->assertEquals(5333.33, round($updatedBalance->average_cost, 2));
         $this->assertEquals(800000, $updatedBalance->total_value);
     }
-
-    /** @test */
+    #[Test]
     public function it_checks_stock_availability()
     {
         $order = $this->productionOrderService->createProductionOrder(
             $this->product->id,
             $this->bom->id,
-            50 // Besoin: 50 × 2.75 = 137.5m (> 100m disponible)
+            50 // Besoin: 50 Ã— 2.75 = 137.5m (> 100m disponible)
         );
 
         $availability = $this->stockService->checkStockAvailability($order);
@@ -248,8 +246,7 @@ class StockFlowTest extends TestCase
         $this->assertFalse($availability[0]['sufficient']);
         $this->assertEquals(37.5, $availability[0]['shortage']);
     }
-
-    /** @test */
+    #[Test]
     public function it_dispatches_raw_material_consumed_event()
     {
         Event::fake([RawMaterialConsumed::class]);
@@ -267,8 +264,7 @@ class StockFlowTest extends TestCase
 
         Event::assertDispatched(RawMaterialConsumed::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_dispatches_finished_goods_produced_event()
     {
         Event::fake([FinishedGoodsProduced::class]);

@@ -6,7 +6,7 @@
 <div class="container-fluid py-4">
     <div class="mb-4">
         <a href="{{ route('admin.kyc.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left mr-2"></i>Retour au dashboard KYC
+            <i class="fas fa-arrow-left me-2"></i>Retour au dashboard KYC
         </a>
     </div>
 
@@ -52,7 +52,7 @@
                         <form action="{{ route('admin.kyc.sync', $creator) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-primary btn-block">
-                                <i class="fas fa-sync mr-2"></i>Synchroniser avec Stripe
+                                <i class="fas fa-sync me-2"></i>Synchroniser avec Stripe
                             </button>
                         </form>
                     @else
@@ -139,7 +139,7 @@
                 @if(isset($kycStatus['requirements']) && !empty($kycStatus['requirements']))
                     <div class="card shadow-sm border-warning">
                         <div class="card-header bg-warning text-white">
-                            <h5 class="mb-0"><i class="fas fa-exclamation-triangle mr-2"></i>Documents Requis</h5>
+                            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Documents Requis</h5>
                         </div>
                         <div class="card-body">
                             <p class="text-muted">Les documents suivants sont nécessaires pour compléter la vérification :</p>

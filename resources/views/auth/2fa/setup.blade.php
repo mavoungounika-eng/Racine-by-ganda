@@ -3,7 +3,7 @@
 @section('title', 'Activer la Double Authentification - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .setup-page {
         min-height: 100vh;
         background: linear-gradient(135deg, #1a0f09 0%, #2C1810 50%, #1a0f09 100%);
@@ -319,7 +319,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function copySecret() {
     const secret = document.getElementById('secret-key').textContent;
     navigator.clipboard.writeText(secret).then(() => {

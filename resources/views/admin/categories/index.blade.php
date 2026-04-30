@@ -163,7 +163,7 @@
                     Affichage de {{ $categories->firstItem() ?? 0 }} à {{ $categories->lastItem() ?? 0 }} sur {{ $categories->total() }} résultats
                 </div>
                 <div>
-                    {{ $categories->links() }}
+                    {{ $categories->links('vendor.pagination.bootstrap-5') }}
                 </div>
             </div>
         </div>
@@ -212,7 +212,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function openDeleteModal(id, name) {
     document.getElementById('categoryName').textContent = name;
     document.getElementById('deleteForm').action = '{{ route('admin.categories.destroy', ':id') }}'.replace(':id', id);

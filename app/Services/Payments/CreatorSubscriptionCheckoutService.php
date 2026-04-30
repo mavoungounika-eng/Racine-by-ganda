@@ -36,27 +36,9 @@ class CreatorSubscriptionCheckoutService
     {
         $this->stripeConnectService = $stripeConnectService;
         
-        $stripeSecret = config('services.stripe.secret');
-        if (empty($stripeSecret)) {
-            throw new \RuntimeException(
-                'Stripe non configuré : la clé secrète Stripe (STRIPE_SECRET) est manquante dans la configuration. ' .
-                'Veuillez ajouter STRIPE_SECRET dans votre fichier .env avec une clé Stripe valide (format: sk_test_... ou sk_live_...). ' .
-                'Consultez la documentation : https://dashboard.stripe.com/apikeys'
-            );
-        }
-        
-        // Vérifier si c'est un placeholder (valeur de test non valide)
-        if (str_contains(strtolower($stripeSecret), 'your_secret_key') || 
-            str_contains(strtolower($stripeSecret), 'sk_test_your') ||
-            strlen($stripeSecret) < 20) {
-            throw new \RuntimeException(
-                'Stripe non configuré : la clé secrète Stripe (STRIPE_SECRET) contient une valeur de placeholder. ' .
-                'Veuillez remplacer la valeur dans votre fichier .env par une vraie clé Stripe (format: sk_test_... ou sk_live_...). ' .
-                'Récupérez votre clé sur : https://dashboard.stripe.com/apikeys'
-            );
-        }
-        
-        Stripe::setApiKey($stripeSecret);
+        // L'initialisation de Stripe est désormais différée (lazy)
+        // pour permettre la résolution de ce service par le conteneur IoC
+        // lors de la génération de la liste des routes, même si STRIPE_SECRET est manquant.
     }
 
     /**
@@ -79,6 +61,8 @@ class CreatorSubscriptionCheckoutService
      */
     public function createCheckoutSession(User $creator, CreatorPlan $plan, string $billingCycle = 'monthly'): string
     {
+        $this->initStripe();
+
         // Vérification 1 : Le créateur est bien un créateur
         if (!$creator->isCreator()) {
             throw new \RuntimeException(
@@ -270,6 +254,8 @@ class CreatorSubscriptionCheckoutService
      */
     public function retrieveCheckoutSession(string $sessionId): \Stripe\Checkout\Session
     {
+        $this->initStripe();
+
         try {
             return Session::retrieve($sessionId);
         } catch (ApiErrorException $e) {
@@ -280,6 +266,36 @@ class CreatorSubscriptionCheckoutService
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Initialise la clé API Stripe de manière différée.
+     * 
+     * @throws \RuntimeException Si la clé Stripe n'est pas configurée
+     */
+    private function initStripe(): void
+    {
+        $stripeSecret = config('services.stripe.secret');
+        if (empty($stripeSecret)) {
+            throw new \RuntimeException(
+                'Stripe non configuré : la clé secrète Stripe (STRIPE_SECRET) est manquante dans la configuration. ' .
+                'Veuillez ajouter STRIPE_SECRET dans votre fichier .env avec une clé Stripe valide (format: sk_test_... ou sk_live_...). ' .
+                'Consultez la documentation : https://dashboard.stripe.com/apikeys'
+            );
+        }
+        
+        // Vérifier si c'est un placeholder (valeur de test non valide)
+        if (str_contains(strtolower($stripeSecret), 'your_secret_key') || 
+            str_contains(strtolower($stripeSecret), 'sk_test_your') ||
+            strlen($stripeSecret) < 20) {
+            throw new \RuntimeException(
+                'Stripe non configuré : la clé secrète Stripe (STRIPE_SECRET) contient une valeur de placeholder. ' .
+                'Veuillez remplacer la valeur dans votre fichier .env par une vraie clé Stripe (format: sk_test_... ou sk_live_...). ' .
+                'Récupérez votre clé sur : https://dashboard.stripe.com/apikeys'
+            );
+        }
+        
+        Stripe::setApiKey($stripeSecret);
     }
 }
 

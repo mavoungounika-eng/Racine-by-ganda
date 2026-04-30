@@ -35,6 +35,21 @@ class CreatorCapabilityService
      */
     public function getActiveSubscription(User $creator): ?CreatorSubscription
     {
+        // ✅ OPTIMISATION N+1: Vérifier si la relation est déjà chargée
+        // Évite requête DB si eager loaded dans le controller
+        if ($creator->relationLoaded('creatorProfile') && 
+            $creator->creatorProfile?->relationLoaded('subscription')) {
+            $subscription = $creator->creatorProfile->subscription;
+            
+            // Vérifier que c'est bien un abonnement actif
+            if ($subscription && 
+                in_array($subscription->status, ['active', 'trialing']) &&
+                ($subscription->ends_at === null || $subscription->ends_at > now())) {
+                return $subscription;
+            }
+        }
+        
+        // Fallback vers cache si relation non chargée (compatibilité)
         $cacheKey = "creator_subscription_active_{$creator->id}";
 
         return Cache::remember($cacheKey, now()->addMinutes($this->cacheDuration), function () use ($creator) {
@@ -87,14 +102,17 @@ class CreatorCapabilityService
         $cacheKey = 'creator_plan_free';
 
         return Cache::remember($cacheKey, now()->addHours(24), function () {
-            $plan = CreatorPlan::where('code', 'free')->first();
-            
-            if (!$plan) {
-                Log::error('Plan FREE non trouvé dans la base de données');
-                throw new \RuntimeException('Plan FREE non trouvé. Exécutez les seeders.');
-            }
-
-            return $plan;
+            return CreatorPlan::firstOrCreate(
+                ['code' => 'free'],
+                [
+                    'name' => 'Gratuit',
+                    'price' => 0,
+                    'billing_cycle' => 'monthly',
+                    'is_active' => true,
+                    'description' => 'Plan gratuit pour démarrer votre activité de créateur',
+                    'features' => ['Jusqu\'à 5 produits', 'Dashboard basique', 'Gestion des commandes'],
+                ]
+            );
         });
     }
 

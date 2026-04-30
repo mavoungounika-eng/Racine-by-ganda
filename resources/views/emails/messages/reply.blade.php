@@ -34,7 +34,7 @@
         }
         .message-content {
             background: #f8f9fa;
-            border-left: 4px solid #ED5F1E;
+            border-start: 4px solid #ED5F1E;
             padding: 20px;
             margin: 20px 0;
             border-radius: 4px;

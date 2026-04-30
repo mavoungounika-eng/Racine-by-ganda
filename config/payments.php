@@ -66,6 +66,16 @@ return [
         'stuck_requeue_minutes' => env('PAYMENTS_STUCK_REQUEUE_MINUTES', 10),
         'stuck_requeue_schedule' => env('PAYMENTS_STUCK_REQUEUE_SCHEDULE', 'everyFiveMinutes'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shipping Costs (XAF)
+    |--------------------------------------------------------------------------
+    */
+    'shipping' => [
+        'home_delivery' => env('SHIPPING_HOME_DELIVERY_COST', 2000),
+        'showroom_pickup' => 0,
+    ],
 ];
 
 

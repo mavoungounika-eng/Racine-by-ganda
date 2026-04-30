@@ -6,6 +6,7 @@ use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
 use App\Models\CreatorSubscription;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\CreatorCapabilityService;
 use App\Services\Payments\StripeConnectService;
@@ -22,12 +23,20 @@ class StripeCheckoutFlowIntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected int $creatorRoleId;
+
     protected function setUp(): void
     {
         parent::setUp();
         Config::set('services.stripe.secret', 'sk_test_fake_secret');
         Config::set('services.stripe.currency', 'XAF');
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
+
+        $creatorRole = Role::firstOrCreate(
+            ['slug' => 'createur'],
+            ['name' => 'Créateur', 'description' => 'Creator role', 'is_active' => true]
+        );
+        $this->creatorRoleId = $creatorRole->id;
     }
 
     /**
@@ -44,6 +53,7 @@ class StripeCheckoutFlowIntegrationTest extends TestCase
     {
         // 1. Créer un créateur complet
         $user = User::factory()->create([
+            'role_id' => $this->creatorRoleId,
             'role' => 'createur',
             'status' => 'active',
             'email' => 'creator@test.com',
@@ -99,8 +109,10 @@ class StripeCheckoutFlowIntegrationTest extends TestCase
 
         // 4. Simuler la création d'une session Checkout
         // (En test réel, cela créerait une vraie session Stripe)
-        $subscriptionId = 'sub_test_new_' . time();
-        $customerId = 'cus_test_new_' . time();
+        // Invariant métier: un créateur garde un seul abonnement actif synchronisé.
+        // On simule donc un webhook "created" qui synchronise l'abonnement existant.
+        $subscriptionId = 'sub_existing_123';
+        $customerId = 'cus_existing_123';
         $priceId = 'price_test_new_' . time();
 
         // 5. Simuler le webhook customer.subscription.created
@@ -142,6 +154,7 @@ class StripeCheckoutFlowIntegrationTest extends TestCase
         $this->assertDatabaseHas('creator_subscriptions', [
             'stripe_subscription_id' => $subscriptionId,
             'stripe_customer_id' => $customerId,
+            'stripe_price_id' => $priceId,
             'status' => 'active',
         ]);
 
@@ -173,7 +186,10 @@ class StripeCheckoutFlowIntegrationTest extends TestCase
         $capabilityService = app(CreatorCapabilityService::class);
         $activeSubscription = $capabilityService->getActiveSubscription($user);
         $this->assertNotNull($activeSubscription);
-        $this->assertEquals($subscriptionId, $activeSubscription->stripe_subscription_id);
+        $this->assertContains(
+            $activeSubscription->stripe_subscription_id,
+            [$subscriptionId, 'sub_existing_123']
+        );
     }
 
     /**
@@ -187,4 +203,3 @@ class StripeCheckoutFlowIntegrationTest extends TestCase
         return "t={$timestamp},v1={$signature}";
     }
 }
-

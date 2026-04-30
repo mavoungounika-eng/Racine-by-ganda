@@ -43,6 +43,14 @@ class PaymentGlobalTest extends TestCase
             'payment_status' => 'pending',
             'status' => 'pending',
         ]);
+
+        // Mock Configuration pour les tests
+        config([
+            'services.stripe.webhook_secret' => 'whsec_test_secret',
+            'services.stripe.header' => 'Stripe-Signature', // Si utilisé ailleurs
+            'services.monetbil.service_secret' => 'monetbil_test_secret',
+            'services.monetbil.allowed_ips' => '127.0.0.1', // Whitelist localhost pour les tests
+        ]);
     }
 
     /**
@@ -60,11 +68,14 @@ class PaymentGlobalTest extends TestCase
             ],
         ]);
         
+        // Forcer l'environnement de production pour activer la sécurité
+        $this->app['config']->set('app.env', 'production');
+
         $response = $this->postJson('/api/webhooks/stripe', [], [
             'Content-Type' => 'application/json',
         ]);
         
-        // Vérifier que la requête est rejetée avec 401
+        // Vérifier que la requête est rejetée avec 401 (Missing signature)
         $response->assertStatus(401);
     }
 
@@ -83,6 +94,9 @@ class PaymentGlobalTest extends TestCase
             ],
         ]);
         
+        // Forcer l'environnement de production pour activer la sécurité
+        $this->app['config']->set('app.env', 'production');
+
         $response = $this->postJson('/api/webhooks/stripe', json_decode($payload, true), [
             'Content-Type' => 'application/json',
             'Stripe-Signature' => 'invalid_signature',
@@ -101,6 +115,9 @@ class PaymentGlobalTest extends TestCase
             'transaction_id' => 'test_123',
             'status' => 'success',
         ];
+        
+        // Forcer l'environnement de production pour activer la sécurité
+        $this->app['config']->set('app.env', 'production');
         
         $response = $this->postJson('/api/webhooks/monetbil', $payload, [
             'Content-Type' => 'application/json',
@@ -136,8 +153,11 @@ class PaymentGlobalTest extends TestCase
             $this->fail('Duplicate event_id should not be allowed');
         } catch (\Illuminate\Database\QueryException $e) {
             // Attendu : duplicate key error
-            $this->assertStringContainsString('Duplicate', $e->getMessage()) 
-                || $this->assertStringContainsString('UNIQUE', $e->getMessage());
+            $message = $e->getMessage();
+            $this->assertTrue(
+                str_contains($message, 'Duplicate') || str_contains($message, 'UNIQUE'),
+                'Exception message should contain "Duplicate" or "UNIQUE". Actual: ' . $message
+            );
         }
         
         // Vérifier qu'un seul événement existe
@@ -157,6 +177,7 @@ class PaymentGlobalTest extends TestCase
             'transaction_id' => $transactionId,
             'status' => 'processed',
             'processed_at' => now(),
+            'payload' => [], // Payload requis
         ]);
         
         // Tenter de créer le même événement
@@ -255,7 +276,7 @@ class PaymentGlobalTest extends TestCase
             'event_type' => 'payment_intent.succeeded',
             'status' => 'processed',
             'processed_at' => now(),
-            'payment_id' => 1,
+            // 'payment_id' => 1, // Retiré pour éviter FK error si Payment 1 n'existe pas
         ]);
         
         $initialProcessedAt = $event->processed_at;
@@ -294,6 +315,11 @@ class PaymentGlobalTest extends TestCase
         }
     }
 }
+
+
+
+
+
 
 
 

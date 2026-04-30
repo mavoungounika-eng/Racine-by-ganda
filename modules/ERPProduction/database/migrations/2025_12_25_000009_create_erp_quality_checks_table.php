@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -31,8 +32,10 @@ return new class extends Migration
             $table->index('checked_at');
         });
         
-        // Ajouter contrainte CHECK (quantity_checked = passed + reworked + rejected)
-        DB::statement('ALTER TABLE erp_quality_checks ADD CONSTRAINT chk_quality_quantities CHECK (quantity_checked = quantity_passed + quantity_reworked + quantity_rejected)');
+        // SQLite does not support ALTER TABLE ... ADD CONSTRAINT.
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE erp_quality_checks ADD CONSTRAINT chk_quality_quantities CHECK (quantity_checked = quantity_passed + quantity_reworked + quantity_rejected)');
+        }
     }
 
     /**

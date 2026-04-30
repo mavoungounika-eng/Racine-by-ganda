@@ -3,9 +3,9 @@
 @section('title', 'Mes Avis - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .reviews-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 3rem 0;
         margin-top: -70px;
         padding-top: calc(3rem + 70px);
@@ -13,7 +13,7 @@
     
     .reviews-content {
         padding: 3rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 60vh;
     }
     
@@ -46,7 +46,7 @@
     .review-product-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
@@ -76,7 +76,7 @@
     }
     
     .review-comment {
-        color: #6c757d;
+        color: rgba(22,13,12,0.5);
         line-height: 1.6;
         margin-bottom: 1rem;
     }
@@ -91,7 +91,7 @@
     
     .review-date {
         font-size: 0.9rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     .review-badge {
@@ -166,13 +166,13 @@
     .empty-reviews-title {
         font-size: 1.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
         font-family: 'Cormorant Garamond', serif;
     }
     
     .empty-reviews-text {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         margin-bottom: 2rem;
     }
 </style>
@@ -208,7 +208,7 @@
                             @for($i = 1; $i <= 5; $i++)
                                 <i class="fas fa-star star {{ $i <= $review->rating ? '' : 'empty' }}"></i>
                             @endfor
-                            <span style="margin-left: 0.5rem; color: #8B7355; font-size: 0.9rem;">({{ $review->rating }}/5)</span>
+                            <span style="margin-left: 0.5rem; color: rgba(22,13,12,0.5); font-size: 0.9rem;">({{ $review->rating }}/5)</span>
                         </div>
                         @if($review->comment)
                         <p class="review-comment">{{ $review->comment }}</p>

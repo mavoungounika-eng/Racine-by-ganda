@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\Auth\RecaptchaService;
 use App\Services\Payments\MobileMoneyPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,10 +13,12 @@ use Illuminate\Support\Facades\Log;
 class MobileMoneyPaymentController extends Controller
 {
     protected $mobileMoneyService;
+    protected RecaptchaService $recaptchaService;
 
-    public function __construct(MobileMoneyPaymentService $mobileMoneyService)
+    public function __construct(MobileMoneyPaymentService $mobileMoneyService, RecaptchaService $recaptchaService)
     {
         $this->mobileMoneyService = $mobileMoneyService;
+        $this->recaptchaService   = $recaptchaService;
     }
 
     /**
@@ -28,7 +31,8 @@ class MobileMoneyPaymentController extends Controller
         }
 
         return view('frontend.checkout.mobile-money-form', [
-            'order' => $order,
+            'order'          => $order,
+            'recaptchaSiteKey' => $this->recaptchaService->getSiteKey(),
         ]);
     }
 
@@ -65,9 +69,20 @@ class MobileMoneyPaymentController extends Controller
         }
 
         $request->validate([
-            'phone' => 'required|string|min:9|max:15',
-            'provider' => 'required|in:mtn_momo,airtel_money',
+            'phone'            => 'required|string|min:9|max:15',
+            'provider'         => 'required|in:mtn_momo,airtel_money',
+            'recaptcha_token'  => 'nullable|string',
         ]);
+
+        // Vérification reCAPTCHA v3 (fail-open si désactivé)
+        $recaptchaToken = $request->input('recaptcha_token', '');
+        if (!$this->recaptchaService->verify($recaptchaToken, 'mobile_money_pay')) {
+            Log::warning('Mobile Money: reCAPTCHA failed', [
+                'order_id' => $order->id,
+                'ip'       => $request->ip(),
+            ]);
+            return back()->with('error', 'Vérification de sécurité échouée. Veuillez réessayer.');
+        }
 
         try {
             $payment = $this->mobileMoneyService->initiatePayment(
@@ -231,9 +246,14 @@ class MobileMoneyPaymentController extends Controller
         $config = config("services.{$provider}");
         $webhookSecret = $config['webhook_secret'] ?? null;
 
-        // En mode développement ou si pas de secret configuré, accepter
-        if (app()->environment('local') || !$webhookSecret) {
+        // RBG-P0-02 : Signature obligatoire sauf en environnement de test (PHPUnit)
+        if (app()->runningUnitTests()) {
             return true;
+        }
+
+        if (!$webhookSecret) {
+            Log::error("Mobile Money webhook security alert: Secret not configured for {$provider}");
+            return false;
         }
 
         // Récupérer la signature depuis les headers

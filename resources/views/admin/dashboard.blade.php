@@ -8,15 +8,17 @@
 
 {{-- Statistiques principales --}}
 <div class="row g-4 mb-4">
+    @can('view-sales-analytics')
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
             'title' => 'Ventes totales',
             'value' => number_format($stats['monthly_sales'] ?? 0, 0, ',', ' ') . ' FCFA',
             'icon' => 'fas fa-wallet',
             'color' => 'success',
-            'trend' => isset($stats['monthly_sales_evolution']) && $stats['monthly_sales_evolution'] != 0 ? ['value' => '+' . abs($stats['monthly_sales_evolution']) . '% ce mois', 'direction' => 'up', 'color' => '#22C55E'] : null
+            'trend' => isset($stats['monthly_sales_evolution']) && $stats['monthly_sales_evolution'] != 0 ? ['value' => '+' . abs($stats['monthly_sales_evolution']) . '% ce mois', 'direction' => 'up', 'color' => '#FFB800'] : null
         ])
     </div>
+    @endcan
 
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
@@ -28,6 +30,7 @@
         ])
     </div>
 
+    @can('view-users')
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
             'title' => 'Clients',
@@ -37,6 +40,7 @@
             'subtitle' => '+' . ($stats['new_clients_month'] ?? 0) . ' nouveaux ce mois'
         ])
     </div>
+    @endcan
 
     <div class="col-lg-3 col-md-6">
         @include('partials.admin.stat-card', [
@@ -51,6 +55,7 @@
 
 {{-- Graphiques --}}
 <div class="row g-4 mb-4">
+    @can('view-sales-analytics')
     <div class="col-lg-6">
         <div class="card card-racine h-100">
             <div class="card-header bg-transparent border-bottom-2 border-racine-beige d-flex justify-content-between align-items-center py-3">
@@ -67,6 +72,7 @@
             </div>
         </div>
     </div>
+    @endcan
 
     <div class="col-lg-6">
         <div class="card card-racine h-100">
@@ -129,12 +135,12 @@
                                         <span class="fw-bold text-racine-orange">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</span>
                                     </td>
                                     <td>
-                                        <span class="badge rounded-pill
-                                            @if($order->status === 'pending') bg-warning text-dark
-                                            @elseif($order->status === 'paid') bg-success
-                                            @elseif($order->status === 'shipped') bg-info
-                                            @elseif($order->status === 'completed') bg-success
-                                            @else bg-secondary @endif">
+                                        <span class="badge rounded-pill status-pill
+                                            @if($order->status === 'pending') status-pill-pending
+                                            @elseif($order->status === 'paid') status-pill-paid
+                                            @elseif($order->status === 'shipped') status-pill-shipped
+                                            @elseif($order->status === 'completed') status-pill-completed
+                                            @else status-pill-default @endif">
                                             {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                                         </span>
                                     </td>
@@ -163,47 +169,53 @@
                 </h5>
             </div>
             <div class="list-group list-group-flush">
+                @can('create-products')
                 <a href="{{ route('admin.products.create') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
-                        <i class="fas fa-plus-circle text-success me-2"></i>
+                        <i class="fas fa-plus-circle dashboard-action-icon dashboard-action-icon-orange me-2"></i>
                         <span class="fw-semibold">Ajouter un produit</span>
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @endcan
+                @can('edit-categories')
                 <a href="{{ route('admin.categories.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
-                        <i class="fas fa-tags text-warning me-2"></i>
+                        <i class="fas fa-tags dashboard-action-icon dashboard-action-icon-yellow me-2"></i>
                         <span class="fw-semibold">Gérer les catégories</span>
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @endcan
                 <a href="{{ route('admin.orders.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
-                        <i class="fas fa-receipt text-primary me-2"></i>
+                        <i class="fas fa-receipt dashboard-action-icon dashboard-action-icon-black me-2"></i>
                         <span class="fw-semibold">Voir les commandes</span>
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
                 <a href="{{ route('messages.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
-                        <i class="fas fa-comments text-info me-2"></i>
+                        <i class="fas fa-comments dashboard-action-icon dashboard-action-icon-orange me-2"></i>
                         <span class="fw-semibold">Messagerie</span>
                         @php
                             $unreadCount = app(\App\Services\ConversationService::class)->getUnreadConversationsCount(auth()->id());
                         @endphp
                         @if($unreadCount > 0)
-                            <span class="badge bg-primary ms-2">{{ $unreadCount }}</span>
+                            <span class="badge unread-badge-racine ms-2">{{ $unreadCount }}</span>
                         @endif
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @can('view-users')
                 <a href="{{ route('admin.users.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                     <span>
-                        <i class="fas fa-users text-info me-2"></i>
+                        <i class="fas fa-users dashboard-action-icon dashboard-action-icon-black me-2"></i>
                         <span class="fw-semibold">Gérer les utilisateurs</span>
                     </span>
                     <i class="fas fa-chevron-right small text-muted"></i>
                 </a>
+                @endcan
             </div>
         </div>
     </div>
@@ -211,6 +223,7 @@
 
 {{-- Nouveaux clients et produits récents --}}
 <div class="row g-4">
+    @can('view-users')
     <div class="col-lg-6">
         <div class="card card-racine h-100">
             <div class="card-header bg-transparent border-bottom-2 border-racine-beige d-flex justify-content-between align-items-center py-3">
@@ -251,6 +264,7 @@
             </div>
         </div>
     </div>
+    @endcan
 
     <div class="col-lg-6">
         <div class="card card-racine h-100">
@@ -309,22 +323,78 @@
 
 @endsection
 
+@push('styles')
+<style nonce="{{ csp_nonce() }}">
+    .status-pill {
+        font-family: 'Aileron', 'Helvetica Neue', sans-serif;
+    }
+
+    .status-pill-pending {
+        background: #FFB800;
+        color: #160D0C;
+    }
+
+    .status-pill-paid {
+        background: #ED5F1E;
+        color: #FFFFFF;
+    }
+
+    .status-pill-shipped {
+        background: #160D0C;
+        color: #FFFFFF;
+    }
+
+    .status-pill-completed {
+        background: #FFB800;
+        color: #160D0C;
+    }
+
+    .status-pill-default {
+        background: #FFFFFF;
+        color: #160D0C;
+        border: 1px solid #160D0C;
+    }
+
+    .dashboard-action-icon {
+        font-size: 0.95rem;
+    }
+
+    .dashboard-action-icon-orange {
+        color: #ED5F1E;
+    }
+
+    .dashboard-action-icon-yellow {
+        color: #FFB800;
+    }
+
+    .dashboard-action-icon-black {
+        color: #160D0C;
+    }
+
+    .unread-badge-racine {
+        background: #ED5F1E;
+        color: #FFFFFF;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration globale Chart.js
     Chart.defaults.font.family = "'Aileron', system-ui, sans-serif";
-    Chart.defaults.color = '#666666';
+    Chart.defaults.color = '#160D0C';
 
     const luxeColors = {
         primary: '#ED5F1E',
         secondary: '#FFB800',
-        gray: '#8B7355'
+        gray: '#160D0C'
     };
 
+    @can('view-sales-analytics')
     // Graphique Ventes par Mois
     const salesCtx = document.getElementById('salesChart');
     if (salesCtx) {
@@ -365,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    @endcan
 
     // Graphique Commandes par Mois
     const ordersCtx = document.getElementById('ordersChart');

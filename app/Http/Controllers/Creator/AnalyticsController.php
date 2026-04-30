@@ -9,15 +9,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Contr√¥leur Analytics pour les cr√©ateurs
- * 
- * Phase 4 : Structure pr√©par√©e pour les statistiques cr√©ateur
- * 
- * TODO : Impl√©menter les m√©thodes pour afficher :
- * - CA du cr√©ateur
- * - Nombre de commandes contenant ses produits
- * - Top de ses produits
- * - √âvolution dans le temps
+ * ContrÙleur Analytics pour les crÈateurs.
+ *
+ * Les statistiques sont calculÈes ‡ partir des donnÈes rÈelles
+ * via AnalyticsService (Order, OrderItem, Product) avec cache.
  */
 class AnalyticsController extends Controller
 {
@@ -104,4 +99,5 @@ class AnalyticsController extends Controller
         return [$startDate, $endDate];
     }
 }
+
 

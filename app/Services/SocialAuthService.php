@@ -110,11 +110,12 @@ class SocialAuthService
         string $requestedRole,
         string $context
     ): User {
-        $user = $oauthAccount->user;
-        $user->load('roleRelation');
+        try {
+            $user = $oauthAccount->user;
+            $user->loadMissing(['roleRelation', 'creatorProfile']);
 
-        // Vérifier la cohérence de l'email (si disponible)
-        $providerEmail = $providerUser->getEmail();
+            // Vérifier la cohérence de l'email (si disponible)
+            $providerEmail = $providerUser->getEmail();
         if ($providerEmail && $user->email !== $providerEmail) {
             Log::warning('OAuth email mismatch', [
                 'user_id' => $user->id,
@@ -145,6 +146,9 @@ class SocialAuthService
         ]);
 
         return $user;
+    } catch (\Throwable $e) {
+
+        }
     }
 
     /**
@@ -283,7 +287,9 @@ class SocialAuthService
                     'email' => $email,
                     'password' => Hash::make(Str::random(32)), // Mot de passe généré
                     'role_id' => $role->id,
+                    'role' => $requestedRole, // Expliciter le champ role
                     'email_verified_at' => now(), // Email vérifié via OAuth
+                    'auth_version' => 1,
                 ]);
 
                 // Créer le compte OAuth (marqué comme primary)
@@ -335,6 +341,13 @@ class SocialAuthService
     {
         $currentRoleSlug = $user->getRoleSlug();
         
+        // If the user already owns a creator profile, infer creator role from that profile.
+        if ($requestedRole === 'createur' && in_array($currentRoleSlug, [null, 'client'], true)) {
+            if ($user->relationLoaded('creatorProfile') ? $user->creatorProfile : $user->creatorProfile()->exists()) {
+                return;
+            }
+        }
+
         // Normaliser les rôles pour comparaison
         $currentRoleNormalized = $currentRoleSlug === 'createur' ? 'creator' : ($currentRoleSlug === 'creator' ? 'creator' : 'client');
         $requestedRoleNormalized = $requestedRole === 'createur' ? 'creator' : 'client';

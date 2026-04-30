@@ -3,9 +3,9 @@
 @section('title', 'Modifier mon avis - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .review-edit-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 3rem 0;
         margin-top: -70px;
         padding-top: calc(3rem + 70px);
@@ -13,7 +13,7 @@
     
     .review-edit-content {
         padding: 3rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 60vh;
     }
     
@@ -27,7 +27,7 @@
     }
     
     .product-info {
-        background: #f8f9fa;
+        background: rgba(22,13,12,0.05);
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -50,7 +50,7 @@
     .product-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
@@ -90,13 +90,13 @@
     
     .form-label {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .form-control {
         border-radius: 12px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid rgba(22,13,12,0.1);
         padding: 0.75rem 1rem;
         transition: all 0.3s;
     }
@@ -107,7 +107,7 @@
     }
     
     .btn-submit-review {
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -188,7 +188,7 @@
                     <button type="submit" class="btn-submit-review">
                         <i class="fas fa-save me-2"></i> Enregistrer les modifications
                     </button>
-                    <a href="{{ route('profile.reviews') }}" class="btn-submit-review" style="background: rgba(108, 117, 125, 0.1); color: #6c757d; text-decoration: none; display: flex; align-items: center;">
+                    <a href="{{ route('profile.reviews') }}" class="btn-submit-review" style="background: rgba(108, 117, 125, 0.1); color: rgba(22,13,12,0.5); text-decoration: none; display: flex; align-items: center;">
                         <i class="fas fa-times me-2"></i> Annuler
                     </a>
                 </div>

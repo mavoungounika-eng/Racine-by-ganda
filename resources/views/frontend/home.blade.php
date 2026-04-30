@@ -2,683 +2,84 @@
 
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'RACINE BY GANDA - Mode Africaine Contemporaine')
 
-@push('styles')
-<style>
-    /* ===== HERO SECTION ===== */
-    .hero {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        position: relative;
-        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-        overflow: hidden;
-    }
-    
-    .hero-bg-pattern {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4A574' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        opacity: 0.5;
-    }
-    
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4rem;
-        align-items: center;
-        padding: 2rem 0;
-    }
-    
-    .hero-text {
-        color: white;
-    }
-    
-    .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(212, 165, 116, 0.15);
-        border: 1px solid rgba(212, 165, 116, 0.3);
-        padding: 0.5rem 1.25rem;
-        border-radius: 30px;
-        font-size: 0.8rem;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        color: #D4A574;
-        margin-bottom: 2rem;
-    }
-    
-    .hero-badge::before {
-        content: '';
-        width: 8px; height: 8px;
-        background: #D4A574;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.2); }
-    }
-    
-    .hero-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 4.5rem;
-        font-weight: 600;
-        line-height: 1.1;
-        margin-bottom: 1.5rem;
-    }
-    
-    .hero-title .highlight {
-        color: #D4A574;
-        position: relative;
-    }
-    
-    .hero-description {
-        font-size: 1.15rem;
-        line-height: 1.8;
-        color: rgba(255, 255, 255, 0.7);
-        margin-bottom: 2.5rem;
-        max-width: 500px;
-    }
-    
-    .hero-cta {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .btn-primary-custom {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        background: linear-gradient(135deg, #D4A574 0%, #B8956A 100%);
-        color: #1a1a1a;
-        padding: 1rem 2rem;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s;
-    }
-    
-    .btn-primary-custom:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(212, 165, 116, 0.3);
-        color: #1a1a1a;
-    }
-    
-    .btn-outline-custom {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        background: transparent;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 50px;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.3s;
-    }
-    
-    .btn-outline-custom:hover {
-        background: white;
-        color: #1a1a1a;
-        border-color: white;
-    }
-    
-    .hero-image {
-        position: relative;
-    }
-    
-    .hero-image-main {
-        width: 100%;
-        height: 600px;
-        object-fit: cover;
-        border-radius: 24px;
-        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
-    }
-    
-    .hero-image-float {
-        position: absolute;
-        background: white;
-        border-radius: 16px;
-        padding: 1.25rem;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        animation: float 4s ease-in-out infinite;
-    }
-    
-    .hero-float-1 {
-        bottom: 10%;
-        left: -50px;
-        animation-delay: 0s;
-    }
-    
-    .hero-float-2 {
-        top: 10%;
-        right: -30px;
-        animation-delay: 1s;
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
-    }
-    
-    .hero-float-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    
-    .hero-float-icon {
-        width: 48px; height: 48px;
-        background: linear-gradient(135deg, #D4A574 0%, #B8956A 100%);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.25rem;
-    }
-    
-    .hero-float-text h4 {
-        font-size: 0.9rem;
-        color: #1a1a1a;
-        margin: 0;
-    }
-    
-    .hero-float-text span {
-        font-size: 0.8rem;
-        color: #888;
-    }
-    
-    /* ===== FEATURES BAR ===== */
-    .features-bar {
-        background: #F8F6F3;
-        padding: 2rem 0;
-        border-bottom: 1px solid #E5DDD3;
-    }
-    
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
-    }
-    
-    .feature-item {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    
-    .feature-icon {
-        width: 50px; height: 50px;
-        background: white;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #D4A574;
-        font-size: 1.25rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    }
-    
-    .feature-text h4 {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #2C1810;
-        margin: 0 0 0.25rem 0;
-    }
-    
-    .feature-text span {
-        font-size: 0.85rem;
-        color: #8B7355;
-    }
-    
-    /* ===== CATEGORIES SECTION ===== */
-    .categories-section {
-        padding: 6rem 0;
-        background: white;
-    }
-    
-    .section-header {
-        text-align: center;
-        margin-bottom: 4rem;
-    }
-    
-    .section-tag {
-        display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
-        padding: 0.5rem 1.5rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        margin-bottom: 1rem;
-    }
-    
-    .section-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 3rem;
-        font-weight: 600;
-        color: #2C1810;
-        margin-bottom: 1rem;
-    }
-    
-    .section-subtitle {
-        font-size: 1.1rem;
-        color: #8B7355;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    
-    .categories-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
-    }
-    
-    .category-card {
-        position: relative;
-        height: 400px;
-        border-radius: 20px;
-        overflow: hidden;
-        text-decoration: none;
-        transition: transform 0.4s;
-    }
-    
-    .category-card:hover {
-        transform: translateY(-10px);
-    }
-    
-    .category-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s;
-    }
-    
-    .category-card:hover img {
-        transform: scale(1.1);
-    }
-    
-    .category-overlay {
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        padding: 2rem;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-        color: white;
-    }
-    
-    .category-overlay h3 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .category-overlay span {
-        font-size: 0.9rem;
-        opacity: 0.8;
-    }
-    
-    /* ===== FEATURED PRODUCTS ===== */
-    .products-section {
-        padding: 6rem 0;
-        background: #F8F6F3;
-    }
-    
-    .products-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 3rem;
-    }
-    
-    .view-all-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #8B5A2B;
-        font-weight: 600;
-        text-decoration: none;
-        transition: gap 0.3s;
-    }
-    
-    .view-all-link:hover {
-        gap: 1rem;
-        color: #6B4423;
-    }
-    
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
-    }
-    
-    .product-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        transition: all 0.3s;
-        text-decoration: none;
-        color: inherit;
-    }
-    
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
-    }
-    
-    .product-image {
-        position: relative;
-        height: 280px;
-        overflow: hidden;
-    }
-    
-    .product-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.4s;
-    }
-    
-    .product-card:hover .product-image img {
-        transform: scale(1.08);
-    }
-    
-    .product-badge {
-        position: absolute;
-        top: 1rem;
-        left: 1rem;
-        background: #D4A574;
-        color: white;
-        padding: 0.35rem 0.75rem;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    
-    .product-wishlist {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        width: 40px; height: 40px;
-        background: white;
-        border: none;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .product-card:hover .product-wishlist {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .product-wishlist:hover {
-        background: #D4A574;
-        color: white;
-    }
-    
-    .product-info {
-        padding: 1.5rem;
-    }
-    
-    .product-category {
-        font-size: 0.8rem;
-        color: #8B7355;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 0.5rem;
-    }
-    
-    .product-name {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #2C1810;
-        margin-bottom: 0.75rem;
-    }
-    
-    .product-price {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .product-price .current {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #8B5A2B;
-    }
-    
-    .product-price .original {
-        font-size: 1rem;
-        color: #aaa;
-        text-decoration: line-through;
-    }
-    
-    /* ===== ABOUT SECTION ===== */
-    .about-section {
-        padding: 6rem 0;
-        background: #2C1810;
-        color: white;
-    }
-    
-    .about-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4rem;
-        align-items: center;
-    }
-    
-    .about-images {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-    }
-    
-    .about-img {
-        border-radius: 16px;
-        overflow: hidden;
-    }
-    
-    .about-img:first-child {
-        grid-row: span 2;
-        height: 100%;
-    }
-    
-    .about-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .about-content .section-tag {
-        background: rgba(212, 165, 116, 0.2);
-    }
-    
-    .about-content .section-title {
-        color: white;
-    }
-    
-    .about-text {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 1.1rem;
-        line-height: 1.8;
-        margin-bottom: 2rem;
-    }
-    
-    .about-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .stat-item h3 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.5rem;
-        font-weight: 600;
-        color: #D4A574;
-        margin-bottom: 0.5rem;
-    }
-    
-    .stat-item span {
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.6);
-    }
-    
-    /* ===== CREATORS SECTION ===== */
-    .creators-section {
-        padding: 6rem 0;
-        background: white;
-    }
-    
-    .creators-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-    }
-    
-    .creator-card {
-        background: #F8F6F3;
-        border-radius: 20px;
-        padding: 2rem;
-        text-align: center;
-        transition: all 0.3s;
-    }
-    
-    .creator-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    }
-    
-    .creator-avatar {
-        width: 100px; height: 100px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 1.5rem;
-        border: 4px solid white;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    }
-    
-    .creator-card h3 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2C1810;
-        margin-bottom: 0.5rem;
-    }
-    
-    .creator-specialty {
-        color: #8B5A2B;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 1rem;
-    }
-    
-    .creator-bio {
-        color: #8B7355;
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-    
-    /* ===== NEWSLETTER SECTION - SUPPRIMÉE ===== */
-    /* Les styles newsletter ont été supprimés - Remplacés par les CTA premium dans le layout frontend */
-    
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 1024px) {
-        .hero-content { grid-template-columns: 1fr; text-align: center; }
-        .hero-image { display: none; }
-        .hero-title { font-size: 3rem; }
-        .hero-description { margin: 0 auto 2rem; }
-        .hero-cta { justify-content: center; }
-        .features-grid { grid-template-columns: repeat(2, 1fr); }
-        .categories-grid { grid-template-columns: repeat(2, 1fr); }
-        .products-grid { grid-template-columns: repeat(2, 1fr); }
-        .about-grid { grid-template-columns: 1fr; }
-        .creators-grid { grid-template-columns: 1fr; }
-    }
-    
-    @media (max-width: 768px) {
-        .hero-title { font-size: 2.5rem; }
-        .section-title { font-size: 2rem; }
-        .features-grid { grid-template-columns: 1fr; }
-        .categories-grid { grid-template-columns: 1fr; }
-        .products-grid { grid-template-columns: 1fr; }
-        /* Responsive newsletter supprimé */
-    }
-</style>
-@endpush
-
 @section('content')
 <!-- HERO SECTION -->
-<section class="hero">
-    <div class="hero-bg-pattern"></div>
-    <div class="container">
-        <div class="hero-content">
-            <div class="hero-text">
-                @php
-                    $heroSection = $cmsPage?->section('hero');
-                    $heroData = $heroSection?->data ?? [];
-                @endphp
-                <span class="hero-badge">{{ $heroData['badge'] ?? 'Nouvelle Collection 2025' }}</span>
-                <h1 class="hero-title">
-                    {!! $heroData['title'] ?? "L'Élégance<br><span class=\"highlight\">Africaine</span><br>Réinventée" !!}
-                </h1>
-                <p class="hero-description">
-                    {{ $heroData['description'] ?? "Découvrez des créations uniques qui célèbrent notre héritage. Des pièces artisanales confectionnées par les meilleurs créateurs africains." }}
-                </p>
-                <div class="hero-cta">
-                    <a href="{{ route('frontend.shop') }}" class="btn-primary-custom">
-                        <i class="fas fa-shopping-bag"></i>
-                        Explorer la boutique
-                    </a>
-                    <a href="{{ route('frontend.creators') }}" class="btn-outline-custom">
-                        <i class="fas fa-palette"></i>
-                        Nos créateurs
-                    </a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=1000&fit=crop" alt="Mode Africaine" class="hero-image-main">
-                <div class="hero-image-float hero-float-1">
-                    <div class="hero-float-content">
-                        <div class="hero-float-icon"><i class="fas fa-truck"></i></div>
-                        <div class="hero-float-text">
-                            <h4>Livraison Express</h4>
-                            <span>Partout en France</span>
-                        </div>
+@if(!empty($cmsHeroBanners) && $cmsHeroBanners->count())
+    <x-cms.banner-slider :banners="$cmsHeroBanners" :autoplay="true" />
+@else
+    <section class="hero">
+        <div class="hero-bg-pattern"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <span class="hero-badge">Nouvelle Collection 2025</span>
+                    <h1 class="hero-title">
+                        L'Élégance<br><span class="highlight">Africaine</span><br>Réinventée
+                    </h1>
+                    <p class="hero-description">
+                        Découvrez des créations uniques qui célèbrent notre héritage. Des pièces artisanales confectionnées par les meilleurs créateurs africains.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="{{ route('frontend.shop') }}" class="btn-primary-custom">
+                            <i class="fas fa-shopping-bag"></i>
+                            Explorer la boutique
+                        </a>
+                        <a href="{{ route('frontend.creators') }}" class="btn-outline-custom">
+                            <i class="fas fa-palette"></i>
+                            Nos créateurs
+                        </a>
                     </div>
                 </div>
-                <div class="hero-image-float hero-float-2">
-                    <div class="hero-float-content">
-                        <div class="hero-float-icon"><i class="fas fa-award"></i></div>
-                        <div class="hero-float-text">
-                            <h4>100% Authentique</h4>
-                            <span>Fait main en Afrique</span>
+                <div class="hero-image">
+    <div class="hero-slider" id="heroSlider">
+        <div class="hero-slider-track">
+            @foreach(range(1, 7) as $i)
+            <div class="hero-slide {{ $i === 1 ? 'active' : '' }}">
+                <img src="{{ asset('storage/hero/hero-' . sprintf('%02d', $i) . '.jpeg') }}"
+                     alt="Racine by Ganda - Look {{ $i }}"
+                     loading="{{ $i === 1 ? 'eager' : 'lazy' }}">
+            </div>
+            @endforeach
+        </div>
+
+        <div class="hero-slider-dots">
+            @foreach(range(1, 7) as $i)
+            <button class="hero-dot {{ $i === 1 ? 'active' : '' }}"
+                    data-index="{{ $i - 1 }}"
+                    aria-label="Slide {{ $i }}"></button>
+            @endforeach
+        </div>
+
+        <button class="hero-slider-prev" aria-label="Précédent">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="hero-slider-next" aria-label="Suivant">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+                    <div class="hero-image-float hero-float-1">
+                        <div class="hero-float-content">
+                            <div class="hero-float-icon"><i class="fas fa-truck"></i></div>
+                            <div class="hero-float-text">
+                                <h4>Livraison Express</h4>
+                                <span>Partout en France</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-image-float hero-float-2">
+                        <div class="hero-float-content">
+                            <div class="hero-float-icon"><i class="fas fa-award"></i></div>
+                            <div class="hero-float-text">
+                                <h4>100% Authentique</h4>
+                                <span>Fait main en Afrique</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+@endif
 
 <!-- FEATURES BAR -->
 <section class="features-bar">
@@ -727,48 +128,44 @@
         
         <div class="categories-grid">
             @foreach($categories ?? [] as $category)
-            <a href="{{ route('frontend.shop', ['category' => $category->id]) }}" class="category-card">
+            <a href="{{ route('frontend.shop', ['category' => $category->id]) }}" class="category-card category-card-css">
                 @if($category->image)
-                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}">
+                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}"
+                         style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
                 @else
-                    <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="{{ $category->name }}">
+                    <div class="category-css-bg">
+                        <div class="category-css-pattern"></div>
+                        <i class="fas fa-tshirt category-css-icon"></i>
+                    </div>
                 @endif
                 <div class="category-overlay">
                     <h3>{{ $category->name }}</h3>
-                    <span>{{ $category->products_count ?? 0 }} article{{ $category->products_count > 1 ? 's' : '' }}</span>
+                    <span>{{ $category->products_count ?? 0 }} article{{ ($category->products_count ?? 0) > 1 ? 's' : '' }}</span>
                 </div>
             </a>
             @endforeach
             
             @if(empty($categories) || count($categories ?? []) === 0)
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop" alt="Robes">
+            @php
+                $defaultCategories = [
+                    ['name' => 'Robes', 'icon' => 'fas fa-star', 'mod' => ''],
+                    ['name' => 'Chemises', 'icon' => 'fas fa-tshirt', 'mod' => '--accent'],
+                    ['name' => 'Accessoires', 'icon' => 'fas fa-gem', 'mod' => '--dark'],
+                    ['name' => 'Sur-mesure', 'icon' => 'fas fa-cut', 'mod' => '--warm'],
+                ];
+            @endphp
+            @foreach($defaultCategories as $cat)
+            <a href="{{ route('frontend.shop') }}" class="category-card category-card-css{{ $cat['mod'] }}">
+                <div class="category-css-bg">
+                    <div class="category-css-pattern"></div>
+                    <i class="{{ $cat['icon'] }} category-css-icon"></i>
+                </div>
                 <div class="category-overlay">
-                    <h3>Robes</h3>
-                    <span>Découvrir</span>
+                    <h3>{{ $cat['name'] }}</h3>
+                    <span>Découvrir <i class="fas fa-arrow-right ms-1"></i></span>
                 </div>
             </a>
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Chemises">
-                <div class="category-overlay">
-                    <h3>Chemises</h3>
-                    <span>Découvrir</span>
-                </div>
-            </a>
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop" alt="Accessoires">
-                <div class="category-overlay">
-                    <h3>Accessoires</h3>
-                    <span>Découvrir</span>
-                </div>
-            </a>
-            <a href="{{ route('frontend.shop') }}" class="category-card">
-                <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Sur-mesure">
-                <div class="category-overlay">
-                    <h3>Sur-mesure</h3>
-                    <span>Découvrir</span>
-                </div>
-            </a>
+            @endforeach
             @endif
         </div>
     </div>
@@ -789,18 +186,21 @@
         
         <div class="products-grid">
             @foreach($featuredProducts ?? [] as $product)
-            <a href="{{ route('frontend.product', $product->id) }}" class="product-card">
+            <a href="{{ route('frontend.product', $product->id) }}" class="product-card reveal-item">
                 <div class="product-image">
                     @if($product->main_image)
                         <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->title }}">
                     @else
-                        <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop" alt="{{ $product->title }}">
+                        <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
                     @endif
                     @if($product->created_at->isAfter(now()->subDays(30)))
                     <span class="product-badge">Nouveau</span>
                     @endif
+                    <div class="product-hover-cta">
+                        <span><i class="fas fa-eye me-2"></i>Voir le produit</span>
+                    </div>
                     @auth
-                    <button class="product-wishlist" 
+                    <button class="product-wishlist"
                             data-product-id="{{ $product->id }}"
                             onclick="event.preventDefault(); toggleWishlist({{ $product->id }});">
                         <i class="far fa-heart" id="wishlist-icon-{{ $product->id }}"></i>
@@ -818,71 +218,112 @@
             @endforeach
             
             @if(empty($featuredProducts) || count($featuredProducts ?? []) === 0)
-            @for($i = 0; $i < 4; $i++)
-            <a href="{{ route('frontend.shop') }}" class="product-card">
-                <div class="product-image">
-                    <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Produit">
+            @php
+                $demoProducts = [
+                    ['title' => 'Robe Wax Premium', 'category' => 'Robes', 'price' => '45 000', 'mod' => ''],
+                    ['title' => 'Ensemble Kente', 'category' => 'Ensembles', 'price' => '62 000', 'mod' => '--b'],
+                    ['title' => 'Collier Artisanal', 'category' => 'Accessoires', 'price' => '18 500', 'mod' => '--c'],
+                    ['title' => 'Chemise Bogolan', 'category' => 'Chemises', 'price' => '28 000', 'mod' => '--d'],
+                ];
+            @endphp
+            @foreach($demoProducts as $demo)
+            <a href="{{ route('frontend.shop') }}" class="product-card reveal-item">
+                <div class="product-image product-image-css{{ $demo['mod'] }}">
+                    <div class="product-css-placeholder">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
                     <span class="product-badge">Nouveau</span>
+                    <div class="product-hover-cta">
+                        <span><i class="fas fa-eye me-2"></i>Voir le produit</span>
+                    </div>
                 </div>
                 <div class="product-info">
-                    <div class="product-category">Mode</div>
-                    <h3 class="product-name">Découvrir nos produits</h3>
+                    <div class="product-category">{{ $demo['category'] }}</div>
+                    <h3 class="product-name">{{ $demo['title'] }}</h3>
                     <div class="product-price">
-                        <span class="current">Voir la boutique</span>
+                        <span class="current">{{ $demo['price'] }} FCFA</span>
                     </div>
                 </div>
             </a>
-            @endfor
+            @endforeach
             @endif
         </div>
     </div>
 </section>
 
-<!-- ABOUT SECTION -->
-<section class="about-section">
+@php
+  $introBlock = $cmsBlocks['home_intro'] ?? null;
+  $ctaBlock   = $cmsBlocks['home_cta']   ?? null;
+@endphp
+
+@if($introBlock && $introBlock->is_active)
+  <section class="home-intro">
     <div class="container">
-        <div class="about-grid">
-            <div class="about-images">
-                <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop" alt="Mode Africaine">
-                </div>
-                <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Création">
-                </div>
-                <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=400&h=500&fit=crop" alt="Vêtement">
-                </div>
-            </div>
-            <div class="about-content">
-                <span class="section-tag">Notre Histoire</span>
-                <h2 class="section-title">L'Art de la Mode Africaine</h2>
-                <p class="about-text">
-                    RACINE BY GANDA est née d'une passion pour l'artisanat africain et le désir de 
-                    connecter les talents du continent avec le monde. Chaque pièce raconte une histoire, 
-                    celle d'un créateur, d'un savoir-faire ancestral sublimé par une vision contemporaine.
-                </p>
-                <p class="about-text">
-                    Nous collaborons avec plus de 50 artisans et créateurs à travers l'Afrique, 
-                    garantissant des conditions de travail équitables et la préservation des techniques traditionnelles.
-                </p>
-                <div class="about-stats">
-                    <div class="stat-item">
-                        <h3>50+</h3>
-                        <span>Créateurs partenaires</span>
+      {!! $introBlock->content !!}
+    </div>
+  </section>
+@else
+    <!-- ABOUT SECTION (Fallback) -->
+    <section class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-images">
+                    <div class="about-img about-img--primary">
+                        <div class="about-img-css about-img-css--main">
+                            <div class="about-img-pattern"></div>
+                            <span class="about-img-text">Mode<br>Africaine</span>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <h3>15</h3>
-                        <span>Pays représentés</span>
+                    <div class="about-img">
+                        <div class="about-img-css about-img-css--accent">
+                            <i class="fas fa-palette"></i>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <h3>5000+</h3>
-                        <span>Clients satisfaits</span>
+                    <div class="about-img">
+                        <div class="about-img-css about-img-css--dark">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-content">
+                    <span class="section-tag">Notre Histoire</span>
+                    <h2 class="section-title">L'Art de la Mode Africaine</h2>
+                    <p class="about-text">
+                        RACINE BY GANDA est née d'une passion pour l'artisanat africain et le désir de 
+                        connecter les talents du continent avec le monde. Chaque pièce raconte une histoire, 
+                        celle d'un créateur, d'un savoir-faire ancestral sublimé par une vision contemporaine.
+                    </p>
+                    <p class="about-text">
+                        Nous collaborons avec plus de 50 artisans et créateurs à travers l'Afrique, 
+                        garantissant des conditions de travail équitables et la préservation des techniques traditionnelles.
+                    </p>
+                    <div class="about-stats">
+                        <div class="stat-item">
+                            <h3>50+</h3>
+                            <span>Créateurs partenaires</span>
+                        </div>
+                        <div class="stat-item">
+                            <h3>15</h3>
+                            <span>Pays représentés</span>
+                        </div>
+                        <div class="stat-item">
+                            <h3>5000+</h3>
+                            <span>Clients satisfaits</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+@endif
+
+@if($ctaBlock && $ctaBlock->is_active)
+  <section class="home-cta">
+    <div class="container">
+      {!! $ctaBlock->content !!}
     </div>
-</section>
+  </section>
+@endif
 
 <!-- CREATORS SECTION -->
 <section class="creators-section">
@@ -894,31 +335,82 @@
         </div>
         
         <div class="creators-grid">
-            <div class="creator-card">
-                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=faces" alt="Créateur" class="creator-avatar">
-                <h3>Amina Diallo</h3>
-                <p class="creator-specialty">Styliste - Dakar, Sénégal</p>
-                <p class="creator-bio">Spécialiste du wax moderne, Amina crée des pièces qui allient tradition et contemporanéité.</p>
+            @forelse($latestCreators ?? [] as $creator)
+            <div class="creator-card reveal-item">
+                @if($creator->user?->avatar)
+                    <img src="{{ asset('storage/' . $creator->user->avatar) }}"
+                         alt="{{ $creator->user->name }}"
+                         class="creator-avatar">
+                @else
+                    <div class="creator-avatar creator-avatar-initials">
+                        {{ strtoupper(substr($creator->user?->name ?? 'R', 0, 1)) }}
+                    </div>
+                @endif
+                <h3>{{ $creator->user?->name ?? 'Créateur' }}</h3>
+                <p class="creator-specialty">
+                    {{ $creator->specialty ?? 'Styliste' }}
+                    @if($creator->city)· {{ $creator->city }}@endif
+                </p>
+                <p class="creator-bio">{{ Str::limit($creator->bio ?? 'Créateur passionné de mode africaine authentique.', 120) }}</p>
+                <a href="{{ route('frontend.creators') }}" class="creator-link">
+                    Voir les créations <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
-            <div class="creator-card">
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces" alt="Créateur" class="creator-avatar">
-                <h3>Kwame Asante</h3>
-                <p class="creator-specialty">Créateur - Accra, Ghana</p>
-                <p class="creator-bio">Expert en kente, Kwame perpétue un savoir-faire familial vieux de trois générations.</p>
+            @empty
+            @php
+                $demoCreators = [
+                    ['initials' => 'A', 'name' => 'Amina Diallo', 'specialty' => 'Styliste · Dakar', 'bio' => 'Spécialiste du wax moderne, crée des pièces qui allient tradition et contemporanéité.'],
+                    ['initials' => 'K', 'name' => 'Kwame Asante', 'specialty' => 'Créateur · Accra', 'bio' => 'Expert en kente, perpétue un savoir-faire familial vieux de trois générations.'],
+                    ['initials' => 'F', 'name' => 'Fatou Ndiaye', 'specialty' => 'Accessoiriste · Abidjan', 'bio' => 'Bijoux et accessoires inspirés des motifs traditionnels ivoiriens.'],
+                ];
+            @endphp
+            @foreach($demoCreators as $demo)
+            <div class="creator-card reveal-item">
+                <div class="creator-avatar creator-avatar-initials">{{ $demo['initials'] }}</div>
+                <h3>{{ $demo['name'] }}</h3>
+                <p class="creator-specialty">{{ $demo['specialty'] }}</p>
+                <p class="creator-bio">{{ $demo['bio'] }}</p>
+                <a href="{{ route('frontend.creators') }}" class="creator-link">
+                    Voir les créations <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
-            <div class="creator-card">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces" alt="Créateur" class="creator-avatar">
-                <h3>Fatou Ndiaye</h3>
-                <p class="creator-specialty">Accessoiriste - Abidjan, Côte d'Ivoire</p>
-                <p class="creator-bio">Créatrice de bijoux et accessoires inspirés des motifs traditionnels ivoiriens.</p>
-            </div>
+            @endforeach
+            @endforelse
         </div>
     </div>
 </section>
 
 {{-- Section newsletter supprimée - Remplacée par les CTA dans le footer --}}
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
+// Hero Slider
+(function () {
+    const slider = document.getElementById('heroSlider');
+    if (!slider) return;
+    const slides = slider.querySelectorAll('.hero-slide');
+    const dots   = slider.querySelectorAll('.hero-dot');
+    let current  = 0, timer;
+    function goTo(i) {
+        slides[current].classList.remove('active');
+        dots[current].classList.remove('active');
+        current = (i + slides.length) % slides.length;
+        slides[current].classList.add('active');
+        dots[current].classList.add('active');
+    }
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+    function startAuto() { timer = setInterval(next, 4500); }
+    function stopAuto()  { clearInterval(timer); }
+    slider.querySelector('.hero-slider-next').addEventListener('click', () => { stopAuto(); next(); startAuto(); });
+    slider.querySelector('.hero-slider-prev').addEventListener('click', () => { stopAuto(); prev(); startAuto(); });
+    dots.forEach((dot, i) => dot.addEventListener('click', () => { stopAuto(); goTo(i); startAuto(); }));
+    slider.addEventListener('mouseenter', stopAuto);
+    slider.addEventListener('mouseleave', startAuto);
+    startAuto();
+})();
+
+// Scroll reveal géré dans layouts/frontend.blade.php (consolidé)
+
 // Fonction pour gérer la wishlist
 function toggleWishlist(productId) {
     const icon = document.getElementById('wishlist-icon-' + productId);

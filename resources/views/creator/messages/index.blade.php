@@ -4,7 +4,7 @@
 @section('page-title', 'Messagerie Client')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .message-card {
         background: white;
         border-radius: 16px;
@@ -20,7 +20,7 @@
     }
     
     .message-card.unread {
-        border-left: 4px solid #ED5F1E;
+        border-start: 4px solid #ED5F1E;
         background: #FFFAF8;
     }
 
@@ -60,13 +60,13 @@
 <div class="max-w-6xl mx-auto px-4 py-8">
     
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-[#2C1810]">Boîte de réception</h2>
+        <h2 class="text-2xl font-bold text-[#160D0C]">Boîte de réception</h2>
         
         <div class="flex gap-2">
-            <a href="{{ route('creator.messages.index') }}" class="px-4 py-2 rounded-lg {{ request('filter') != 'unread' ? 'bg-[#2C1810] text-white' : 'bg-white text-[#2C1810] border border-[#E5DDD3]' }}">
+            <a href="{{ route('messages.index') }}" class="px-4 py-2 rounded-lg {{ request('filter') != 'unread' ? 'bg-[#160D0C] text-white' : 'bg-white text-[#160D0C] border border-[#E5DDD3]' }}">
                 Tous
             </a>
-            <a href="{{ route('creator.messages.index', ['filter' => 'unread']) }}" class="px-4 py-2 rounded-lg {{ request('filter') == 'unread' ? 'bg-[#2C1810] text-white' : 'bg-white text-[#2C1810] border border-[#E5DDD3]' }}">
+            <a href="{{ route('messages.index', ['filter' => 'unread']) }}" class="px-4 py-2 rounded-lg {{ request('filter') == 'unread' ? 'bg-[#160D0C] text-white' : 'bg-white text-[#160D0C] border border-[#E5DDD3]' }}">
                 Non lus
             </a>
         </div>
@@ -75,7 +75,7 @@
     @if($conversations->count() > 0)
         <div class="space-y-4">
             @foreach($conversations as $conversation)
-                <a href="{{ route('creator.messages.show', $conversation) }}" class="message-card block p-6 {{ $conversation->getUnreadCountForUser(Auth::id()) > 0 ? 'unread' : '' }}">
+                <a href="{{ route('messages.show', $conversation) }}" class="message-card block p-6 {{ $conversation->getUnreadCountForUser(Auth::id()) > 0 ? 'unread' : '' }}">
                     <div class="flex items-start gap-4">
                         {{-- Avatar --}}
                         @php
@@ -91,15 +91,15 @@
                         {{-- Content --}}
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start mb-1">
-                                <h3 class="font-bold text-[#2C1810] truncate">{{ $name }}</h3>
+                                <h3 class="font-bold text-[#160D0C] truncate">{{ $name }}</h3>
                                 <span class="text-xs text-gray-500 whitespace-nowrap">{{ $conversation->last_message_at->diffForHumans() }}</span>
                             </div>
                             
                             <div class="flex items-center gap-2 mb-2">
                                 @if($conversation->type == 'order_thread')
-                                    <span class="badge-order"><i class="fas fa-shopping-bag mr-1"></i> Commande #{{ $conversation->order->order_number ?? 'N/A' }}</span>
+                                    <span class="badge-order"><i class="fas fa-shopping-bag me-1"></i> Commande #{{ $conversation->order->order_number ?? 'N/A' }}</span>
                                 @elseif($conversation->type == 'product_thread')
-                                    <span class="badge-product"><i class="fas fa-box mr-1"></i> Produit</span>
+                                    <span class="badge-product"><i class="fas fa-box me-1"></i> Produit</span>
                                 @endif
                                 <span class="text-sm font-medium text-gray-700 truncate">{{ $conversation->subject }}</span>
                             </div>
@@ -124,7 +124,7 @@
             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                 <i class="far fa-envelope text-3xl"></i>
             </div>
-            <h3 class="text-lg font-semibold text-[#2C1810]">Aucun message pour le moment</h3>
+            <h3 class="text-lg font-semibold text-[#160D0C]">Aucun message pour le moment</h3>
             <p class="text-[#8B7355] mt-2 max-w-md mx-auto">Les messages apparaîtront ici lorsque des clients vous contacteront à propos de vos produits ou commandes.</p>
         </div>
     @endif

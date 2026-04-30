@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'sanctum' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
     ],
 
     /*
@@ -111,5 +115,20 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Session Context TTL
+    |--------------------------------------------------------------------------
+    |
+    | Maximum age (in hours) for a frozen UserContext in session.
+    | After this time, the user must re-authenticate.
+    | 
+    | SECURITY: Lower values = more secure but more re-auth prompts
+    | Recommended: 24 hours for regular users, 8 hours for admins
+    |
+    */
+
+    'context_ttl_hours' => env('AUTH_CONTEXT_TTL_HOURS', 24),
 
 ];

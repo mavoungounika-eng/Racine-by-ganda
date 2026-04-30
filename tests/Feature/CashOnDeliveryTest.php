@@ -14,10 +14,11 @@ use Illuminate\Support\Facades\Log;
 use Modules\ERP\Models\ErpStockMovement;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 class CashOnDeliveryTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected Product $product;
@@ -31,6 +32,8 @@ class CashOnDeliveryTest extends TestCase
             'role' => 'client',
             'status' => 'active',
         ]);
+        $this->actingAs($this->user);
+        $this->seedAccounting();
 
         // Créer un produit avec stock
         $this->product = Product::factory()->create([
@@ -39,7 +42,6 @@ class CashOnDeliveryTest extends TestCase
             'is_active' => true,
         ]);
     }
-
     #[Test]
     public function it_creates_order_with_cash_on_delivery(): void
     {
@@ -78,7 +80,6 @@ class CashOnDeliveryTest extends TestCase
         $this->assertEquals('pending', $order->status);
         $this->assertEquals(22000, $order->total_amount); // 2 * 10000 + 2000 livraison
     }
-
     #[Test]
     public function it_decrements_stock_for_cash_on_delivery(): void
     {
@@ -117,7 +118,6 @@ class CashOnDeliveryTest extends TestCase
         $this->assertNotNull($movement);
         $this->assertEquals($quantity, $movement->quantity);
     }
-
     #[Test]
     public function it_clears_cart_after_order_creation(): void
     {
@@ -147,7 +147,6 @@ class CashOnDeliveryTest extends TestCase
         $cartService = new DatabaseCartService();
         $this->assertTrue($cartService->getItems()->isEmpty());
     }
-
     #[Test]
     public function it_logs_funnel_events_for_cash_on_delivery(): void
     {
@@ -179,7 +178,6 @@ class CashOnDeliveryTest extends TestCase
         $this->assertNotNull($funnelEvent);
         $this->assertEquals('cash_on_delivery', $funnelEvent->metadata['payment_method'] ?? null);
     }
-
     #[Test]
     public function it_does_not_create_payment_record_for_cash_on_delivery(): void
     {
@@ -207,7 +205,6 @@ class CashOnDeliveryTest extends TestCase
         // Vérifier qu'aucun enregistrement Payment n'a été créé
         $this->assertEquals(0, $order->payments()->count());
     }
-
     #[Test]
     public function it_prevents_double_stock_decrement_for_cash_on_delivery(): void
     {
@@ -251,4 +248,3 @@ class CashOnDeliveryTest extends TestCase
         $this->assertEquals(1, $movements);
     }
 }
-

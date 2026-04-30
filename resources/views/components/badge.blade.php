@@ -21,7 +21,7 @@ $classes = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
 
 <span {{ $attributes->merge(['class' => $classes]) }}>
     @if($icon)
-        <i class="{{ $icon }} mr-1.5"></i>
+        <i class="{{ $icon }} me-1.5"></i>
     @endif
     {{ $slot }}
 </span>

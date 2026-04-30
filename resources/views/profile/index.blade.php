@@ -12,7 +12,7 @@
             <div class="card-body text-center py-5">
                 {{-- Avatar --}}
                 <div class="mb-4 position-relative d-inline-block">
-                    <div class="user-avatar-lg mx-auto" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--racine-violet) 0%, var(--racine-violet-dark) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(75, 29, 242, 0.3);">
+                    <div class="user-avatar-lg mx-auto" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #ED5F1E 0%, #160D0C 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(237, 95, 30, 0.3);">
                         <span style="color: white; font-size: 3rem; font-weight: 600; font-family: 'Playfair Display', serif;">
                             {{ strtoupper(substr($user->name, 0, 1)) }}
                         </span>
@@ -36,12 +36,12 @@
                         </span>
                         @break
                     @case('admin')
-                        <span class="badge" style="background: linear-gradient(135deg, var(--racine-gold) 0%, #B8860B 100%); color: var(--racine-black); padding: 0.5rem 1rem; font-size: 0.8rem;">
+                        <span class="badge" style="background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%); color: #160D0C; padding: 0.5rem 1rem; font-size: 0.8rem;">
                             ⚙️ Administrateur
                         </span>
                         @break
                     @case('staff')
-                        <span class="badge" style="background: linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%); color: white; padding: 0.5rem 1rem; font-size: 0.8rem;">
+                        <span class="badge" style="background: linear-gradient(135deg, #ED5F1E 0%, #160D0C 100%); color: white; padding: 0.5rem 1rem; font-size: 0.8rem;">
                             🛠️ Staff
                         </span>
                         @break
@@ -51,7 +51,7 @@
                         </span>
                         @break
                     @default
-                        <span class="badge" style="background: linear-gradient(135deg, var(--racine-violet) 0%, var(--racine-violet-dark) 100%); color: white; padding: 0.5rem 1rem; font-size: 0.8rem;">
+                        <span class="badge" style="background: linear-gradient(135deg, #ED5F1E 0%, #160D0C 100%); color: white; padding: 0.5rem 1rem; font-size: 0.8rem;">
                             👤 Client
                         </span>
                 @endswitch
@@ -125,7 +125,7 @@
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <span class="icon-check mr-2"></span> Enregistrer les modifications
+                            <span class="icon-check me-2"></span> Enregistrer les modifications
                         </button>
                         <a href="{{ route('profile.edit') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-edit me-2"></i> Modifier toutes les informations
@@ -168,14 +168,14 @@
                         </div>
                     </div>
 
-                    <div class="p-3 mb-4" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-radius: var(--radius-md);">
-                        <small style="color: #92400E;">
+                    <div class="p-3 mb-4" style="background: rgba(255, 184, 0, 0.1); border-radius: var(--radius-md);">
+                        <small style="color: #160D0C;">
                             <strong>💡 Conseils :</strong> Utilisez au moins 8 caractères avec des lettres, chiffres et symboles.
                         </small>
                     </div>
 
                     <button type="submit" class="btn btn-gold">
-                        <span class="icon-lock mr-2"></span> Modifier le mot de passe
+                        <span class="icon-lock me-2"></span> Modifier le mot de passe
                     </button>
                 </form>
             </div>
@@ -193,12 +193,12 @@
                     <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 1rem;">
                         <div>
                             <h6 class="mb-1" style="color: #DC2626; font-weight: 600;">Supprimer mon compte</h6>
-                            <p class="mb-0" style="color: #6c757d; font-size: 0.9rem;">
+                            <p class="mb-0" style="color: rgba(22,13,12,0.5); font-size: 0.9rem;">
                                 Supprimez définitivement votre compte et toutes vos données personnelles (conformité RGPD)
                             </p>
                         </div>
                         <div class="d-flex gap-2">
-                            <a href="{{ route('profile.data.export', ['format' => 'json']) }}" class="btn btn-sm" style="background: rgba(14, 165, 233, 0.1); color: #0EA5E9; border: 1px solid #0EA5E9;">
+                            <a href="{{ route('profile.data.export', ['format' => 'json']) }}" class="btn btn-sm" style="background: rgba(22,13,12,0.05); color: #160D0C; border: 1px solid rgba(22,13,12,0.2);">
                                 <i class="fas fa-download me-1"></i>Exporter données
                             </a>
                             <a href="{{ route('profile.delete-account') }}" class="btn btn-sm btn-danger">

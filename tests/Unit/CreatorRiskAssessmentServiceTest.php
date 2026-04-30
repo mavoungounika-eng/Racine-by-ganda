@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -26,8 +28,7 @@ class CreatorRiskAssessmentServiceTest extends TestCase
         parent::setUp();
         $this->service = new CreatorRiskAssessmentService();
     }
-
-    /** @test */
+    #[Test]
     public function it_assesses_low_risk_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -55,8 +56,7 @@ class CreatorRiskAssessmentServiceTest extends TestCase
         $this->assertEquals('monitor', $assessment['recommended_action']);
         $this->assertLessThan(30, $assessment['risk_score']);
     }
-
-    /** @test */
+    #[Test]
     public function it_assesses_medium_risk_creator_with_past_due()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -84,8 +84,7 @@ class CreatorRiskAssessmentServiceTest extends TestCase
         $this->assertEquals('notify', $assessment['recommended_action']);
         $this->assertContains('Abonnement past_due', $assessment['reasons']);
     }
-
-    /** @test */
+    #[Test]
     public function it_assesses_high_risk_creator_with_unpaid()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -114,8 +113,7 @@ class CreatorRiskAssessmentServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(60, $assessment['risk_score']);
         $this->assertContains('Abonnement unpaid', $assessment['reasons']);
     }
-
-    /** @test */
+    #[Test]
     public function it_assesses_risk_with_incomplete_onboarding()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -143,8 +141,7 @@ class CreatorRiskAssessmentServiceTest extends TestCase
         $this->assertContains('Onboarding Stripe incomplet', $assessment['reasons']);
         $this->assertGreaterThan(0, $assessment['risk_score']);
     }
-
-    /** @test */
+    #[Test]
     public function it_assesses_risk_with_no_stripe_account()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -163,8 +160,7 @@ class CreatorRiskAssessmentServiceTest extends TestCase
 
         $this->assertContains('Aucun compte Stripe', $assessment['reasons']);
     }
-
-    /** @test */
+    #[Test]
     public function it_assesses_risk_with_no_subscription()
     {
         $creator = CreatorProfile::factory()->create([
@@ -183,8 +179,7 @@ class CreatorRiskAssessmentServiceTest extends TestCase
 
         $this->assertContains('Aucun abonnement actif', $assessment['reasons']);
     }
-
-    /** @test */
+    #[Test]
     public function it_assesses_risk_with_failed_payments()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -215,6 +210,11 @@ class CreatorRiskAssessmentServiceTest extends TestCase
         $this->assertGreaterThan(0, $assessment['risk_score']);
     }
 }
+
+
+
+
+
 
 
 

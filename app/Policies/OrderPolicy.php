@@ -12,38 +12,28 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admin et moderator peuvent voir toutes les commandes
-        // Les clients peuvent voir leurs propres commandes
         return true;
     }
 
     /**
      * Determine if the user can view the order.
      */
-    /**
-     * Determine if the user can view the order.
-     */
     public function view(User $user, Order $order): bool
     {
-        // Admin et moderator peuvent voir toutes les commandes
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['admin', 'moderator', 'super_admin'])) {
-            return true;
-        }
-
-        // Les clients peuvent voir uniquement leurs commandes
+        // Propriétaire de la commande
         if ($order->user_id === $user->id) {
             return true;
         }
 
-        // Les créateurs peuvent voir les commandes contenant leurs produits
-        if (in_array($roleSlug, ['createur', 'creator'])) {
-            return $order->items()->whereHas('product', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })->exists();
+        // Admin/Staff accès global
+        if ($user->hasPermission('view-all-orders')) {
+            return true;
         }
 
-        return false;
+        // Créateur accès aux commandes contenant ses produits
+        return $order->items()->whereHas('product', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->exists();
     }
 
     /**
@@ -51,18 +41,13 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        // Les clients actifs peuvent créer des commandes en ligne
-        if ($user->isClient() && $user->status === 'active') {
+        // Clients actifs peuvent créer en ligne
+        if ($user->getRoleSlug() === 'client' && $user->status === 'active') {
             return true;
         }
         
-        // Les admins et staff peuvent créer des commandes via le POS (boutique physique)
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['admin', 'super_admin', 'staff'])) {
-            return true;
-        }
-        
-        return false;
+        // Staff/Admin accès POS
+        return $user->hasPermission('process-payments');
     }
 
     /**
@@ -70,9 +55,7 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
-        // Seuls admin et moderator peuvent modifier les commandes
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'moderator', 'super_admin']);
+        return $user->hasPermission('edit-orders');
     }
 
     /**
@@ -80,9 +63,7 @@ class OrderPolicy
      */
     public function delete(User $user, Order $order): bool
     {
-        // Seul admin peut supprimer
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'super_admin']);
+        return $user->hasPermission('delete-orders');
     }
 
     /**
@@ -90,20 +71,15 @@ class OrderPolicy
      */
     public function updateStatus(User $user, Order $order): bool
     {
-        // Admin et moderator peuvent changer le statut
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['admin', 'moderator', 'super_admin'])) {
+        // Admin/Staff accès global
+        if ($user->hasPermission('edit-orders')) {
             return true;
         }
 
-        // Les créateurs peuvent changer le statut des commandes contenant leurs produits
-        if (in_array($roleSlug, ['createur', 'creator'])) {
-            return $order->items()->whereHas('product', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })->exists();
-        }
-
-        return false;
+        // Créateur accès restreint à ses produits
+        return $order->items()->whereHas('product', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->exists();
     }
 
     /**
@@ -111,13 +87,12 @@ class OrderPolicy
      */
     public function cancel(User $user, Order $order): bool
     {
-        // Admin peut annuler n'importe quelle commande
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['admin', 'super_admin'])) {
+        // Admin accès global
+        if ($user->hasPermission('delete-orders')) {
             return true;
         }
 
-        // Le client peut annuler sa propre commande si elle est en pending
+        // Client peut annuler sa commande en attente
         return $order->user_id === $user->id && $order->status === 'pending';
     }
 }

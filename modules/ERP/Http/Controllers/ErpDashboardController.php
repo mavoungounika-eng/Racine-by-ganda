@@ -40,6 +40,10 @@ class ErpDashboardController extends Controller
      */
     public function index()
     {
+        // SÉCURITÉ : Vérifier la permission d'accès ERP
+        // Le middleware 'ensure:staff' laisse passer les staffs, mais il faut vérifier la permission spécifique
+        \Illuminate\Support\Facades\Gate::authorize('access-erp');
+
         // ✅ Cache des stats (configurable) - TTL optimisé : 15-30 minutes
         $cacheKey = 'erp.dashboard.stats';
         $ttl = config('erp.cache.dashboard_stats_ttl', 900); // 15 minutes par défaut

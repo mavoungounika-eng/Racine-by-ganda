@@ -9,18 +9,11 @@ use App\Models\StripeWebhookEvent;
 use App\Services\Payments\PaymentEventMapperService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
-use Mockery;
 use Tests\TestCase;
 
 class StripeWebhookPaymentMappingTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
 
     protected function setUp(): void
     {
@@ -31,14 +24,6 @@ class StripeWebhookPaymentMappingTest extends TestCase
             'services.stripe.webhook_secret' => '',
             'app.env' => 'local', // Mode dev pour éviter la vérification de signature
         ]);
-    }
-
-    private function mockStripeConstructEvent(array $eventArray): void
-    {
-        // Mock alias static: Stripe\Webhook::constructEvent(...)
-        $mock = Mockery::mock('alias:Stripe\Webhook');
-        $mock->shouldReceive('constructEvent')
-            ->andReturn((object) $eventArray);
     }
 
     /**
@@ -71,8 +56,6 @@ class StripeWebhookPaymentMappingTest extends TestCase
                 ],
             ],
         ];
-
-        $this->mockStripeConstructEvent($event);
 
         // 1) Appel endpoint => persist event + dispatch job
         // Envoyer le payload JSON brut (comme Stripe le ferait)
@@ -130,8 +113,6 @@ class StripeWebhookPaymentMappingTest extends TestCase
             ],
         ];
 
-        $this->mockStripeConstructEvent($event);
-
         $res = $this->call('POST', '/api/webhooks/stripe', [], [], [], [], json_encode($event));
         $res->assertStatus(200);
 
@@ -165,8 +146,6 @@ class StripeWebhookPaymentMappingTest extends TestCase
             'type' => 'payment_intent.succeeded',
             'data' => ['object' => ['id' => 'pi_X']],
         ];
-        $this->mockStripeConstructEvent($event);
-
         // 1er call
         $this->call('POST', '/api/webhooks/stripe', [], [], [], [], json_encode($event))->assertStatus(200);
 
@@ -182,4 +161,3 @@ class StripeWebhookPaymentMappingTest extends TestCase
         Queue::assertPushed(ProcessStripeWebhookEventJob::class, 1);
     }
 }
-

@@ -13,14 +13,14 @@ class ErpPurchaseObserver
     public function updated(ErpPurchase $purchase): void
     {
         // Vérifier si le statut a changé vers 'received'
-        if ($purchase->isDirty('status') && $purchase->status === 'received') {
+        if ($purchase->wasChanged('status') && $purchase->status === 'received') {
             // Dispatch événement pour comptabilité
             event(new PurchaseReceived($purchase));
             
             \Log::info('ErpPurchaseObserver: Purchase received, accounting event dispatched', [
                 'purchase_id' => $purchase->id,
                 'supplier_id' => $purchase->supplier_id,
-                'total' => $purchase->total,
+                'total_amount' => $purchase->total_amount,
             ]);
         }
     }

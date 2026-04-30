@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\User;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Str;
@@ -73,20 +74,19 @@ class TwoFactorService
     
     /**
      * Active le 2FA pour un utilisateur
+     * Note: Les codes de récupération sont gérés par TwoFactorRecoveryCodeService
+     * (génération via le controller après enableTwoFactor)
      */
     public function enableTwoFactor(User $user, string $secret): bool
     {
-        $recoveryCodes = $this->generateRecoveryCodes();
-        
         $user->two_factor_secret = encrypt($secret);
-        $user->two_factor_recovery_codes = encrypt(json_encode($recoveryCodes));
+        $user->two_factor_recovery_codes = null;
         $user->two_factor_confirmed_at = now();
-        
-        // Rendre obligatoire pour admin et super_admin
-        if (in_array($user->getRoleSlug(), ['admin', 'super_admin'])) {
+
+        if (in_array($user->getRoleSlug(), [Role::ADMIN, Role::SUPER_ADMIN])) {
             $user->two_factor_required = true;
         }
-        
+
         return $user->save();
     }
     
@@ -154,21 +154,26 @@ class TwoFactorService
     
     /**
      * Vérifie un code de récupération
+     * Utilise TwoFactorRecoveryCodeService si codes hashés, sinon format legacy (encrypted)
      */
     public function verifyRecoveryCode(User $user, string $code): bool
     {
+        $recoveryService = app(\App\Services\Auth\TwoFactorRecoveryCodeService::class);
+        if ($recoveryService->getRemainingCodesCount($user) > 0) {
+            return $recoveryService->validateAndConsumeCode($user, strtoupper(str_replace(' ', '', $code)));
+        }
+
         $codes = $this->getRecoveryCodes($user);
         $code = strtoupper(str_replace(' ', '', $code));
-        
+
         if (in_array($code, $codes)) {
-            // Supprimer le code utilisé
             $codes = array_diff($codes, [$code]);
             $user->two_factor_recovery_codes = encrypt(json_encode(array_values($codes)));
             $user->save();
-            
+
             return true;
         }
-        
+
         return false;
     }
     
@@ -185,13 +190,22 @@ class TwoFactorService
      */
     public function isRequired(User $user): bool
     {
-        // En développement local, la 2FA n'est pas obligatoire
-        if (app()->environment('local')) {
+        // En développement local ou testing, la 2FA n'est pas obligatoire
+        // On permet de surcharger via config pour les tests
+        $configuredEnv = (string) config('app.env');
+        $isConfiguredProductionLike = in_array($configuredEnv, ['production', 'staging'], true);
+        $forceInNonProd = (bool) config('auth.force_2fa_required_in_testing', false);
+
+        if (
+            !$isConfiguredProductionLike
+            && (app()->environment(['local', 'testing']) || $configuredEnv === 'local')
+            && !$forceInNonProd
+        ) {
             return false;
         }
         
         // Obligatoire pour admin et super_admin
-        return $user->two_factor_required || in_array($user->getRoleSlug(), ['admin', 'super_admin']);
+        return $user->two_factor_required || in_array($user->getRoleSlug(), [Role::ADMIN, Role::SUPER_ADMIN]);
     }
     
     /**

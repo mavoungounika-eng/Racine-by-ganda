@@ -9,13 +9,13 @@ use Modules\POSSync\Http\Controllers\SyncGatewayController;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('api/pos')->group(function () {
+Route::prefix('pos')->group(function () {
     
     // Enregistrement d'un nouveau device POS
     Route::post('/register', [SyncGatewayController::class, 'registerDevice']);
     
-    // Routes protégées par JWT
-    Route::middleware('auth:pos')->group(function () {
+    // Routes protégées par JWT machine
+    Route::middleware('pos.device')->group(function () {
         
         // Synchronisation des événements (endpoint principal)
         Route::post('/sync', [SyncGatewayController::class, 'syncEvents']);

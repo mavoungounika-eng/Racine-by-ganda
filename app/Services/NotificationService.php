@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Notification;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -123,7 +124,7 @@ class NotificationService
      */
     public function broadcastToTeam(string $title, string $message, string $type = 'info'): Collection
     {
-        $userIds = User::whereIn('role', ['super_admin', 'admin', 'staff'])->pluck('id')->toArray();
+        $userIds = User::whereIn('role', [Role::SUPER_ADMIN, Role::ADMIN, Role::STAFF])->pluck('id')->toArray();
         return $this->broadcast($userIds, $title, $message, $type);
     }
 

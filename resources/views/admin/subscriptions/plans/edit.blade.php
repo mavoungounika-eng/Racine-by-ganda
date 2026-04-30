@@ -6,7 +6,7 @@
 <div class="container-fluid py-4">
     <div class="mb-4">
         <a href="{{ route('admin.subscriptions.plans.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left mr-2"></i>Retour
+            <i class="fas fa-arrow-left me-2"></i>Retour
         </a>
     </div>
 
@@ -83,7 +83,7 @@
                                 @endif
                             </div>
                             <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addFeature()">
-                                <i class="fas fa-plus mr-1"></i>Ajouter une fonctionnalité
+                                <i class="fas fa-plus me-1"></i>Ajouter une fonctionnalité
                             </button>
                         </div>
 
@@ -122,7 +122,7 @@
                                 Annuler
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save mr-2"></i>Enregistrer les modifications
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
                             </button>
                         </div>
                     </form>
@@ -155,7 +155,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function addFeature() {
     const container = document.getElementById('features-container');
     const div = document.createElement('div');

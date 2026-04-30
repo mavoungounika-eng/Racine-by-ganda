@@ -11,8 +11,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
+use App\Services\Cms\BannerService;
+
 class CreatorController extends Controller
 {
+    use \App\Http\Controllers\Auth\Traits\HandlesAuthRedirect;
     /**
      * Afficher le formulaire d'inscription créateur.
      */
@@ -20,9 +23,9 @@ class CreatorController extends Controller
     {
         $user = Auth::user();
         
-        // Si l'utilisateur a déjà un profil créateur, rediriger vers le dashboard
+        // Si l'utilisateur a déjà un profil créateur, rediriger selon le moteur de décision
         if ($user->creatorProfile) {
-            return redirect()->route('creator.dashboard')
+            return redirect($this->getRedirectPath($user))
                 ->with('info', 'Vous avez déjà un profil créateur.');
         }
         
@@ -69,7 +72,7 @@ class CreatorController extends Controller
             $user->save();
         }
 
-        return redirect()->route('creator.dashboard')
+        return redirect($this->getRedirectPath($user))
             ->with('success', 'Votre profil créateur a été créé avec succès !');
     }
 
@@ -90,10 +93,13 @@ class CreatorController extends Controller
         $productsCount = $creatorProfile->products()->where('is_active', true)->count();
         $collectionsCount = $creatorProfile->collections()->where('is_active', true)->count();
 
+        $cmsBanners = app(BannerService::class)->getActiveBanners('category_top');
+
         return view('frontend.creator-profile', compact(
             'creatorProfile',
             'productsCount',
-            'collectionsCount'
+            'collectionsCount',
+            'cmsBanners'
         ));
     }
 }

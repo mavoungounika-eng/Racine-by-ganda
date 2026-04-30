@@ -1,13 +1,13 @@
 @extends('layouts.frontend')
 
-@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Notre Histoire - RACINE BY GANDA')
+@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Notre Histoire - ' . config('app.company.name'))
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     /* HERO */
     .about-hero {
         min-height: 70vh;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         display: flex;
         align-items: center;
         position: relative;
@@ -40,14 +40,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(212, 165, 116, 0.15);
-        border: 1px solid rgba(212, 165, 116, 0.3);
+        background: rgba(237, 95, 30, 0.08);
+        border: 1px solid rgba(255, 184, 0, 0.3);
         padding: 0.5rem 1.25rem;
         border-radius: 30px;
         font-size: 0.8rem;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 1.5rem;
     }
     
@@ -60,7 +60,7 @@
     }
     
     .hero-title .highlight {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .hero-description {
@@ -97,19 +97,19 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 700;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 0.25rem;
     }
     
     .hero-img-overlay span {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
     /* STORY SECTION */
     .story-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .story-grid {
@@ -143,8 +143,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -158,13 +158,13 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.5rem;
         line-height: 1.2;
     }
     
     .story-text p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-size: 1.1rem;
         line-height: 1.9;
         margin-bottom: 1.5rem;
@@ -190,7 +190,7 @@
     .value-card {
         text-align: center;
         padding: 2rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 20px;
         transition: all 0.3s;
     }
@@ -203,7 +203,7 @@
     .value-icon {
         width: 80px;
         height: 80px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 20px;
         display: flex;
         align-items: center;
@@ -217,12 +217,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
     }
     
     .value-card p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -230,7 +230,7 @@
     /* TEAM */
     .team-section {
         padding: 6rem 0;
-        background: #2C1810;
+        background: #160D0C;
     }
     
     .team-header {
@@ -239,7 +239,7 @@
     }
     
     .team-header .section-tag {
-        background: rgba(212, 165, 116, 0.2);
+        background: rgba(237, 95, 30, 0.1);
     }
     
     .team-header .section-title {
@@ -300,7 +300,7 @@
     }
     
     .team-info span {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 0.9rem;
     }
     
@@ -314,7 +314,7 @@
     /* TIMELINE */
     .timeline-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .timeline-header {
@@ -335,7 +335,7 @@
         top: 0;
         bottom: 0;
         width: 2px;
-        background: #D4A574;
+        background: #FFB800;
         transform: translateX(-50%);
     }
     
@@ -358,7 +358,7 @@
     
     .timeline-year {
         display: inline-block;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         padding: 0.35rem 1rem;
         border-radius: 20px;
@@ -371,12 +371,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.25rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .timeline-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -384,8 +384,8 @@
     .timeline-dot {
         width: 20px;
         height: 20px;
-        background: #D4A574;
-        border: 4px solid #F8F6F3;
+        background: #FFB800;
+        border: 4px solid rgba(22,13,12,0.05);
         border-radius: 50%;
         position: absolute;
         left: 50%;
@@ -395,7 +395,7 @@
     /* CTA */
     .cta-section {
         padding: 5rem 0;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         text-align: center;
     }
     
@@ -422,7 +422,7 @@
         gap: 0.75rem;
         padding: 1rem 2.5rem;
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border-radius: 50px;
         font-weight: 600;
         text-decoration: none;
@@ -432,7 +432,7 @@
     .btn-cta:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        color: #2C1810;
+        color: #160D0C;
     }
     
     @media (max-width: 1024px) {
@@ -466,11 +466,11 @@
                     {!! $heroData['title'] ?? "Célébrer la<br><span class=\"highlight\">Beauté</span><br>Africaine" !!}
                 </h1>
                 <p class="hero-description">
-                    {{ $heroData['description'] ?? "RACINE BY GANDA est née d'une passion profonde pour l'artisanat africain et du désir de créer un pont entre les talents du continent et le monde entier." }}
+                    {{ $heroData['description'] ?? config('app.company.name') . " est née d'une passion profonde pour l'artisanat africain et du désir de créer un pont entre les talents du continent et le monde entier." }}
                 </p>
             </div>
             <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=1000&fit=crop" alt="Artisanat Africain" class="hero-img-main">
+                <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Artisanat Africain" class="hero-img-main">
                 <div class="hero-img-overlay">
                     <h4>2019</h4>
                     <span>Année de création</span>
@@ -486,13 +486,13 @@
         <div class="story-grid">
             <div class="story-images">
                 <div class="story-img">
-                    <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600" alt="Création">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-01.jpeg') }}" alt="Création">
                 </div>
                 <div class="story-img">
-                    <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=400" alt="Tissu">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-02.jpeg') }}" alt="Tissu">
                 </div>
                 <div class="story-img">
-                    <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400" alt="Atelier">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-03.jpeg') }}" alt="Atelier">
                 </div>
             </div>
             <div class="story-content">
@@ -505,7 +505,7 @@
                         De cette rencontre est née l'envie de partager ces trésors avec le monde.
                     </p>
                     <p>
-                        Aujourd'hui, RACINE BY GANDA collabore avec plus de 50 artisans et créateurs 
+                        Aujourd'hui, {{ config('app.company.name') }} collabore avec plus de 50 artisans et créateurs 
                         répartis dans 15 pays africains. Chaque pièce que vous achetez contribue directement 
                         à améliorer les conditions de vie de ces communautés talentueuses.
                     </p>
@@ -557,24 +557,24 @@
     <div class="container">
         <div class="team-header">
             <span class="section-tag">L'Équipe</span>
-            <h2 class="section-title">Les visages derrière RACINE BY GANDA</h2>
+            <h2 class="section-title">Les visages derrière {{ config('app.company.name') }}</h2>
             <p>Une équipe passionnée, unie par l'amour de l'artisanat africain</p>
         </div>
         
         <div class="team-grid">
             <div class="team-card">
                 <div class="team-img">
-                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=faces" alt="Fondatrice">
+                    <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Fondatrice">
                 </div>
                 <div class="team-info">
-                    <h3>Aminata Ganda</h3>
+                    <h3>{{ config('app.company.ceo') }}</h3>
                     <span>Fondatrice & Directrice Créative</span>
-                    <p>Visionnaire passionnée, elle a créé RACINE BY GANDA pour partager sa culture avec le monde.</p>
+                    <p>Visionnaire passionnée, elle a créé {{ config('app.company.name') }} pour partager sa culture avec le monde.</p>
                 </div>
             </div>
             <div class="team-card">
                 <div class="team-img">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=faces" alt="Directeur">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-04.jpeg') }}" alt="Directeur des Opérations">
                 </div>
                 <div class="team-info">
                     <h3>Moussa Diallo</h3>
@@ -584,7 +584,7 @@
             </div>
             <div class="team-card">
                 <div class="team-img">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=faces" alt="Designer">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-05.jpeg') }}" alt="Cheffe Styliste">
                 </div>
                 <div class="team-info">
                     <h3>Fatou Ndiaye</h3>
@@ -609,7 +609,7 @@
                 <div class="timeline-content">
                     <span class="timeline-year">2019</span>
                     <h3>La Naissance</h3>
-                    <p>Création de RACINE BY GANDA à Paris, avec une première collection de 20 pièces.</p>
+                    <p>Création de {{ config('app.company.name') }} à Paris, avec une première collection de 20 pièces.</p>
                 </div>
             </div>
             <div class="timeline-item">
@@ -640,7 +640,7 @@
 <!-- CTA -->
 <section class="cta-section">
     <div class="container">
-        <h2>Rejoignez l'Aventure RACINE BY GANDA</h2>
+        <h2>Rejoignez l'Aventure {{ config('app.company.name') }}</h2>
         <p>Découvrez nos créations uniques et participez à une mode plus responsable et authentique.</p>
         <a href="{{ route('frontend.shop') }}" class="btn-cta">
             <i class="fas fa-shopping-bag"></i>

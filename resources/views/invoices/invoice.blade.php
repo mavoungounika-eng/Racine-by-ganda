@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facture #{{ $invoiceNumber }} - RACINE BY GANDA</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    <style nonce="{{ csp_nonce() }}">
         * {
             margin: 0;
             padding: 0;
@@ -113,7 +113,7 @@
             background: #f8f9fa;
         }
         
-        .text-right {
+        .text-end {
             text-align: right;
         }
         
@@ -283,8 +283,8 @@
                 <tr>
                     <th>Produit</th>
                     <th class="text-center">Quantité</th>
-                    <th class="text-right">Prix unitaire</th>
-                    <th class="text-right">Total</th>
+                    <th class="text-end">Prix unitaire</th>
+                    <th class="text-end">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -297,8 +297,8 @@
                         @endif
                     </td>
                     <td class="text-center">{{ $item->quantity }}</td>
-                    <td class="text-right">{{ number_format($item->price ?? 0, 0, ',', ' ') }} FCFA</td>
-                    <td class="text-right"><strong>{{ number_format(($item->price ?? 0) * $item->quantity, 0, ',', ' ') }} FCFA</strong></td>
+                    <td class="text-end">{{ number_format($item->price ?? 0, 0, ',', ' ') }} FCFA</td>
+                    <td class="text-end"><strong>{{ number_format(($item->price ?? 0) * $item->quantity, 0, ',', ' ') }} FCFA</strong></td>
                 </tr>
                 @endforeach
             </tbody>

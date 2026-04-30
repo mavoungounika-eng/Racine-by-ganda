@@ -3,9 +3,9 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Politique de Confidentialité - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .legal-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 4rem 0;
         margin-top: -70px;
         padding-top: calc(4rem + 70px);
@@ -25,7 +25,7 @@
     
     .legal-content {
         padding: 4rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .legal-body {
@@ -38,13 +38,13 @@
     
     .legal-intro {
         padding: 1.5rem;
-        background: rgba(212, 165, 116, 0.1);
+        background: rgba(237, 95, 30, 0.08);
         border-radius: 16px;
         margin-bottom: 2.5rem;
     }
     
     .legal-intro p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         margin: 0;
     }
@@ -52,7 +52,7 @@
     .legal-section {
         margin-bottom: 2.5rem;
         padding-bottom: 2.5rem;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .legal-section:last-child {
@@ -65,7 +65,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1.25rem;
         display: flex;
         align-items: center;
@@ -73,18 +73,18 @@
     }
     
     .legal-section h2 i {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .legal-section h3 {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin: 1.5rem 0 0.75rem;
     }
     
     .legal-section p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         margin-bottom: 1rem;
     }
@@ -95,7 +95,7 @@
     }
     
     .legal-section li {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         margin-bottom: 0.5rem;
     }
@@ -109,17 +109,17 @@
     .data-table th, .data-table td {
         padding: 1rem;
         text-align: left;
-        border-bottom: 1px solid #E5DDD3;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .data-table th {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .data-table td {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
     }
     
     .rights-grid {
@@ -130,7 +130,7 @@
     }
     
     .right-card {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 12px;
         padding: 1.25rem;
     }
@@ -138,7 +138,7 @@
     .right-card h4 {
         font-size: 1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
@@ -146,7 +146,7 @@
     }
     
     .right-card h4 i {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .right-card p {
@@ -155,7 +155,7 @@
     }
     
     .contact-box {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         border-radius: 16px;
         padding: 2rem;
         color: white;
@@ -172,7 +172,7 @@
     }
     
     .contact-box a {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     @media (max-width: 768px) {

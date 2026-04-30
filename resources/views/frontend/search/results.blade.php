@@ -172,7 +172,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Autocomplete pour la recherche
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.querySelector('input[name="q"]');
@@ -188,7 +188,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 // Afficher les suggestions (à implémenter avec un dropdown)
-                                console.log('Suggestions:', data);
+                                // TODO: Implement autocomplete dropdown
                             });
                     }, 300);
                 }

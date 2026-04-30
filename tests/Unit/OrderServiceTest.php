@@ -27,7 +27,6 @@ class OrderServiceTest extends TestCase
         $this->stockValidationService = new StockValidationService();
         $this->orderService = new OrderService($this->stockValidationService);
     }
-
     #[Test]
     public function it_calculates_amounts_correctly(): void
     {
@@ -42,7 +41,6 @@ class OrderServiceTest extends TestCase
         $this->assertEquals(2000, $amounts['shipping']); // Frais de livraison
         $this->assertEquals(27000, $amounts['total']); // 25000 + 2000
     }
-
     #[Test]
     public function it_calculates_amounts_with_showroom_pickup(): void
     {
@@ -56,7 +54,6 @@ class OrderServiceTest extends TestCase
         $this->assertEquals(0, $amounts['shipping']); // Pas de frais pour retrait
         $this->assertEquals(10000, $amounts['total']);
     }
-
     #[Test]
     public function it_throws_exception_for_empty_cart(): void
     {

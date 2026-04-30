@@ -37,28 +37,9 @@ class StripeConnectService
      */
     public function __construct()
     {
-        $stripeSecret = config('services.stripe.secret');
-        
-        if (empty($stripeSecret)) {
-            throw new \RuntimeException(
-                'Stripe Connect non configuré : la clé secrète Stripe (STRIPE_SECRET) est manquante dans la configuration. ' .
-                'Veuillez ajouter STRIPE_SECRET dans votre fichier .env avec une clé Stripe valide (format: sk_test_... ou sk_live_...). ' .
-                'Consultez la documentation : https://dashboard.stripe.com/apikeys'
-            );
-        }
-        
-        // Vérifier si c'est un placeholder (valeur de test non valide)
-        if (str_contains(strtolower($stripeSecret), 'your_secret_key') || 
-            str_contains(strtolower($stripeSecret), 'sk_test_your') ||
-            strlen($stripeSecret) < 20) {
-            throw new \RuntimeException(
-                'Stripe Connect non configuré : la clé secrète Stripe (STRIPE_SECRET) contient une valeur de placeholder. ' .
-                'Veuillez remplacer la valeur dans votre fichier .env par une vraie clé Stripe (format: sk_test_... ou sk_live_...). ' .
-                'Récupérez votre clé sur : https://dashboard.stripe.com/apikeys'
-            );
-        }
-        
-        Stripe::setApiKey($stripeSecret);
+        // Constructeur vide — l'initialisation de Stripe est désormais différée (lazy)
+        // pour éviter de faire échouer le démarrage de l'application ou la résolution
+        // des routes si les clés API sont manquantes dans l'environnement local.
     }
 
     /**
@@ -81,6 +62,8 @@ class StripeConnectService
      */
     public function createAccount(CreatorProfile $creator): CreatorStripeAccount
     {
+        $this->initStripe();
+
         // Vérifier que le créateur n'a pas déjà un compte Stripe
         $existingAccount = CreatorStripeAccount::where('creator_profile_id', $creator->id)->first();
         if ($existingAccount !== null) {
@@ -191,6 +174,8 @@ class StripeConnectService
      */
     public function createOnboardingLink(CreatorStripeAccount $account): string
     {
+        $this->initStripe();
+
         // Vérifier que le compte Stripe existe et a un stripe_account_id valide
         if (empty($account->stripe_account_id)) {
             throw new \RuntimeException(
@@ -270,6 +255,8 @@ class StripeConnectService
      */
     public function syncAccountStatus(string $stripeAccountId): void
     {
+        $this->initStripe();
+
         // Charger le compte depuis la base de données
         $creatorAccount = CreatorStripeAccount::where('stripe_account_id', $stripeAccountId)->first();
         
@@ -449,6 +436,41 @@ class StripeConnectService
 
         // Toutes les vérifications sont passées
         return true;
+    }
+
+    /**
+     * Initialise la clé API Stripe.
+     * 
+     * Cette méthode est appelée de manière différée par les méthodes de l'API
+     * pour éviter que le service ne crashe lors de son instanciation au démarrage
+     * de l'application si la configuration est manquante (ex: local, CI).
+     * 
+     * @throws \RuntimeException Si la clé Stripe n'est pas configurée
+     */
+    private function initStripe(): void
+    {
+        $stripeSecret = config('services.stripe.secret');
+        
+        if (empty($stripeSecret)) {
+            throw new \RuntimeException(
+                'Stripe Connect non configuré : la clé secrète Stripe (STRIPE_SECRET) est manquante dans la configuration. ' .
+                'Veuillez ajouter STRIPE_SECRET dans votre fichier .env avec une clé Stripe valide (format: sk_test_... ou sk_live_...). ' .
+                'Consultez la documentation : https://dashboard.stripe.com/apikeys'
+            );
+        }
+        
+        // Vérifier si c'est un placeholder (valeur de test non valide)
+        if (str_contains(strtolower($stripeSecret), 'your_secret_key') || 
+            str_contains(strtolower($stripeSecret), 'sk_test_your') ||
+            strlen($stripeSecret) < 20) {
+            throw new \RuntimeException(
+                'Stripe Connect non configuré : la clé secrète Stripe (STRIPE_SECRET) contient une valeur de placeholder. ' .
+                'Veuillez remplacer la valeur dans votre fichier .env par une vraie clé Stripe (format: sk_test_... ou sk_live_...). ' .
+                'Récupérez votre clé sur : https://dashboard.stripe.com/apikeys'
+            );
+        }
+        
+        Stripe::setApiKey($stripeSecret);
     }
 }
 

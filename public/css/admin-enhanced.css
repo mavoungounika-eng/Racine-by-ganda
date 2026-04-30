@@ -1,0 +1,185 @@
+/* =============================================
+   Admin Enhanced — RACINE BY GANDA
+   Styles complémentaires pour le dashboard admin
+   ============================================= */
+
+/* KPI Cards */
+.kpi-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.kpi-card .kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #160D0C;
+}
+.kpi-card .kpi-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #160D0C;
+}
+.kpi-card .kpi-trend {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.kpi-card .kpi-trend.up { color: #FFB800; }
+.kpi-card .kpi-trend.down { color: #ED5F1E; }
+
+/* Data Tables */
+.admin-table thead th {
+    background: #FFFFFF;
+    border-bottom: 2px solid #160D0C;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #160D0C;
+    padding: 0.75rem 1rem;
+}
+.admin-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #160D0C;
+}
+.admin-table tbody tr:hover {
+    background: #FFFFFF;
+}
+
+/* Status Badges */
+.badge-status {
+    padding: 0.35em 0.75em;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.badge-status.active { background: #FFB800; color: #160D0C; }
+.badge-status.pending { background: #ED5F1E; color: #FFFFFF; }
+.badge-status.inactive { background: #160D0C; color: #FFFFFF; }
+.badge-status.suspended { background: #FFFFFF; color: #160D0C; }
+
+/* Admin Sidebar Enhancements */
+.admin-sidebar .nav-section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #FFFFFF;
+    padding: 1rem 1.25rem 0.5rem;
+}
+
+/* Action Bar */
+.admin-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #160D0C;
+}
+
+/* Quick Stats Row */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Charts Container */
+.chart-container {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.chart-container .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* =============================================
+   RESPONSIVE — Admin Dashboard
+   ============================================= */
+
+/* Tablette ≤ 992px : sidebar masquée (géré dans admin.blade.php),
+   on affine ici les grilles de contenu */
+@media (max-width: 992px) {
+    .kpi-card .kpi-value { font-size: 1.5rem; }
+
+    .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile ≤ 768px */
+@media (max-width: 768px) {
+    .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .kpi-card {
+        padding: 1rem;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 1.35rem;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0.75rem;
+        border-bottom: none;
+        border-top: 1px solid rgba(22, 13, 12, 0.08);
+    }
+
+    .admin-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: rgba(22, 13, 12, 0.5);
+        margin-right: 0.5rem;
+    }
+
+    .admin-table tbody tr {
+        display: block;
+        border: 1px solid rgba(22, 13, 12, 0.1);
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        padding: 0.25rem 0;
+    }
+
+    .chart-container {
+        padding: 1rem;
+    }
+
+    .chart-container .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+/* Petit mobile ≤ 480px */
+@media (max-width: 480px) {
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 1.25rem;
+    }
+}

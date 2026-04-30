@@ -4,7 +4,7 @@
 @section('page-title', 'Paramètres Avancés')
 
 @push('styles')
-<parameter name="link" rel="stylesheet" href="{{ asset('css/creator/payment-preferences.css') }}">
+<link rel="stylesheet" href="{{ asset('css/creator/payment-preferences.css') }}">
 @endpush
 
 @section('content')
@@ -310,7 +310,7 @@
 
 @push('scripts')
 <script src="{{ asset('js/creator/payment-preferences.js') }}"></script>
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Slider pour le seuil minimum
 const slider = document.getElementById('thresholdSlider');
 const valueDisplay = document.getElementById('thresholdValue');
