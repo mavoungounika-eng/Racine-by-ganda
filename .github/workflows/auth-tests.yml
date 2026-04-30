@@ -120,8 +120,7 @@ jobs:
                            tests/Feature/Auth/LogoutTest.php \
                            tests/Feature/Auth/DashboardAccessTest.php \
                            tests/Feature/Auth/AuthEdgeCasesTest.php \
-                           --stop-on-failure \
-                           --verbose
+                           --stop-on-failure
 
       # ============================================
       # 8. REPORT (SI ÉCHEC)

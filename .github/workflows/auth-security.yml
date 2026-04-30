@@ -27,10 +27,11 @@ jobs:
       
       - name: Setup environment for artisan
         run: |
-          cp .env.example .env.testing
-          php artisan key:generate --env=testing
+          cp .env.example .env
+          php artisan key:generate
+          cp .env .env.testing
           touch database/database.sqlite
-          php artisan migrate --env=testing --force
+          php artisan migrate --force
 
       # CHECK 1: No routes with 'auth' without 'ensure'
       - name: Validate Route Middleware
