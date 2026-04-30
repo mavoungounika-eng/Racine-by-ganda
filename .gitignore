@@ -69,3 +69,18 @@ id,
 true]
 "Erreur lors de la connexion. Veuillez contacter le support.],"
 "Votre compte est inactif ou suspendu.],"
+
+# Windows metadata files (ne pas versionner)
+*.Zone.Identifier
+Thumbs.db:encryptable
+
+# Fichiers d'analyse / planification (travail local, hors repo)
+DATABASE_MIGRATION_REPORT.md
+ACTION_PLAN_FOR_CLAUDE.md
+PROMPT-integration-images.md
+racine-audit.txt
+rename-assets.sh
+reset-db.php
+reset-db-socket.php
+"claude designe contexte de progression.md"
+"assset racine by ganda/"

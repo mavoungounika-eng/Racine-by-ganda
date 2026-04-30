@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Auth;
 
-use App\DTOs\Auth\UserContext;
+use App\DTO\Auth\UserContext;
 use App\Models\User;
 use App\Services\Auth\UserContextResolver;
 use Carbon\Carbon;

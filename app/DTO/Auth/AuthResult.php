@@ -3,8 +3,6 @@
 namespace App\DTO\Auth;
 
 use App\Models\User;
-use BadMethodCallException;
-
 /**
  * DTO representing the result of an authentication attempt.
  */
@@ -72,28 +70,14 @@ class AuthResult
         );
     }
 
-    /**
-     * Backward-compat static aliases used by legacy tests/code.
-     */
-    public static function __callStatic(string $name, array $arguments): mixed
+    public function requiresCaptcha(): bool
     {
-        return match ($name) {
-            'requiresCaptcha' => self::captchaRequired(...$arguments),
-            'requires2FA' => self::twoFactorRequired(...$arguments),
-            default => throw new BadMethodCallException("Undefined static method {$name}"),
-        };
+        return $this->challenge === 'captcha';
     }
 
-    /**
-     * Backward-compat dynamic predicates used on result instances.
-     */
-    public function __call(string $name, array $arguments): mixed
+    public function requires2FA(): bool
     {
-        return match ($name) {
-            'requiresCaptcha' => $this->challenge === 'captcha',
-            'requires2FA' => $this->challenge === '2fa',
-            default => throw new BadMethodCallException("Undefined method {$name}"),
-        };
+        return $this->challenge === '2fa';
     }
 
     public function isSuccess(): bool

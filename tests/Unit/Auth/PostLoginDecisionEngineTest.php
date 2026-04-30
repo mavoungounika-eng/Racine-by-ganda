@@ -4,7 +4,7 @@ namespace Tests\Unit\Auth;
 
 use PHPUnit\Framework\Attributes\Test;
 
-use App\DTOs\Auth\UserContext;
+use App\DTO\Auth\UserContext;
 use App\Services\Auth\PostLoginDecisionEngine;
 use Carbon\Carbon;
 use Tests\TestCase;

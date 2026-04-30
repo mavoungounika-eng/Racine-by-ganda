@@ -117,7 +117,7 @@ php artisan migrate:fresh      # Recommencer from scratch
 ### Si DB "corrupted":
 ```bash
 # Backup first
-mysqldump -u laravel -psecret racine > backup.sql
+mysqldump -u [DB_USERNAME] -p[DB_PASSWORD] [DB_DATABASE] > backup.sql
 
 # Reset
 php artisan migrate:reset

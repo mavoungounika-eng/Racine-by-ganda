@@ -114,6 +114,9 @@ jobs:
 
             const covered = parseInt(match[1], 10);
             const total = parseInt(match[2], 10);
+            if (total === 0) {
+              return;
+            }
             const percentage = ((covered / total) * 100).toFixed(2);
 
             await github.rest.issues.createComment({

@@ -21,8 +21,8 @@
 | **Host** | `127.0.0.1` |
 | **Port** | 3306 |
 | **Database** | `racine` |
-| **Username** | `laravel` |
-| **Password** | `secret` |
+| **Username** | `[REDACTED]` |
+| **Password** | `[REDACTED]` |
 | **Charset** | utf8mb4 |
 | **Collation** | utf8mb4_unicode_ci |
 | **Strict Mode** | true |
@@ -299,17 +299,17 @@ php artisan key:generate                     # Régénérer APP_KEY
 ## ✅ VALIDATION DES SEEDERS
 
 ### TestUsersSeeder.php
-- **Super Admin:** `superadmin@racine.cm` / `password`
-- **Admin:** `admin@racine.test` / `Admin123!`
-- **Staff:** `staff@racine.test` / `Staff123!`
-- **Vendeur:** `vendeur@racine.cm` / `password`
-- **Caissier:** `caissier@racine.cm` / `password`
-- **Stock Manager:** `stock@racine.cm` / `password`
-- **Comptable:** `comptable@racine.cm` / `password`
-- **Creator (Active):** `createur@racine.cm` / `password`
-- **Creator (Pending):** `createur.pending@racine.cm` / `password`
-- **Creator (Suspended):** `createur.suspended@racine.cm` / `password`
-- **Clients (x3):** `client@racine.cm` / `password`
+- **Super Admin:** `superadmin@racine.cm` / `[REDACTED]`
+- **Admin:** `admin@racine.test` / `[REDACTED]`
+- **Staff:** `staff@racine.test` / `[REDACTED]`
+- **Vendeur:** `vendeur@racine.cm` / `[REDACTED]`
+- **Caissier:** `caissier@racine.cm` / `[REDACTED]`
+- **Stock Manager:** `stock@racine.cm` / `[REDACTED]`
+- **Comptable:** `comptable@racine.cm` / `[REDACTED]`
+- **Creator (Active):** `createur@racine.cm` / `[REDACTED]`
+- **Creator (Pending):** `createur.pending@racine.cm` / `[REDACTED]`
+- **Creator (Suspended):** `createur.suspended@racine.cm` / `[REDACTED]`
+- **Clients (x3):** `client@racine.cm` / `[REDACTED]`
 
 ---
 
