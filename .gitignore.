@@ -1,7 +1,0 @@
-reset-db*.php
-racine-audit.txt
-*.Zone.Identifier
-assset racine by ganda/
-*.mp4
-.env
-.env.*
