@@ -205,8 +205,12 @@
                     <div class="product-card reveal-item">
                         <a href="{{ route('frontend.product', $product->id) }}" class="product-image-link">
                             <div class="product-image">
-                                @if($product->main_image ?? $product->image ?? false)
-                                <img src="{{ $product->main_image ?? $product->image }}"
+                                @php
+                                    $rawImg = $product->main_image ?? $product->image ?? null;
+                                    $imgUrl = $rawImg ? asset('storage/' . (str_contains($rawImg, '/') ? $rawImg : 'products/' . $rawImg)) : null;
+                                @endphp
+                                @if($imgUrl)
+                                <img src="{{ $imgUrl }}"
                                      alt="{{ $product->title ?? $product->name ?? 'Produit' }}"
                                      loading="lazy">
                                 @else
@@ -215,7 +219,13 @@
                                 <div class="product-badges">
                                     {{-- Badge Type Vendeur --}}
                                     @if($product->isBrand())
-                                        <span class="badge-brand">
+                                        @php $creatorSlug = $product->creator?->creatorProfile?->slug; @endphp
+                                        <span class="badge-brand"
+                                            @if($creatorSlug)
+                                            onclick="event.preventDefault();event.stopPropagation();window.location='{{ route('creator.shop', $creatorSlug) }}';"
+                                            style="cursor:pointer;"
+                                            @endif
+                                        >
                                             <i class="fas fa-star"></i> RACINE BY GANDA
                                         </span>
                                     @else

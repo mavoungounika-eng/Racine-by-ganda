@@ -1,6 +1,6 @@
 @extends('layouts.frontend')
 
-@section('title', $creatorProfile->brand_name . ' - Boutique Créateur - RACINE BY GANDA')
+@section('title', ($creatorProfile->brand_name ?? $creatorProfile->user->name) . ' - Boutique Créateur - RACINE BY GANDA')
 
 @push('styles')
 <style nonce="{{ csp_nonce() }}">
@@ -32,7 +32,7 @@
     {{-- Banner --}}
     <div class="creator-banner">
         @if($creatorProfile->banner_path)
-            <img src="{{ $creatorProfile->banner_path }}" alt="{{ $creatorProfile->brand_name }}">
+            <img src="{{ asset('storage/' . $creatorProfile->banner_path) }}" alt="{{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}">
         @endif
     </div>
     
@@ -43,8 +43,8 @@
                 {{-- Logo --}}
                 <div class="flex-shrink-0">
                     <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-2xl overflow-hidden">
-                        <img src="{{ $creatorProfile->logo_path ?? asset('images/default-creator.png') }}" 
-                             alt="{{ $creatorProfile->brand_name }}"
+                        <img src="{{ $creatorProfile->logo_path ? asset('storage/' . $creatorProfile->logo_path) : asset('images/default-creator.png') }}"
+                             alt="{{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}"
                              class="w-full h-full object-cover">
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                 <div class="flex-1 text-center md:text-start">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 mb-2">
                         <h1 class="text-3xl md:text-4xl font-bold text-[#160D0C]" style="font-family: 'Cormorant Garamond', serif;">
-                            {{ $creatorProfile->brand_name }}
+                            {{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}
                         </h1>
                         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold w-fit mx-auto md:mx-0">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -128,7 +128,7 @@
     <div class="container">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-bold text-[#160D0C]" style="font-family: 'Cormorant Garamond', serif;">
-                Produits de {{ $creatorProfile->brand_name }}
+                Produits de {{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}
             </h2>
             <a href="{{ route('frontend.shop', ['product_type' => 'marketplace']) }}" 
                class="text-[#160D0C] hover:text-[#ED5F1E] transition flex items-center gap-2">
@@ -146,7 +146,11 @@
                        class="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
                         {{-- Image --}}
                         <div class="relative h-64 overflow-hidden">
-                            <img src="{{ $product->main_image ?? asset('storage/catalogue/vetements/soiree-01.jpeg') }}"
+                            @php
+                                $rawImg = $product->main_image ?? null;
+                                $imgUrl = $rawImg ? asset('storage/' . (str_contains($rawImg, '/') ? $rawImg : 'products/' . $rawImg)) : null;
+                            @endphp
+                            <img src="{{ $imgUrl ?? asset('storage/catalogue/vetements/soiree-01.jpeg') }}"
                                  alt="{{ $product->title }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                             
