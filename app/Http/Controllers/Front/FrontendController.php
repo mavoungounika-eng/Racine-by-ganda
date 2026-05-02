@@ -197,6 +197,7 @@ class FrontendController extends Controller
     {
         $creatorProfile = \App\Models\CreatorProfile::where('slug', $slug)
             ->where('is_active', true)
+            ->with('user')
             ->firstOrFail();
 
         $products = \App\Models\Product::where('is_active', true)
