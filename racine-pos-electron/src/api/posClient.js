@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '10000', 10);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -12,7 +13,7 @@ export class PosApiClient {
     this.getOperatorToken = getOperatorToken;
     this.client = axios.create({
       baseURL: BASE_URL,
-      timeout: 10000,
+      timeout: API_TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
