@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { useAuthStore } from './auth';
 import { PosApiClient } from '../api/posClient';
 import { useSessionStore } from './session';
+import { useOfflineStore } from './offline';
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -62,7 +63,6 @@ export const useCartStore = defineStore('cart', {
         return { success: true, offline: false, sale: res.data?.sale };
       } catch (error) {
         if (error.isOffline || !error.response || error.response.status >= 500) {
-          const { useOfflineStore } = await import('./offline.js');
           const offlineStore = useOfflineStore();
           await offlineStore.saveLocalSale(saleData, idempotencyKey);
           this.clearCart();

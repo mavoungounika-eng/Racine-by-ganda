@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { PosApiClient } from '../api/posClient';
+import { refreshEchoAuth } from '../plugins/echo.js';
 
 const STORAGE_TOKEN = 'pos_token';
 const STORAGE_DEVICE = 'pos_device';
@@ -51,21 +52,13 @@ export const useAuthStore = defineStore('auth', {
     },
     async login(email, password) {
       try {
-        // PosApiClient.post() retourne directement le BODY JSON du backend
-        // (axios `res.data`), pas la réponse axios enveloppée. Donc ici `res`
-        // vaut déjà `{ success, data: { operator, token }, error, meta }`.
-        // On déstructure en conséquence — l'ancienne version lisait
-        // `res.data.success` / `res.data.data.operator` (double-unwrapping)
-        // et jetait systématiquement "Login failed" alors que le back répondait 200.
         const res = await this.client().post('/api/pos/auth/operator/login', { email, password });
 
         if (res?.success && res?.data?.operator && res?.data?.token) {
           this.operator = res.data.operator;
           this.operatorToken = res.data.token;
           this.persist();
-          // Rafraîchir les headers Echo/WebSocket avec le nouveau token opérateur
           try {
-            const { refreshEchoAuth } = await import('../plugins/echo.js');
             refreshEchoAuth();
           } catch (e) { /* echo indisponible — POS continue */ }
           return res;
@@ -99,12 +92,10 @@ export const useAuthStore = defineStore('auth', {
       return this.client().refreshToken();
     },
     async ensureTerminalRegistered() {
-      // If we already have a device token, we're registered
       if (this.token && this.device) {
         return this.device;
       }
 
-      // Try to register a new terminal
       try {
         const machineId = crypto.randomUUID ? crypto.randomUUID() : `${[1e7]+-1e3+-4e3+-8e3+-1e11}`.replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
         const device = await this.register(machineId, 'POS Terminal');
