@@ -2,21 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
-// Sale endpoints that should be queued locally when offline
-const SALE_ENDPOINTS = ['/api/pos/sales'];
-
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function generateUUID() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 export class PosApiClient {
   constructor(getToken, setToken, onOffline, getOperatorToken = null) {
@@ -68,29 +54,9 @@ export class PosApiClient {
         return this.request(method, path, data, idempotencyKey, false, params);
       }
 
-      // Network error (no response) - check if this is a sale POST that can be queued
       if (!err.response) {
         this.onOffline?.(true);
         err.isOffline = true;
-
-        if (method === 'post' && SALE_ENDPOINTS.some((ep) => path.startsWith(ep)) && data) {
-          // Transparently queue the sale and return a fake success response
-          try {
-            const { useOfflineStore } = await import('../stores/offline.js');
-            const offlineStore = useOfflineStore();
-            const uuid = data.uuid || generateUUID();
-            await offlineStore.queueSale({ ...data, uuid }, idempotencyKey || uuid);
-            // Return a response shape that callers can handle
-            return {
-              success: true,
-              queued: true,
-              offline: true,
-              data: { queued: true, uuid },
-            };
-          } catch {
-            // If queuing itself fails, fall through and throw
-          }
-        }
       }
 
       throw err;
