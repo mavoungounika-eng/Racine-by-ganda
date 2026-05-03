@@ -102,7 +102,7 @@ class PaymentPreferencesController extends Controller
         $creator = Auth::user()->creatorProfile;
         $preferences = PaymentPreference::firstOrCreate(['creator_profile_id' => $creator->id]);
 
-        return view('creator.settings.payment-preferences-advanced', compact('creator', 'preferences'));
+        return view('creator.settings.payment-advanced', compact('creator', 'preferences'));
     }
 
     /**
