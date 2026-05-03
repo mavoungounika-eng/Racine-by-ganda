@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Models\CreatorPayout;
 use App\Models\PaymentPreference;
 use App\Models\CreatorProfile;
 use Illuminate\Http\Request;
@@ -101,8 +102,12 @@ class PaymentPreferencesController extends Controller
     {
         $creator = Auth::user()->creatorProfile;
         $preferences = PaymentPreference::firstOrCreate(['creator_profile_id' => $creator->id]);
+        $recentTransactions = CreatorPayout::where('creator_profile_id', $creator->id)
+            ->latest()
+            ->take(10)
+            ->get();
 
-        return view('creator.settings.payment-advanced', compact('creator', 'preferences'));
+        return view('creator.settings.payment-advanced', compact('creator', 'preferences', 'recentTransactions'));
     }
 
     /**

@@ -258,7 +258,7 @@
                         </div>
                         <div class="transaction-details">
                             <div class="transaction-title">Versement {{ $transaction->created_at->format('d/m/Y') }}</div>
-                            <div class="transaction-subtitle">{{ $transaction->description }}</div>
+                            <div class="transaction-subtitle">{{ $transaction->description ?? $transaction->reference ?? 'Versement créateur' }}</div>
                         </div>
                         <div class="transaction-amount">
                             +{{ number_format($transaction->amount, 0, ',', ' ') }} FCFA
