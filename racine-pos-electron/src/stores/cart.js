@@ -8,7 +8,12 @@ export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [],
     total: 0,
+    discount_percent: 0,
+    coupon_code: null,
+    coupon_discount: 0,
     paymentMethod: 'cash',
+    customer_name: null,
+    customer_phone: null,
     lastSale: null,
     lastPayment: null,
   }),
@@ -40,6 +45,11 @@ export const useCartStore = defineStore('cart', {
     clearCart() {
       this.items = [];
       this.total = 0;
+      this.discount_percent = 0;
+      this.coupon_code = null;
+      this.coupon_discount = 0;
+      this.customer_name = null;
+      this.customer_phone = null;
     },
     recalculate() {
       this.total = this.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -48,10 +58,17 @@ export const useCartStore = defineStore('cart', {
       if (paymentMethod) this.paymentMethod = paymentMethod;
       const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
       const sessionStore = useSessionStore();
+      const totalAfterDiscount = this.discount_percent > 0 
+        ? this.total * (1 - this.discount_percent / 100)
+        : this.total;
       const saleData = {
         items: this.items.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
         payment_method: this.paymentMethod,
-        total_amount: this.total,
+        total_amount: totalAfterDiscount,
+        discount_percent: this.discount_percent || null,
+        coupon_code: this.coupon_code || null,
+        customer_name: this.customer_name || null,
+        customer_phone: this.customer_phone || null,
         session_id: sessionStore.currentSession?.id || null,
       };
 
@@ -88,6 +105,23 @@ export const useCartStore = defineStore('cart', {
     },
     async cancelSale(saleId, reason) {
       return this.client().post(`/api/pos/sales/${saleId}/cancel`, { reason });
+    },
+    async validateCoupon(code, amount) {
+      try {
+        const res = await this.client().get('/api/pos/coupons/validate', { code, amount });
+        return { success: true, data: res.data };
+      } catch (error) {
+        return { success: false, error: error.response?.data?.error?.message || 'Code invalide' };
+      }
+    },
+    applyCoupon(code, discount) {
+      this.coupon_code = code;
+      this.coupon_discount = discount;
+      this.discount_percent = 0; // Remise manuelle annulée si coupon appliqué
+    },
+    removeCoupon() {
+      this.coupon_code = null;
+      this.coupon_discount = 0;
     },
   },
   getters: {

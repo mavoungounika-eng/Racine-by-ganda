@@ -133,7 +133,10 @@ const closeSession = async () => {
   error.value = '';
   closing.value = true;
   try {
-    await session.closeSession(session.currentSession.id, closingCash.value);
+    // Utiliser session.client() qui gère automatiquement les headers Bearer + X-Operator-Token
+    const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+    const client = session.client();
+    await client.post(`/api/pos/sessions/${session.currentSession.id}/close`, { closing_cash: closingCash.value }, idempotencyKey);
     await session.getZReport(session.currentSession.id);
   } catch (e) {
     try { await session.buildLocalZReport(session.currentSession.id); } catch { /**/ }

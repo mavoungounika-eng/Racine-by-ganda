@@ -5,6 +5,7 @@ const isDev = !app.isPackaged;
 
 function createWindow() {
   const win = new BrowserWindow({
+    icon: path.join(__dirname, '../build/icon.png'),
     width: 1280,
     height: 800,
     resizable: true,
@@ -15,6 +16,9 @@ function createWindow() {
       sandbox: false,
     },
   });
+
+  // Plein écran au démarrage
+  win.maximize();
 
   if (isDev) {
     const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:8080';

@@ -37,6 +37,8 @@ class PosSaleController extends PosApiController
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,card,mobile_money',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'coupon_code' => 'nullable|string|max:50',
             'customer_name' => 'nullable|string|max:255',
             'customer_email' => 'nullable|email|max:255',
             'customer_phone' => 'nullable|string|max:50',
@@ -66,6 +68,8 @@ class PosSaleController extends PosApiController
                 $validated['payment_method'],
                 $userId,
                 [
+                    'discount_percent' => $validated['discount_percent'] ?? null,
+                    'coupon_code' => $validated['coupon_code'] ?? null,
                     'customer_name' => $validated['customer_name'] ?? null,
                     'customer_email' => $validated['customer_email'] ?? null,
                     'customer_phone' => $validated['customer_phone'] ?? null,
@@ -196,7 +200,7 @@ class PosSaleController extends PosApiController
         }
 
         $sales = PosSale::forSession($sessionId)
-            ->with('payments')
+            ->with('payments', 'order.items.product')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -210,6 +214,13 @@ class PosSaleController extends PosApiController
                 'status' => $sale->status,
                 'payment_status' => $sale->payments->first()?->status,
                 'created_at' => $sale->created_at->toIso8601String(),
+                'items' => $sale->order?->items?->map(fn($item) => [
+                    'id' => $item->id,
+                    'product_name' => $item->product?->title ?? 'Produit supprimé',
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->price,
+                    'subtotal' => $item->subtotal,
+                ]) ?? [],
             ]),
             'total_count' => $sales->count(),
             'total_amount' => $sales->sum('total_amount'),
