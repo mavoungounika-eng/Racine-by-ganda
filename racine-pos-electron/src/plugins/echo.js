@@ -9,6 +9,14 @@ import Pusher from 'pusher-js'
 
 window.Pusher = Pusher
 
+function _getDeviceId() {
+  try {
+    return JSON.parse(localStorage.getItem('pos_device') || '{}').machine_id ?? 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
+
 /**
  * Crée une instance Echo connectée à Reverb.
  * Retourne null si les variables d'env sont manquantes (dev sans Reverb).
@@ -37,8 +45,8 @@ function createEcho() {
       authEndpoint: `${apiUrl}/broadcasting/auth`,
       auth: {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('pos_token') ?? ''}`,
-          'X-Device-Id': localStorage.getItem('device_id') ?? 'unknown',
+          Authorization: `Bearer ${localStorage.getItem('pos_operator_token') ?? ''}`,
+          'X-Device-Id': _getDeviceId(),
           Accept: 'application/json',
         },
       },
@@ -51,17 +59,18 @@ function createEcho() {
 
 export const echo = createEcho()
 
-/**
- * Met à jour le token d'auth (après login POS).
- * Nécessite de recréer l'instance Echo car les headers sont fixés à l'init.
- */
 export function refreshEchoAuth() {
   if (!echo) return
-  const token = localStorage.getItem('pos_token') ?? ''
-  const device = localStorage.getItem('device_id') ?? 'unknown'
-  echo.options.auth.headers.Authorization = `Bearer ${token}`
-  echo.options.auth.headers['X-Device-Id'] = device
-  // Reconnecter si déconnecté
+  const token = localStorage.getItem('pos_operator_token') ?? ''
+  const device = _getDeviceId()
+  const headers = { Authorization: `Bearer ${token}`, 'X-Device-Id': device }
+
+  // Update both echo.options (snapshot) and the live pusher connector config
+  if (echo.options?.auth?.headers) Object.assign(echo.options.auth.headers, headers)
+  if (echo.connector?.pusher?.config?.auth?.headers) {
+    Object.assign(echo.connector.pusher.config.auth.headers, headers)
+  }
+
   if (!echo.connector?.pusher?.connection?.state?.includes('connected')) {
     echo.connector?.pusher?.connect()
   }

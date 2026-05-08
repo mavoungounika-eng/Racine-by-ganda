@@ -110,13 +110,15 @@ Ne jamais :
 Au début de chaque session, exécuter et afficher :
 ```bash
 git log --oneline -5
-./vendor/bin/phpunit 2>&1 | tail -3
 git status --short
 cat storage/logs/css-fix/progress.txt 2>/dev/null | grep -v "^#" || echo "Aucune correction CSS en cours"
 ```
 
+PHPUnit (`./vendor/bin/phpunit 2>&1 | tail -3`) : exécuter UNIQUEMENT si la tâche en cours touche des tests. Sinon, sauter cette étape.
+
+RTK.md : appliquer son contenu UNIQUEMENT si la complexité estimée est LARGE ou si l'utilisateur tape explicitement `/memory`. Pour les tâches SMALL et MEDIUM, ignorer RTK.md.
+
 Cela permet de savoir exactement où on en est AVANT de toucher quoi que ce soit.
-Ne pas sauter cette étape même si la tâche semble simple.
 
 ---
 

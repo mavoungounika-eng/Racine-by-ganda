@@ -167,7 +167,7 @@ export const useOfflineStore = defineStore('offline', {
       try {
         const auth = useAuthStore();
         const payload = {
-          device_id: auth.deviceId || 'electron-pos',
+          device_id: auth.device?.machine_id || 'electron-pos',
           sales: pending.map(({ uuid, items, payment_method, idempotencyKey, customer_name, customer_email, customer_phone }) => ({
             uuid,
             items,

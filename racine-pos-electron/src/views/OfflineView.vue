@@ -9,8 +9,8 @@
           {{ offline.isOffline ? t('offline.status') : t('offline.online') }}
         </span>
       </div>
-      <span v-if="offline.networkMonitor?.lastChecked" class="last-checked">
-        Dernière vérification : {{ formatTime(offline.networkMonitor.lastChecked) }}
+      <span v-if="offline.lastSync" class="last-checked">
+        Dernière synchronisation : {{ formatTime(offline.lastSync) }}
       </span>
     </div>
 
@@ -37,10 +37,10 @@
       </div>
 
       <ul v-if="pendingSales.length" class="sale-list">
-        <li v-for="sale in pendingSales" :key="sale.localId" class="sale-item">
+        <li v-for="sale in pendingSales" :key="sale.uuid" class="sale-item">
           <div class="sale-info">
             <strong>{{ formatTime(sale.createdAt) }}</strong>
-            <span class="method-tag">{{ sale.saleData.payment_method.toUpperCase() }}</span>
+            <span class="method-tag">{{ (sale.payment_method || '—').toUpperCase() }}</span>
           </div>
           <span class="status-pill" :class="'status-' + sale.status">{{ translateStatus(sale.status) }}</span>
         </li>

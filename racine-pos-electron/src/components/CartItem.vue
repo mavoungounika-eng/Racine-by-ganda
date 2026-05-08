@@ -2,7 +2,11 @@
   <div class="item">
     <div class="item-info">
       <span class="item-name">{{ item.name }}</span>
-      <span class="item-qty">× {{ item.quantity }}</span>
+      <div class="qty-controls">
+        <button class="qty-btn" @click="decreaseQty" :disabled="item.quantity <= 1">−</button>
+        <span class="item-qty">{{ item.quantity }}</span>
+        <button class="qty-btn" @click="increaseQty">+</button>
+      </div>
     </div>
     <div class="item-right">
       <span class="item-total">{{ formatAmount(item.price * item.quantity) }}</span>
@@ -13,14 +17,26 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import { useCartStore } from '../stores/cart';
 
 const { t } = useI18n();
+const cart = useCartStore();
 
-defineProps({
+const props = defineProps({
   item: { type: Object, required: true },
 });
 
 defineEmits(['remove']);
+
+const increaseQty = () => {
+  cart.updateQuantity(props.item.product_id, props.item.quantity + 1);
+};
+
+const decreaseQty = () => {
+  if (props.item.quantity > 1) {
+    cart.updateQuantity(props.item.product_id, props.item.quantity - 1);
+  }
+};
 
 const formatAmount = (val) =>
   new Intl.NumberFormat('fr-FR').format(Math.round(Number(val || 0))) + ' FCFA';
@@ -41,7 +57,7 @@ const formatAmount = (val) =>
 .item-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
@@ -55,10 +71,48 @@ const formatAmount = (val) =>
   text-overflow: ellipsis;
 }
 
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-high);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.qty-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--on-surface-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+  border-radius: 4px;
+}
+
+.qty-btn:hover:not(:disabled) {
+  color: var(--primary);
+  background: rgba(237, 95, 30, 0.1);
+}
+
+.qty-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .item-qty {
   font-size: 12px;
-  color: var(--on-surface-muted);
-  white-space: nowrap;
+  color: var(--on-surface);
+  font-weight: 700;
+  width: 20px;
+  text-align: center;
 }
 
 .item-right {

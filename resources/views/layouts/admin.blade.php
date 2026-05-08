@@ -31,7 +31,7 @@
         }
 
         .admin-layout {
-            display: flex;
+            display: block;
             min-height: 100vh;
             background: var(--racine-white);
         }
@@ -42,6 +42,12 @@
             color: var(--racine-white);
             display: flex;
             flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
         }
 
         .admin-sidebar-header {
@@ -154,6 +160,7 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
+            margin-left: 260px;
         }
 
         .admin-topbar {

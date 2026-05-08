@@ -79,7 +79,7 @@ class CreatorProductController extends Controller
     /**
      * Afficher le formulaire de création de produit.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
         $this->authorize('create', Product::class);
 

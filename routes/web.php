@@ -49,7 +49,7 @@ Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(
     
     // API Documentation (Swagger UI)
     Route::get('/api/documentation', function () {
-        return redirect('/api/documentation/default');
+        return redirect('/api/documentation');
     });
     
     // Routes publiques (guest)

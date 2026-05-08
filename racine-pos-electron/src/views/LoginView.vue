@@ -1,71 +1,92 @@
-﻿<template>
+<template>
   <div class="login-shell">
+
+    <!-- ── Topbar ──────────────────────────────────────────── -->
     <header class="topbar">
-      <div class="brand">RACINE BY GANDA</div>
+      <div class="brand">
+        <span class="brand-mark">R</span>
+        <span class="brand-text">RACINE <em>BY</em> GANDA</span>
+      </div>
       <div class="status-pill" :class="{ ready: !initializingTerminal && !terminalError }">
-        <span class="dot"></span>
+        <span class="dot" :class="{ pulse: initializingTerminal }"></span>
         <span>{{ initializingTerminal ? t('login.initializing') : (terminalError ? terminalError : t('login.ready')) }}</span>
       </div>
     </header>
 
+    <!-- ── Canvas ─────────────────────────────────────────── -->
     <main class="canvas">
+      <div class="glow glow-1" aria-hidden="true"></div>
+      <div class="glow glow-2" aria-hidden="true"></div>
+      <div class="ring ring-1" aria-hidden="true"></div>
+      <div class="ring ring-2" aria-hidden="true"></div>
+
       <section class="auth-card">
-        <p class="eyebrow">Acces securise</p>
-        <h1>{{ t('login.title') }}</h1>
-        <p class="subtitle">Point of Sale</p>
 
-        <form class="form" @submit.prevent="login">
-          <label>{{ t('login.email') }}</label>
-          <input
-            v-model="email"
-            type="email"
-            autocomplete="username"
-            :placeholder="t('login.email')"
-          />
+        <!-- En-tête carte -->
+        <div class="card-head">
+          <div class="monogram" aria-hidden="true">R</div>
+          <div class="card-titles">
+            <p class="eyebrow">Point of Sale</p>
+            <h1>{{ t('login.title') }}</h1>
+          </div>
+        </div>
 
-          <label>{{ t('login.password') }}</label>
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            :placeholder="t('login.password')"
-          />
+        <div class="divider" aria-hidden="true"></div>
+
+        <!-- Formulaire -->
+        <form class="form" @submit.prevent="login" novalidate>
+          <div class="field">
+            <label for="pos-email">{{ t('login.email') }}</label>
+            <input
+              id="pos-email"
+              v-model="email"
+              type="email"
+              autocomplete="username"
+              :placeholder="t('login.email')"
+            />
+          </div>
+
+          <div class="field">
+            <label for="pos-password">{{ t('login.password') }}</label>
+            <input
+              id="pos-password"
+              v-model="password"
+              type="password"
+              autocomplete="current-password"
+              :placeholder="t('login.password')"
+            />
+          </div>
 
           <button
             type="submit"
+            class="btn-login"
             :disabled="initializingTerminal || isPendingDevice || !email || !password || cooldownSeconds > 0"
           >
-            {{ cooldownSeconds > 0 ? `Patientez ${cooldownSeconds}s…` : t('login.button') }}
+            <span class="btn-label">
+              {{ cooldownSeconds > 0 ? `Patientez ${cooldownSeconds}s…` : t('login.button') }}
+            </span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
           </button>
 
-          <p v-if="isPendingDevice" class="warn">Terminal en attente d'activation administrateur. Contactez l'admin avant de vous connecter.</p>
-          <p v-if="loginError" class="error">{{ loginError }}</p>
-          <p v-if="terminalError" class="error">{{ terminalError }}</p>
+          <p v-if="isPendingDevice" class="msg warn">
+            Terminal en attente d'activation. Contactez l'administrateur.
+          </p>
+          <p v-if="loginError" class="msg error">{{ loginError }}</p>
+          <p v-if="terminalError" class="msg error">{{ terminalError }}</p>
         </form>
+
       </section>
     </main>
 
+    <!-- ── Footer minimal ─────────────────────────────────── -->
     <footer class="footer">
-      <div class="footer-left">
-        <p>© 2026 <strong>RACINE BY GANDA</strong>. Tous droits reserves.</p>
-        <p>
-          Developpe par <strong>NIKA DIGITAL HUB</strong>
-          <span class="sep">|</span>
-          Solutions Web &amp; Communication
-          <span class="sep">CG</span>
-          Republique du Congo
-        </p>
-      </div>
-      <div class="footer-right">
-        <a href="#">CGV</a>
-        <span>•</span>
-        <a href="#">Confidentialite</a>
-        <span>•</span>
-        <a href="#">Cookies</a>
-        <span class="sep">|</span>
-        <span>Paiement securise</span>
-      </div>
+      <span>© 2026 <strong>RACINE BY GANDA</strong></span>
+      <span class="sep">·</span>
+      <span>NIKA DIGITAL HUB</span>
+      <span class="sep">·</span>
+      <span class="version">v1.0.0</span>
     </footer>
+
   </div>
 </template>
 
@@ -88,11 +109,6 @@ const cooldownSeconds = ref(0);
 let cooldownTimer = null;
 const isPendingDevice = computed(() => auth.device?.status === 'pending');
 
-/**
- * Démarre un cooldown visuel du bouton Entrer quand le backend renvoie 429.
- * Utilise le header Retry-After si présent (standard HTTP), sinon 30 s par défaut.
- * Bloque aussi le spam qui réarmerait la fenêtre de throttle côté serveur.
- */
 function startCooldown(seconds) {
   if (cooldownTimer) clearInterval(cooldownTimer);
   cooldownSeconds.value = Math.max(1, seconds | 0);
@@ -107,7 +123,6 @@ function startCooldown(seconds) {
 
 onMounted(async () => {
   auth.loadFromStorage();
-
   try {
     await auth.ensureTerminalRegistered();
   } catch (e) {
@@ -118,18 +133,13 @@ onMounted(async () => {
 });
 
 const login = async () => {
-  if (isPendingDevice.value || cooldownSeconds.value > 0) {
-    return;
-  }
+  if (isPendingDevice.value || cooldownSeconds.value > 0) return;
 
   loginError.value = '';
   try {
     await auth.login(email.value, password.value);
     router.push('/session/open');
   } catch (e) {
-    // Traitement spécifique du 429 : on affiche un message humain et on
-    // verrouille le bouton le temps du Retry-After pour ne pas ré-armer
-    // la fenêtre de throttle Laravel.
     if (e.response?.status === 429) {
       const retryAfter =
         parseInt(e.response?.headers?.['retry-after'], 10) ||
@@ -147,47 +157,78 @@ const login = async () => {
 </script>
 
 <style scoped>
+/* ── Shell ────────────────────────────────────────────────── */
 .login-shell {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(circle at 15% 15%, rgba(237, 95, 30, 0.14) 0%, transparent 38%),
-    radial-gradient(circle at 88% 72%, rgba(255, 184, 0, 0.08) 0%, transparent 32%),
-    var(--background);
+  background: var(--background);
   color: var(--on-surface);
   overflow: hidden;
+  position: relative;
 }
 
+/* ── Topbar ───────────────────────────────────────────────── */
 .topbar {
   flex-shrink: 0;
-  height: 64px;
-  padding: 0 22px;
+  height: 60px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: rgba(13, 9, 7, 0.92);
   border-bottom: 1px solid var(--outline-variant);
-  background: rgba(16, 16, 16, 0.94);
+  backdrop-filter: blur(8px);
+  z-index: 10;
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dim) 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  color: var(--primary);
-  font-size: clamp(14px, 2vw, 18px);
+  letter-spacing: 0.1em;
+  color: var(--on-surface);
+}
+
+.brand-text em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--on-surface-muted);
+  font-size: 12px;
+  margin: 0 2px;
 }
 
 .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  color: #d0c5af;
-  background: #1e1e1e;
+  font-size: 11px;
+  color: var(--on-surface-muted);
+  background: var(--surface-high);
   border: 1px solid var(--outline-variant);
   border-radius: 999px;
-  padding: 6px 10px;
-  max-width: 58vw;
+  padding: 5px 12px;
+  max-width: 52vw;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -195,194 +236,295 @@ const login = async () => {
 
 .status-pill.ready {
   color: var(--primary);
+  border-color: rgba(237, 95, 30, 0.3);
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--primary);
-  box-shadow: 0 0 10px rgba(237, 95, 30, 0.65);
+  background: var(--on-surface-faint);
   flex-shrink: 0;
+  transition: background 0.3s;
 }
 
+.status-pill.ready .dot {
+  background: var(--primary);
+  box-shadow: 0 0 8px rgba(237, 95, 30, 0.7);
+}
+
+.dot.pulse {
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+/* ── Canvas + décos background ───────────────────────────── */
 .canvas {
   flex: 1;
   min-height: 0;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 24px 20px;
   overflow: hidden;
+  position: relative;
 }
 
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-1 {
+  width: 480px;
+  height: 480px;
+  top: -120px;
+  left: -100px;
+  background: radial-gradient(circle, rgba(237, 95, 30, 0.13) 0%, transparent 70%);
+}
+
+.glow-2 {
+  width: 360px;
+  height: 360px;
+  bottom: -60px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.08) 0%, transparent 70%);
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ring-1 {
+  width: 320px;
+  height: 320px;
+  top: -80px;
+  left: -80px;
+  border: 1px solid rgba(237, 95, 30, 0.1);
+}
+
+.ring-2 {
+  width: 200px;
+  height: 200px;
+  bottom: 20px;
+  right: 40px;
+  border: 1px solid rgba(255, 184, 0, 0.08);
+}
+
+/* ── Auth card ────────────────────────────────────────────── */
 .auth-card {
-  width: min(560px, 100%);
-  background: rgba(28, 27, 27, 0.96);
-  border: 1px solid var(--outline-variant);
-  border-radius: 16px;
-  padding: clamp(18px, 3vw, 28px);
-  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.56);
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+  background: rgba(22, 13, 12, 0.85);
+  border: 1px solid rgba(237, 95, 30, 0.2);
+  border-radius: 20px;
+  padding: clamp(24px, 4vw, 40px);
+  box-shadow:
+    0 0 0 1px rgba(237, 95, 30, 0.06),
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+/* ── En-tête carte ────────────────────────────────────────── */
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.monogram {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--primary) 0%, var(--primary-dim) 100%);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(237, 95, 30, 0.4);
+  letter-spacing: -0.01em;
+}
+
+.card-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .eyebrow {
   margin: 0;
-  color: var(--primary);
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
+  color: var(--primary);
 }
 
 h1 {
-  margin: 10px 0 0;
-  color: #f5efe0;
-  font-size: clamp(30px, 4vw, 46px);
+  margin: 0;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 900;
+  color: var(--on-surface);
   line-height: 1;
+  letter-spacing: -0.01em;
 }
 
-.subtitle {
-  margin: 8px 0 18px;
-  color: #bfb39a;
+/* ── Divider dégradé ──────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(237, 95, 30, 0.35) 40%, rgba(237, 95, 30, 0.35) 60%, transparent 100%);
+  margin-bottom: 24px;
 }
 
+/* ── Formulaire ───────────────────────────────────────────── */
 .form {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 label {
-  color: #d5cab1;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--on-surface-muted);
 }
 
 input {
   height: 48px;
-  border: 1px solid #4b4431;
-  background: #2a2a2a;
-  color: #f5efe0;
-  border-radius: 12px;
-  padding: 0 14px;
+  background: var(--surface-high);
+  border: 1px solid rgba(237, 95, 30, 0.18);
+  border-radius: 10px;
+  color: var(--on-surface);
+  padding: 0 16px;
+  font-size: 15px;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 input::placeholder {
-  color: #8e8268;
+  color: var(--on-surface-faint);
 }
 
 input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(237, 95, 30, 0.2);
+  box-shadow: 0 0 0 3px rgba(237, 95, 30, 0.18);
 }
 
-button {
-  margin-top: 10px;
-  height: 50px;
+/* ── Bouton login ─────────────────────────────────────────── */
+.btn-login {
+  margin-top: 6px;
+  height: 52px;
   border: none;
   border-radius: 12px;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--on-primary);
-  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dim) 100%);
-  transition: opacity 0.15s, transform 0.1s;
-}
-
-button:not(:disabled):hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.warn {
-  margin: 4px 0 0;
-  color: var(--primary);
-  font-size: 12px;
-}
-
-.error {
-  margin: 4px 0 0;
-  color: #ffb4ab;
-  font-size: 13px;
-}
-
-.footer {
-  flex-shrink: 0;
-  border-top: 1px solid var(--outline-variant);
-  background: rgba(16, 16, 16, 0.95);
-  color: #d0c5af;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dim) 100%);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 10px 18px;
-  font-size: 11px;
-  line-height: 1.35;
+  padding: 0 20px;
+  box-shadow: 0 4px 20px rgba(237, 95, 30, 0.38);
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
 }
 
-.footer-left p {
+.btn-login:not(:disabled):hover {
+  opacity: 0.93;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 26px rgba(237, 95, 30, 0.5);
+}
+
+.btn-login:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-label {
+  flex: 1;
+  text-align: center;
+}
+
+.btn-arrow {
+  font-size: 18px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* ── Messages ─────────────────────────────────────────────── */
+.msg {
   margin: 0;
+  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.warn {
+  color: var(--primary);
+  background: rgba(237, 95, 30, 0.1);
+  border: 1px solid rgba(237, 95, 30, 0.2);
+}
+
+.error {
+  color: #ffb4ab;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+/* ── Footer minimal ───────────────────────────────────────── */
+.footer {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-top: 1px solid rgba(237, 95, 30, 0.1);
+  background: rgba(13, 9, 7, 0.8);
+  font-size: 10px;
+  color: var(--on-surface-faint);
+  letter-spacing: 0.05em;
 }
 
 .footer strong {
-  color: var(--primary);
-}
-
-.footer-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.footer a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.footer a:hover {
-  color: var(--primary);
+  color: var(--on-surface-muted);
+  font-weight: 700;
 }
 
 .sep {
-  opacity: 0.6;
+  opacity: 0.4;
 }
 
-@media (max-width: 900px) {
-  .login-shell {
-    grid-template-rows: 64px 1fr 64px;
-  }
-
-  .topbar {
-    padding: 0 14px;
-  }
-
-  .status-pill {
-    max-width: 52vw;
-    font-size: 11px;
-  }
-
-  .footer {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 2px;
-    font-size: 9px;
-    line-height: 1.1;
-    padding: 4px 10px;
-    overflow: hidden;
-  }
-
-  .footer-right {
-    flex-wrap: nowrap;
-    white-space: nowrap;
-    width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.version {
+  font-family: monospace;
+  font-size: 10px;
+  color: rgba(237, 95, 30, 0.5);
 }
 </style>
-

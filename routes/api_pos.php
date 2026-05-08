@@ -9,6 +9,7 @@ use App\Http\Controllers\Pos\PosSaleController;
 use App\Http\Controllers\Pos\PosSessionController;
 use App\Http\Controllers\Pos\PosAuthController;
 use App\Http\Controllers\Pos\PosAnalyticsController;
+use App\Http\Controllers\Pos\PosCouponController;
 use Illuminate\Support\Facades\Route;
 
 // POS Terminal Registration (no auth required)
@@ -75,6 +76,11 @@ Route::middleware(['pos.auth', 'throttle:pos_device'])->group(function () {
         Route::get('/search', [PosProductController::class, 'search']);
         Route::get('/categories', [PosProductController::class, 'categories']);
         Route::get('/{product}', [PosProductController::class, 'show']);
+    });
+
+    // Coupons & Promos
+    Route::prefix('coupons')->group(function () {
+        Route::get('/validate', [PosCouponController::class, 'validateCoupon']);
     });
 
     // Analytics & Reports
