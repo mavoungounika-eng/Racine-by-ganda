@@ -10,7 +10,7 @@ class PosProductResource extends JsonResource
     {
         $thumbnail = null;
         if (!empty($this->main_image)) {
-            $thumbnail = asset('storage/' . $this->main_image);
+            $thumbnail = asset('storage/products/' . $this->main_image);
         } elseif ($this->relationLoaded('images') && $this->images->first()) {
             $thumbnail = $this->images->first()->url;
         }

@@ -1,5 +1,17 @@
 <template>
   <div class="card" :class="{ 'card-out': isOutOfStock }">
+    <div class="product-image-wrap">
+      <img
+        v-if="product.thumbnail"
+        :src="product.thumbnail"
+        :alt="product.name"
+        class="product-image"
+        @error="onImgError"
+      />
+      <div v-else class="product-image-placeholder">
+        <span>{{ initials }}</span>
+      </div>
+    </div>
     <div class="product-name">{{ product.name }}</div>
     <div class="product-meta">
       <span class="product-price">{{ formatAmount(product.price) }}</span>
@@ -29,6 +41,18 @@ const props = defineProps({
 
 defineEmits(['add']);
 
+const initials = computed(() => {
+  const n = props.product.name || '?';
+  return n.slice(0, 2).toUpperCase();
+});
+
+const onImgError = (e) => {
+  e.target.style.display = 'none';
+  if (e.target.nextElementSibling) {
+    e.target.nextElementSibling.style.display = 'flex';
+  }
+};
+
 const formatAmount = (val) =>
   new Intl.NumberFormat('fr-FR').format(Math.round(Number(val || 0))) + ' FCFA';
 
@@ -55,6 +79,36 @@ const stockLabel = computed(() => {
 </script>
 
 <style scoped>
+.product-image-wrap {
+  width: 100%;
+  height: 110px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-high);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2a1008, #1a0a04);
+  color: #ED5F1E;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
 .card {
   background: var(--surface);
   border: 1px solid var(--outline-variant);
