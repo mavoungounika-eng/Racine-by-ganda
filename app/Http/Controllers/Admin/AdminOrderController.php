@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Order;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -44,8 +45,57 @@ class AdminOrderController extends AdminController
     }
 
     /**
+     * Endpoint JSON paginé pour la liste des commandes (vanilla JS).
+     */
+    public function dataOrders(Request $request): JsonResponse
+    {
+        $query = Order::with(['user:id,name,email'])->orderBy('created_at', 'desc');
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('order_number', 'like', "%{$s}%")
+                  ->orWhere('customer_name', 'like', "%{$s}%")
+                  ->orWhere('customer_email', 'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->get('payment_status'));
+        }
+        if ($request->filled('date_debut')) {
+            $query->whereDate('created_at', '>=', $request->get('date_debut'));
+        }
+        if ($request->filled('date_fin')) {
+            $query->whereDate('created_at', '<=', $request->get('date_fin'));
+        }
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    /**
+     * Bulk — marquer comme complétées.
+     */
+    public function bulkComplete(Request $request): JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = Order::whereIn('id', $ids)->where('status', '!=', 'cancelled')->update(['status' => 'completed']);
+        return response()->json(['success' => true, 'message' => $count.' commande(s) marquée(s) comme complète(s)']);
+    }
+
+    /**
+     * Bulk — annuler.
+     */
+    public function bulkCancel(Request $request): JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = Order::whereIn('id', $ids)->whereNotIn('status', ['completed', 'cancelled'])->update(['status' => 'cancelled']);
+        return response()->json(['success' => true, 'message' => $count.' commande(s) annulée(s)']);
+    }
+
+    /**
      * Afficher le détail d'une commande.
-     * 
+     *
      * @param Order $order La commande à afficher
      * @return View Vue avec détails de la commande
      */

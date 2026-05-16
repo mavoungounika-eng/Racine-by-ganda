@@ -7,6 +7,7 @@ use App\Models\MonetbilCallbackEvent;
 use App\Models\PaymentTransaction;
 use App\Models\StripeWebhookEvent;
 use App\Services\Payments\CsvExportService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -89,6 +90,41 @@ class PaymentTransactionController extends Controller
         ];
 
         return view('admin.payments.transactions.index', compact('transactions', 'stats'));
+    }
+
+    public function dataTransactions(Request $request): JsonResponse
+    {
+        $this->authorize('payments.view');
+
+        $query = PaymentTransaction::with('order:id,order_number');
+
+        if ($request->filled('provider')) {
+            $query->where('provider', $request->get('provider'));
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->get('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->get('date_to'));
+        }
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('payment_ref', 'like', "%{$search}%")
+                  ->orWhere('transaction_id', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $allowed = ['created_at', 'amount', 'status', 'provider'];
+        $sortBy  = in_array($request->get('sort_by'), $allowed) ? $request->get('sort_by') : 'created_at';
+        $sortDir = $request->get('sort_dir') === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortBy, $sortDir);
+
+        return response()->json($query->paginate($request->integer('per_page', 20)));
     }
 
     /**

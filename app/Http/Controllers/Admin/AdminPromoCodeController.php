@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Requests\StorePromoCodeRequest;
 use App\Http\Requests\UpdatePromoCodeRequest;
 use App\Models\PromoCode;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -58,6 +59,49 @@ class AdminPromoCodeController extends AdminController
         $promoCodes = $query->paginate(15)->withQueryString();
 
         return view('admin.promo-codes.index', compact('promoCodes'));
+    }
+
+    public function dataPromoCodes(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', PromoCode::class);
+        $query = PromoCode::query();
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('code', 'like', "%{$s}%")->orWhere('name', 'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('is_active') && $request->get('is_active') !== '') {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->get('type'));
+        }
+        $query->orderBy('created_at', 'desc');
+
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    public function bulkDisable(Request $request): JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = PromoCode::whereIn('id', $ids)->update(['is_active' => false]);
+
+        return response()->json(['success' => true, 'message' => $count.' code(s) désactivé(s)']);
+    }
+
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        // Only delete unused codes
+        $count = PromoCode::whereIn('id', $ids)->where('used_count', 0)->delete();
+        $skipped = count($ids) - $count;
+        $msg = $count.' code(s) supprimé(s)';
+        if ($skipped > 0) {
+            $msg .= ' ('.$skipped.' ignoré(s) car déjà utilisé(s))';
+        }
+
+        return response()->json(['success' => true, 'message' => $msg]);
     }
 
     /**

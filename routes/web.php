@@ -453,12 +453,18 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
         // Gestion des utilisateurs
+        Route::get('users/data', [\App\Http\Controllers\Admin\AdminUserController::class, 'dataUsers'])->name('users.data');
+        Route::post('users/bulk-disable', [\App\Http\Controllers\Admin\AdminUserController::class, 'bulkDisable'])->name('users.bulk-disable');
+        Route::post('users/bulk-delete', [\App\Http\Controllers\Admin\AdminUserController::class, 'bulkDelete'])->name('users.bulk-delete');
         Route::resource('users', AdminUserController::class);
 
         // Gestion des rôles
         Route::resource('roles', AdminRoleController::class)->except(['show']);
 
         // Gestion des catégories
+        Route::get('categories/data', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'dataCategories'])->name('categories.data');
+        Route::post('categories/bulk-activate', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'bulkActivate'])->name('categories.bulk-activate');
+        Route::post('categories/bulk-deactivate', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'bulkDeactivate'])->name('categories.bulk-deactivate');
         Route::resource('categories', \App\Http\Controllers\Admin\AdminCategoryController::class);
 
         // Gestion des produits
@@ -468,6 +474,9 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::resource('products', \App\Http\Controllers\Admin\AdminProductController::class);
 
         // Gestion des codes promo (hors-show : tout se passe dans la liste + edit)
+        Route::get('promo-codes/data', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'dataPromoCodes'])->name('promo-codes.data');
+        Route::post('promo-codes/bulk-disable', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'bulkDisable'])->name('promo-codes.bulk-disable');
+        Route::post('promo-codes/bulk-delete', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'bulkDelete'])->name('promo-codes.bulk-delete');
         Route::resource('promo-codes', \App\Http\Controllers\Admin\AdminPromoCodeController::class)
             ->except(['show'])
             ->parameters(['promo-codes' => 'promo_code']);
@@ -487,9 +496,10 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
             Route::put('/providers/{provider}', [\App\Http\Controllers\Admin\Payments\PaymentProviderController::class, 'update'])->name('providers.update');
             
             // Transactions (Sprint 3)
+            Route::get('/transactions/data', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'dataTransactions'])->name('transactions.data');
+            Route::get('/transactions/export/csv', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'exportCsv'])->name('transactions.export.csv');
             Route::get('/transactions', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'index'])->name('transactions.index');
             Route::get('/transactions/{transaction}', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'show'])->name('transactions.show');
-            Route::get('/transactions/export/csv', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'exportCsv'])->name('transactions.export.csv');
             
             // Webhooks (Sprint 3)
             Route::get('/webhooks', [\App\Http\Controllers\Admin\Payments\WebhookMonitorController::class, 'index'])->name('webhooks.index');
@@ -506,6 +516,9 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         });
 
         // Gestion des commandes - Routes spécifiques AVANT la route resource
+        Route::get('orders/data', [\App\Http\Controllers\Admin\AdminOrderController::class, 'dataOrders'])->name('orders.data');
+        Route::post('orders/bulk-complete', [\App\Http\Controllers\Admin\AdminOrderController::class, 'bulkComplete'])->name('orders.bulk-complete');
+        Route::post('orders/bulk-cancel', [\App\Http\Controllers\Admin\AdminOrderController::class, 'bulkCancel'])->name('orders.bulk-cancel');
         Route::get('orders/scan', [\App\Http\Controllers\Admin\AdminOrderController::class, 'scanForm'])->name('orders.scan');
         Route::post('orders/scan', [\App\Http\Controllers\Admin\AdminOrderController::class, 'scanHandle'])->name('orders.scan.handle');
         Route::get('orders/{order}/qrcode', [\App\Http\Controllers\Admin\AdminOrderController::class, 'showQr'])->name('orders.qr');
@@ -528,6 +541,9 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
 
 
         // Gestion des créateurs
+        Route::get('creators/data', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'dataCreators'])->name('creators.data');
+        Route::post('creators/bulk-verify', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'bulkVerify'])->name('creators.bulk-verify');
+        Route::post('creators/bulk-suspend', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'bulkSuspend'])->name('creators.bulk-suspend');
         Route::get('creators', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'index'])->name('creators.index');
         Route::get('creators/{id}', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'show'])->name('creators.show');
         Route::patch('creators/{id}/verify', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'verify'])->name('creators.verify');
@@ -558,6 +574,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         
         // Dashboard KYC
         Route::prefix('kyc')->name('kyc.')->group(function () {
+            Route::get('/data', [\App\Http\Controllers\Admin\AdminKycController::class, 'dataKyc'])->name('data');
             Route::get('/', [\App\Http\Controllers\Admin\AdminKycController::class, 'index'])->name('index');
             Route::get('/creator/{creator}', [\App\Http\Controllers\Admin\AdminKycController::class, 'show'])->name('show');
             Route::post('/creator/{creator}/sync', [\App\Http\Controllers\Admin\AdminKycController::class, 'sync'])->name('sync');

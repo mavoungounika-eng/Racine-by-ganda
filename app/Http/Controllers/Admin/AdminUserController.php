@@ -6,6 +6,7 @@ use App\Http\Requests\StoreAdminUserRequest;
 use App\Http\Requests\UpdateAdminUserRequest;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -57,6 +58,45 @@ class AdminUserController extends AdminController
         $roles = Role::orderBy('name')->get();
 
         return view('admin.users.index', compact('users', 'roles'));
+    }
+
+    public function dataUsers(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', User::class);
+        $query = User::with('roleRelation:id,name,slug');
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('role')) {
+            $query->where('role', $request->get('role'));
+        }
+        if ($request->filled('status') && $request->get('status') !== '') {
+            $query->where('status', $request->get('status'));
+        }
+        $query->orderBy('created_at', 'desc');
+
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    public function bulkDisable(Request $request): JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $ids = array_filter($ids, fn ($id) => $id !== auth()->id()); // never disable self
+        $count = User::whereIn('id', $ids)->update(['status' => 'inactive']);
+
+        return response()->json(['success' => true, 'message' => $count.' utilisateur(s) désactivé(s)']);
+    }
+
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $ids = array_filter($ids, fn ($id) => $id !== auth()->id()); // never delete self
+        $count = User::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true, 'message' => $count.' utilisateur(s) supprimé(s)']);
     }
 
     /**

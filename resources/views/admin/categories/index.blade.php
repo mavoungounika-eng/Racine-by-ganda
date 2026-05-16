@@ -1,224 +1,151 @@
 @extends('layouts.admin-master')
 
-@section('title', 'Gestion des Catégories')
+@section('title', 'Catégories')
 @section('page-title', 'Gestion des Catégories')
 @section('page-subtitle', 'Organiser vos catégories de produits')
 
 @section('content')
-
-{{-- En-tête avec actions --}}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-1 fw-bold">
-            <i class="fas fa-folder text-racine-orange me-2"></i>
-            Gestion des Catégories
-        </h2>
-        <p class="text-muted mb-0">
-            <i class="fas fa-info-circle me-1"></i>
-            Organiser vos catégories de produits
-        </p>
-    </div>
-    <a href="{{ route('admin.categories.create') }}" class="btn btn-racine-orange">
-        <i class="fas fa-plus me-2"></i>
-        Nouvelle Catégorie
-    </a>
-</div>
-
-{{-- Barre de filtres --}}
-@include('partials.admin.filter-bar', [
-    'route' => route('admin.categories.index'),
-    'search' => true,
-    'filters' => [
-        [
-            'name' => 'is_active',
-            'label' => 'Statut',
-            'type' => 'select',
-            'icon' => 'fas fa-toggle-on',
-            'width' => 3,
-            'options' => [
-                ['value' => '', 'label' => 'Tous les statuts'],
-                ['value' => '1', 'label' => 'Actives'],
-                ['value' => '0', 'label' => 'Inactives']
-            ]
-        ]
+@include('admin.components.admin-list', [
+    'listId' => 'cats',
+    'bulkActions' => [
+        ['label' => 'Activer', 'endpoint' => route('admin.categories.bulk-activate'), 'confirm' => 'Activer {n} catégorie(s) ?'],
+        ['label' => 'Désactiver', 'endpoint' => route('admin.categories.bulk-deactivate'), 'confirm' => 'Désactiver {n} catégorie(s) ?', 'danger' => true],
     ]
 ])
 
-{{-- Tableau des catégories --}}
-<div class="card card-racine">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-tag me-2"></i>Nom
-                            <a href="{{ route('admin.categories.index', array_merge(request()->all(), ['sort_by' => 'name', 'sort_dir' => request('sort_dir') === 'asc' && request('sort_by') === 'name' ? 'desc' : 'asc'])) }}" 
-                               class="text-muted ms-2" 
-                               title="Trier">
-                                <i class="fas fa-sort{{ request('sort_by') === 'name' ? (request('sort_dir') === 'asc' ? '-up' : '-down') : '' }}"></i>
-                            </a>
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-link me-2"></i>Slug
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-sitemap me-2"></i>Parent
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-toggle-on me-2"></i>Statut
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-folder-open me-2"></i>Sous-catégories
-                        </th>
-                        <th class="text-end text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-cog me-2"></i>Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($categories as $category)
-                    <tr>
-                        <td style="padding: 1.25rem 1rem;">
-                            <div class="fw-semibold text-racine-black">{{ $category->name }}</div>
-                            @if($category->description)
-                                <div class="small text-muted mt-1" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                    {{ $category->description }}
-                                </div>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            <code class="text-racine-orange small">{{ $category->slug }}</code>
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            @if($category->parent)
-                                <span class="badge bg-info text-white">
-                                    <i class="fas fa-level-up-alt me-1"></i>
-                                    {{ $category->parent->name }}
-                                </span>
-                            @else
-                                <span class="text-muted">
-                                    <i class="fas fa-home me-1"></i>
-                                    Racine
-                                </span>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            @if($category->is_active)
-                                <span class="badge bg-success rounded-pill">
-                                    <i class="fas fa-check-circle me-1"></i>Active
-                                </span>
-                            @else
-                                <span class="badge bg-secondary rounded-pill">
-                                    <i class="fas fa-pause-circle me-1"></i>Inactive
-                                </span>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            <span class="badge bg-light text-dark">
-                                <i class="fas fa-folder me-1"></i>
-                                {{ $category->children_count ?? 0 }}
-                            </span>
-                        </td>
-                        <td class="text-end" style="padding: 1.25rem 1rem;">
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('admin.categories.edit', $category) }}" 
-                                   class="btn btn-sm btn-outline-primary"
-                                   title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                    <span class="d-none d-md-inline ms-1">Modifier</span>
-                                </a>
-                                <button type="button"
-                                        onclick="openDeleteModal({{ $category->id }}, '{{ addslashes($category->name) }}')"
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Supprimer">
-                                    <i class="fas fa-trash"></i>
-                                    <span class="d-none d-md-inline ms-1">Supprimer</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="py-4">
-                                <i class="fas fa-folder-open fa-3x text-muted mb-3 opacity-50"></i>
-                                <p class="text-muted mb-2">Aucune catégorie trouvée</p>
-                                <a href="{{ route('admin.categories.create') }}" class="btn btn-racine-orange">
-                                    <i class="fas fa-plus me-2"></i>
-                                    Créer votre première catégorie
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        @if($categories->hasPages())
-        <div class="card-footer bg-transparent border-top">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-muted small">
-                    Affichage de {{ $categories->firstItem() ?? 0 }} à {{ $categories->lastItem() ?? 0 }} sur {{ $categories->total() }} résultats
-                </div>
-                <div>
-                    {{ $categories->links('vendor.pagination.bootstrap-5') }}
-                </div>
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
+<div class="al-card mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0" style="color:#ED5F1E;">Catégories</h5>
+    <a href="{{ route('admin.categories.create') }}" class="al-action-btn">+ Nouvelle catégorie</a>
+  </div>
 
-<!-- Modal de confirmation de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="deleteModalLabel">
-                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-                    Confirmer la suppression
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="deleteForm" method="POST" action="">
-                @csrf
-                @method('DELETE')
-                <div class="modal-body">
-                    <p class="mb-0">
-                        Êtes-vous sûr de vouloir supprimer la catégorie <strong id="categoryName" class="text-racine-black"></strong> ?
-                    </p>
-                    <div class="alert alert-warning mt-3 mb-0">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Attention :</strong> Cette action supprimera également toutes les sous-catégories associées.
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>
-                        Annuler
-                    </button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>
-                        Supprimer
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+  {{-- Filtres --}}
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <input type="text" id="cats-search" class="al-filter-input" placeholder="Rechercher..." style="min-width:200px;">
+    <select id="cats-status" class="al-filter-select">
+      <option value="">Tous les statuts</option>
+      <option value="1">Actives</option>
+      <option value="0">Inactives</option>
+    </select>
+  </div>
 
+  {{-- Stats --}}
+  <div class="al-stats mb-3">
+    <div class="al-stat-item"><span id="stat-total">—</span><small>Total</small></div>
+    <div class="al-stat-item"><span id="stat-active" style="color:#4ade80;">—</span><small>Actives</small></div>
+    <div class="al-stat-item"><span id="stat-inactive" style="color:#f87171;">—</span><small>Inactives</small></div>
+  </div>
+
+  {{-- Tableau --}}
+  <div class="table-responsive">
+    <table class="al-table w-100">
+      <thead>
+        <tr>
+          <th style="width:36px;"><input type="checkbox" id="cats-cb-all" class="al-cb"></th>
+          <th>Nom</th>
+          <th>Slug</th>
+          <th>Parent</th>
+          <th>Produits</th>
+          <th>Sous-cat.</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="cats-tbody"><tr><td colspan="8" style="text-align:center;padding:2rem;color:#aaa;">Chargement…</td></tr></tbody>
+    </table>
+  </div>
+
+  {{-- Pagination --}}
+  <div class="al-pag-bar mt-3" id="cats-pag"></div>
+</div>
 @endsection
 
+@once
 @push('scripts')
 <script nonce="{{ csp_nonce() }}">
-function openDeleteModal(id, name) {
-    document.getElementById('categoryName').textContent = name;
-    document.getElementById('deleteForm').action = '{{ route('admin.categories.destroy', ':id') }}'.replace(':id', id);
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    modal.show();
-}
+(function(){
+  const DATA_URL = '{{ route("admin.categories.data") }}';
+  let page = 1, search = '', status = '', bulk;
+
+  function badge(active) {
+    return active
+      ? '<span class="badge" style="background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);">Active</span>'
+      : '<span class="badge" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);">Inactive</span>';
+  }
+
+  function renderTable(data) {
+    if (bulk) bulk.clear();
+    const tbody = document.getElementById('cats-tbody');
+    if (!data.data.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#aaa;">Aucun résultat</td></tr>';
+    } else {
+      tbody.innerHTML = data.data.map(c => `
+        <tr>
+          <td><input type="checkbox" class="al-row-cb al-cb" data-id="${c.id}"></td>
+          <td><strong style="color:#eee;">${c.name}</strong></td>
+          <td><code style="color:#aaa;font-size:.8em;">${c.slug}</code></td>
+          <td style="color:#ccc;">${c.parent ? c.parent.name : '—'}</td>
+          <td style="color:#ccc;">${c.products_count ?? 0}</td>
+          <td style="color:#ccc;">${c.children_count ?? 0}</td>
+          <td>${badge(c.is_active)}</td>
+          <td>
+            <a href="/admin/categories/${c.id}/edit" class="al-action-btn" style="font-size:.75rem;">Éditer</a>
+          </td>
+        </tr>`).join('');
+    }
+    renderPag(data);
+  }
+
+  function renderPag(data) {
+    const pag = document.getElementById('cats-pag');
+    pag.innerHTML = '';
+    if (data.last_page <= 1) return;
+    const prev = document.createElement('button');
+    prev.textContent = '← Préc.'; prev.className = 'al-action-btn'; prev.disabled = data.current_page <= 1;
+    prev.onclick = () => load(data.current_page - 1);
+    const next = document.createElement('button');
+    next.textContent = 'Suiv. →'; next.className = 'al-action-btn'; next.disabled = data.current_page >= data.last_page;
+    next.onclick = () => load(data.current_page + 1);
+    const info = document.createElement('span');
+    info.textContent = `Page ${data.current_page} / ${data.last_page} (${data.total} entrées)`;
+    info.style.cssText = 'color:#aaa;font-size:.85rem;';
+    pag.append(prev, info, next);
+  }
+
+  function load(p) {
+    page = p || 1;
+    const params = new URLSearchParams({ page, per_page: 20 });
+    if (search) params.set('search', search);
+    if (status !== '') params.set('is_active', status);
+    fetch(`${DATA_URL}?${params}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(renderTable).catch(err => { console.error(err); AL.toast('Erreur chargement', false); });
+  }
+
+  function loadStats() {
+    fetch(`${DATA_URL}?per_page=1`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-total').textContent = d.total ?? '—'; });
+    fetch(`${DATA_URL}?per_page=1&is_active=1`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-active').textContent = d.total ?? '—'; });
+    fetch(`${DATA_URL}?per_page=1&is_active=0`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-inactive').textContent = d.total ?? '—'; });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    bulk = AL.initBulkBar({ listId:'cats', tbody: document.getElementById('cats-tbody'),
+      cbAllId:'cats-cb-all', onSuccess: function(){ load(1); loadStats(); } });
+
+    let t;
+    document.getElementById('cats-search').addEventListener('input', function() {
+      search = this.value; clearTimeout(t); t = setTimeout(() => load(1), 350);
+    });
+    document.getElementById('cats-status').addEventListener('change', function() {
+      status = this.value; load(1);
+    });
+
+    load(1);
+    loadStats();
+  });
+})();
 </script>
 @endpush
-
+@endonce

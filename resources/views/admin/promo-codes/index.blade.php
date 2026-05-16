@@ -5,280 +5,168 @@
 @section('page-subtitle', 'Gérez les codes de réduction appliqués au checkout')
 
 @section('content')
-
-{{-- En-tête --}}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-1 fw-bold">
-            <i class="fas fa-tags text-racine-orange me-2"></i>
-            Codes Promo
-        </h2>
-        <p class="text-muted mb-0">
-            <i class="fas fa-info-circle me-1"></i>
-            Pourcentage, montant fixe ou livraison gratuite
-        </p>
-    </div>
-    <a href="{{ route('admin.promo-codes.create') }}" class="btn btn-racine-orange">
-        <i class="fas fa-plus me-2"></i>
-        Nouveau code promo
-    </a>
-</div>
-
-{{-- Barre de filtres --}}
-@include('partials.admin.filter-bar', [
-    'route' => route('admin.promo-codes.index'),
-    'search' => true,
-    'filters' => [
-        [
-            'name' => 'type',
-            'label' => 'Type',
-            'type' => 'select',
-            'icon' => 'fas fa-tag',
-            'width' => 3,
-            'options' => [
-                ['value' => '', 'label' => 'Tous les types'],
-                ['value' => 'percentage', 'label' => 'Pourcentage (%)'],
-                ['value' => 'fixed', 'label' => 'Montant fixe (FCFA)'],
-                ['value' => 'free_shipping', 'label' => 'Livraison gratuite'],
-            ]
-        ],
-        [
-            'name' => 'status',
-            'label' => 'Statut',
-            'type' => 'select',
-            'icon' => 'fas fa-toggle-on',
-            'width' => 3,
-            'options' => [
-                ['value' => '', 'label' => 'Tous'],
-                ['value' => 'active', 'label' => 'Actif & valide'],
-                ['value' => 'upcoming', 'label' => 'À venir'],
-                ['value' => 'expired', 'label' => 'Expiré'],
-            ]
-        ]
+@include('admin.components.admin-list', [
+    'listId' => 'promos',
+    'bulkActions' => [
+        ['label' => 'Désactiver', 'endpoint' => route('admin.promo-codes.bulk-disable'), 'confirm' => 'Désactiver {n} code(s) ?', 'danger' => true],
+        ['label' => 'Supprimer', 'endpoint' => route('admin.promo-codes.bulk-delete'), 'confirm' => 'Supprimer {n} code(s) inutilisés ? Les codes déjà utilisés seront ignorés.', 'danger' => true],
     ]
 ])
 
-{{-- Tableau --}}
-<div class="card card-racine">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-barcode me-2"></i>Code
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-tag me-2"></i>Nom
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-percent me-2"></i>Type / Valeur
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-chart-bar me-2"></i>Utilisations
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-calendar me-2"></i>Période
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-toggle-on me-2"></i>Statut
-                        </th>
-                        <th class="text-end text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-cog me-2"></i>Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($promoCodes as $promo)
-                    @php
-                        $now = now();
-                        $isExpired = $promo->expires_at && $now->gt($promo->expires_at);
-                        $isUpcoming = $promo->starts_at && $now->lt($promo->starts_at);
-                        $isExhausted = $promo->max_uses && $promo->used_count >= $promo->max_uses;
-                    @endphp
-                    <tr>
-                        <td style="padding: 1.25rem 1rem;">
-                            <code class="text-racine-orange fw-bold" style="font-size: 0.95rem;">{{ $promo->code }}</code>
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            <div class="fw-semibold text-racine-black">{{ $promo->name }}</div>
-                            @if($promo->description)
-                                <div class="small text-muted mt-1" style="max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                    {{ $promo->description }}
-                                </div>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            @if($promo->type === 'percentage')
-                                <span class="badge bg-info text-white">
-                                    <i class="fas fa-percent me-1"></i>{{ number_format($promo->value, 0) }}%
-                                </span>
-                            @elseif($promo->type === 'fixed')
-                                <span class="badge bg-primary text-white">
-                                    <i class="fas fa-coins me-1"></i>{{ number_format($promo->value, 0, ',', ' ') }} FCFA
-                                </span>
-                            @else
-                                <span class="badge bg-success text-white">
-                                    <i class="fas fa-shipping-fast me-1"></i>Livraison gratuite
-                                </span>
-                            @endif
-                            @if($promo->min_amount)
-                                <div class="small text-muted mt-1">
-                                    min {{ number_format($promo->min_amount, 0, ',', ' ') }} FCFA
-                                </div>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            <span class="badge bg-light text-dark">
-                                {{ $promo->used_count }}{{ $promo->max_uses ? ' / '.$promo->max_uses : '' }}
-                            </span>
-                            @if($promo->max_uses_per_user)
-                                <div class="small text-muted mt-1">
-                                    max {{ $promo->max_uses_per_user }}/client
-                                </div>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            <div class="small">
-                                @if($promo->starts_at)
-                                    <div class="text-muted">Dès {{ $promo->starts_at->format('d/m/Y H:i') }}</div>
-                                @endif
-                                @if($promo->expires_at)
-                                    <div class="text-muted">Jusqu au {{ $promo->expires_at->format('d/m/Y H:i') }}</div>
-                                @endif
-                                @if(!$promo->starts_at && !$promo->expires_at)
-                                    <span class="text-muted">Permanent</span>
-                                @endif
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            @if(!$promo->is_active)
-                                <span class="badge bg-secondary rounded-pill">
-                                    <i class="fas fa-pause-circle me-1"></i>Désactivé
-                                </span>
-                            @elseif($isExpired)
-                                <span class="badge bg-danger rounded-pill">
-                                    <i class="fas fa-clock me-1"></i>Expiré
-                                </span>
-                            @elseif($isUpcoming)
-                                <span class="badge bg-warning text-dark rounded-pill">
-                                    <i class="fas fa-hourglass-start me-1"></i>À venir
-                                </span>
-                            @elseif($isExhausted)
-                                <span class="badge bg-dark rounded-pill">
-                                    <i class="fas fa-ban me-1"></i>Épuisé
-                                </span>
-                            @else
-                                <span class="badge bg-success rounded-pill">
-                                    <i class="fas fa-check-circle me-1"></i>Actif
-                                </span>
-                            @endif
-                        </td>
-                        <td class="text-end" style="padding: 1.25rem 1rem;">
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('admin.promo-codes.edit', $promo) }}"
-                                   class="btn btn-sm btn-outline-primary"
-                                   title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                    <span class="d-none d-md-inline ms-1">Modifier</span>
-                                </a>
-                                <button type="button"
-                                        onclick="openDeletePromoModal({{ $promo->id }}, '{{ addslashes($promo->code) }}', {{ $promo->usages_count ?? 0 }})"
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Supprimer">
-                                    <i class="fas fa-trash"></i>
-                                    <span class="d-none d-md-inline ms-1">Supprimer</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="text-center py-5">
-                            <div class="py-4">
-                                <i class="fas fa-tags fa-3x text-muted mb-3 opacity-50"></i>
-                                <p class="text-muted mb-2">Aucun code promo trouvé</p>
-                                <a href="{{ route('admin.promo-codes.create') }}" class="btn btn-racine-orange">
-                                    <i class="fas fa-plus me-2"></i>
-                                    Créer votre premier code
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+<div class="al-card mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0" style="color:#ED5F1E;">Codes Promo</h5>
+    <a href="{{ route('admin.promo-codes.create') }}" class="al-action-btn">+ Nouveau code</a>
+  </div>
 
-        @if($promoCodes->hasPages())
-        <div class="card-footer bg-transparent border-top">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-muted small">
-                    Affichage de {{ $promoCodes->firstItem() ?? 0 }} à {{ $promoCodes->lastItem() ?? 0 }} sur {{ $promoCodes->total() }} résultats
-                </div>
-                <div>
-                    {{ $promoCodes->links('vendor.pagination.bootstrap-5') }}
-                </div>
-            </div>
-        </div>
-        @endif
-    </div>
+  {{-- Filtres --}}
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <input type="text" id="promos-search" class="al-filter-input" placeholder="Code ou nom…" style="min-width:200px;">
+    <select id="promos-type" class="al-filter-select">
+      <option value="">Tous les types</option>
+      <option value="percentage">Pourcentage</option>
+      <option value="fixed">Fixe</option>
+      <option value="free_shipping">Livraison gratuite</option>
+    </select>
+    <select id="promos-status" class="al-filter-select">
+      <option value="">Tous les statuts</option>
+      <option value="1">Actifs</option>
+      <option value="0">Inactifs</option>
+    </select>
+  </div>
+
+  {{-- Stats --}}
+  <div class="al-stats mb-3">
+    <div class="al-stat-item"><span id="stat-total">—</span><small>Total</small></div>
+    <div class="al-stat-item"><span id="stat-active" style="color:#4ade80;">—</span><small>Actifs</small></div>
+    <div class="al-stat-item"><span id="stat-inactive" style="color:#f87171;">—</span><small>Inactifs</small></div>
+  </div>
+
+  {{-- Tableau --}}
+  <div class="table-responsive">
+    <table class="al-table w-100">
+      <thead>
+        <tr>
+          <th style="width:36px;"><input type="checkbox" id="promos-cb-all" class="al-cb"></th>
+          <th>Code</th>
+          <th>Nom</th>
+          <th>Type</th>
+          <th>Valeur</th>
+          <th>Utilisations</th>
+          <th>Limite</th>
+          <th>Expire</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="promos-tbody"><tr><td colspan="10" style="text-align:center;padding:2rem;color:#aaa;">Chargement…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="al-pag-bar mt-3" id="promos-pag"></div>
 </div>
-
-{{-- Modal suppression --}}
-<div class="modal fade" id="deletePromoModal" tabindex="-1" aria-labelledby="deletePromoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="deletePromoModalLabel">
-                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-                    Confirmer la suppression
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="deletePromoForm" method="POST" action="">
-                @csrf
-                @method('DELETE')
-                <div class="modal-body">
-                    <p class="mb-0">
-                        Supprimer le code promo <strong id="promoCodeLabel" class="text-racine-black"></strong> ?
-                    </p>
-                    <div id="promoUsagesWarning" class="alert alert-warning mt-3 mb-0 d-none">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Attention :</strong> ce code a déjà été utilisé. La suppression sera refusée par le serveur ; désactivez-le plutôt.
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>
-                        Annuler
-                    </button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>
-                        Supprimer
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 @endsection
 
+@once
 @push('scripts')
 <script nonce="{{ csp_nonce() }}">
-function openDeletePromoModal(id, code, usages) {
-    document.getElementById('promoCodeLabel').textContent = code;
-    document.getElementById('deletePromoForm').action =
-        '{{ route('admin.promo-codes.destroy', ':id') }}'.replace(':id', id);
-    const warn = document.getElementById('promoUsagesWarning');
-    if (usages && usages > 0) {
-        warn.classList.remove('d-none');
+(function(){
+  const DATA_URL = '{{ route("admin.promo-codes.data") }}';
+  let page = 1, search = '', type = '', status = '', bulk;
+
+  function typeBadge(t) {
+    const map = { percentage: ['#FFB800','%'], fixed: ['#60a5fa','Fixe'], free_shipping: ['#c084fc','Livraison'] };
+    const [color, label] = map[t] || ['#aaa', t || '—'];
+    return `<span class="badge" style="background:rgba(0,0,0,.2);color:${color};border:1px solid ${color}40;">${label}</span>`;
+  }
+
+  function activeTag(active) {
+    return active
+      ? '<span class="badge" style="background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);">Actif</span>'
+      : '<span class="badge" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);">Inactif</span>';
+  }
+
+  function fmtValue(c) {
+    if (c.type === 'percentage') return (c.discount_value || 0) + ' %';
+    if (c.type === 'fixed') return (c.discount_value || 0) + ' ' + (c.currency || 'XAF');
+    return '—';
+  }
+
+  function renderTable(data) {
+    if (bulk) bulk.clear();
+    const tbody = document.getElementById('promos-tbody');
+    if (!data.data.length) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:#aaa;">Aucun résultat</td></tr>';
     } else {
-        warn.classList.add('d-none');
+      tbody.innerHTML = data.data.map(c => `
+        <tr>
+          <td><input type="checkbox" class="al-row-cb al-cb" data-id="${c.id}"></td>
+          <td><code style="color:#ED5F1E;font-size:.85em;">${c.code}</code></td>
+          <td style="color:#ccc;">${c.name || '—'}</td>
+          <td>${typeBadge(c.type)}</td>
+          <td style="color:#eee;">${fmtValue(c)}</td>
+          <td style="color:#ccc;">${c.used_count ?? 0}</td>
+          <td style="color:#ccc;">${c.max_uses ? c.max_uses : '∞'}</td>
+          <td style="color:#aaa;font-size:.8rem;">${c.expires_at ? c.expires_at.substring(0,10) : '—'}</td>
+          <td>${activeTag(c.is_active)}</td>
+          <td>
+            <a href="/admin/promo-codes/${c.id}/edit" class="al-action-btn" style="font-size:.75rem;">Éditer</a>
+          </td>
+        </tr>`).join('');
     }
-    const modal = new bootstrap.Modal(document.getElementById('deletePromoModal'));
-    modal.show();
-}
+    renderPag(data);
+  }
+
+  function renderPag(data) {
+    const pag = document.getElementById('promos-pag');
+    pag.innerHTML = '';
+    if (data.last_page <= 1) return;
+    const prev = document.createElement('button');
+    prev.textContent = '← Préc.'; prev.className = 'al-action-btn'; prev.disabled = data.current_page <= 1;
+    prev.onclick = () => load(data.current_page - 1);
+    const next = document.createElement('button');
+    next.textContent = 'Suiv. →'; next.className = 'al-action-btn'; next.disabled = data.current_page >= data.last_page;
+    next.onclick = () => load(data.current_page + 1);
+    const info = document.createElement('span');
+    info.textContent = `Page ${data.current_page} / ${data.last_page} (${data.total})`;
+    info.style.cssText = 'color:#aaa;font-size:.85rem;';
+    pag.append(prev, info, next);
+  }
+
+  function load(p) {
+    page = p || 1;
+    const params = new URLSearchParams({ page, per_page: 20 });
+    if (search) params.set('search', search);
+    if (type) params.set('type', type);
+    if (status !== '') params.set('is_active', status);
+    fetch(`${DATA_URL}?${params}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(renderTable).catch(() => AL.toast('Erreur chargement', false));
+  }
+
+  function loadStats() {
+    fetch(`${DATA_URL}?per_page=1`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-total').textContent = d.total ?? '—'; });
+    fetch(`${DATA_URL}?per_page=1&is_active=1`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-active').textContent = d.total ?? '—'; });
+    fetch(`${DATA_URL}?per_page=1&is_active=0`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-inactive').textContent = d.total ?? '—'; });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    bulk = AL.initBulkBar({ listId:'promos', tbody: document.getElementById('promos-tbody'),
+      cbAllId:'promos-cb-all', onSuccess: function(){ load(1); loadStats(); } });
+
+    let t;
+    document.getElementById('promos-search').addEventListener('input', function() {
+      search = this.value; clearTimeout(t); t = setTimeout(() => load(1), 350);
+    });
+    document.getElementById('promos-type').addEventListener('change', function() { type = this.value; load(1); });
+    document.getElementById('promos-status').addEventListener('change', function() { status = this.value; load(1); });
+
+    load(1);
+    loadStats();
+  });
+})();
 </script>
 @endpush
+@endonce

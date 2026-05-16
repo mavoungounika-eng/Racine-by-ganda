@@ -2,213 +2,169 @@
 
 @section('title', 'Utilisateurs')
 @section('page-title', 'Gestion des Utilisateurs')
-
-@push('styles')
-<style nonce="{{ csp_nonce() }}">
-    .premium-card {
-        background: rgba(22, 13, 12, 0.6);
-        border: 1px solid rgba(212, 165, 116, 0.1);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    
-    .premium-table {
-        width: 100%;
-    }
-    
-    .premium-table thead {
-        background: linear-gradient(135deg, rgba(18, 8, 6, 0.8) 0%, rgba(22, 13, 12, 0.6) 100%);
-    }
-    
-    .premium-table th {
-        padding: 1.25rem 1rem;
-        text-align: left;
-        font-weight: 700;
-        font-size: 0.75rem;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        border-bottom: 2px solid rgba(237, 95, 30, 0.2);
-    }
-    
-    .premium-table td {
-        padding: 1.5rem 1rem;
-        border-bottom: 1px solid rgba(212, 165, 116, 0.1);
-        color: #e2e8f0;
-    }
-    
-    .premium-table tbody tr {
-        transition: all 0.2s;
-    }
-    
-    .premium-table tbody tr:hover {
-        background: rgba(237, 95, 30, 0.05);
-        transform: scale(1.01);
-    }
-    
-    .premium-input {
-        background: rgba(22, 13, 12, 0.6);
-        border: 1px solid rgba(212, 165, 116, 0.2);
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
-        color: #e2e8f0;
-        transition: all 0.3s;
-    }
-    
-    .premium-input:focus {
-        outline: none;
-        border-color: #ED5F1E;
-        box-shadow: 0 0 0 4px rgba(237, 95, 30, 0.1);
-    }
-    
-    .premium-select {
-        background: rgba(22, 13, 12, 0.6);
-        border: 1px solid rgba(212, 165, 116, 0.2);
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
-        color: #e2e8f0;
-        transition: all 0.3s;
-    }
-    
-    .premium-select:focus {
-        outline: none;
-        border-color: #ED5F1E;
-        box-shadow: 0 0 0 4px rgba(237, 95, 30, 0.1);
-    }
-</style>
-@endpush
+@section('page-subtitle', 'Gérer les comptes utilisateurs de la plateforme')
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6">
-    {{-- Header Actions --}}
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-users text-racine-orange me-2"></i>
-                Gestion des Utilisateurs
-            </h2>
-            <p class="text-slate-400">{{ $users->total() }} utilisateurs au total</p>
-        </div>
-        <a href="{{ route('admin.users.create') }}"
-           class="px-6 py-3 bg-gradient-to-r from-racine-orange to-racine-yellow text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-racine-orange/30 transition-all flex items-center gap-2">
-            <i class="fas fa-user-plus"></i>
-            Nouvel Utilisateur
-        </a>
-    </div>
+@include('admin.components.admin-list', [
+    'listId' => 'users',
+    'bulkActions' => [
+        ['label' => 'Désactiver', 'endpoint' => route('admin.users.bulk-disable'), 'confirm' => 'Désactiver {n} utilisateur(s) ?', 'danger' => true],
+        ['label' => 'Supprimer', 'endpoint' => route('admin.users.bulk-delete'), 'confirm' => 'Supprimer définitivement {n} utilisateur(s) ? Cette action est irréversible.', 'danger' => true],
+    ]
+])
 
-    {{-- Filters --}}
-    <div class="premium-card">
-        <form method="GET" class="grid md:grid-cols-4 gap-4">
-            <input type="text" 
-                   name="search" 
-                   value="{{ request('search') }}"
-                   placeholder="Rechercher..." 
-                   class="premium-input">
-            
-            <select name="role" class="premium-select">
-                <option value="">Tous les rôles</option>
-                @foreach(\App\Models\Role::all() as $role)
-                    <option value="{{ $role->id }}" {{ request('role') == $role->id ? 'selected' : '' }}>
-                        {{ $role->name }}
-                    </option>
-                @endforeach
-            </select>
+<div class="al-card mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0" style="color:#ED5F1E;">Utilisateurs</h5>
+    <a href="{{ route('admin.users.create') }}" class="al-action-btn">+ Nouvel utilisateur</a>
+  </div>
 
-            <button type="submit"
-                    class="px-6 py-3 bg-gradient-to-r from-racine-orange to-racine-yellow text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-racine-orange/30 transition-all flex items-center justify-center gap-2">
-                <i class="fas fa-search"></i>
-                Filtrer
-            </button>
+  {{-- Filtres --}}
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <input type="text" id="users-search" class="al-filter-input" placeholder="Nom ou email…" style="min-width:220px;">
+    <select id="users-status" class="al-filter-select">
+      <option value="">Tous les statuts</option>
+      <option value="active">Actif</option>
+      <option value="inactive">Inactif</option>
+      <option value="suspended">Suspendu</option>
+    </select>
+    <select id="users-role" class="al-filter-select">
+      <option value="">Tous les rôles</option>
+      <option value="admin">Admin</option>
+      <option value="createur">Créateur</option>
+      <option value="client">Client</option>
+    </select>
+  </div>
 
-            @if(request()->hasAny(['search', 'role']))
-                <a href="{{ route('admin.users.index') }}"
-                   class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-redo"></i>
-                    Réinitialiser
-                </a>
-            @endif
-        </form>
-    </div>
+  {{-- Stats --}}
+  <div class="al-stats mb-3">
+    <div class="al-stat-item"><span id="stat-total">—</span><small>Total</small></div>
+    <div class="al-stat-item"><span id="stat-active" style="color:#4ade80;">—</span><small>Actifs</small></div>
+    <div class="al-stat-item"><span id="stat-inactive" style="color:#f87171;">—</span><small>Inactifs</small></div>
+  </div>
 
-    {{-- Users Table --}}
-    <div class="premium-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="premium-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nom</th>
-                        <th>Email</th>
-                        <th>Rôle</th>
-                        <th>Créé le</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($users as $user)
-                    <tr>
-                        <td class="font-mono text-sm text-slate-400">#{{ $user->id }}</td>
-                        <td>
-                            <div class="flex items-center gap-3">
-                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-racine-orange to-racine-yellow flex items-center justify-center text-white font-semibold shadow-lg">
-                                    {{ substr($user->name, 0, 1) }}
-                                </div>
-                                <span class="font-semibold text-white">{{ $user->name }}</span>
-                            </div>
-                        </td>
-                        <td class="text-slate-300">{{ $user->email }}</td>
-                        <td>
-                            @if($user->roleRelation)
-                                <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-semibold">
-                                    {{ $user->roleRelation->name }}
-                                </span>
-                            @else
-                                <span class="px-3 py-1 bg-slate-700 text-slate-400 rounded-full text-xs font-semibold">
-                                    Aucun
-                                </span>
-                            @endif
-                        </td>
-                        <td class="text-slate-400 text-sm">{{ $user->created_at->format('d/m/Y') }}</td>
-                        <td>
-                            <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('admin.users.edit', $user) }}" 
-                                   class="h-9 w-9 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 flex items-center justify-center transition hover:scale-110"
-                                   title="Modifier">
-                                    <i class="fas fa-edit text-sm"></i>
-                                </a>
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            onclick="return confirm('Êtes-vous sûr ?')"
-                                            class="h-9 w-9 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 flex items-center justify-center transition hover:scale-110"
-                                            title="Supprimer">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="py-12 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <i class="fas fa-users text-5xl text-slate-600"></i>
-                                <p class="text-slate-400 text-lg">Aucun utilisateur trouvé</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+  {{-- Tableau --}}
+  <div class="table-responsive">
+    <table class="al-table w-100">
+      <thead>
+        <tr>
+          <th style="width:36px;"><input type="checkbox" id="users-cb-all" class="al-cb"></th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Inscription</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="users-tbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Chargement…</td></tr></tbody>
+    </table>
+  </div>
 
-        @if($users->hasPages())
-        <div class="px-6 py-4 border-t border-slate-700">
-            {{ $users->links('vendor.pagination.bootstrap-5') }}
-        </div>
-        @endif
-    </div>
+  <div class="al-pag-bar mt-3" id="users-pag"></div>
 </div>
 @endsection
+
+@once
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+(function(){
+  const DATA_URL = '{{ route("admin.users.data") }}';
+  let page = 1, search = '', status = '', role = '', bulk;
+
+  function statusBadge(s) {
+    const map = {
+      active: ['#4ade80','Active'],
+      inactive: ['#f87171','Inactive'],
+      suspended: ['#fbbf24','Suspendu'],
+    };
+    const [color, label] = map[s] || ['#aaa', s || '—'];
+    return `<span class="badge" style="background:rgba(0,0,0,.2);color:${color};border:1px solid ${color}40;">${label}</span>`;
+  }
+
+  function roleBadge(r) {
+    const map = { admin: '#ED5F1E', createur: '#FFB800', client: '#60a5fa' };
+    const color = map[r] || '#aaa';
+    return `<span class="badge" style="background:rgba(0,0,0,.2);color:${color};border:1px solid ${color}40;">${r || '—'}</span>`;
+  }
+
+  function renderTable(data) {
+    if (bulk) bulk.clear();
+    const tbody = document.getElementById('users-tbody');
+    if (!data.data.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Aucun résultat</td></tr>';
+    } else {
+      tbody.innerHTML = data.data.map(u => `
+        <tr>
+          <td><input type="checkbox" class="al-row-cb al-cb" data-id="${u.id}"></td>
+          <td><strong style="color:#eee;">${u.name}</strong></td>
+          <td style="color:#aaa;font-size:.85rem;">${u.email}</td>
+          <td>${roleBadge(u.role)}</td>
+          <td>${statusBadge(u.status)}</td>
+          <td style="color:#aaa;font-size:.8rem;">${u.created_at ? u.created_at.substring(0,10) : '—'}</td>
+          <td>
+            <a href="/admin/users/${u.id}" class="al-action-btn" style="font-size:.75rem;">Voir</a>
+            <a href="/admin/users/${u.id}/edit" class="al-action-btn" style="font-size:.75rem;">Éditer</a>
+          </td>
+        </tr>`).join('');
+    }
+    renderPag(data);
+  }
+
+  function renderPag(data) {
+    const pag = document.getElementById('users-pag');
+    pag.innerHTML = '';
+    if (data.last_page <= 1) return;
+    const prev = document.createElement('button');
+    prev.textContent = '← Préc.'; prev.className = 'al-action-btn'; prev.disabled = data.current_page <= 1;
+    prev.onclick = () => load(data.current_page - 1);
+    const next = document.createElement('button');
+    next.textContent = 'Suiv. →'; next.className = 'al-action-btn'; next.disabled = data.current_page >= data.last_page;
+    next.onclick = () => load(data.current_page + 1);
+    const info = document.createElement('span');
+    info.textContent = `Page ${data.current_page} / ${data.last_page} (${data.total})`;
+    info.style.cssText = 'color:#aaa;font-size:.85rem;';
+    pag.append(prev, info, next);
+  }
+
+  function load(p) {
+    page = p || 1;
+    const params = new URLSearchParams({ page, per_page: 20 });
+    if (search) params.set('search', search);
+    if (status) params.set('status', status);
+    if (role) params.set('role', role);
+    fetch(`${DATA_URL}?${params}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(renderTable).catch(() => AL.toast('Erreur chargement', false));
+  }
+
+  function loadStats() {
+    fetch(`${DATA_URL}?per_page=1`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-total').textContent = d.total ?? '—'; });
+    fetch(`${DATA_URL}?per_page=1&status=active`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-active').textContent = d.total ?? '—'; });
+    fetch(`${DATA_URL}?per_page=1&status=inactive`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json()).then(d => { document.getElementById('stat-inactive').textContent = d.total ?? '—'; });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    bulk = AL.initBulkBar({ listId:'users', tbody: document.getElementById('users-tbody'),
+      cbAllId:'users-cb-all', onSuccess: function(){ load(1); loadStats(); } });
+
+    let t;
+    document.getElementById('users-search').addEventListener('input', function() {
+      search = this.value; clearTimeout(t); t = setTimeout(() => load(1), 350);
+    });
+    document.getElementById('users-status').addEventListener('change', function() {
+      status = this.value; load(1);
+    });
+    document.getElementById('users-role').addEventListener('change', function() {
+      role = this.value; load(1);
+    });
+
+    load(1);
+    loadStats();
+  });
+})();
+</script>
+@endpush
+@endonce
