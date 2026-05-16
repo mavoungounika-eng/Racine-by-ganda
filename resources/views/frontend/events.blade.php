@@ -413,7 +413,7 @@
                         <span><i class="fas fa-map-marker-alt"></i> Atelier RACINE, Pointe-Noire</span>
                     </div>
                     <div class="event-footer">
-                        <span class="event-price">25 000 FCFA</span>
+                        <span class="event-price">{{ format_price(25000) }}</span>
                         <a href="#" class="btn-event">S'inscrire</a>
                     </div>
                 </div>

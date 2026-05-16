@@ -196,7 +196,7 @@
                                    {{ old('shipping_method', 'home_delivery') === 'home_delivery' ? 'checked' : '' }}
                                    required>
                             <label class="form-check-label" for="shipping_home">
-                                <strong>Livraison à domicile</strong> – 2 000 FCFA
+                                <strong>Livraison à domicile</strong> – {{ format_price(2000) }}
                             </label>
                         </div>
                         <div class="form-check mt-3">
@@ -304,7 +304,7 @@
                                         <h6 class="mb-1">{{ $title }}</h6>
                                         <small class="text-muted">Qté : {{ $qty }}</small>
                                         <div class="mt-1">
-                                            <strong>{{ number_format($price * $qty, 0, ',', ' ') }} FCFA</strong>
+                                            <strong>{{ format_price($price * $qty) }}</strong>
                                         </div>
                                     </div>
                                 </li>
@@ -314,16 +314,16 @@
                         <div class="border-top pt-3">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Sous-total</span>
-                                <strong>{{ number_format($subtotal, 0, ',', ' ') }} FCFA</strong>
+                                <strong>{{ format_price($subtotal) }}</strong>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Livraison</span>
-                                <strong id="shipping-cost-display">{{ number_format($shipping_default, 0, ',', ' ') }} FCFA</strong>
+                                <strong id="shipping-cost-display">{{ format_price($shipping_default) }}</strong>
                             </div>
                             <div class="border-top pt-3 mt-3">
                                 <div class="d-flex justify-content-between">
                                     <strong>Total</strong>
-                                    <strong class="text-primary" id="total-display" data-subtotal="{{ $subtotal }}">{{ number_format($subtotal + $shipping_default, 0, ',', ' ') }} FCFA</strong>
+                                    <strong class="text-primary" id="total-display" data-subtotal="{{ $subtotal }}">{{ format_price($subtotal + $shipping_default) }}</strong>
                                 </div>
                             </div>
                         </div>

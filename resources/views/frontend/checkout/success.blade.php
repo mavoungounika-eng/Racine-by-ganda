@@ -91,14 +91,14 @@
                                         <strong>{{ $item->product->title ?? $item->product->name ?? 'Produit' }}</strong>
                                     </td>
                                     <td class="text-end">{{ $item->quantity }}</td>
-                                    <td class="text-end">{{ number_format($item->price * $item->quantity, 0, ',', ' ') }} FCFA</td>
+                                    <td class="text-end">{{ format_price($item->price * $item->quantity) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot>
                             <tr>
                                 <th colspan="2" class="text-end">Total</th>
-                                <th class="text-end text-primary">{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</th>
+                                <th class="text-end text-primary">{{ format_price($order->total_amount) }}</th>
                             </tr>
                         </tfoot>
                     </table>
@@ -133,7 +133,7 @@
                             <i class="fas fa-truck fa-2x me-3"></i>
                             <div>
                                 <strong class="d-block mb-1">Paiement à la livraison</strong>
-                                <p class="mb-0">Votre commande est confirmée. Vous paierez le montant de <strong>{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</strong> lors de la réception de votre commande.</p>
+                                <p class="mb-0">Votre commande est confirmée. Vous paierez le montant de <strong>{{ format_price($order->total_amount) }}</strong> lors de la réception de votre commande.</p>
                             </div>
                         </div>
                     </div>
@@ -143,7 +143,7 @@
                         <input type="hidden" name="order_id" value="{{ $order->id }}">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">
                             <i class="fas fa-credit-card me-2"></i>
-                            Payer {{ number_format($order->total_amount, 0, ',', ' ') }} FCFA maintenant
+                            Payer {{ format_price($order->total_amount) }} maintenant
                         </button>
                     </form>
                 @elseif($paymentMethod === 'mobile_money')

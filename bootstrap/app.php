@@ -97,7 +97,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->is('api/pos/*') || $request->is('pos/*') || $request->expectsJson()) {
+            if ($request->is('api/pos/*') || $request->is('pos/*') || ($request->expectsJson() && !$request->is('pos-terminal/*'))) {
                 return response()->json([
                     'success' => false,
                     'error'   => 'UNAUTHENTICATED',

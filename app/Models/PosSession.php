@@ -47,6 +47,13 @@ class PosSession extends Model
         'cash_difference',
         'closed_by',
         'notes',
+        'machine_name',
+        'panier_snapshot',
+        'total_ventes',
+        'nombre_tickets',
+        'resumed_at',
+        'resumed_by',
+        'last_activity_at',
     ];
 
     protected $casts = [
@@ -56,7 +63,12 @@ class PosSession extends Model
         'cash_difference' => 'decimal:2',
         'opened_at' => 'datetime',
         'closed_at' => 'datetime',
-        'is_active' => 'boolean',
+        'is_active'        => 'boolean',
+        'panier_snapshot'  => 'array',
+        'resumed_at'       => 'datetime',
+        'last_activity_at' => 'datetime',
+        'total_ventes'     => 'decimal:2',
+        'nombre_tickets'   => 'integer',
     ];
 
     // Statuts
@@ -235,4 +247,61 @@ class PosSession extends Model
     {
         $this->attributes['opened_by'] = $value;
     }
+
+    public function resumedBy(): \BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resumed_by');
+    }
+
+    public function scopeFantome($query, int $seuilHeures = 24)
+    {
+        return $query->open()
+            ->where(function ($q) use ($seuilHeures) {
+                $q->where('last_activity_at', '<', now()->subHours($seuilHeures))
+                  ->orWhereNull('last_activity_at');
+            });
+    }
+
+    public function toSessionAlert(): array
+    {
+        $dureeMinutes = $this->opened_at->diffInMinutes(now());
+        $h = intdiv($dureeMinutes, 60);
+        $m = $dureeMinutes % 60;
+        $dureeHuman = $h > 0 ? ($m > 0 ? "{$h}h{$m}min" : "{$h}h") : "{$dureeMinutes} min";
+        return [
+            'session_id'        => $this->id,
+            'operateur_id'      => $this->opened_by,
+            'operateur_nom'     => $this->opener?->name ?? 'Inconnu',
+            'operateur_email'   => $this->opener?->email ?? '',
+            'machine_id'        => $this->machine_id,
+            'machine_name'      => $this->machine_name ?? substr($this->machine_id, 0, 8),
+            'opened_at'         => $this->opened_at->toIso8601String(),
+            'opened_at_human'   => $this->opened_at->format('d/m/Y à H:i'),
+            'duree_minutes'     => $dureeMinutes,
+            'duree_human'       => $dureeHuman,
+            'total_ventes'      => $this->total_ventes ?? 0,
+            'nombre_tickets'    => $this->nombre_tickets ?? 0,
+            'opening_cash'      => $this->opening_cash,
+            'a_panier_en_cours' => !empty($this->panier_snapshot),
+        ];
+    }
+
+    public function toResumePayload(): array
+    {
+        return [
+            'session_id'      => $this->id,
+            'machine_id'      => $this->machine_id,
+            'opening_cash'    => $this->opening_cash,
+            'total_ventes'    => $this->total_ventes ?? 0,
+            'nombre_tickets'  => $this->nombre_tickets ?? 0,
+            'opened_at'       => $this->opened_at->toIso8601String(),
+            'panier_snapshot' => $this->panier_snapshot ?? [],
+            'operateur'       => [
+                'id'    => $this->opener?->id,
+                'name'  => $this->opener?->name,
+                'email' => $this->opener?->email,
+            ],
+        ];
+    }
+
 }

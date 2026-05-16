@@ -23,7 +23,7 @@
                     <div class="card bg-light mb-4">
                         <div class="card-body">
                             <p class="mb-1"><strong>Commande #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</strong></p>
-                            <p class="mb-0 text-muted">Montant : {{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</p>
+                            <p class="mb-0 text-muted">Montant : {{ format_price($order->total_amount) }}</p>
                         </div>
                     </div>
 

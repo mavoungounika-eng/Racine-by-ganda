@@ -19,7 +19,7 @@
                     <h3 class="h4 mb-2">Paiement Mobile Money</h3>
                     <p class="mb-0">
                         Commande #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }} - 
-                        <strong>{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</strong>
+                        <strong>{{ format_price($order->total_amount) }}</strong>
                     </p>
                 </div>
 

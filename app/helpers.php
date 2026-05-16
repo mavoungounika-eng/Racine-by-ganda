@@ -54,3 +54,21 @@ if (!function_exists('csp_nonce')) {
             ?? '';
     }
 }
+if (!function_exists('format_price')) {
+    function format_price(float $amount, ?string $fromCurrency = null): string {
+        $service = app(\App\Services\Currency\CurrencyService::class);
+        $from = $fromCurrency ?? config('currency.reference', 'XAF');
+        $to   = current_currency();
+        $converted = $service->convert($amount, $from, $to);
+        return $service->format($converted, $to);
+    }
+}
+
+if (!function_exists('convert_price')) {
+    function convert_price(float $amount, ?string $fromCurrency = null): float {
+        $service = app(\App\Services\Currency\CurrencyService::class);
+        $from = $fromCurrency ?? config('currency.reference', 'XAF');
+        $to   = current_currency();
+        return $service->convert($amount, $from, $to);
+    }
+}

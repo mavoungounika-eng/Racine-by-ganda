@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Front\FrontendController;
+use App\Http\Controllers\Frontend\FrontendContactController;
 use App\Http\Controllers\Auth\PublicAuthController;
 use App\Http\Controllers\AppearanceController;
 
@@ -372,8 +373,8 @@ Route::middleware('throttle:web')->name('frontend.')->group(function () {
     Route::get('/api/search/suggest', [\App\Http\Controllers\Front\SearchController::class, 'suggest'])->name('search.suggest');
     Route::get('/showroom', [FrontendController::class, 'showroom'])->name('showroom');
     Route::get('/atelier', [FrontendController::class, 'atelier'])->name('atelier');
-    Route::get('/contact', [FrontendController::class, 'contact'])->name('contact');
-    Route::post('/contact', [FrontendController::class, 'contactSubmit'])->name('contact.submit');
+    Route::get('/contact', [FrontendContactController::class, 'show'])->name('contact');
+    Route::post('/contact', [FrontendContactController::class, 'submit'])->name('contact.submit');
     Route::get('/produit/{id}', [FrontendController::class, 'product'])->name('product');
     Route::get('/createurs', [FrontendController::class, 'creators'])->name('creators');
     Route::get('/marketplace', [FrontendController::class, 'marketplace'])->name('marketplace');
@@ -611,6 +612,13 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
 // Situé en dehors du préfixe /admin pour correspondre à la configuration Electron
 Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('pos-terminal')->name('pos.interface.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('index');
+    Route::get('/sessions', [\App\Http\Controllers\Admin\PosController::class, 'sessions'])->name('sessions');
+    Route::get('/sessions/{id}/detail', [\App\Http\Controllers\Admin\PosController::class, 'showSession'])->name('sessions.detail');
+    Route::get('/sessions/export-global', [\App\Http\Controllers\Admin\PosController::class, 'exportAllCsv'])->name('sessions.export-global');
+    Route::get('/sessions/data', [\App\Http\Controllers\Admin\PosController::class, 'apiSessions'])->name('sessions.data');
+    Route::get('/sessions/{id}/export-csv', [\App\Http\Controllers\Admin\PosController::class, 'exportSessionCsv'])->name('sessions.export-csv');
+    Route::post('/sessions/{id}/force-close', [\App\Http\Controllers\Admin\PosController::class, 'apiForceClose'])->name('sessions.force-close');
+    Route::get('/sessions/{id}/sales', [\App\Http\Controllers\Admin\PosController::class, 'apiSessionSales'])->name('sessions.sales');
     Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
     Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
     Route::post('order/{order}/confirm-payment', [\App\Http\Controllers\Admin\PosController::class, 'confirmCardPayment'])->name('confirm-payment');

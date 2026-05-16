@@ -60,23 +60,38 @@
           <button
             type="submit"
             class="btn-login"
-            :disabled="initializingTerminal || isPendingDevice || !email || !password || cooldownSeconds > 0"
+            :disabled="initializingTerminal || isPendingDevice || !email || !password || cooldownSeconds > 0 || isLoading"
           >
+            <span class="btn-spinner" v-if="isLoading" aria-hidden="true"></span>
             <span class="btn-label">
-              {{ cooldownSeconds > 0 ? `Patientez ${cooldownSeconds}s…` : t('login.button') }}
+              {{ isLoading ? 'Connexion…' : cooldownSeconds > 0 ? `Patientez ${cooldownSeconds}s…` : t('login.button') }}
             </span>
-            <span class="btn-arrow" aria-hidden="true">→</span>
+            <span class="btn-arrow" v-if="!isLoading" aria-hidden="true">→</span>
           </button>
 
           <p v-if="isPendingDevice" class="msg warn">
             Terminal en attente d'activation. Contactez l'administrateur.
           </p>
           <p v-if="loginError" class="msg error">{{ loginError }}</p>
+          <p v-if="auth.offline" class="msg warn">⚠ Mode hors ligne — opérations limitées au cache local</p>
           <p v-if="terminalError" class="msg error">{{ terminalError }}</p>
         </form>
 
       </section>
     </main>
+
+    <!-- ── Session fantôme modale -->
+    <SessionFantomeModal
+      v-if="showFantomeModal && fantomeSession"
+      :visible="showFantomeModal"
+      :session="fantomeSession"
+      :operateur-id="auth.user?.id"
+      :machine-id="auth.device?.uuid || auth.device?.id || 'unknown'"
+      :machine-name="auth.device?.name || ''"
+      @reprendre="onReprendre"
+      @nouvelle-session="onNouvelleSession"
+      @cancel="onAnnulerFantome"
+    />
 
     <!-- ── Footer minimal ─────────────────────────────────── -->
     <footer class="footer">
@@ -94,10 +109,14 @@
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../stores/auth';
+import { useOfflineStore } from '../stores/offline';
+import { useSessionStore } from '../stores/session';
+import SessionFantomeModal from '../components/SessionFantomeModal.vue';
 import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
 const auth = useAuthStore();
+const offline = useOfflineStore();
 const router = useRouter();
 
 const email = ref('');
@@ -106,8 +125,13 @@ const loginError = ref('');
 const terminalError = ref('');
 const initializingTerminal = ref(true);
 const cooldownSeconds = ref(0);
+const isLoading = ref(false);
 let cooldownTimer = null;
 const isPendingDevice = computed(() => auth.device?.status === 'pending');
+
+const sessionStore = useSessionStore();
+const fantomeSession = ref(null);
+const showFantomeModal = ref(false);
 
 function startCooldown(seconds) {
   if (cooldownTimer) clearInterval(cooldownTimer);
@@ -124,9 +148,12 @@ function startCooldown(seconds) {
 onMounted(async () => {
   auth.loadFromStorage();
   try {
-    await auth.ensureTerminalRegistered();
+    await offline.checkStatus();
+    const isOffline = offline.isOffline || !navigator.onLine;
+    await auth.ensureTerminalRegistered({ isOffline });
+    if (isOffline) terminalError.value = '';
   } catch (e) {
-    terminalError.value = e.response?.data?.error?.message || 'Terminal initialization failed';
+    terminalError.value = e.response?.data?.error?.message || 'Terminal indisponible. Mode hors ligne disponible si ce terminal a deja ete synchronise.';
   } finally {
     initializingTerminal.value = false;
   }
@@ -136,15 +163,27 @@ const login = async () => {
   if (isPendingDevice.value || cooldownSeconds.value > 0) return;
 
   loginError.value = '';
+  isLoading.value = true;
   try {
-    await auth.login(email.value, password.value);
-    router.push('/session/open');
+    await auth.login(email.value, password.value, {
+      isOffline: offline.isOffline || auth.offline || !navigator.onLine,
+    });
+    // Vérifier session fantôme avant navigation
+    const machineId = auth.device?.uuid || auth.device?.id || 'unknown';
+    const machineName = auth.device?.name || window.navigator.userAgent.slice(0, 40);
+    const check = await sessionStore.checkFantomeSession(auth.user?.id, machineId, machineName);
+    if (check?.has_session) {
+      fantomeSession.value = check.session;
+      showFantomeModal.value = true;
+    } else {
+      router.push('/session/open');
+    }
   } catch (e) {
     if (e.response?.status === 429) {
       const retryAfter =
-        parseInt(e.response?.headers?.['retry-after'], 10) ||
+        Math.min(parseInt(e.response?.headers?.['retry-after'], 10) ||
         e.response?.data?.error?.retry_after ||
-        30;
+        30, 60);
       loginError.value =
         e.response?.data?.error?.message ||
         `Trop de tentatives. Réessayez dans ${retryAfter}s.`;
@@ -152,8 +191,25 @@ const login = async () => {
       return;
     }
     loginError.value = e.response?.data?.error?.message || e.message || 'Login failed';
+  } finally {
+    isLoading.value = false;
   }
 };
+
+function onReprendre(payload) {
+  showFantomeModal.value = false;
+  router.push('/terminal');
+}
+
+function onNouvelleSession(payload) {
+  showFantomeModal.value = false;
+  router.push('/terminal');
+}
+
+function onAnnulerFantome() {
+  showFantomeModal.value = false;
+  loginError.value = 'Connexion annulée — session active sur une autre machine.';
+}
 </script>
 
 <style scoped>
@@ -465,6 +521,18 @@ input:focus {
   box-shadow: none;
 }
 
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 .btn-label {
   flex: 1;
   text-align: center;

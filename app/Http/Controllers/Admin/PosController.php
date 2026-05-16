@@ -34,6 +34,138 @@ class PosController extends Controller
     /**
      * Rechercher un produit par code-barres, SKU ou ID
      */
+
+    /**
+     * Gestion des sessions POS (admin)
+     */
+    public function sessions(\Illuminate\Http\Request $request): \Illuminate\View\View
+    {
+        $operateurs = \App\Models\User::whereIn('id',
+                \App\Models\PosSession::distinct()->pluck('opened_by')
+            )->select('id', 'name', 'email')->orderBy('name')->get();
+
+        return view('admin.pos.sessions', compact('operateurs'));
+    }
+
+
+    /**
+     * Export CSV des ventes d'une session
+     */
+    public function exportSessionCsv(int $id): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $session = \App\Models\PosSession::with(['opener', 'sales.payments'])->findOrFail($id);
+
+        $filename = 'session_'.$id.'_'.($session->opened_at?->format('Ymd_Hi') ?? 'export').'.csv';
+
+        return response()->streamDownload(function () use ($session) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
+
+            fputcsv($out, ['Session ID', 'Opérateur', 'Ouverture', 'Statut', 'Fond de caisse', 'Total ventes', 'Nb tickets'], ';');
+            fputcsv($out, [
+                $session->id,
+                $session->opener?->name ?? '-',
+                $session->opened_at?->format('d/m/Y H:i'),
+                $session->status,
+                number_format($session->opening_cash, 2, ',', ' '),
+                number_format($session->total_ventes ?? 0, 2, ',', ' '),
+                $session->nombre_tickets ?? 0,
+            ], ';');
+
+            fputcsv($out, [], ';');
+            fputcsv($out, ['#', 'Date', 'Référence', 'Montant', 'Moyen paiement', 'Statut', 'Client'], ';');
+
+            foreach ($session->sales as $sale) {
+                fputcsv($out, [
+                    $sale->id,
+                    $sale->created_at?->format('d/m/Y H:i:s'),
+                    $sale->reference ?? $sale->idempotency_key ?? '-',
+                    number_format($sale->total_amount ?? 0, 2, ',', ' '),
+                    $sale->payments->pluck('method')->join(', ') ?: '-',
+                    $sale->status ?? '-',
+                    $sale->customer_id ?? 'Anonyme',
+                ], ';');
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-cache',
+        ]);
+    }
+
+
+    /**
+     * API web sessions (auth session Laravel, pour dashboard admin)
+     */
+    public function apiSessions(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $query = \App\Models\PosSession::with(['opener:id,name,email', 'closer:id,name'])
+            ->orderBy('opened_at', 'desc');
+
+        if ($request->filled('status') && $request->status !== 'fantomes') {
+            $query->where('status', $request->status);
+        }
+        if ($request->boolean('fantomes_only')) {
+            $query->fantome(24);
+        }
+        if ($request->filled('operateur_id')) {
+            $query->where('opened_by', $request->operateur_id);
+        }
+        if ($request->filled('date_debut')) {
+            $query->where('opened_at', '>=', $request->date_debut);
+        }
+        if ($request->filled('date_fin')) {
+            $query->where('opened_at', '<=', $request->date_fin.' 23:59:59');
+        }
+
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    /**
+     * Force-close admin (auth session Laravel)
+     */
+    public function apiForceClose(\Illuminate\Http\Request $request, int $id): \Illuminate\Http\JsonResponse
+    {
+        $session = \App\Models\PosSession::whereIn('status', ['open', 'closing'])->findOrFail($id);
+        $session->update([
+            'status'    => 'closed',
+            'closed_at' => now(),
+            'closed_by' => $request->user()->id,
+            'is_active' => null,
+            'notes'     => trim(($session->notes ?? '')."\n[Clôturée par admin ".$request->user()->name." le ".now()->format('d/m/Y H:i')."]"),
+        ]);
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Ventes d'une session (auth session Laravel)
+     */
+    public function apiSessionSales(\Illuminate\Http\Request $request, int $id): \Illuminate\Http\JsonResponse
+    {
+        $session = \App\Models\PosSession::findOrFail($id);
+        $sales = $session->sales()->with('payments:id,sale_id,method,amount,status')
+            ->orderBy('created_at', 'desc')
+            ->paginate($request->integer('per_page', 50));
+        return response()->json($sales);
+    }
+
+
+    /**
+     * Page détail d'une session POS
+     */
+    public function showSession(int $id): \Illuminate\View\View
+    {
+        $session = \App\Models\PosSession::with([
+            'opener:id,name,email',
+            'closer:id,name',
+            'sales.payments:id,pos_sale_id,method,amount,status',
+        ])->findOrFail($id);
+
+        return view('admin.pos.session-detail', compact('session'));
+        return response()->json(['message' => 'Session clôturée', 'session' => $session]);
+    }
+
     public function searchProduct(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Product::class);

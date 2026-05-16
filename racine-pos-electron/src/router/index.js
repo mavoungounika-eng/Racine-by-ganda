@@ -37,7 +37,10 @@ router.beforeEach(async (to) => {
     authInitialized = true;
   }
 
-  if (offline.isOffline && to.path !== '/offline') return '/offline';
+  // En mode offline : bloquer seulement les routes qui nécessitent le backend
+  // Le terminal et le paiement restent accessibles (ventes en queue locale)
+  const offlineBlocked = ['/session/open', '/session/close'];
+  if (offline.isOffline && offlineBlocked.includes(to.path)) return '/offline';
   if (!auth.isAuthenticated && to.path !== '/login') return '/login';
 
   const requiresSession = ['/terminal', '/payment', '/session/close'];

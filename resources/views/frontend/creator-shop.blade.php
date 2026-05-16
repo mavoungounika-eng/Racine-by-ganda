@@ -180,7 +180,7 @@
                             </h3>
                             <div class="flex items-center justify-between">
                                 <p class="text-xl font-bold text-[#160D0C]">
-                                    {{ number_format($product->price, 0, ',', ' ') }} FCFA
+                                    {{ format_price($product->price) }}
                                 </p>
                                 @if($product->stock > 0)
                                     <span class="text-xs text-gray-500">

@@ -44,7 +44,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <p class="text-muted mb-1">Montant</p>
-                                    <p class="font-weight-bold text-success mb-0">{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</p>
+                                    <p class="font-weight-bold text-success mb-0">{{ format_price($payment->amount) }}</p>
                                 </div>
                             </div>
                             <hr>

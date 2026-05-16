@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { useAuthStore } from './auth';
 import { PosApiClient } from '../api/posClient';
 import LocalDb from '../services/localDb';
+import { saveOfflineSession, loadOfflineSession } from './offlineCache.js';
 
 export const useSessionStore = defineStore('session', {
   state: () => ({
@@ -38,14 +39,23 @@ export const useSessionStore = defineStore('session', {
       const res = await this.client().post('/api/pos/sessions/open', { opening_cash: openingCash }, key);
       this.currentSession = res.data?.session || res.data;
       this.status = 'open';
+      await saveOfflineSession(this.currentSession);
       return res;
     },
     async getCurrentSession() {
       try {
         const res = await this.client().get('/api/pos/sessions/current');
         this.currentSession = res.data?.session || null;
+        if (this.currentSession) await saveOfflineSession(this.currentSession);
         return res;
       } catch (e) {
+        // Fallback offline — charger depuis cache
+        const cached = await loadOfflineSession();
+        if (cached) {
+          this.currentSession = cached;
+          console.warn('[POS] Session chargée depuis cache offline');
+          return { data: { session: cached } };
+        }
         this.currentSession = null;
         throw e;
       }
@@ -90,6 +100,74 @@ export const useSessionStore = defineStore('session', {
       };
 
       return this.localZReport;
+    },
+
+    async checkFantomeSession(operateurId, machineId, machineName) {
+      try {
+        const res = await this.client().post('/api/pos/session/check', {
+          operateur_id: operateurId,
+          machine_id: machineId,
+          machine_name: machineName,
+        });
+        return res.data;
+      } catch (e) {
+        console.warn('[POS] Vérification session fantôme échouée:', e);
+        return { has_session: false, session: null };
+      }
+    },
+
+    async resumeFantomeSession(sessionId, operateurId, machineId, machineName) {
+      const res = await this.client().post('/api/pos/session/resume', {
+        session_id: sessionId,
+        operateur_id: operateurId,
+        machine_id: machineId,
+        machine_name: machineName,
+      });
+      const payload = res.data?.resume;
+      this.currentSession = payload;
+      this.status = 'open';
+      await saveOfflineSession(this.currentSession);
+      return payload;
+    },
+
+    async forceCloseAndNewSession(sessionId, operateurId, machineId, machineName, openingCash) {
+      const key = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+      const res = await this.client().post('/api/pos/session/force-close', {
+        session_id: sessionId,
+        operateur_id: operateurId,
+        machine_id: machineId,
+        machine_name: machineName,
+        opening_cash: openingCash,
+      });
+      const newSession = res.data?.new_session;
+      this.currentSession = newSession;
+      this.status = 'open';
+      await saveOfflineSession(this.currentSession);
+      return newSession;
+    },
+
+    startHeartbeat(sessionId) {
+      if (this._heartbeatInterval) clearInterval(this._heartbeatInterval);
+      this._heartbeatInterval = setInterval(async () => {
+        try {
+          const cartStore = (await import('./cart')).useCartStore();
+          await this.client().post('/api/pos/session/heartbeat', {
+            session_id: sessionId,
+            total_ventes: this.currentSession?.total_ventes ?? 0,
+            nombre_tickets: this.currentSession?.nombre_tickets ?? 0,
+            panier_snapshot: cartStore?.items ?? [],
+          });
+        } catch (e) {
+          console.warn('[POS] Heartbeat échoué:', e);
+        }
+      }, 5 * 60 * 1000);
+    },
+
+    stopHeartbeat() {
+      if (this._heartbeatInterval) {
+        clearInterval(this._heartbeatInterval);
+        this._heartbeatInterval = null;
+      }
     },
   },
 });

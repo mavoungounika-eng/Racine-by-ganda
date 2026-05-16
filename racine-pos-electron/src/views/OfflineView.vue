@@ -16,6 +16,9 @@
 
     <!-- Actions -->
     <div class="actions-bar">
+      <button v-if="!offline.isOffline" class="btn btn-success" @click="goToTerminal">
+        ✓ Retour au terminal
+      </button>
       <button
         class="btn btn-primary"
         :disabled="offline.isSyncing || offline.isOffline"
@@ -68,13 +71,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useOfflineStore } from '../stores/offline';
 import LocalDb from '../services/localDb';
 
 const { t } = useI18n();
 const offline = useOfflineStore();
+const router = useRouter();
+const goToTerminal = () => router.push('/terminal');
+watch(() => offline.isOffline, async (isOffline) => {
+  if (!isOffline) {
+    await offline.syncNow();
+    await loadData();
+    setTimeout(() => router.push('/terminal'), 1500);
+  }
+});
 const pendingSales = ref([]);
 const syncHistory = ref([]);
 let intervalTimer = null;
@@ -218,6 +231,15 @@ onUnmounted(() => {
 }
 
 .btn-secondary:hover { border-color: var(--primary); color: var(--on-surface); }
+.btn-success {
+  background: linear-gradient(135deg, #34d399, #059669);
+  color: #fff;
+  animation: pulse-green 1.5s infinite;
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(52,211,153,0); }
+}
 
 /* ── Cartes ───────────────────────────────────────────────── */
 .card {

@@ -596,8 +596,8 @@
             <h2 class="section-title">L'atelier en vidéo</h2>
         </div>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-            @foreach(['atelier-chemise-02.mp4','atelier-kimono-01.mp4','atelier-kimono-02.mp4','atelier-soiree-01.mp4','atelier-soiree-02.mp4'] as $video)
-            <video controls style="width:100%;border-radius:16px;background:#160D0C;" preload="none">
+            @foreach(['atelier-chemise-02.mp4','atelier-kimono-01.mp4','atelier-kimono-02.mp4','atelier-soiree-01.mp4','atelier-soiree-02.mp4'] as $index => $video)
+            <video autoplay muted loop playsinline controls preload="metadata" style="width:100%;border-radius:16px;background:#160D0C;aspect-ratio:16/9;object-fit:cover;{{ $loop->last ? 'grid-column: 2;' : '' }}">
                 <source src="{{ asset('storage/atelier/' . $video) }}" type="video/mp4">
             </video>
             @endforeach

@@ -32,21 +32,34 @@
                 </div>
                 <div class="hero-image">
     <div class="hero-slider" id="heroSlider">
+        @php
+            $heroSlides = [
+                ['type' => 'image', 'file' => 'hero-01.jpeg'],
+                ['type' => 'image', 'file' => 'hero-02.jpeg'],
+                ['type' => 'video', 'file' => 'hero-03.mp4'],
+                ['type' => 'image', 'file' => 'hero-04.jpeg'],
+                ['type' => 'image', 'file' => 'hero-05.jpeg'],
+                ['type' => 'image', 'file' => 'hero-06.jpeg'],
+                ['type' => 'image', 'file' => 'hero-07.jpeg'],
+            ];
+        @endphp
         <div class="hero-slider-track">
-            @foreach(range(1, 7) as $i)
-            <div class="hero-slide {{ $i === 1 ? 'active' : '' }}">
-                <img src="{{ asset('storage/hero/hero-' . sprintf('%02d', $i) . '.jpeg') }}"
-                     alt="Racine by Ganda - Look {{ $i }}"
-                     loading="{{ $i === 1 ? 'eager' : 'lazy' }}">
+            @foreach($heroSlides as $index => $slide)
+            <div class="hero-slide {{ $index === 0 ? 'active' : '' }}" data-type="{{ $slide['type'] }}">
+                @if($slide['type'] === 'video')
+                    <video class="hero-slide-video" src="{{ asset('storage/hero/' . $slide['file']) }}" muted playsinline preload="none" aria-label="Racine by Ganda - Vidéo collection"></video>
+                @else
+                    <img src="{{ asset('storage/hero/' . $slide['file']) }}" alt="Racine by Ganda - Look {{ $index + 1 }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
+                @endif
             </div>
             @endforeach
         </div>
 
         <div class="hero-slider-dots">
-            @foreach(range(1, 7) as $i)
-            <button class="hero-dot {{ $i === 1 ? 'active' : '' }}"
-                    data-index="{{ $i - 1 }}"
-                    aria-label="Slide {{ $i }}"></button>
+            @foreach($heroSlides as $index => $slide)
+            <button class="hero-dot {{ $index === 0 ? 'active' : '' }} {{ $slide['type'] === 'video' ? 'hero-dot--video' : '' }}"
+                    data-index="{{ $index }}"
+                    aria-label="Slide {{ $index + 1 }}"></button>
             @endforeach
         </div>
 
@@ -189,7 +202,7 @@
             <a href="{{ route('frontend.product', $product->id) }}" class="product-card reveal-item">
                 <div class="product-image">
                     @if($product->main_image)
-                        <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->title }}">
+                        <img src="{{ asset('storage/products/' . $product->main_image) }}" alt="{{ $product->title }}">
                     @else
                         <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
                     @endif
@@ -211,7 +224,7 @@
                     <div class="product-category">{{ $product->category->name ?? 'Mode' }}</div>
                     <h3 class="product-name">{{ $product->title }}</h3>
                     <div class="product-price">
-                        <span class="current">{{ number_format($product->price, 0, ',', ' ') }} FCFA</span>
+                        <span class="current">{{ format_price($product->price) }}</span>
                     </div>
                 </div>
             </a>
@@ -241,7 +254,7 @@
                     <div class="product-category">{{ $demo['category'] }}</div>
                     <h3 class="product-name">{{ $demo['title'] }}</h3>
                     <div class="product-price">
-                        <span class="current">{{ $demo['price'] }} FCFA</span>
+                        <span class="current">{{ format_price($demo['price']) }}</span>
                     </div>
                 </div>
             </a>
@@ -383,24 +396,45 @@
 {{-- Section newsletter supprimée - Remplacée par les CTA dans le footer --}}
 @push('scripts')
 <script nonce="{{ csp_nonce() }}">
-// Hero Slider
+// Hero Slider (avec support vidéo)
 (function () {
     const slider = document.getElementById('heroSlider');
     if (!slider) return;
     const slides = slider.querySelectorAll('.hero-slide');
     const dots   = slider.querySelectorAll('.hero-dot');
     let current  = 0, timer;
+    function stopCurrentVideo() {
+        const vid = slides[current].querySelector('video');
+        if (vid) { vid.pause(); vid.currentTime = 0; }
+    }
+    function playCurrentVideo() {
+        const slide = slides[current];
+        if (slide.dataset.type !== 'video') return false;
+        const vid = slide.querySelector('video');
+        if (!vid) return false;
+        stopAuto();
+        vid.play().catch(() => {});
+        vid.onended = () => { next(); startAuto(); };
+        return true;
+    }
     function goTo(i) {
+        stopCurrentVideo();
         slides[current].classList.remove('active');
         dots[current].classList.remove('active');
         current = (i + slides.length) % slides.length;
         slides[current].classList.add('active');
         dots[current].classList.add('active');
+        playCurrentVideo();
     }
     function next() { goTo(current + 1); }
     function prev() { goTo(current - 1); }
-    function startAuto() { timer = setInterval(next, 4500); }
-    function stopAuto()  { clearInterval(timer); }
+    function startAuto() {
+        clearInterval(timer);
+        const vid = slides[current].querySelector('video');
+        if (vid && !vid.paused) return;
+        timer = setInterval(next, 4500);
+    }
+    function stopAuto() { clearInterval(timer); }
     slider.querySelector('.hero-slider-next').addEventListener('click', () => { stopAuto(); next(); startAuto(); });
     slider.querySelector('.hero-slider-prev').addEventListener('click', () => { stopAuto(); prev(); startAuto(); });
     dots.forEach((dot, i) => dot.addEventListener('click', () => { stopAuto(); goTo(i); startAuto(); }));

@@ -40,7 +40,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <p class="text-muted mb-1">Montant payé</p>
-                                    <h5 class="font-weight-bold text-success mb-0">{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</h5>
+                                    <h5 class="font-weight-bold text-success mb-0">{{ format_price($order->total_amount) }}</h5>
                                 </div>
                             </div>
                             <hr>

@@ -48,7 +48,7 @@
 
                         <!-- Prix -->
                         <div class="form-group mb-3">
-                            <label>Prix (FCFA)</label>
+                            <label>Prix ({{ current_currency() }})</label>
                             <div class="row">
                                 <div class="col-6">
                                     <input type="number" name="price_min" class="form-control" 
@@ -109,7 +109,7 @@
                         <div class="product-item">
                             <a href="{{ route('frontend.product', $product->id) }}" class="img-prod">
                                 <img class="img-fluid" 
-                                     src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('racine/images/product-1.jpg') }}" 
+                                     src="{{ $product->main_image ? asset('storage/products/' . $product->main_image) : asset('racine/images/product-1.jpg') }}" 
                                      alt="{{ $product->title }}">
                                 @if($product->stock <= 0)
                                 <span class="status">Rupture de stock</span>
@@ -122,7 +122,7 @@
                                 <div class="d-flex">
                                     <div class="pricing">
                                         <p class="price">
-                                            <span class="price-sale">{{ number_format($product->price, 0, ',', ' ') }} FCFA</span>
+                                            <span class="price-sale">{{ format_price($product->price) }}</span>
                                         </p>
                                     </div>
                                 </div>

@@ -60,11 +60,21 @@
           </button>
         </div>
         <div class="product-grid">
-          <ProductCard v-for="p in productsStore.items" :key="p.id" :product="p" @add="addToCart" />
-          <div v-if="!productsStore.items.length" class="empty-catalog">
-            <span class="empty-icon">📦</span>
-            <p>Aucun article disponible</p>
-          </div>
+          <template v-if="productsStore.loading">
+            <div class="skeleton-card" v-for="n in 6" :key="'sk'+n">
+              <div class="sk-img"></div>
+              <div class="sk-line sk-line--long"></div>
+              <div class="sk-line sk-line--short"></div>
+              <div class="sk-btn"></div>
+            </div>
+          </template>
+          <template v-else>
+            <ProductCard v-for="p in productsStore.items" :key="p.id" :product="p" @add="addToCart" />
+            <div v-if="!productsStore.items.length" class="empty-catalog">
+              <span class="empty-icon">📦</span>
+              <p>Aucun article disponible</p>
+            </div>
+          </template>
         </div>
       </aside>
 
@@ -423,5 +433,45 @@ onBeforeUnmount(() => {
 
 @media print {
   .topbar, .catalog, .cart, .modal-overlay { display: none !important; }
+}
+
+/* ── Skeleton loading ─────────────────────────────────────── */
+.skeleton-card {
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+.sk-img {
+  width: 100%;
+  height: 110px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--surface-high) 25%, rgba(255,255,255,0.04) 50%, var(--surface-high) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+.sk-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-high) 25%, rgba(255,255,255,0.04) 50%, var(--surface-high) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+.sk-line--long  { width: 80%; }
+.sk-line--short { width: 45%; }
+.sk-btn {
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--surface-high) 25%, rgba(255,255,255,0.04) 50%, var(--surface-high) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>

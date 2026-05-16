@@ -96,6 +96,30 @@ class PosSessionServiceTest extends TestCase
         $this->assertNotEquals($first->id, $second->id);
     }
 
+    public function test_openSession_clears_stale_active_flag_on_closed_operator_sessions(): void
+    {
+        $user = User::factory()->create();
+        $machineA = (string) Str::uuid();
+        $machineB = (string) Str::uuid();
+
+        $stale = PosSession::factory()->create([
+            'machine_id' => $machineA,
+            'opened_by' => $user->id,
+            'opened_at' => now()->subHour(),
+            'opening_cash' => 5000.00,
+            'status' => PosSession::STATUS_CLOSED,
+            'is_active' => 1,
+            'closed_at' => now(),
+            'closed_by' => $user->id,
+        ]);
+
+        $session = $this->service->openSession($machineB, $user->id, 2000.00);
+
+        $this->assertEquals(PosSession::STATUS_OPEN, $session->status);
+        $this->assertEquals($machineB, $session->machine_id);
+        $this->assertNull($stale->fresh()->is_active);
+    }
+
     public function test_openSession_records_opening_cash_amount(): void
     {
         $user = User::factory()->create();

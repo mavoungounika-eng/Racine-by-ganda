@@ -15,10 +15,11 @@
 //   - ouverture tiroir-caisse (RJ11 via usb-cashdrawer)
 //   - lecteur CB local (PC/SC smartcard)
 
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
   ping: () => 'pong',
+  getMachineId: () => ipcRenderer.invoke('machine-id:get'),
   platform: process.platform, // 'win32' | 'darwin' | 'linux'
   versions: {
     electron: process.versions.electron,

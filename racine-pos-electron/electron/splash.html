@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #160D0C;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      -webkit-app-region: no-drag;
+      user-select: none;
+    }
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      animation: fadeIn 0.8s ease forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .monogram {
+      width: 96px;
+      height: 96px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, #ED5F1E, #a83d0f);
+      color: #fff;
+      font-size: 52px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 0 rgba(237,95,30,0.7);
+      animation: fadeIn 0.8s ease forwards, pulse 2s ease-in-out 0.8s infinite;
+    }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0   rgba(237,95,30,0.7); }
+      50%  { box-shadow: 0 0 0 24px rgba(237,95,30,0); }
+      100% { box-shadow: 0 0 0 0   rgba(237,95,30,0); }
+    }
+    .brand-name {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .brand-name em {
+      font-style: normal;
+      font-weight: 300;
+      color: rgba(255,255,255,0.45);
+      font-size: 16px;
+      letter-spacing: 0.1em;
+      margin: 0 4px;
+    }
+    .tagline {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: #ED5F1E;
+      text-transform: uppercase;
+      font-weight: 600;
+      opacity: 0;
+      animation: fadeIn 0.6s ease 1s forwards;
+    }
+    .loader-bar {
+      width: 160px;
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeIn 0.4s ease 1.2s forwards;
+    }
+    .loader-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ED5F1E, #FFB800);
+      border-radius: 999px;
+      animation: fill 1.8s ease 1.4s forwards;
+    }
+    @keyframes fill {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-wrap">
+    <div class="monogram">R</div>
+    <div class="brand-name">RACINE <em>by</em> GANDA</div>
+    <div class="tagline">Point of Sale</div>
+    <div class="loader-bar"><div class="loader-fill"></div></div>
+  </div>
+</body>
+</html>

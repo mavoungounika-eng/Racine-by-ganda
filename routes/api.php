@@ -225,5 +225,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/crm/segments/suggestions', [\App\Http\Controllers\Api\Ai\CrmAiController::class, 'segmentSuggestions']);
         });
     });
+
+    // ==========================================
+    // POS Session Fantôme
+    // ==========================================
+    Route::prefix('pos/session')->group(function () {
+        Route::post('check', [\App\Http\Controllers\Api\Pos\PosSessionController::class, 'check']);
+        Route::post('resume', [\App\Http\Controllers\Api\Pos\PosSessionController::class, 'resume']);
+        Route::post('force-close', [\App\Http\Controllers\Api\Pos\PosSessionController::class, 'forceClose']);
+        Route::post('heartbeat', [\App\Http\Controllers\Api\Pos\PosSessionController::class, 'heartbeat']);
+    });
+
+    Route::prefix('pos/sessions')->middleware('role:admin')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\Pos\PosSessionController::class, 'index']);
+        Route::post('{id}/force-close', [\App\Http\Controllers\Api\Pos\PosSessionController::class, 'adminForceClose']);
+    });
+
 });
 

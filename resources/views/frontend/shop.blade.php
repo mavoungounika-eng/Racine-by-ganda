@@ -268,9 +268,9 @@
                                 <div class="product-category">{{ $product->category->name ?? 'Mode' }}</div>
                                 <h3 class="product-name">{{ $product->title ?? $product->name ?? 'Produit' }}</h3>
                                 <div class="product-price">
-                                    <span class="current-price">{{ number_format($product->price, 2) }} €</span>
+                                    <span class="current-price">{{ format_price($product->price) }}</span>
                                     @if(isset($product->original_price) && $product->original_price > $product->price)
-                                    <span class="original-price">{{ number_format($product->original_price, 2) }} €</span>
+                                    <span class="original-price">{{ format_price($product->original_price) }}</span>
                                     @endif
                                 </div>
                             </a>

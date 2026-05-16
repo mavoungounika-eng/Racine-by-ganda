@@ -597,9 +597,9 @@
                 </div>
                 
                 <div class="product-price">
-                    <span class="current-price">{{ number_format($product->price ?? 129, 2) }} €</span>
+                    <span class="current-price">{{ format_price($product->price ?? 129) }}</span>
                     @if(isset($product->original_price))
-                    <span class="original-price">{{ number_format($product->original_price, 2) }} €</span>
+                    <span class="original-price">{{ format_price($product->original_price) }}</span>
                     <span class="discount-badge">-20%</span>
                     @endif
                 </div>

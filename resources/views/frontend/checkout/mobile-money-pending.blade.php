@@ -40,7 +40,7 @@
                         </p>
                         <p class="mb-0">
                             <strong>Numéro :</strong> {{ $payment->customer_phone }}<br>
-                            <strong>Montant :</strong> {{ number_format($payment->amount, 0, ',', ' ') }} FCFA<br>
+                            <strong>Montant :</strong> {{ format_price($payment->amount) }}<br>
                             <strong>Transaction ID :</strong> <code>{{ $payment->external_reference }}</code>
                         </p>
                     </div>

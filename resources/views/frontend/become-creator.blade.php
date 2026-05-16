@@ -337,7 +337,7 @@
                             @if($isFree)
                                 <div class="plan-price">Gratuit</div>
                             @else
-                                <div class="plan-price">{{ number_format($plan->price, 0, ',', ' ') }} XAF</div>
+                                <div class="plan-price">{{ format_price($plan->price) }}</div>
                                 <div class="plan-price-subtitle">/ mois</div>
                             @endif
                         </div>

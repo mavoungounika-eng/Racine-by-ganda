@@ -399,9 +399,13 @@
             </a>
 
             <div class="admin-nav-section-title">Outils</div>
-            <a href="{{ route('pos.interface.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+            <a href="{{ route('pos.interface.index') }}" class="admin-nav-link {{ request()->routeIs('pos.interface.index') ? 'active' : '' }}">
                 <i class="fas fa-cash-register"></i>
                 <span>Point de Vente (POS)</span>
+            </a>
+            <a href="{{ route('pos.interface.sessions') }}" class="admin-nav-link {{ request()->routeIs('pos.interface.sessions') ? 'active' : '' }}" style="padding-left:2.2rem;font-size:.85rem">
+                <i class="fas fa-layer-group" style="font-size:.8rem"></i>
+                <span>Sessions POS</span>
             </a>
             <a href="{{ route('messages.index') }}" class="admin-nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}">
                 <i class="fas fa-comments"></i>

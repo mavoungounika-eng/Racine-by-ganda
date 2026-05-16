@@ -559,7 +559,7 @@
                 {{-- Info --}}
                 <div class="product-info">
                     <h3>{{ Str::limit($product->title, 50) }}</h3>
-                    <p class="product-price">{{ number_format($product->price, 0, ',', ' ') }} FCFA</p>
+                    <p class="product-price">{{ format_price($product->price) }}</p>
                     
                     {{-- Actions --}}
                     <div class="product-actions">

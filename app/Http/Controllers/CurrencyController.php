@@ -20,7 +20,7 @@ class CurrencyController extends Controller
     /**
      * Changer la devise en session
      */
-    public function switch(Request $request): JsonResponse
+        public function switch(Request $request): mixed
     {
         $request->validate([
             'currency' => ['required', 'string', Rule::in(config('currency.supported'))]
@@ -34,11 +34,15 @@ class CurrencyController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'currency' => $request->currency,
-            'symbol' => config("currency.symbols.{$request->currency}"),
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'currency' => $request->currency,
+                'symbol'   => config("currency.symbols.{$request->currency}"),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Devise mise à jour : ' . $request->currency);
     }
 
     /**

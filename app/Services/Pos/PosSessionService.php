@@ -37,6 +37,15 @@ class PosSessionService
     public function openSession(string $machineId, int $userId, float $openingCash): PosSession
     {
         return DB::transaction(function () use ($machineId, $userId, $openingCash) {
+            // Rattraper les anciennes sessions fantomes: certaines fermetures
+            // historiques ont laisse is_active=1 sur des sessions non ouvertes,
+            // ce qui bloque la contrainte unique (opened_by, is_active).
+            PosSession::query()
+                ->where('opened_by', $userId)
+                ->where('is_active', 1)
+                ->where('status', '!=', PosSession::STATUS_OPEN)
+                ->update(['is_active' => null]);
+
             // Vérifier qu'aucune session n'est déjà ouverte pour cette machine
             $existingSession = PosSession::forMachine($machineId)->open()->first();
 
