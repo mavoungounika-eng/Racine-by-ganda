@@ -53,37 +53,50 @@
 @endpush
 
 @section('content')
+
+@include('admin.components.admin-list', [
+    'listId' => 'sessions',
+    'bulkActions' => [
+        [
+            'label'    => 'Clotures selection',
+            'endpoint' => '/pos-terminal/sessions/bulk-close',
+            'confirm'  => 'Cloturer {n} session(s) ouvertes ?',
+        ],
+    ],
+])
+
 <div id="pos-app">
 
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-label">Sessions actives</div><div class="stat-value green" id="stat-open">—</div></div>
-    <div class="stat-card"><div class="stat-label">Sessions fantômes</div><div class="stat-value red" id="stat-fantomes">—</div></div>
-    <div class="stat-card"><div class="stat-label">Ventes du jour</div><div class="stat-value orange" id="stat-ventes">—</div></div>
-    <div class="stat-card"><div class="stat-label">Total sessions (30j)</div><div class="stat-value" id="stat-total">—</div></div>
+    <div class="stat-card"><div class="stat-label">Sessions actives</div><div class="stat-value green" id="stat-open">&#8212;</div></div>
+    <div class="stat-card"><div class="stat-label">Sessions fantomes</div><div class="stat-value red" id="stat-fantomes">&#8212;</div></div>
+    <div class="stat-card"><div class="stat-label">Ventes du jour</div><div class="stat-value orange" id="stat-ventes">&#8212;</div></div>
+    <div class="stat-card"><div class="stat-label">Total sessions (30j)</div><div class="stat-value" id="stat-total">&#8212;</div></div>
   </div>
 
   <div class="sessions-header">
     <div style="display:flex;gap:.5rem;align-items:center">
       <h2 style="margin:0;font-size:1.1rem;color:#e2e8f0">Sessions POS</h2>
-      <button id="btn-refresh" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.1rem" title="Rafraîchir">↻</button>
+      <button id="btn-refresh" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.1rem" title="Rafraichir">&#8635;</button>
     </div>
     <div class="sessions-filters">
       <select class="filter-select" id="f-status">
         <option value="">Tous statuts</option>
         <option value="open">Ouvertes</option>
-        <option value="closing">En clôture</option>
-        <option value="closed">Fermées</option>
-        <option value="fantomes">Fantômes</option>
+        <option value="closing">En cloture</option>
+        <option value="closed">Fermees</option>
+        <option value="fantomes">Fantomes</option>
       </select>
       <select class="filter-select" id="f-operateur">
-        <option value="">Tous opérateurs</option>
+        <option value="">Tous operateurs</option>
         @foreach($operateurs as $op)
         <option value="{{ $op->id }}">{{ $op->name }}</option>
         @endforeach
       </select>
       <input type="date" class="filter-input" id="f-debut">
       <input type="date" class="filter-input" id="f-fin">
-      <button class="btn-reset" id="btn-reset">Réinitialiser</button>
+      <button class="btn-reset" id="btn-reset">Reinitialiser</button>
+      <a id="btn-export-global" class="btn-export" href="#" target="_blank">&#8595; Export CSV</a>
     </div>
   </div>
 
@@ -91,10 +104,11 @@
     <div class="sessions-table-wrap">
       <table class="sessions-table">
         <thead><tr>
-          <th>#</th><th>Opérateur</th><th>Machine</th><th>Statut</th>
-          <th>Ouverture</th><th>Durée</th><th>Ventes</th><th>Tickets</th><th>Fond caisse</th><th>Actions</th>
+          <th style="width:36px;padding-right:.5rem"><input type="checkbox" id="sessions-cb-all" class="al-cb"></th>
+          <th>#</th><th>Operateur</th><th>Machine</th><th>Statut</th>
+          <th>Ouverture</th><th>Duree</th><th>Ventes</th><th>Tickets</th><th>Fond caisse</th><th>Actions</th>
         </tr></thead>
-        <tbody id="sessions-tbody"><tr><td colspan="10" class="empty-state">Chargement…</td></tr></tbody>
+        <tbody id="sessions-tbody"><tr><td colspan="11" class="empty-state">Chargement&hellip;</td></tr></tbody>
       </table>
     </div>
     <div class="pag-bar" id="pag-bar" style="display:none">
@@ -107,7 +121,7 @@
     <div class="modal-box" id="modal-box">
       <div class="modal-title">
         <span id="modal-title-text">Session</span>
-        <button class="modal-close" id="modal-close">×</button>
+        <button class="modal-close" id="modal-close">&times;</button>
       </div>
       <div id="modal-body"></div>
     </div>
@@ -123,6 +137,7 @@ const csrf = document.querySelector('meta[name="csrf-token"]').content;
 const h = {'Accept':'application/json','X-CSRF-TOKEN':csrf};
 const hj = {'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf};
 
+let bulk;
 let state = { page:1, sessions:[], meta:{total:0,current_page:1,last_page:1}, salesCache:{} };
 
 function fmt(v){ return new Intl.NumberFormat('fr-FR').format(Math.round(v||0))+' FCFA'; }
@@ -160,7 +175,7 @@ async function load(){
   if(f.debut) p.set('date_debut',f.debut);
   if(f.fin) p.set('date_fin',f.fin);
 
-  document.getElementById('sessions-tbody').innerHTML = '<tr><td colspan="10" class="empty-state">Chargement…</td></tr>';
+  document.getElementById('sessions-tbody').innerHTML = '<tr><td colspan="11" class="empty-state">Chargement…</td></tr>';
 
   try{
     const r = await fetch('/pos-terminal/sessions/data?'+p, {credentials:'same-origin',headers:h});
@@ -169,7 +184,7 @@ async function load(){
     state.meta = {total:d.total, current_page:d.current_page, last_page:d.last_page};
     renderTable();
     renderPag();
-  }catch(e){ document.getElementById('sessions-tbody').innerHTML='<tr><td colspan="10" class="empty-state">Erreur de chargement</td></tr>'; }
+  }catch(e){ document.getElementById('sessions-tbody').innerHTML='<tr><td colspan="11" class="empty-state">Erreur de chargement</td></tr>'; }
 }
 
 async function loadStats(){
@@ -188,73 +203,75 @@ async function loadStats(){
 }
 
 function renderTable(){
+  if(bulk) bulk.clear();
   const tb = document.getElementById('sessions-tbody');
-  if(!state.sessions.length){ tb.innerHTML='<tr><td colspan="10" class="empty-state">Aucune session trouvée</td></tr>'; return; }
-  tb.innerHTML = state.sessions.map(s=>`
-    <tr>
-      <td style="color:#888;font-size:.8rem">${esc(s.id)}</td>
-      <td><div style="font-weight:600">${esc(s.opener?.name||'—')}</div><div style="font-size:.75rem;color:#888">${esc(s.opener?.email||'')}</div></td>
-      <td style="font-family:monospace;font-size:.78rem;color:#aaa">${esc(s.machine_name||(s.machine_id?s.machine_id.slice(0,12)+'…':'—'))}</td>
-      <td>${badgeHtml(s)}</td>
-      <td>${fmtDate(s.opened_at)}</td>
-      <td>${duree(s)}</td>
-      <td>${fmt(s.total_ventes||0)}</td>
-      <td>${s.nombre_tickets||0}</td>
-      <td>${fmt(s.opening_cash||0)}</td>
-      <td>
-        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-          <a href="/pos-terminal/sessions/${s.id}/detail" class="btn-action btn-detail" style="text-decoration:none">Détail</a>
-          ${(s.status==='open'||s.status==='closing')?`<button class="btn-action btn-close-session" onclick="POS.close(${s.id},'${esc(s.opener?.name||'')}')">Clôturer</button>`:''}
-        </div>
-      </td>
-    </tr>`).join('');
+  if(!state.sessions.length){ tb.innerHTML='<tr><td colspan="11" class="empty-state">Aucune session trouvée</td></tr>'; return; }
+  tb.innerHTML = state.sessions.map(function(s){ return (
+    '<tr>' +
+    '<td style="padding-right:.5rem"><input type="checkbox" class="al-row-cb al-cb" data-id="'+s.id+'"></td>' +
+    '<td style="color:#888;font-size:.8rem">'+esc(s.id)+'</td>' +
+    '<td><div style="font-weight:600">'+esc(s.opener&&s.opener.name||'—')+'</div><div style="font-size:.75rem;color:#888">'+esc(s.opener&&s.opener.email||'')+'</div></td>' +
+    '<td style="font-family:monospace;font-size:.78rem;color:#aaa">'+esc(s.machine_name||(s.machine_id?s.machine_id.slice(0,12)+'…':'—'))+'</td>' +
+    '<td>'+badgeHtml(s)+'</td>' +
+    '<td>'+fmtDate(s.opened_at)+'</td>' +
+    '<td>'+duree(s)+'</td>' +
+    '<td>'+fmt(s.total_ventes||0)+'</td>' +
+    '<td>'+(s.nombre_tickets||0)+'</td>' +
+    '<td>'+fmt(s.opening_cash||0)+'</td>' +
+    '<td><div style="display:flex;gap:.4rem;flex-wrap:wrap">' +
+      '<a href="/pos-terminal/sessions/'+s.id+'/detail" class="btn-action btn-detail" style="text-decoration:none">Détail</a>' +
+      ((s.status==='open'||s.status==='closing')?'<button class="btn-action btn-close-session" onclick="POS.close('+s.id+',\''+esc(s.opener&&s.opener.name||'')+'\')">Clôturer</button>':'') +
+    '</div></td>' +
+    '</tr>'
+  ); }).join('');
 }
 
 function renderPag(){
   const bar = document.getElementById('pag-bar');
-  const {total,current_page,last_page} = state.meta;
-  if(!total){ bar.style.display='none'; return; }
+  const t = state.meta;
+  if(!t.total){ bar.style.display='none'; return; }
   bar.style.display='flex';
-  document.getElementById('pag-info').textContent = total+' session(s) — page '+current_page+'/'+last_page;
+  document.getElementById('pag-info').textContent = t.total+' session(s) — page '+t.current_page+'/'+t.last_page;
   const btns = document.getElementById('pag-btns');
-  let html = `<button class="pag-btn" ${current_page<=1?'disabled':''} onclick="POS.page(${current_page-1})">←</button>`;
-  for(let i=Math.max(1,current_page-2);i<=Math.min(last_page,current_page+2);i++){
-    html += `<button class="pag-btn ${i===current_page?'active':''}" onclick="POS.page(${i})">${i}</button>`;
+  let html = '<button class="pag-btn" '+(t.current_page<=1?'disabled':'')+' onclick="POS.page('+(t.current_page-1)+')">&#8592;</button>';
+  for(let i=Math.max(1,t.current_page-2);i<=Math.min(t.last_page,t.current_page+2);i++){
+    html += '<button class="pag-btn '+(i===t.current_page?'active':'')+'" onclick="POS.page('+i+')">'+i+'</button>';
   }
-  html += `<button class="pag-btn" ${current_page>=last_page?'disabled':''} onclick="POS.page(${current_page+1})">→</button>`;
+  html += '<button class="pag-btn" '+(t.current_page>=t.last_page?'disabled':'')+' onclick="POS.page('+(t.current_page+1)+')">&#8594;</button>';
   btns.innerHTML = html;
 }
 
 async function openDetail(id){
-  const s = state.sessions.find(x=>x.id===id);
+  const s = state.sessions.find(function(x){ return x.id===id; });
   if(!s) return;
   document.getElementById('modal-title-text').textContent = 'Session #'+s.id;
   document.getElementById('modal-body').innerHTML = '<div class="sales-empty">Chargement…</div>';
   document.getElementById('modal-overlay').classList.add('open');
 
-  const closeBtn = (s.status==='open'||s.status==='closing')
-    ? `<button class="btn-action btn-close-session" style="width:100%;padding:.6rem;margin-top:.5rem" onclick="POS.close(${s.id},'${esc(s.opener?.name||'')}');POS.closeModal()">Clôturer cette session (admin)</button>`
+  const closable = s.status==='open'||s.status==='closing';
+  let closeBtn = closable
+    ? '<button class="btn-action btn-close-session" style="width:100%;padding:.6rem;margin-top:.5rem" onclick="POS.close('+s.id+',\''+esc(s.opener&&s.opener.name||'')+'\');POS.closeModal()">Clôturer cette session (admin)</button>'
     : '';
 
-  document.getElementById('modal-body').innerHTML = `
-    <div class="detail-row"><span class="detail-label">Opérateur</span><span class="detail-val">${esc(s.opener?.name||'—')}</span></div>
-    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-val">${esc(s.opener?.email||'—')}</span></div>
-    <div class="detail-row"><span class="detail-label">Machine ID</span><span class="detail-val" style="font-family:monospace;font-size:.8rem">${esc(s.machine_id||'—')}</span></div>
-    <div class="detail-row"><span class="detail-label">Machine nom</span><span class="detail-val">${esc(s.machine_name||'—')}</span></div>
-    <div class="detail-row"><span class="detail-label">Statut</span><span class="detail-val">${badgeHtml(s)}</span></div>
-    <div class="detail-row"><span class="detail-label">Ouverture</span><span class="detail-val">${fmtDateFull(s.opened_at)}</span></div>
-    <div class="detail-row"><span class="detail-label">Clôture</span><span class="detail-val">${fmtDateFull(s.closed_at)}</span></div>
-    <div class="detail-row"><span class="detail-label">Fond de caisse</span><span class="detail-val">${fmt(s.opening_cash)}</span></div>
-    <div class="detail-row"><span class="detail-label">Ventes session</span><span class="detail-val">${fmt(s.total_ventes||0)}</span></div>
-    <div class="detail-row"><span class="detail-label">Tickets émis</span><span class="detail-val">${s.nombre_tickets||0}</span></div>
-    <div style="margin-top:1.25rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-        <span style="font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#888">Ventes</span>
-        <a href="/pos-terminal/sessions/${s.id}/export-csv" class="btn-export" target="_blank">↓ CSV</a>
-      </div>
-      <div id="sales-container-${s.id}"><div class="sales-empty">Chargement ventes…</div></div>
-    </div>
-    ${closeBtn}`;
+  document.getElementById('modal-body').innerHTML =
+    '<div class="detail-row"><span class="detail-label">Opérateur</span><span class="detail-val">'+esc(s.opener&&s.opener.name||'—')+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Email</span><span class="detail-val">'+esc(s.opener&&s.opener.email||'—')+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Machine ID</span><span class="detail-val" style="font-family:monospace;font-size:.8rem">'+esc(s.machine_id||'—')+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Machine nom</span><span class="detail-val">'+esc(s.machine_name||'—')+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Statut</span><span class="detail-val">'+badgeHtml(s)+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Ouverture</span><span class="detail-val">'+fmtDateFull(s.opened_at)+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Clôture</span><span class="detail-val">'+fmtDateFull(s.closed_at)+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Fond de caisse</span><span class="detail-val">'+fmt(s.opening_cash)+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Ventes session</span><span class="detail-val">'+fmt(s.total_ventes||0)+'</span></div>' +
+    '<div class="detail-row"><span class="detail-label">Tickets émis</span><span class="detail-val">'+(s.nombre_tickets||0)+'</span></div>' +
+    '<div style="margin-top:1.25rem">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">' +
+        '<span style="font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#888">Ventes</span>' +
+        '<a href="/pos-terminal/sessions/'+s.id+'/export-csv" class="btn-export" target="_blank">&#8595; CSV</a>' +
+      '</div>' +
+      '<div id="sales-container-'+s.id+'"><div class="sales-empty">Chargement ventes…</div></div>' +
+    '</div>' +
+    closeBtn;
 
   await loadSales(s.id);
 }
@@ -266,40 +283,35 @@ async function loadSales(id){
     const d = await r.json();
     state.salesCache[id] = d.data||d||[];
     renderSales(id, state.salesCache[id]);
-  }catch(e){ const c=document.getElementById('sales-container-'+id); if(c) c.innerHTML='<div class="sales-empty">Erreur chargement ventes</div>'; }
+  }catch(e){
+    const c=document.getElementById('sales-container-'+id);
+    if(c) c.innerHTML='<div class="sales-empty">Erreur chargement ventes</div>';
+  }
 }
 
 function renderSales(id, sales){
   const c = document.getElementById('sales-container-'+id);
   if(!c) return;
   if(!sales.length){ c.innerHTML='<div class="sales-empty">Aucune vente pour cette session</div>'; return; }
-  c.innerHTML = `<div style="max-height:220px;overflow-y:auto"><table class="sales-table">
-    <thead><tr><th>#</th><th>Date</th><th>Montant</th><th>Paiement</th><th>Statut</th></tr></thead>
-    <tbody>${sales.map(s=>`<tr>
-      <td style="color:#888">${esc(s.id)}</td>
-      <td>${fmtDate(s.created_at)}</td>
-      <td style="font-weight:600;color:#4ade80">${fmt(s.total_amount||0)}</td>
-      <td style="text-transform:capitalize">${esc(s.payments?.[0]?.method||'—')}</td>
-      <td>${esc(s.status||'—')}</td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
-}
-
-function showToast(msg, ok=true){
-  const t = document.createElement('div');
-  t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:.75rem 1.25rem;border-radius:10px;font-size:.875rem;font-weight:600;color:#fff;background:'+(ok?'rgba(34,197,94,.9)':'rgba(239,68,68,.9)')+';box-shadow:0 4px 20px rgba(0,0,0,.4);transition:opacity .4s';
-  document.body.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, 2800);
+  let rows = sales.map(function(s){
+    return '<tr>' +
+      '<td style="color:#888">'+esc(s.id)+'</td>' +
+      '<td>'+fmtDate(s.created_at)+'</td>' +
+      '<td style="font-weight:600;color:#4ade80">'+fmt(s.total_amount||0)+'</td>' +
+      '<td style="text-transform:capitalize">'+esc(s.payments&&s.payments[0]&&s.payments[0].method||'—')+'</td>' +
+      '<td>'+esc(s.status||'—')+'</td>' +
+    '</tr>';
+  }).join('');
+  c.innerHTML = '<div style="max-height:220px;overflow-y:auto"><table class="sales-table"><thead><tr><th>#</th><th>Date</th><th>Montant</th><th>Paiement</th><th>Statut</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
 async function forceClose(id, name){
   if(!confirm('Clôturer session #'+id+' ('+name+') ?')) return;
   try{
     const r = await fetch('/pos-terminal/sessions/'+id+'/force-close',{method:'POST',credentials:'same-origin',headers:hj});
-    if(r.ok){ showToast('Session #'+id+' clôturée ✓'); await load(); await loadStats(); }
-    else showToast('Erreur lors de la clôture', false);
-  }catch(e){ showToast('Erreur réseau', false); }
+    if(r.ok){ AL.toast('Session #'+id+' clôturée ✓'); load(); loadStats(); }
+    else AL.toast('Erreur lors de la clôture', false);
+  }catch(e){ AL.toast('Erreur réseau', false); }
 }
 
 window.POS = {
@@ -309,9 +321,8 @@ window.POS = {
   closeModal: function(){ document.getElementById('modal-overlay').classList.remove('open'); }
 };
 
-// Events
-document.getElementById('btn-refresh').addEventListener('click', ()=>{ load(); loadStats(); });
-document.getElementById('btn-reset').addEventListener('click', ()=>{
+document.getElementById('btn-refresh').addEventListener('click', function(){ load(); loadStats(); });
+document.getElementById('btn-reset').addEventListener('click', function(){
   document.getElementById('f-status').value='';
   document.getElementById('f-operateur').value='';
   document.getElementById('f-debut').value='';
@@ -320,11 +331,11 @@ document.getElementById('btn-reset').addEventListener('click', ()=>{
 });
 document.getElementById('modal-close').addEventListener('click', POS.closeModal);
 document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===this) POS.closeModal(); });
-['f-status','f-operateur','f-debut','f-fin'].forEach(id=>{
-  document.getElementById(id).addEventListener('change', ()=>{ state.page=1; load(); });
+['f-status','f-operateur','f-debut','f-fin'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', function(){ state.page=1; load(); });
 });
-
-document.getElementById('btn-export-global').addEventListener('click', function(){
+document.getElementById('btn-export-global').addEventListener('click', function(e){
+  e.preventDefault();
   const f = filters();
   const p = new URLSearchParams();
   if(f.status==='fantomes') p.set('fantomes_only','1');
@@ -335,7 +346,13 @@ document.getElementById('btn-export-global').addEventListener('click', function(
   window.open('/pos-terminal/sessions/export-global?'+p, '_blank');
 });
 
-// Init
+bulk = AL.initBulkBar({
+  listId: 'sessions',
+  tbody: document.getElementById('sessions-tbody'),
+  cbAllId: 'sessions-cb-all',
+  onSuccess: function(){ load(); loadStats(); }
+});
+
 load();
 loadStats();
 })();

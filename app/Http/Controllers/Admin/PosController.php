@@ -139,6 +139,41 @@ class PosController extends Controller
     }
 
     /**
+     * Bulk close multiple sessions (auth session Laravel)
+     */
+    public function bulkClose(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $ids = $request->validate([
+            'ids'   => 'required|array|min:1|max:100',
+            'ids.*' => 'integer',
+        ])['ids'];
+
+        $note = "\n[Clôturée (bulk) par admin ".$request->user()->name." le ".now()->format('d/m/Y H:i')."]";
+
+        $sessions = \App\Models\PosSession::whereIn('id', $ids)
+            ->whereIn('status', ['open', 'closing'])
+            ->get();
+
+        $closed = 0;
+        foreach ($sessions as $session) {
+            $session->update([
+                'status'    => 'closed',
+                'closed_at' => now(),
+                'closed_by' => $request->user()->id,
+                'is_active' => null,
+                'notes'     => trim(($session->notes ?? '').$note),
+            ]);
+            $closed++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $closed.' session(s) clôturée(s)',
+            'closed'  => $closed,
+        ]);
+    }
+
+    /**
      * Ventes d'une session (auth session Laravel)
      */
     public function apiSessionSales(\Illuminate\Http\Request $request, int $id): \Illuminate\Http\JsonResponse

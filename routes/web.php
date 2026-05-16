@@ -462,6 +462,9 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::resource('categories', \App\Http\Controllers\Admin\AdminCategoryController::class);
 
         // Gestion des produits
+        Route::get('products/data', [\App\Http\Controllers\Admin\AdminProductController::class, 'dataProducts'])->name('products.data');
+        Route::post('products/bulk-disable', [\App\Http\Controllers\Admin\AdminProductController::class, 'bulkDisable'])->name('products.bulk-disable');
+        Route::post('products/bulk-delete', [\App\Http\Controllers\Admin\AdminProductController::class, 'bulkDelete'])->name('products.bulk-delete');
         Route::resource('products', \App\Http\Controllers\Admin\AdminProductController::class);
 
         // Gestion des codes promo (hors-show : tout se passe dans la liste + edit)
@@ -618,6 +621,7 @@ Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('po
     Route::get('/sessions/data', [\App\Http\Controllers\Admin\PosController::class, 'apiSessions'])->name('sessions.data');
     Route::get('/sessions/{id}/export-csv', [\App\Http\Controllers\Admin\PosController::class, 'exportSessionCsv'])->name('sessions.export-csv');
     Route::post('/sessions/{id}/force-close', [\App\Http\Controllers\Admin\PosController::class, 'apiForceClose'])->name('sessions.force-close');
+    Route::post('/sessions/bulk-close', [\App\Http\Controllers\Admin\PosController::class, 'bulkClose'])->name('sessions.bulk-close');
     Route::get('/sessions/{id}/sales', [\App\Http\Controllers\Admin\PosController::class, 'apiSessionSales'])->name('sessions.sales');
     Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
     Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
