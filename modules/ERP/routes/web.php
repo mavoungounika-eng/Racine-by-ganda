@@ -7,6 +7,7 @@ use Modules\ERP\Http\Controllers\ErpSupplierController;
 use Modules\ERP\Http\Controllers\ErpRawMaterialController;
 use Modules\ERP\Http\Controllers\ErpReportController;
 use Modules\ERP\Http\Controllers\ErpPurchaseController;
+use Modules\ERP\Http\Controllers\ErpReceptionController;
 
 $rateLimitMax   = config('erp.rate_limit.max_attempts', 60);
 $rateLimitDecay = config('erp.rate_limit.decay_minutes', 1);
@@ -68,8 +69,11 @@ Route::prefix('erp')->name('erp.')->middleware(['auth', 'ensure:staff,admin,supe
         'update'  => 'purchases.update',
         'destroy' => 'purchases.destroy',
     ]);
-    Route::post('achats/{purchase}/status', [ErpPurchaseController::class, 'updateStatus'])->name('purchases.update-status');
-    Route::get('achats/{purchase}/pdf',     [ErpPurchaseController::class, 'pdf'])->name('purchases.pdf');
+    Route::post('achats/{purchase}/status',               [ErpPurchaseController::class, 'updateStatus'])->name('purchases.update-status');
+    Route::get('achats/{purchase}/pdf',                    [ErpPurchaseController::class, 'pdf'])->name('purchases.pdf');
+    Route::get('achats/{purchase}/reception/create',       [ErpReceptionController::class, 'create'])->name('purchases.reception.create');
+    Route::post('achats/{purchase}/reception',             [ErpReceptionController::class, 'store'])->name('purchases.reception.store');
+    Route::get('achats/{purchase}/reception/{reception}',  [ErpReceptionController::class, 'show'])->name('purchases.reception.show');
 
     // ─── Rapports ─────────────────────────────────────────────────────────────
     Route::prefix('rapports')->name('reports.')->group(function () {
