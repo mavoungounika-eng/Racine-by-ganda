@@ -14,13 +14,9 @@
                 <i class="fas fa-arrow-left"></i> Retour
             </a>
             @if($purchase->status === 'ordered')
-                <form action="{{ route('erp.purchases.update-status', $purchase) }}" method="POST" class="d-inline" data-confirm='Confirmer la réception de la marchandise ? Cela mettra à jour les stocks.'>
-                    @csrf
-                    <input type="hidden" name="status" value="received">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check-circle"></i> Marquer comme Reçu
-                    </button>
-                </form>
+                <a href="{{ route('erp.purchases.reception.create', $purchase) }}" class="btn btn-success">
+                    <i class="fas fa-check-circle"></i> Réceptionner
+                </a>
                 <form action="{{ route('erp.purchases.update-status', $purchase) }}" method="POST" class="d-inline" data-confirm='Annuler cette commande ?'>
                     @csrf
                     <input type="hidden" name="status" value="cancelled">
@@ -44,11 +40,15 @@
                             <th>Statut :</th>
                             <td>
                                 @if($purchase->status === 'received')
-                                    <span class="badge bg-success">Reçu</span>
+                                    <span class="badge bg-success">✅ Reçu</span>
+                                @elseif($purchase->status === 'partial')
+                                    <span class="badge bg-warning text-dark">⚠️ Partiel</span>
                                 @elseif($purchase->status === 'cancelled')
-                                    <span class="badge bg-danger">Annulé</span>
+                                    <span class="badge bg-danger">❌ Annulé</span>
+                                @elseif($purchase->status === 'draft')
+                                    <span class="badge bg-secondary">Brouillon</span>
                                 @else
-                                    <span class="badge bg-warning">Commandé</span>
+                                    <span class="badge bg-primary">Commandé</span>
                                 @endif
                             </td>
                         </tr>
@@ -132,5 +132,59 @@
             </div>
         </div>
     </div>
+
+    {{-- Historique des réceptions --}}
+    @if($purchase->receptions && $purchase->receptions->count() > 0)
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">📦 Historique des Réceptions</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>N° BL</th>
+                                    <th>Statut</th>
+                                    <th>Par</th>
+                                    <th>Notes</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($purchase->receptions as $reception)
+                                <tr>
+                                    <td>{{ $reception->reception_date->format('d/m/Y') }}</td>
+                                    <td><code>{{ $reception->bl_number ?? '—' }}</code></td>
+                                    <td>
+                                        @if($reception->status === 'complete')
+                                            <span class="badge bg-success">✅ Complète</span>
+                                        @elseif($reception->status === 'partial')
+                                            <span class="badge bg-warning text-dark">⚠️ Partielle</span>
+                                        @else
+                                            <span class="badge bg-danger">❌ Refusée</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $reception->user?->name ?? '—' }}</td>
+                                    <td class="text-muted small">{{ $reception->notes ? Str::limit($reception->notes, 50) : '—' }}</td>
+                                    <td>
+                                        <a href="{{ route('erp.purchases.reception.show', [$purchase, $reception]) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>
 @endsection
