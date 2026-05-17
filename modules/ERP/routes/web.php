@@ -68,6 +68,7 @@ Route::prefix('erp')->name('erp.')->middleware(['auth', 'ensure:staff,admin,supe
     ]);
     
     Route::post('achats/{purchase}/status', [\Modules\ERP\Http\Controllers\ErpPurchaseController::class, 'updateStatus'])->name('purchases.update-status');
+    Route::get('achats/{purchase}/pdf', [\Modules\ERP\Http\Controllers\ErpPurchaseController::class, 'pdf'])->name('purchases.pdf');
     
     // Rapports
     Route::prefix('rapports')->name('reports.')->group(function () {

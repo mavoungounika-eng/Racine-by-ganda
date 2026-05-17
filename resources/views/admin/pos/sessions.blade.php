@@ -34,7 +34,7 @@
 @include('admin.components.admin-list', [
     'listId' => 'sessions',
     'bulkActions' => [
-        ['label' => 'Clôturer sélection', 'endpoint' => route('admin.pos.sessions.bulk-close'), 'confirm' => 'Clôturer {n} session(s) ouvertes ?', 'danger' => true],
+        ['label' => 'Clôturer sélection', 'endpoint' => route('pos.interface.sessions.bulk-close'), 'confirm' => 'Clôturer {n} session(s) ouvertes ?', 'danger' => true],
     ],
 ])
 

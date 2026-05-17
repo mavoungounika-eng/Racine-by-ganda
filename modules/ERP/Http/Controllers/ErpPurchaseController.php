@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ErpPurchaseController extends Controller
 {
@@ -163,5 +164,14 @@ class ErpPurchaseController extends Controller
             DB::rollBack();
             return back()->with('error', 'Erreur : ' . $e->getMessage());
         }
+    }
+
+    public function pdf(ErpPurchase $purchase)
+    {
+        $purchase->load(['supplier', 'items.purchasable', 'user']);
+        $pdf = Pdf::loadView('erp::purchases.pdf', compact('purchase'))
+            ->setPaper('a4', 'portrait');
+        $filename = 'bon-commande-' . $purchase->reference . '.pdf';
+        return $pdf->download($filename);
     }
 }
