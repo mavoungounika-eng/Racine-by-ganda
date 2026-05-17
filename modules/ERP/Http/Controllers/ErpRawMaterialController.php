@@ -3,17 +3,16 @@
 namespace Modules\ERP\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Modules\ERP\Models\ErpRawMaterial;
 use Modules\ERP\Models\ErpSupplier;
 use Modules\ERP\Http\Requests\StoreRawMaterialRequest;
 use Modules\ERP\Http\Requests\UpdateRawMaterialRequest;
-use Illuminate\Http\Request;
 
 class ErpRawMaterialController extends Controller
 {
-    /**
-     * Affiche la liste des matières premières
-     */
     public function index(Request $request)
     {
         $query = ErpRawMaterial::with('supplier');
@@ -26,22 +25,91 @@ class ErpRawMaterialController extends Controller
         }
 
         $materials = $query->orderBy('name')->paginate(20);
+        $suppliers = ErpSupplier::orderBy('name')->get(['id', 'name']);
 
-        return view('erp::materials.index', compact('materials'));
+        return view('erp::materials.index', compact('materials', 'suppliers'));
     }
 
-    /**
-     * Formulaire de création
-     */
+    public function dataMaterials(Request $request): JsonResponse
+    {
+        $query = ErpRawMaterial::with('supplier:id,name');
+
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")->orWhere('sku', 'like', "%{$s}%");
+            });
+        }
+
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->get('supplier_id'));
+        }
+
+        if ($request->boolean('stock_critique')) {
+            $query->whereColumn('current_stock', '<=', 'min_stock_alert');
+        }
+
+        $allowed = ['name', 'sku', 'current_stock', 'unit_price', 'created_at'];
+        $sortBy  = in_array($request->get('sort_by'), $allowed, true) ? $request->get('sort_by') : 'name';
+        $sortDir = $request->get('sort_dir') === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortBy, $sortDir);
+
+        return response()->json($query->paginate(min($request->integer('per_page', 20), 100)));
+    }
+
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $ids   = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = ErpRawMaterial::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true, 'message' => $count.' matière(s) supprimée(s)']);
+    }
+
+    public function exportCsv(Request $request): Response
+    {
+        $query = ErpRawMaterial::with('supplier:id,name');
+
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")->orWhere('sku', 'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->get('supplier_id'));
+        }
+        if ($request->boolean('stock_critique')) {
+            $query->whereColumn('current_stock', '<=', 'min_stock_alert');
+        }
+
+        $rows = $query->orderBy('name')->get();
+        $csv  = "\xEF\xBB\xBF";
+        $csv .= "ID;SKU;Nom;Fournisseur;Unité;Stock actuel;Stock min;Prix unitaire\n";
+        foreach ($rows as $r) {
+            $csv .= implode(';', [
+                $r->id,
+                '"'.str_replace('"', '\"\"',$r->sku ?? '').'"',
+                '"'.str_replace('"', '\"\"',$r->name).'"',
+                '"'.str_replace('"', '\"\"', $r->supplier ? $r->supplier->name : '').'"',
+                '"'.str_replace('"', '\"\"',$r->unit ?? '').'"',
+                $r->current_stock ?? 0,
+                $r->min_stock_alert ?? 0,
+                $r->unit_price ?? '',
+            ])."\n";
+        }
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="matieres_'.now()->format('Y-m-d').'.csv"',
+        ]);
+    }
+
     public function create()
     {
         $suppliers = ErpSupplier::where('is_active', true)->orderBy('name')->get();
         return view('erp::materials.create', compact('suppliers'));
     }
 
-    /**
-     * Enregistre une nouvelle matière première
-     */
     public function store(StoreRawMaterialRequest $request)
     {
         ErpRawMaterial::create($request->validated());
@@ -50,27 +118,18 @@ class ErpRawMaterialController extends Controller
             ->with('success', 'Matière première créée avec succès !');
     }
 
-    /**
-     * Affiche une matière première
-     */
     public function show(ErpRawMaterial $matiere)
     {
         $matiere->load('supplier');
         return view('erp::materials.show', compact('matiere'));
     }
 
-    /**
-     * Formulaire d'édition
-     */
     public function edit(ErpRawMaterial $matiere)
     {
         $suppliers = ErpSupplier::where('is_active', true)->orderBy('name')->get();
         return view('erp::materials.edit', compact('matiere', 'suppliers'));
     }
 
-    /**
-     * Met à jour une matière première
-     */
     public function update(UpdateRawMaterialRequest $request, ErpRawMaterial $matiere)
     {
         $matiere->update($request->validated());
@@ -79,9 +138,6 @@ class ErpRawMaterialController extends Controller
             ->with('success', 'Matière première mise à jour !');
     }
 
-    /**
-     * Supprime une matière première
-     */
     public function destroy(ErpRawMaterial $matiere)
     {
         $matiere->delete();
@@ -90,4 +146,3 @@ class ErpRawMaterialController extends Controller
             ->with('success', 'Matière première supprimée !');
     }
 }
-
