@@ -13,9 +13,12 @@
                     <p class="text-muted mb-0">Produits nécessitant un réapprovisionnement</p>
                 </div>
                 <div>
-                    <a href="{{ route('erp.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                    <a href="{{ route('erp.dashboard') }}" class="btn btn-outline-secondary btn-sm me-2">
                         <i class="fas fa-arrow-left me-1"></i> Retour
                     </a>
+                    <button type="button" class="btn btn-primary btn-sm btn-print-trigger">
+                        <i class="fas fa-print me-1"></i> Imprimer
+                    </button>
                 </div>
             </div>
         </div>

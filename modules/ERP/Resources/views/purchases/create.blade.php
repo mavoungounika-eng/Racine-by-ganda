@@ -19,7 +19,7 @@
             <div class="col-md-4">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Informations</h6>
+                        <h6 class="m-0 fw-bold text-primary">Informations</h6>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
@@ -54,8 +54,8 @@
             <div class="col-md-8">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Articles à commander</h6>
-                        <button type="button" class="btn btn-sm btn-success" onclick="addItem()">
+                        <h6 class="m-0 fw-bold text-primary">Articles à commander</h6>
+                        <button type="button" class="btn btn-sm btn-success" id="addItemBtn">
                             <i class="fas fa-plus"></i> Ajouter Article
                         </button>
                     </div>
@@ -76,8 +76,8 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colspan="3" class="text-right font-weight-bold">Total Commande :</td>
-                                        <td colspan="2" class="font-weight-bold" id="grandTotal">0 XAF</td>
+                                        <td colspan="3" class="text-end fw-bold">Total Commande :</td>
+                                        <td colspan="2" class="fw-bold" id="grandTotal">0 XAF</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -87,7 +87,7 @@
             </div>
         </div>
 
-        <div class="text-right mb-4">
+        <div class="text-end mb-4">
             <button type="submit" class="btn btn-primary btn-lg">
                 <i class="fas fa-save"></i> Enregistrer la Commande
             </button>
@@ -95,7 +95,7 @@
     </form>
 </div>
 
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
     let itemIndex = 0;
     const materials = @json($materials);
 
@@ -108,55 +108,54 @@
             options += `<option value="${m.id}">${m.name} (${m.unit || 'unité'})</option>`;
         });
 
+        const currentIndex = itemIndex;
         tr.innerHTML = `
             <td>
-                <select name="items[${itemIndex}][material_id]" class="form-control" required onchange="updateRow(${itemIndex})">
+                <select name="items[${currentIndex}][material_id]" class="form-control item-material" required>
                     ${options}
                 </select>
             </td>
             <td>
-                <input type="number" name="items[${itemIndex}][quantity]" class="form-control" step="0.01" min="0" required oninput="updateRow(${itemIndex})">
+                <input type="number" name="items[${currentIndex}][quantity]" class="form-control item-qty" step="0.01" min="0" required>
             </td>
             <td>
-                <input type="number" name="items[${itemIndex}][unit_price]" class="form-control" step="0.01" min="0" required oninput="updateRow(${itemIndex})">
+                <input type="number" name="items[${currentIndex}][unit_price]" class="form-control item-price" step="0.01" min="0" required>
             </td>
-            <td class="text-right row-total">0 XAF</td>
+            <td class="text-end row-total">0 XAF</td>
             <td>
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); calculateGrandTotal()">
+                <button type="button" class="btn btn-danger btn-sm btn-remove">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
         `;
-        
-        tbody.appendChild(tr);
-        itemIndex++;
-    }
 
-    function updateRow(index) {
-        // Simple calculation logic would go here, but since we use dynamic names, 
-        // we need to traverse the DOM relative to the changed input or use IDs.
-        // For simplicity in this generated code, let's recalculate everything.
-        calculateGrandTotal();
+        tbody.appendChild(tr);
+
+        tr.querySelector('.item-qty').addEventListener('input', calculateGrandTotal);
+        tr.querySelector('.item-price').addEventListener('input', calculateGrandTotal);
+        tr.querySelector('.btn-remove').addEventListener('click', function() {
+            tr.remove();
+            calculateGrandTotal();
+        });
+
+        itemIndex++;
     }
 
     function calculateGrandTotal() {
         let total = 0;
         const rows = document.querySelectorAll('#itemsBody tr');
-        
         rows.forEach(row => {
-            const qty = parseFloat(row.querySelector('input[name*="[quantity]"]').value) || 0;
-            const price = parseFloat(row.querySelector('input[name*="[unit_price]"]').value) || 0;
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
             const rowTotal = qty * price;
-            
             row.querySelector('.row-total').textContent = new Intl.NumberFormat('fr-FR').format(rowTotal) + ' XAF';
             total += rowTotal;
         });
-
         document.getElementById('grandTotal').textContent = new Intl.NumberFormat('fr-FR').format(total) + ' XAF';
     }
 
-    // Add one empty row by default
     document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('addItemBtn').addEventListener('click', addItem);
         addItem();
     });
 </script>

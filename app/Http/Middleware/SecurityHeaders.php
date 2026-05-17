@@ -52,7 +52,7 @@ class SecurityHeaders
         $connectExtra = $isLocal ? ' http://127.0.0.1:5173 ws://127.0.0.1:5173' : '';
 
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com{$scriptExtra}; " .
+               "script-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com https://cdn.tiny.cloud{$scriptExtra}; " .
                "style-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://fonts.googleapis.com https://cdnjs.cloudflare.com{$styleExtra}; " .
                "style-src-attr 'unsafe-inline'; " .
                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " .

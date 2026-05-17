@@ -10,12 +10,19 @@
             <p class="text-muted mb-0">Détails et historique</p>
         </div>
         <div>
+            <a href="{{ route('erp.materials.index') }}" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
             <a href="{{ route('erp.materials.edit', $material) }}" class="btn btn-primary me-2">
                 <i class="fas fa-edit"></i> Modifier
             </a>
-            <a href="{{ route('erp.materials.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour
-            </a>
+            <form action="{{ route('erp.materials.destroy', $material) }}" method="POST" class="d-inline" data-confirm="Supprimer cette matière première ?">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </form>
         </div>
     </div>
 
@@ -45,7 +52,7 @@
                     <div class="mb-3">
                         <label class="text-muted small">Stock Actuel</label>
                         <p class="mb-0">
-                            <span class="h4">{{ $material->stock_quantity ?? 0 }}</span>
+                            <span class="h4">{{ $material->current_stock ?? 0 }}</span>
                             <small class="text-muted">{{ $material->unit }}</small>
                         </p>
                     </div>
@@ -61,17 +68,10 @@
                     </div>
                     @endif
 
-                    @if($material->min_stock_level)
+                    @if($material->min_stock_alert)
                     <div class="mb-3">
                         <label class="text-muted small">Stock Minimum</label>
-                        <p class="mb-0">{{ $material->min_stock_level }} {{ $material->unit }}</p>
-                    </div>
-                    @endif
-
-                    @if($material->notes)
-                    <div class="mb-3">
-                        <label class="text-muted small">Notes</label>
-                        <p class="mb-0">{{ $material->notes }}</p>
+                        <p class="mb-0">{{ $material->min_stock_alert }} {{ $material->unit }}</p>
                     </div>
                     @endif
                 </div>
@@ -81,8 +81,8 @@
                 <div class="card-body">
                     <h6 class="card-title mb-3">Statut Stock</h6>
                     @php
-                        $stockQty = $material->stock_quantity ?? 0;
-                        $minStock = $material->min_stock_level ?? 0;
+                        $stockQty = $material->current_stock ?? 0;
+                        $minStock = $material->min_stock_alert ?? 0;
                     @endphp
                     @if($stockQty <= 0)
                         <div class="alert alert-danger mb-0">

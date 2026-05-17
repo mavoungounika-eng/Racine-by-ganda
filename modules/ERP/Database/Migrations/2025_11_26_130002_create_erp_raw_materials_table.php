@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('erp_raw_materials', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('reference')->unique();
+            $table->string('sku')->nullable()->unique();
             $table->string('unit'); // m, kg, l, unit
             $table->decimal('current_stock', 10, 2)->default(0);
             $table->decimal('min_stock_alert', 10, 2)->default(10);

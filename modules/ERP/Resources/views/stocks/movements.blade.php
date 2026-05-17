@@ -17,9 +17,14 @@
             </nav>
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <h1 class="h2 mb-0">📋 Historique des Mouvements</h1>
-                <a href="{{ route('erp.stocks.movements.export', request()->query()) }}" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> Exporter Excel
-                </a>
+                <div>
+                    <a href="{{ route('erp.stocks.index') }}" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Retour aux stocks
+                    </a>
+                    <a href="{{ route('erp.stocks.movements.export', request()->query()) }}" class="btn btn-success">
+                        <i class="fas fa-file-excel"></i> Exporter Excel
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -87,7 +92,7 @@
                                     </strong>
                                 </td>
                                 <td class="align-middle">
-                                    <span class="font-weight-bold">{{ $movement->quantity }}</span>
+                                    <span class="fw-bold">{{ $movement->quantity }}</span>
                                 </td>
                                 <td class="align-middle">
                                     <small class="text-muted">{{ $movement->reason ?? '-' }}</small>

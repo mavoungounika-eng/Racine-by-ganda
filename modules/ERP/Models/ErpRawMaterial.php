@@ -12,7 +12,7 @@ class ErpRawMaterial extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'reference', 'unit', 'current_stock', 
+        'name', 'sku', 'unit', 'current_stock', 
         'min_stock_alert', 'unit_price', 'supplier_id', 'description'
     ];
 

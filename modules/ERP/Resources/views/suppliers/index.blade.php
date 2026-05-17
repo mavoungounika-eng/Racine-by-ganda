@@ -124,7 +124,7 @@
                                 <form action="{{ route('erp.suppliers.destroy', $supplier) }}" 
                                       method="POST" 
                                       class="d-inline"
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ?');">
+                                      data-confirm="Confirmer la suppression ?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 

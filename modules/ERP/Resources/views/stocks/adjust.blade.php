@@ -15,7 +15,7 @@
         <div class="col-md-8">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Produit : {{ $product->title }}</h6>
+                    <h6 class="m-0 fw-bold text-primary">Produit : {{ $product->title }}</h6>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
@@ -73,7 +73,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
     // Petit script pour filtrer les raisons selon le type (UX)
     const typeSelect = document.getElementById('typeSelect');
     const reasonSelect = document.getElementById('reasonSelect');

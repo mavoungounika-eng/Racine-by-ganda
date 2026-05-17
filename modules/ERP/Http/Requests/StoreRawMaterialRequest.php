@@ -33,6 +33,17 @@ class StoreRawMaterialRequest extends FormRequest
     /**
      * Messages de validation personnalisés.
      */
+    /**
+     * Remapping champ formulaire → colonne base de données.
+     */
+    protected function passedValidation(): void
+    {
+        if ($this->has('minimum_stock')) {
+            $this->merge(['min_stock_alert' => $this->input('minimum_stock')]);
+            $this->request->remove('minimum_stock');
+        }
+    }
+
     public function messages(): array
     {
         return [

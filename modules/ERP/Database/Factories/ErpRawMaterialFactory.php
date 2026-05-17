@@ -17,7 +17,7 @@ class ErpRawMaterialFactory extends Factory
     {
         return [
             'name' => $this->faker->words(2, true),
-            'reference' => 'RM-' . strtoupper($this->faker->unique()->bothify('??###')),
+            'sku' => 'RM-' . strtoupper($this->faker->unique()->bothify('??###')),
             'unit' => 'meter',
             'current_stock' => $this->faker->randomFloat(2, 0, 500),
             'min_stock_alert' => $this->faker->randomFloat(2, 1, 50),

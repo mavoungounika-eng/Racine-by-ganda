@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     {{-- TinyMCE --}}
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin" nonce="{{ $cspNonce ?? '' }}"></script>
     
     <style nonce="{{ csp_nonce() }}">
         body {
@@ -433,5 +433,24 @@
 {{-- @include('assistant::chat') --}}
 
 @stack('scripts')
+<script nonce="{{ $cspNonce ?? '' }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation avant soumission de formulaire
+    document.querySelectorAll('form[data-confirm]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            if (!confirm(form.getAttribute('data-confirm'))) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Boutons d'impression
+    document.querySelectorAll('.btn-print-trigger').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            window.print();
+        });
+    });
+});
+</script>
 </body>
 </html>

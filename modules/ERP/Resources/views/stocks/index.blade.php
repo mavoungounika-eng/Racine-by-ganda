@@ -18,12 +18,15 @@
             Suivre et gérer les niveaux de stock de tous les produits
         </p>
     </div>
+    <a href="{{ route('erp.stocks.movements') }}" class="btn btn-outline-primary">
+        <i class="fas fa-history me-2"></i>Mouvements de Stock
+    </a>
 </div>
 
 {{-- Statistiques rapides --}}
 <div class="row g-4 mb-4">
     <div class="col-md-3 col-6">
-        <a href="{{ route('erp.stocks.index') }}" 
+        <a href="{{ route('erp.stocks.index') }}"
            class="card card-racine text-decoration-none h-100 {{ !request('filter') ? 'border-primary border-2' : '' }}">
             <div class="card-body text-center py-3">
                 <h4 class="mb-0 fw-bold text-racine-black">{{ $stats['total'] }}</h4>

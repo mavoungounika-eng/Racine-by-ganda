@@ -4,17 +4,14 @@
 @section('page-title', 'Nouveau Fournisseur')
 
 @section('content')
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 fw-bold">🏭 Nouveau Fournisseur</h2>
+    <a href="{{ route('erp.suppliers.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+</div>
 <div class="row justify-content-center">
     <div class="col-lg-8">
-                {{-- Header --}}
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb bg-transparent p-0 mb-2">
-                        <li class="breadcrumb-item"><a href="{{ route('erp.dashboard') }}">ERP</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('erp.suppliers.index') }}">Fournisseurs</a></li>
-                        <li class="breadcrumb-item active">Nouveau</li>
-                    </ol>
-                </nav>
-                <h1 class="h2 mb-4">🏭 Nouveau Fournisseur</h1>
 
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
@@ -75,9 +72,9 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" name="is_active" id="is_active" class="custom-control-input" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
-                                    <label for="is_active" class="custom-control-label">Fournisseur actif</label>
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_active" id="is_active" class="form-check-input" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                                    <label for="is_active" class="form-check-label">Fournisseur actif</label>
                                 </div>
                             </div>
 

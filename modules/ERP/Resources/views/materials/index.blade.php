@@ -111,7 +111,7 @@
                                 <form action="{{ route('erp.materials.destroy', $material) }}" 
                                       method="POST" 
                                       class="d-inline"
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette matière première ?');">
+                                      data-confirm="Confirmer la suppression ?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 
