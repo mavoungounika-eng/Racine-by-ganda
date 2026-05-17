@@ -450,6 +450,8 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         });
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::post('dashboard/refresh', [AdminDashboardController::class, 'refresh'])->name('dashboard.refresh');
+        Route::get('dashboard/kpis', [AdminDashboardController::class, 'kpis'])->name('dashboard.kpis');
+        Route::get('dashboard/chart', [AdminDashboardController::class, 'chartData'])->name('dashboard.chart');
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
         // Gestion des utilisateurs

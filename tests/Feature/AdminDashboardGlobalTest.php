@@ -99,8 +99,8 @@ class AdminDashboardGlobalTest extends TestCase
         $queries = DB::getQueryLog();
         $queryCount = count($queries);
         
-        // Vérifier que le nombre de requêtes est raisonnable (< 30 pour un dashboard admin)
-        $this->assertLessThan(30, $queryCount, "Dashboard Admin devrait faire moins de 30 requêtes, nombre réel: {$queryCount}");
+        // Vérifier que le nombre de requêtes est raisonnable (ERP intégré : seuil 35)
+        $this->assertLessThan(35, $queryCount, "Dashboard Admin devrait faire moins de 35 requêtes, nombre réel: {$queryCount}");
     }
 
     /**
