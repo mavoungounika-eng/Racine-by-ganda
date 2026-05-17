@@ -79,6 +79,36 @@ class AdminCategoryController extends AdminController
         return response()->json(['success' => true, 'message' => $count.' catégorie(s) désactivée(s)']);
     }
 
+    public function exportCsv(Request $request): \Illuminate\Http\Response
+    {
+        $this->authorize('viewAny', Category::class);
+        $query = Category::with('parent:id,name');
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) { $q->where('name','like',"%{$s}%")->orWhere('slug','like',"%{$s}%"); });
+        }
+        if ($request->filled('is_active') && $request->get('is_active') !== '') {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+        $rows = $query->orderBy('name')->get();
+        $csv  = "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
+        $csv .= "ID,Nom,Slug,Parent,Produits,Statut\n";
+        foreach ($rows as $r) {
+            $csv .= implode(',', [
+                $r->id,
+                '"'.str_replace('"','""',$r->name).'"',
+                '"'.str_replace('"','""',$r->slug).'"',
+                '"'.str_replace('"','""',$r->parent?$r->parent->name:'').'"',
+                $r->products_count ?? '',
+                $r->is_active ? 'active' : 'inactive',
+            ])."\n";
+        }
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="categories_'.now()->format('Y-m-d').'.csv"',
+        ]);
+    }
+
     /**
      * Show the form for creating a new category.
      */

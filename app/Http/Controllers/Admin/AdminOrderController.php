@@ -136,6 +136,40 @@ class AdminOrderController extends AdminController
         return view('admin.orders.qrcode', compact('order', 'url'));
     }
 
+    public function exportCsv(Request $request): \Illuminate\Http\Response
+    {
+        $this->authorize('viewAny', Order::class);
+        $query = Order::with('user:id,name,email');
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) { $q->where('order_number','like',"%{$s}%")->orWhere('customer_name','like',"%{$s}%")->orWhere('customer_email','like',"%{$s}%"); });
+        }
+        if ($request->filled('status'))         $query->where('status',         $request->get('status'));
+        if ($request->filled('payment_status')) $query->where('payment_status', $request->get('payment_status'));
+        if ($request->filled('date_debut'))     $query->whereDate('created_at', '>=', $request->get('date_debut'));
+        if ($request->filled('date_fin'))       $query->whereDate('created_at', '<=', $request->get('date_fin'));
+        $rows = $query->orderBy('created_at','desc')->get();
+        $csv  = "\xEF\xBB\xBF";
+        $csv .= "ID,N° Commande,Client,Email,Montant,Devise,Statut,Paiement,Date\n";
+        foreach ($rows as $r) {
+            $csv .= implode(',', [
+                $r->id,
+                '"'.str_replace('"','""',$r->order_number ?? '').'"',
+                '"'.str_replace('"','""', $r->user ? $r->user->name : ($r->customer_name ?? '')).'"',
+                '"'.str_replace('"','""', $r->user ? $r->user->email : ($r->customer_email ?? '')).'"',
+                $r->total_amount ?? '',
+                $r->currency ?? '',
+                $r->status ?? '',
+                $r->payment_status ?? '',
+                $r->created_at ? $r->created_at->format('Y-m-d H:i') : '',
+            ])."\n";
+        }
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="commandes_'.now()->format('Y-m-d').'.csv"',
+        ]);
+    }
+
     /**
      * Afficher le formulaire de scan
      */

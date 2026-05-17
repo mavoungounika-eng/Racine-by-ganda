@@ -99,6 +99,35 @@ class AdminUserController extends AdminController
         return response()->json(['success' => true, 'message' => $count.' utilisateur(s) supprimé(s)']);
     }
 
+    public function exportCsv(Request $request): \Illuminate\Http\Response
+    {
+        $this->authorize('viewAny', User::class);
+        $query = User::query();
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) { $q->where('name','like',"%{$s}%")->orWhere('email','like',"%{$s}%"); });
+        }
+        if ($request->filled('status')) $query->where('status', $request->get('status'));
+        if ($request->filled('role'))   $query->where('role',   $request->get('role'));
+        $rows = $query->orderBy('created_at','desc')->get();
+        $csv  = "\xEF\xBB\xBF";
+        $csv .= "ID,Nom,Email,Rôle,Statut,Inscription\n";
+        foreach ($rows as $r) {
+            $csv .= implode(',', [
+                $r->id,
+                '"'.str_replace('"','""',$r->name).'"',
+                '"'.str_replace('"','""',$r->email).'"',
+                $r->role ?? '',
+                $r->status ?? '',
+                $r->created_at ? $r->created_at->format('Y-m-d') : '',
+            ])."\n";
+        }
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="utilisateurs_'.now()->format('Y-m-d').'.csv"',
+        ]);
+    }
+
     /**
      * Show the form for creating a new user.
      */

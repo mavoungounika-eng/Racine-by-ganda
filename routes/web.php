@@ -453,6 +453,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
         // Gestion des utilisateurs
+        Route::get('users/export/csv', [\App\Http\Controllers\Admin\AdminUserController::class, 'exportCsv'])->name('users.export.csv');
         Route::get('users/data', [\App\Http\Controllers\Admin\AdminUserController::class, 'dataUsers'])->name('users.data');
         Route::post('users/bulk-disable', [\App\Http\Controllers\Admin\AdminUserController::class, 'bulkDisable'])->name('users.bulk-disable');
         Route::post('users/bulk-delete', [\App\Http\Controllers\Admin\AdminUserController::class, 'bulkDelete'])->name('users.bulk-delete');
@@ -462,6 +463,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::resource('roles', AdminRoleController::class)->except(['show']);
 
         // Gestion des catégories
+        Route::get('categories/export/csv', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'exportCsv'])->name('categories.export.csv');
         Route::get('categories/data', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'dataCategories'])->name('categories.data');
         Route::post('categories/bulk-activate', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'bulkActivate'])->name('categories.bulk-activate');
         Route::post('categories/bulk-deactivate', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'bulkDeactivate'])->name('categories.bulk-deactivate');
@@ -474,6 +476,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::resource('products', \App\Http\Controllers\Admin\AdminProductController::class);
 
         // Gestion des codes promo (hors-show : tout se passe dans la liste + edit)
+        Route::get('promo-codes/export/csv', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'exportCsv'])->name('promo-codes.export.csv');
         Route::get('promo-codes/data', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'dataPromoCodes'])->name('promo-codes.data');
         Route::post('promo-codes/bulk-disable', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'bulkDisable'])->name('promo-codes.bulk-disable');
         Route::post('promo-codes/bulk-delete', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'bulkDelete'])->name('promo-codes.bulk-delete');
@@ -516,6 +519,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         });
 
         // Gestion des commandes - Routes spécifiques AVANT la route resource
+        Route::get('orders/export/csv', [\App\Http\Controllers\Admin\AdminOrderController::class, 'exportCsv'])->name('orders.export.csv');
         Route::get('orders/data', [\App\Http\Controllers\Admin\AdminOrderController::class, 'dataOrders'])->name('orders.data');
         Route::post('orders/bulk-complete', [\App\Http\Controllers\Admin\AdminOrderController::class, 'bulkComplete'])->name('orders.bulk-complete');
         Route::post('orders/bulk-cancel', [\App\Http\Controllers\Admin\AdminOrderController::class, 'bulkCancel'])->name('orders.bulk-cancel');

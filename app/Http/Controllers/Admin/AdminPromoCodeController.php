@@ -104,6 +104,38 @@ class AdminPromoCodeController extends AdminController
         return response()->json(['success' => true, 'message' => $msg]);
     }
 
+    public function exportCsv(Request $request): \Illuminate\Http\Response
+    {
+        $this->authorize('viewAny', PromoCode::class);
+        $query = PromoCode::query();
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) { $q->where('code','like',"%{$s}%")->orWhere('name','like',"%{$s}%"); });
+        }
+        if ($request->filled('type'))                              $query->where('type',      $request->get('type'));
+        if ($request->filled('is_active') && $request->get('is_active') !== '') $query->where('is_active', $request->boolean('is_active'));
+        $rows = $query->orderBy('created_at','desc')->get();
+        $csv  = "\xEF\xBB\xBF";
+        $csv .= "ID,Code,Nom,Type,Valeur,Utilisations,Limite,Expire,Statut\n";
+        foreach ($rows as $r) {
+            $csv .= implode(',', [
+                $r->id,
+                '"'.str_replace('"','""',$r->code).'"',
+                '"'.str_replace('"','""',$r->name ?? '').'"',
+                $r->type ?? '',
+                $r->discount_value ?? '',
+                $r->used_count ?? 0,
+                $r->max_uses ?? '',
+                $r->expires_at ? $r->expires_at->format('Y-m-d') : '',
+                $r->is_active ? 'active' : 'inactive',
+            ])."\n";
+        }
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="promo-codes_'.now()->format('Y-m-d').'.csv"',
+        ]);
+    }
+
     /**
      * Formulaire de création.
      */
