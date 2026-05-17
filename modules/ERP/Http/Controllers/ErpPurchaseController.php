@@ -180,9 +180,8 @@ class ErpPurchaseController extends Controller
         }
     }
 
-    public function show(ErpPurchase $achat)
+    public function show(ErpPurchase $purchase)
     {
-        $purchase = $achat;
         $purchase->load(['supplier', 'items.purchasable', 'user', 'receptions.user']);
         return view('erp::purchases.show', compact('purchase'));
     }

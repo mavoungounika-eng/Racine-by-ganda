@@ -46,7 +46,9 @@ Route::prefix('erp')->name('erp.')->middleware(['auth', 'ensure:staff,admin,supe
     Route::get('matieres/data',        [ErpRawMaterialController::class, 'dataMaterials'])->name('materials.data');
     Route::post('matieres/bulk-delete', [ErpRawMaterialController::class, 'bulkDelete'])->name('materials.bulk-delete');
     Route::get('matieres/export/csv',  [ErpRawMaterialController::class, 'exportCsv'])->name('materials.export.csv');
-    Route::resource('matieres', ErpRawMaterialController::class)->names([
+    Route::resource('matieres', ErpRawMaterialController::class)->parameters([
+        'matieres' => 'material',
+    ])->names([
         'index'   => 'materials.index',
         'create'  => 'materials.create',
         'store'   => 'materials.store',
@@ -60,7 +62,7 @@ Route::prefix('erp')->name('erp.')->middleware(['auth', 'ensure:staff,admin,supe
     Route::get('achats/data',        [ErpPurchaseController::class, 'dataPurchases'])->name('purchases.data');
     Route::post('achats/bulk-delete', [ErpPurchaseController::class, 'bulkDelete'])->name('purchases.bulk-delete');
     Route::get('achats/export/csv',  [ErpPurchaseController::class, 'exportCsv'])->name('purchases.export.csv');
-    Route::resource('achats', ErpPurchaseController::class)->names([
+    Route::resource('achats', ErpPurchaseController::class)->parameters(['achats' => 'purchase'])->names([
         'index'   => 'purchases.index',
         'create'  => 'purchases.create',
         'store'   => 'purchases.store',
