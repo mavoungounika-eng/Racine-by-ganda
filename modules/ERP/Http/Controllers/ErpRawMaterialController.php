@@ -118,29 +118,29 @@ class ErpRawMaterialController extends Controller
             ->with('success', 'Matière première créée avec succès !');
     }
 
-    public function show(ErpRawMaterial $matiere)
+    public function show(ErpRawMaterial $material)
     {
-        $matiere->load('supplier');
-        return view('erp::materials.show', compact('matiere'));
+        $material->load('supplier');
+        return view('erp::materials.show', compact('material'));
     }
 
-    public function edit(ErpRawMaterial $matiere)
+    public function edit(ErpRawMaterial $material)
     {
         $suppliers = ErpSupplier::where('is_active', true)->orderBy('name')->get();
-        return view('erp::materials.edit', compact('matiere', 'suppliers'));
+        return view('erp::materials.edit', compact('material', 'suppliers'));
     }
 
-    public function update(UpdateRawMaterialRequest $request, ErpRawMaterial $matiere)
+    public function update(UpdateRawMaterialRequest $request, ErpRawMaterial $material)
     {
-        $matiere->update($request->validated());
+        $material->update($request->validated());
 
         return redirect()->route('erp.materials.index')
             ->with('success', 'Matière première mise à jour !');
     }
 
-    public function destroy(ErpRawMaterial $matiere)
+    public function destroy(ErpRawMaterial $material)
     {
-        $matiere->delete();
+        $material->delete();
 
         return redirect()->route('erp.materials.index')
             ->with('success', 'Matière première supprimée !');

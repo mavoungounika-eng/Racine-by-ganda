@@ -13,15 +13,15 @@
 
 <div class="al-card mb-4">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h5 class="mb-0" style="color:#ED5F1E;"><i class="fas fa-shopping-cart me-2"></i>Commandes Fournisseurs</h5>
+    <h5 class="mb-0 al-title"><i class="fas fa-shopping-cart me-2"></i>Commandes Fournisseurs</h5>
     <div class="d-flex gap-2 flex-wrap">
       <a href="#" id="po-export-btn" class="al-action-btn">↓ Export CSV</a>
-      <a href="{{ route('erp.purchases.create') }}" class="al-action-btn" style="background:#ED5F1E;color:#fff;border-color:#ED5F1E;">+ Nouvelle Commande</a>
+      <a href="{{ route('erp.purchases.create') }}" class="al-action-btn al-action-btn-primary">+ Nouvelle Commande</a>
     </div>
   </div>
 
   <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-    <input type="text" id="po-search" class="al-filter-input" placeholder="Référence…" aria-label="Recherche" style="min-width:180px;">
+    <input type="text" id="po-search" class="al-filter-input al-filter-input-wide" placeholder="Référence…" aria-label="Recherche">
     <select id="po-supplier" class="al-filter-select" aria-label="Fournisseur">
       <option value="">Tous les fournisseurs</option>
       @foreach($suppliers as $sup)
@@ -47,15 +47,15 @@
 
   <div class="al-stats mb-3">
     <div class="al-stat"><div class="al-stat-label">Total</div><div class="al-stat-value" id="po-s-total">—</div></div>
-    <div class="al-stat"><div class="al-stat-label">En attente</div><div class="al-stat-value" style="color:#fbbf24" id="po-s-ordered">—</div></div>
-    <div class="al-stat"><div class="al-stat-label">Reçues</div><div class="al-stat-value" style="color:#4ade80" id="po-s-received">—</div></div>
-    <div class="al-stat"><div class="al-stat-label">Montant total</div><div class="al-stat-value" style="font-size:1rem;color:#ED5F1E" id="po-s-montant">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">En attente</div><div class="al-stat-value al-stat-warn" id="po-s-ordered">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">Reçues</div><div class="al-stat-value al-stat-ok" id="po-s-received">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">Montant total</div><div class="al-stat-value al-stat-orange" id="po-s-montant">—</div></div>
   </div>
 
   <div class="al-table-wrap">
     <table class="al-table w-100">
       <thead><tr>
-        <th style="width:36px;"><input type="checkbox" id="po-cb-all" class="al-cb" aria-label="Tout sélectionner"></th>
+        <th class="al-th-cb"><input type="checkbox" id="po-cb-all" class="al-cb" aria-label="Tout sélectionner"></th>
         <th id="po-th-ref"     data-col="reference">Référence</th>
         <th>Fournisseur</th>
         <th id="po-th-date"    data-col="purchase_date">Date</th>
@@ -67,7 +67,7 @@
     </table>
   </div>
   <div class="al-pag-bar mt-3" id="po-pag"></div>
-  <div style="font-size:.72rem;color:#555;text-align:right;margin-top:.5rem">
+  <div class="al-refresh-hint">
     <span id="po-refresh-indicator">Auto-refresh 60s</span>
   </div>
 </div>
@@ -91,12 +91,12 @@ const POS_ERP = (function(){
 
   function statusBadge(st){
     const cfg = {
-      ordered:   { bg:'rgba(251,191,36,.15)',   color:'#fbbf24', label:'Commandé' },
-      received:  { bg:'rgba(74,222,128,.15)',    color:'#4ade80', label:'Reçu' },
-      cancelled: { bg:'rgba(239,68,68,.15)',     color:'#f87171', label:'Annulé' },
+      ordered:   { cls:'al-badge-ordered',   label:'Commandé' },
+      received:  { cls:'al-badge-received',  label:'Reçu' },
+      cancelled: { cls:'al-badge-cancelled', label:'Annulé' },
     };
     const c = cfg[st] || cfg.ordered;
-    return '<span class="al-badge" style="background:'+c.bg+';color:'+c.color+';border:1px solid '+c.color.replace(')',', .3)')+' ;">'+c.label+'</span>';
+    return '<span class="al-badge '+c.cls+'">'+c.label+'</span>';
   }
 
   function renderTable(data) {
@@ -108,14 +108,14 @@ const POS_ERP = (function(){
       tbody.innerHTML = data.data.map(function(p){
         return '<tr>'+
           '<td><input type="checkbox" class="al-row-cb al-cb" data-id="'+p.id+'" aria-label="Sélectionner '+esc(p.reference)+'"></td>'+
-          '<td><code style="color:#ED5F1E;font-weight:700;font-size:.82rem">'+esc(p.reference||'')+'</code></td>'+
-          '<td style="color:#aaa;font-size:.82rem">'+(p.supplier?esc(p.supplier.name):'—')+'</td>'+
-          '<td style="color:#aaa;font-size:.82rem">'+(p.purchase_date?p.purchase_date.split('T')[0]:'—')+'</td>'+
-          '<td style="color:#ED5F1E;font-weight:700">'+fmt(p.total_amount)+'</td>'+
+          '<td><code class="al-code">'+esc(p.reference||'')+'</code></td>'+
+          '<td class="al-row-muted">'+(p.supplier?esc(p.supplier.name):'—')+'</td>'+
+          '<td class="al-row-muted">'+(p.purchase_date?p.purchase_date.split('T')[0]:'—')+'</td>'+
+          '<td class="al-row-price">'+fmt(p.total_amount)+'</td>'+
           '<td>'+statusBadge(p.status)+'</td>'+
-          '<td class="al-sticky" style="white-space:nowrap;">'+
-            '<a href="/erp/achats/'+p.id+'" class="al-action-btn" style="font-size:.75rem;">Voir</a> '+
-            '<a href="/erp/achats/'+p.id+'/pdf" class="al-action-btn" style="font-size:.75rem;">PDF</a>'+
+          '<td class="al-sticky">'+
+            '<a href="/erp/achats/'+p.id+'" class="al-action-btn al-action-btn-sm">Voir</a> '+
+            '<a href="/erp/achats/'+p.id+'/pdf" class="al-action-btn al-action-btn-sm">PDF</a>'+
           '</td>'+
           '</tr>';
       }).join('');

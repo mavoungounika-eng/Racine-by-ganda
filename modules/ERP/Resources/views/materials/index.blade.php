@@ -23,15 +23,15 @@
 
 <div class="al-card mb-4">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h5 class="mb-0" style="color:#ED5F1E;"><i class="fas fa-cube me-2"></i>Matières Premières</h5>
+    <h5 class="mb-0 al-title"><i class="fas fa-cube me-2"></i>Matières Premières</h5>
     <div class="d-flex gap-2 flex-wrap">
       <a href="#" id="mat-export-btn" class="al-action-btn">↓ Export CSV</a>
-      <a href="{{ route('erp.materials.create') }}" class="al-action-btn" style="background:#ED5F1E;color:#fff;border-color:#ED5F1E;">+ Nouvelle Matière</a>
+      <a href="{{ route('erp.materials.create') }}" class="al-action-btn al-action-btn-primary">+ Nouvelle Matière</a>
     </div>
   </div>
 
   <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-    <input type="text" id="mat-search" class="al-filter-input" placeholder="SKU, nom…" aria-label="Recherche" style="min-width:180px;">
+    <input type="text" id="mat-search" class="al-filter-input al-filter-input-wide" placeholder="SKU, nom…" aria-label="Recherche">
     <select id="mat-supplier" class="al-filter-select" aria-label="Fournisseur">
       <option value="">Tous les fournisseurs</option>
       @foreach($suppliers as $sup)
@@ -54,13 +54,13 @@
   <div class="al-stats mb-3">
     <div class="al-stat"><div class="al-stat-label">Total</div><div class="al-stat-value" id="mat-s-total">—</div></div>
     <div class="al-stat"><div class="al-stat-label">Stock critique</div><div class="al-stat-value mat-stock-low" id="mat-s-critique">—</div></div>
-    <div class="al-stat"><div class="al-stat-label">Valeur totale</div><div class="al-stat-value" style="font-size:1.1rem" id="mat-s-valeur">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">Valeur totale</div><div class="al-stat-value al-stat-orange" id="mat-s-valeur">—</div></div>
   </div>
 
   <div class="al-table-wrap">
     <table class="al-table w-100">
       <thead><tr>
-        <th style="width:36px;"><input type="checkbox" id="mat-cb-all" class="al-cb" aria-label="Tout sélectionner"></th>
+        <th class="al-th-cb"><input type="checkbox" id="mat-cb-all" class="al-cb" aria-label="Tout sélectionner"></th>
         <th id="mat-th-sku"   data-col="sku">SKU</th>
         <th id="mat-th-name"  data-col="name">Nom</th>
         <th>Fournisseur</th>
@@ -95,7 +95,7 @@ const MATS = (function(){
   function stockBadge(current, min){
     const cls = current <= 0 ? 'mat-stock-out' : (current <= min ? 'mat-stock-low' : 'mat-stock-ok');
     const label = current <= 0 ? '0 — Rupture' : (current <= min ? current+' — Faible' : current+' — OK');
-    return '<span class="'+cls+'" style="font-weight:700">'+esc(label)+'</span>';
+    return '<span class="'+cls+' fw-bold">'+esc(label)+'</span>';
   }
 
   function renderTable(data) {
@@ -107,15 +107,15 @@ const MATS = (function(){
       tbody.innerHTML = data.data.map(function(m){
         return '<tr>'+
           '<td><input type="checkbox" class="al-row-cb al-cb" data-id="'+m.id+'" aria-label="Sélectionner '+esc(m.name)+'"></td>'+
-          '<td><code style="color:#ED5F1E;font-size:.82rem">'+(m.sku?esc(m.sku):'—')+'</code></td>'+
-          '<td><div style="font-weight:600;color:#e2e8f0">'+esc(m.name)+'</div></td>'+
-          '<td style="color:#aaa;font-size:.82rem">'+(m.supplier?esc(m.supplier.name):'—')+'</td>'+
-          '<td style="color:#aaa;font-size:.82rem">'+(m.unit?esc(m.unit):'—')+'</td>'+
+          '<td><code class="al-code">'+(m.sku?esc(m.sku):'—')+'</code></td>'+
+          '<td><div class="al-row-name">'+esc(m.name)+'</div></td>'+
+          '<td class="al-row-muted">'+(m.supplier?esc(m.supplier.name):'—')+'</td>'+
+          '<td class="al-row-muted">'+(m.unit?esc(m.unit):'—')+'</td>'+
           '<td>'+stockBadge(m.current_stock||0, m.min_stock_alert||0)+'</td>'+
-          '<td style="color:#ED5F1E;font-weight:700">'+(m.unit_price?fmt(m.unit_price):'—')+'</td>'+
-          '<td class="al-sticky" style="white-space:nowrap;">'+
-            '<a href="/erp/matieres/'+m.id+'" class="al-action-btn" style="font-size:.75rem;">Voir</a> '+
-            '<a href="/erp/matieres/'+m.id+'/edit" class="al-action-btn" style="font-size:.75rem;">Modifier</a>'+
+          '<td class="al-row-price">'+(m.unit_price?fmt(m.unit_price):'—')+'</td>'+
+          '<td class="al-sticky">'+
+            '<a href="/erp/matieres/'+m.id+'" class="al-action-btn al-action-btn-sm">Voir</a> '+
+            '<a href="/erp/matieres/'+m.id+'/edit" class="al-action-btn al-action-btn-sm">Modifier</a>'+
           '</td>'+
           '</tr>';
       }).join('');

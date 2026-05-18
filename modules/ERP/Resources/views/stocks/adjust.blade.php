@@ -73,7 +73,7 @@
 </div>
 
 @push('scripts')
-<script nonce="{{ $cspNonce ?? '' }}">
+<script nonce="{{ csp_nonce() }}">
     // Petit script pour filtrer les raisons selon le type (UX)
     const typeSelect = document.getElementById('typeSelect');
     const reasonSelect = document.getElementById('reasonSelect');

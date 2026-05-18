@@ -11,7 +11,7 @@
 
 <div class="al-card mb-4">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h5 class="mb-0" style="color:#ED5F1E;"><i class="fas fa-warehouse me-2"></i>Stocks Produits</h5>
+    <h5 class="mb-0 al-title"><i class="fas fa-warehouse me-2"></i>Stocks Produits</h5>
     <div class="d-flex gap-2 flex-wrap">
       <a href="#" id="stk-export-btn" class="al-action-btn">↓ Export CSV</a>
       <a href="{{ route('erp.stocks.movements') }}" class="al-action-btn">
@@ -21,7 +21,7 @@
   </div>
 
   <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-    <input type="text" id="stk-search" class="al-filter-input" placeholder="Nom, SKU…" aria-label="Recherche" style="min-width:180px;">
+    <input type="text" id="stk-search" class="al-filter-input al-filter-input-wide" placeholder="Nom, SKU…" aria-label="Recherche">
     <select id="stk-status" class="al-filter-select" aria-label="Statut stock">
       <option value="">Tous les stocks</option>
       <option value="ok">OK (≥5)</option>
@@ -39,9 +39,9 @@
 
   <div class="al-stats mb-3">
     <div class="al-stat"><div class="al-stat-label">Total</div><div class="al-stat-value" id="stk-s-total">{{ $stats['total'] }}</div></div>
-    <div class="al-stat"><div class="al-stat-label">OK</div><div class="al-stat-value" style="color:#4ade80" id="stk-s-ok">{{ $stats['ok'] }}</div></div>
-    <div class="al-stat"><div class="al-stat-label">Faible</div><div class="al-stat-value" style="color:#fbbf24" id="stk-s-low">{{ $stats['low'] }}</div></div>
-    <div class="al-stat"><div class="al-stat-label">Rupture</div><div class="al-stat-value" style="color:#f87171" id="stk-s-out">{{ $stats['out'] }}</div></div>
+    <div class="al-stat"><div class="al-stat-label">OK</div><div class="al-stat-value al-stat-ok" id="stk-s-ok">{{ $stats['ok'] }}</div></div>
+    <div class="al-stat"><div class="al-stat-label">Faible</div><div class="al-stat-value al-stat-warn" id="stk-s-low">{{ $stats['low'] }}</div></div>
+    <div class="al-stat"><div class="al-stat-label">Rupture</div><div class="al-stat-value al-stat-danger" id="stk-s-out">{{ $stats['out'] }}</div></div>
   </div>
 
   <div class="al-table-wrap">
@@ -77,9 +77,9 @@ const STKS = (function(){
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   function stockBadge(s){
-    if(s<=0)  return '<span class="al-badge" style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);">'+s+' — Rupture</span>';
-    if(s<5)   return '<span class="al-badge" style="background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);">'+s+' — Faible</span>';
-    return '<span class="al-badge" style="background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);">'+s+' — OK</span>';
+    if(s<=0) return '<span class="al-badge al-badge-danger">'+s+' — Rupture</span>';
+    if(s<5)  return '<span class="al-badge al-badge-warn">'+s+' — Faible</span>';
+    return '<span class="al-badge al-badge-ok">'+s+' — OK</span>';
   }
 
   function renderTable(data) {
@@ -90,15 +90,15 @@ const STKS = (function(){
       tbody.innerHTML = data.data.map(function(p){
         return '<tr>'+
           '<td>'+
-            '<div style="font-weight:600;color:#e2e8f0">'+esc(p.title)+'</div>'+
-            '<div style="font-size:.72rem;color:#555">#'+p.id+'</div>'+
+            '<div class="al-row-name">'+esc(p.title)+'</div>'+
+            '<div class="al-row-sub">#'+p.id+'</div>'+
           '</td>'+
-          '<td style="color:#ED5F1E;font-weight:700">'+fmt(p.price)+'</td>'+
-          '<td style="font-weight:700">'+stockBadge(p.stock||0)+'</td>'+
+          '<td class="al-row-price">'+fmt(p.price)+'</td>'+
+          '<td>'+stockBadge(p.stock||0)+'</td>'+
           '<td></td>'+
-          '<td class="al-sticky" style="white-space:nowrap;">'+
-            '<a href="/erp/stocks/'+p.id+'/adjust" class="al-action-btn" style="font-size:.75rem;">Ajuster</a> '+
-            '<a href="/admin/products/'+p.id+'/edit" class="al-action-btn" style="font-size:.75rem;">Modifier</a>'+
+          '<td class="al-sticky">'+
+            '<a href="/erp/stocks/'+p.id+'/adjust" class="al-action-btn al-action-btn-sm">Ajuster</a> '+
+            '<a href="/admin/products/'+p.id+'/edit" class="al-action-btn al-action-btn-sm">Modifier</a>'+
           '</td>'+
           '</tr>';
       }).join('');

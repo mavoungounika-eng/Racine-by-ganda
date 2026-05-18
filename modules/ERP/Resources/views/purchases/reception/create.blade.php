@@ -187,7 +187,7 @@
 </div>
 
 @push('scripts')
-<script nonce="{{ $cspNonce ?? '' }}">
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function () {
     const table = document.getElementById('receptionTable');
     if (!table) return;

@@ -95,7 +95,7 @@
     </form>
 </div>
 
-<script nonce="{{ $cspNonce ?? '' }}">
+<script nonce="{{ csp_nonce() }}">
     let itemIndex = 0;
     const materials = @json($materials);
 

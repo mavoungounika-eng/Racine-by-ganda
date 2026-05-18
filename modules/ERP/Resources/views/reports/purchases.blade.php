@@ -159,13 +159,19 @@
 </div>
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     @media print {
-        .btn, .card-header .btn {
-            display: none !important;
-        }
+        .btn, .card-header .btn { display: none !important; }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+document.querySelectorAll('.btn-print-trigger').forEach(function (btn) {
+    btn.addEventListener('click', function () { window.print(); });
+});
+</script>
 @endpush
 @endsection
 

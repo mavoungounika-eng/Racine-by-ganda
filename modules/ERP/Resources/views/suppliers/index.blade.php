@@ -13,15 +13,15 @@
 
 <div class="al-card mb-4">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h5 class="mb-0" style="color:#ED5F1E;"><i class="fas fa-truck me-2"></i>Fournisseurs</h5>
+    <h5 class="mb-0 al-title"><i class="fas fa-truck me-2"></i>Fournisseurs</h5>
     <div class="d-flex gap-2 flex-wrap">
       <a href="#" id="sup-export-btn" class="al-action-btn">↓ Export CSV</a>
-      <a href="{{ route('erp.suppliers.create') }}" class="al-action-btn" style="background:#ED5F1E;color:#fff;border-color:#ED5F1E;">+ Nouveau Fournisseur</a>
+      <a href="{{ route('erp.suppliers.create') }}" class="al-action-btn al-action-btn-primary">+ Nouveau Fournisseur</a>
     </div>
   </div>
 
   <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-    <input type="text" id="sup-search" class="al-filter-input" placeholder="Nom, email, téléphone…" aria-label="Recherche" style="min-width:200px;">
+    <input type="text" id="sup-search" class="al-filter-input al-filter-input-wide" placeholder="Nom, email, téléphone…" aria-label="Recherche">
     <select id="sup-status" class="al-filter-select" aria-label="Statut">
       <option value="">Tous les statuts</option>
       <option value="1">Actifs</option>
@@ -38,14 +38,14 @@
 
   <div class="al-stats mb-3">
     <div class="al-stat"><div class="al-stat-label">Total</div><div class="al-stat-value" id="sup-s-total">—</div></div>
-    <div class="al-stat"><div class="al-stat-label">Actifs</div><div class="al-stat-value" style="color:#4ade80" id="sup-s-actifs">—</div></div>
-    <div class="al-stat"><div class="al-stat-label">Inactifs</div><div class="al-stat-value" style="color:#94a3b8" id="sup-s-inactifs">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">Actifs</div><div class="al-stat-value al-stat-ok" id="sup-s-actifs">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">Inactifs</div><div class="al-stat-value al-stat-muted" id="sup-s-inactifs">—</div></div>
   </div>
 
   <div class="al-table-wrap">
     <table class="al-table w-100">
       <thead><tr>
-        <th style="width:36px;"><input type="checkbox" id="sup-cb-all" class="al-cb" aria-label="Tout sélectionner"></th>
+        <th class="al-th-cb"><input type="checkbox" id="sup-cb-all" class="al-cb" aria-label="Tout sélectionner"></th>
         <th id="sup-th-name"  data-col="name">Nom</th>
         <th id="sup-th-email" data-col="email">Email</th>
         <th>Téléphone</th>
@@ -77,8 +77,8 @@ const SUPS = (function(){
 
   function statusBadge(active){
     return active
-      ? '<span class="al-badge" style="background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);">Actif</span>'
-      : '<span class="al-badge" style="background:rgba(100,116,139,.15);color:#94a3b8;border:1px solid rgba(100,116,139,.25);">Inactif</span>';
+      ? '<span class="al-badge al-badge-active">Actif</span>'
+      : '<span class="al-badge al-badge-inactive">Inactif</span>';
   }
 
   function renderTable(data) {
@@ -90,14 +90,14 @@ const SUPS = (function(){
       tbody.innerHTML = data.data.map(function(s){
         return '<tr>'+
           '<td><input type="checkbox" class="al-row-cb al-cb" data-id="'+s.id+'" aria-label="Sélectionner '+esc(s.name)+'"></td>'+
-          '<td><div style="font-weight:600;color:#e2e8f0">'+esc(s.name)+'</div></td>'+
-          '<td style="color:#aaa;font-size:.82rem">'+(s.email?'<i class="fas fa-envelope me-1" style="opacity:.5"></i>'+esc(s.email):'—')+'</td>'+
-          '<td style="color:#aaa;font-size:.82rem">'+(s.phone?esc(s.phone):'—')+'</td>'+
+          '<td><div class="al-row-name">'+esc(s.name)+'</div></td>'+
+          '<td class="al-row-muted">'+(s.email?'<i class="fas fa-envelope me-1 al-icon-dim"></i>'+esc(s.email):'—')+'</td>'+
+          '<td class="al-row-muted">'+(s.phone?esc(s.phone):'—')+'</td>'+
           '<td>'+statusBadge(s.is_active)+'</td>'+
-          '<td style="color:#888;font-size:.82rem">'+(s.raw_materials_count||0)+' matière(s)</td>'+
-          '<td class="al-sticky" style="white-space:nowrap;">'+
-            '<a href="/erp/fournisseurs/'+s.id+'" class="al-action-btn" style="font-size:.75rem;">Voir</a> '+
-            '<a href="/erp/fournisseurs/'+s.id+'/edit" class="al-action-btn" style="font-size:.75rem;">Modifier</a>'+
+          '<td class="al-row-muted">'+(s.raw_materials_count||0)+' matière(s)</td>'+
+          '<td class="al-sticky">'+
+            '<a href="/erp/fournisseurs/'+s.id+'" class="al-action-btn al-action-btn-sm">Voir</a> '+
+            '<a href="/erp/fournisseurs/'+s.id+'/edit" class="al-action-btn al-action-btn-sm">Modifier</a>'+
           '</td>'+
           '</tr>';
       }).join('');

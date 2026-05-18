@@ -87,6 +87,35 @@
 /* ── Empty state ─────────────────────────────────────────────────────── */
 .al-empty{text-align:center;padding:3rem 1rem;color:#666}
 .al-empty-icon{font-size:2.5rem;margin-bottom:.5rem;opacity:.4}
+
+/* ── ERP index utilities (replace inline style= everywhere) ─────────── */
+.al-title{color:#ED5F1E}
+.al-action-btn-primary{background:#ED5F1E!important;color:#fff!important;border-color:#ED5F1E!important}
+.al-action-btn-sm{font-size:.75rem}
+.al-filter-input-wide{min-width:180px}
+.al-th-cb{width:36px}
+.al-stat-ok{color:#4ade80}
+.al-stat-warn{color:#fbbf24}
+.al-stat-danger{color:#f87171}
+.al-stat-muted{color:#94a3b8}
+.al-stat-orange{color:#ED5F1E}
+.al-row-name{font-weight:600;color:#e2e8f0}
+.al-row-muted{color:#aaa;font-size:.82rem}
+.al-row-price{color:#ED5F1E;font-weight:700}
+.al-row-sub{font-size:.72rem;color:#555}
+.al-code{color:#ED5F1E;font-size:.82rem;font-weight:700}
+.al-icon-dim{opacity:.5}
+.al-table td.al-sticky{white-space:nowrap}
+.al-refresh-hint{font-size:.72rem;color:#555;text-align:right;margin-top:.5rem}
+.al-badge-active  {background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.al-badge-inactive{background:rgba(100,116,139,.15);color:#94a3b8;border:1px solid rgba(100,116,139,.25)}
+.al-badge-ok      {background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.al-badge-warn    {background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+.al-badge-danger  {background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.al-badge-ordered  {background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+.al-badge-received {background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.al-badge-partial  {background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)}
+.al-badge-cancelled{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
 </style>
 @endpush
 

@@ -111,8 +111,8 @@
                 </div>
                 <div class="card-body">
                     @php
-                        $movements = \Modules\ERP\Models\ErpStockMovement::where('movable_type', \Modules\ERP\Models\ErpRawMaterial::class)
-                            ->where('movable_id', $material->id)
+                        $movements = \Modules\ERP\Models\ErpStockMovement::where('stockable_type', \Modules\ERP\Models\ErpRawMaterial::class)
+                            ->where('stockable_id', $material->id)
                             ->latest()
                             ->take(10)
                             ->get();
