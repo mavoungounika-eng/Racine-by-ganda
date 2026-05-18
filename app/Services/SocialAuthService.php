@@ -288,9 +288,11 @@ class SocialAuthService
                     'password' => Hash::make(Str::random(32)), // Mot de passe généré
                     'role_id' => $role->id,
                     'role' => $requestedRole, // Expliciter le champ role
-                    'email_verified_at' => now(), // Email vérifié via OAuth
                     'auth_version' => 1,
                 ]);
+
+                // OAuth = email fourni par le provider = vérifié
+                $user->markEmailAsVerified();
 
                 // Créer le compte OAuth (marqué comme primary)
                 OauthAccount::create([

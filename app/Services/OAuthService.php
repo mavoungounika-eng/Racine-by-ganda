@@ -57,13 +57,17 @@ class OAuthService
         );
 
         // Créer l'utilisateur
-        return User::create([
+        $user = User::create([
             'name' => $socialiteUser->getName() ?? $socialiteUser->getNickname() ?? 'Utilisateur',
             'email' => $socialiteUser->getEmail(),
             'role_id' => $roleModel->id,
-            'email_verified_at' => now(), // OAuth = email vérifié
             'password' => null, // Pas de mot de passe pour OAuth
         ]);
+
+        // OAuth = email fourni par le provider = vérifié
+        $user->markEmailAsVerified();
+
+        return $user;
     }
 
     /**

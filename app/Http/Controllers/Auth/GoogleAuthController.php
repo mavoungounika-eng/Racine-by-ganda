@@ -260,10 +260,12 @@ class GoogleAuthController extends Controller
                             'password' => Hash::make(Str::random(32)), // Mot de passe généré (l'utilisateur pourra le changer)
                             'role_id' => $role->id,
                             'role' => $requestedRoleSlug, // Expliciter le champ role pour la cohérence de domaine
-                            'email_verified_at' => now(),
                             'status' => 'active',
                             'auth_version' => 1,
                         ]);
+
+                        // OAuth = email fourni par Google = vérifié
+                        $user->markEmailAsVerified();
                         
                         // PHASE 3.1 : Si rôle créateur, créer le profil créateur avec statut pending
                         if ($requestedRoleSlug === 'createur') {
