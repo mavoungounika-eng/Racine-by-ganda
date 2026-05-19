@@ -38,7 +38,7 @@ class ContactFormTest extends TestCase
         $response->assertRedirect(route('frontend.contact'));
         $response->assertSessionHas('success');
 
-        Mail::assertSent(ContactFormMail::class);
+        Mail::assertQueued(ContactFormMail::class);
     }
 
     /**
@@ -61,8 +61,6 @@ class ContactFormTest extends TestCase
      */
     public function test_contact_mail_format()
     {
-        Mail::fake();
-
         $data = [
             'first_name' => 'Alice',
             'last_name' => 'Martin',
@@ -72,10 +70,11 @@ class ContactFormTest extends TestCase
             'message' => 'Nous aimerions collaborer avec votre marque.',
         ];
 
-        Mail::to('test@example.com')->send(new ContactFormMail($data));
+        $mail = new ContactFormMail($data);
 
-        Mail::assertSent(ContactFormMail::class, function ($mail) use ($data) {
-            return $mail->subject === "[Contact] {$data['subject']} - {$data['first_name']} {$data['last_name']}";
-        });
+        $this->assertEquals(
+            "[Contact] {$data['subject']} - {$data['first_name']} {$data['last_name']}",
+            $mail->envelope()->subject
+        );
     }
 }
