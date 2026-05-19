@@ -160,21 +160,6 @@ class PosSaleServiceTest extends TestCase
         );
     }
 
-    public function test_confirmCashPayment_confirms_sale_and_payment(): void
-    {
-        $this->markTestSkipped('Cash confirmation is handled by PosSessionService::closeSession, not PosSaleService.');
-    }
-
-    public function test_confirmCashPayment_creates_cash_movement(): void
-    {
-        $this->markTestSkipped('Cash movements are created at sale creation and session close; PosSaleService has no confirmCashPayment method.');
-    }
-
-    public function test_confirmCashPayment_fails_if_already_confirmed(): void
-    {
-        $this->markTestSkipped('Cash confirmation is handled by PosSessionService::closeSession, not PosSaleService.');
-    }
-
     public function test_confirm_card_payment_confirms_sale_and_payment(): void
     {
         $user = User::factory()->create();

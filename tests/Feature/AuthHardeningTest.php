@@ -173,12 +173,11 @@ class AuthHardeningTest extends TestCase
         
         // Se déconnecter
         $response = $this->post('/logout');
-        
-        // Vérifier que l'expiration du trusted device est révoquée
+
+        // Vérifier que le trusted device est révoqué à la déconnexion
         $user->refresh();
-        // Note: Token revocation on logout may not be fully implemented;
-        // checking expiration date is the key indicator of revocation
-        $this->markTestSkipped('Logout does not revoke trusted device token — feature not yet implemented in logout handler.');
+        $this->assertNull($user->trusted_device_token);
+        $this->assertNull($user->trusted_device_expires_at);
     }
 
     /**

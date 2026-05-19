@@ -164,6 +164,14 @@ class AuthOrchestratorService
         // Get user before logout (for logging)
         $user = Auth::user();
 
+        // Revoke trusted device token on logout (security: new session must re-verify 2FA trust)
+        if ($user) {
+            $user->update([
+                'trusted_device_token'      => null,
+                'trusted_device_expires_at' => null,
+            ]);
+        }
+
         // Logout
         Auth::logout();
 

@@ -174,11 +174,6 @@ class PosFinanceIntegrationServiceTest extends TestCase
         $this->assertInstanceOf(\Modules\Accounting\Models\AccountingEntry::class, $entry);
     }
 
-    public function test_dispatches_expected_events_after_intent_created(): void
-    {
-        $this->markTestSkipped('PosFinanceIntegrationService does not dispatch events directly; listeners handle downstream processing.');
-    }
-
     public function test_creates_card_payment_intent_and_is_idempotent(): void
     {
         $user = User::factory()->create();

@@ -184,11 +184,6 @@ class PosSessionServiceTest extends TestCase
         $this->service->closeSession($session, 5000.00, $user->id);
     }
 
-    public function test_closeSession_creates_financial_intent(): void
-    {
-        $this->markTestSkipped('FinancialIntent is created by PosSessionClosed listener, not PosSessionService.');
-    }
-
     public function test_closeSession_dispatches_PosSessionClosed_event(): void
     {
         Event::fake();
