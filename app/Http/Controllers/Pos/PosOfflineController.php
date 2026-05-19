@@ -81,7 +81,7 @@ class PosOfflineController extends PosApiController
             return $this->error('MACHINE_MISMATCH', 'Queue item does not belong to this device', null, 403);
         }
 
-        $userId = $request->posUserId ?? null;
+        $userId = $request->posUserId ?? $request->posOperator?->id ?? \Illuminate\Support\Facades\Auth::id();
         if (!$userId) {
             return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
         }
@@ -105,7 +105,7 @@ class PosOfflineController extends PosApiController
             return $this->error('INVALID_MACHINE_ID', 'machine_id is required');
         }
 
-        $userId = $request->posUserId ?? null;
+        $userId = $request->posUserId ?? $request->posOperator?->id ?? \Illuminate\Support\Facades\Auth::id();
         if (!$userId) {
             return $this->error('POS_USER_REQUIRED', 'Operator user_id is required');
         }

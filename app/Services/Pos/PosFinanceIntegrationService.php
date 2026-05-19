@@ -82,7 +82,7 @@ class PosFinanceIntegrationService
                 'closing_cash' => $session->closing_cash,
                 'expected_cash' => $session->expected_cash,
                 'cash_difference' => $session->cash_difference,
-                'closed_at' => $session->closed_at->toIso8601String(),
+                'closed_at' => $session->closed_at?->toIso8601String(),
             ],
             'created_by' => $session->closed_by,
         ]);
@@ -133,7 +133,7 @@ class PosFinanceIntegrationService
                 'order_id' => $sale->order_id,
                 'machine_id' => $sale->machine_id,
                 'external_reference' => $payment->external_reference,
-                'confirmed_at' => $payment->confirmed_at->toIso8601String(),
+                'confirmed_at' => $payment->confirmed_at?->toIso8601String(),
             ],
             'created_by' => $payment->confirmed_by,
         ]);
@@ -183,7 +183,7 @@ class PosFinanceIntegrationService
                 'machine_id' => $sale->machine_id,
                 'external_reference' => $payment->external_reference,
                 'provider' => $payment->provider,
-                'confirmed_at' => $payment->confirmed_at->toIso8601String(),
+                'confirmed_at' => $payment->confirmed_at?->toIso8601String(),
             ],
         ]);
 
@@ -233,7 +233,7 @@ class PosFinanceIntegrationService
         $entry = $ledger->createEntry([
             'journal_id' => $journal->id,
             'fiscal_year_id' => $fiscalYear->id,
-            'entry_date' => $session->closed_at->format('Y-m-d'),
+            'entry_date' => $session->closed_at?->format('Y-m-d') ?? now()->format('Y-m-d'),
             'description' => "Clôture caisse session #{$session->id} - {$session->machine_id}",
             'reference_type' => 'pos_session',
             'reference_id' => $session->id,

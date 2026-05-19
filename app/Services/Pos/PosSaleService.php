@@ -350,15 +350,8 @@ class PosSaleService
         }
 
         return DB::transaction(function () use ($sale, $userId, $reason) {
-            // Annuler la vente
+            // Annuler la vente (cancel() gère aussi les paiements pending en interne)
             $sale->cancel($userId, $reason);
-
-            // Annuler les paiements
-            foreach ($sale->payments as $payment) {
-                if ($payment->isPending()) {
-                    $payment->cancel();
-                }
-            }
 
             // Restaurer le stock
             $this->restoreStockForSale($sale);

@@ -189,8 +189,8 @@
           <td>
             @php $st = $sale->status ?? 'unknown'; @endphp
             <span style="font-size:.78rem;padding:2px 8px;border-radius:999px;
-              background:{{ $st === 'completed' ? 'rgba(34,197,94,.15)' : ($st === 'pending' ? 'rgba(251,191,36,.15)' : 'rgba(239,68,68,.15)') }};
-              color:{{ $st === 'completed' ? '#4ade80' : ($st === 'pending' ? '#fbbf24' : '#f87171') }}">
+              background:{{ $st === 'finalized' ? 'rgba(34,197,94,.15)' : ($st === 'pending' ? 'rgba(251,191,36,.15)' : 'rgba(239,68,68,.15)') }};
+              color:{{ $st === 'finalized' ? '#4ade80' : ($st === 'pending' ? '#fbbf24' : '#f87171') }}">
               {{ $st }}
             </span>
           </td>

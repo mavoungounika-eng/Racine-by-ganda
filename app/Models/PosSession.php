@@ -63,7 +63,7 @@ class PosSession extends Model
         'cash_difference' => 'decimal:2',
         'opened_at' => 'datetime',
         'closed_at' => 'datetime',
-        'is_active'        => 'boolean',
+        'is_active'        => 'integer',
         'panier_snapshot'  => 'array',
         'resumed_at'       => 'datetime',
         'last_activity_at' => 'datetime',
@@ -184,7 +184,7 @@ class PosSession extends Model
      */
     public function canClose(): bool
     {
-        return $this->isOpen();
+        return in_array($this->status, [self::STATUS_OPEN, self::STATUS_CLOSING]);
     }
 
     /**
@@ -248,7 +248,7 @@ class PosSession extends Model
         $this->attributes['opened_by'] = $value;
     }
 
-    public function resumedBy(): \BelongsTo
+    public function resumedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resumed_by');
     }

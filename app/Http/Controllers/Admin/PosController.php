@@ -179,7 +179,7 @@ class PosController extends Controller
     public function apiSessionSales(\Illuminate\Http\Request $request, int $id): \Illuminate\Http\JsonResponse
     {
         $session = \App\Models\PosSession::findOrFail($id);
-        $sales = $session->sales()->with('payments:id,sale_id,method,amount,status')
+        $sales = $session->sales()->with('payments:id,pos_sale_id,method,amount,status')
             ->orderBy('created_at', 'desc')
             ->paginate($request->integer('per_page', 50));
         return response()->json($sales);
@@ -198,7 +198,6 @@ class PosController extends Controller
         ])->findOrFail($id);
 
         return view('admin.pos.session-detail', compact('session'));
-        return response()->json(['message' => 'Session clôturée', 'session' => $session]);
     }
 
     public function searchProduct(Request $request): JsonResponse
@@ -338,6 +337,7 @@ class PosController extends Controller
                 'user_id' => null, // Pas de user_id pour les commandes POS (évite double décrémentation)
                 'status' => $orderStatus,
                 'payment_status' => $paymentStatus,
+                'payment_method' => $paymentMethod,
                 'total_amount' => $total,
                 'customer_name' => $request->customer_name ?? 'Client boutique',
                 'customer_email' => $request->customer_email,
