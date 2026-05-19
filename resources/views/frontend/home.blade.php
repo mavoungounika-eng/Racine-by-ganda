@@ -233,10 +233,10 @@
             @if(empty($featuredProducts) || count($featuredProducts ?? []) === 0)
             @php
                 $demoProducts = [
-                    ['title' => 'Robe Wax Premium', 'category' => 'Robes', 'price' => '45 000', 'mod' => ''],
-                    ['title' => 'Ensemble Kente', 'category' => 'Ensembles', 'price' => '62 000', 'mod' => '--b'],
-                    ['title' => 'Collier Artisanal', 'category' => 'Accessoires', 'price' => '18 500', 'mod' => '--c'],
-                    ['title' => 'Chemise Bogolan', 'category' => 'Chemises', 'price' => '28 000', 'mod' => '--d'],
+                    ['title' => 'Robe Wax Premium', 'category' => 'Robes', 'price' => 45000.0, 'mod' => ''],
+                    ['title' => 'Ensemble Kente', 'category' => 'Ensembles', 'price' => 62000.0, 'mod' => '--b'],
+                    ['title' => 'Collier Artisanal', 'category' => 'Accessoires', 'price' => 18500.0, 'mod' => '--c'],
+                    ['title' => 'Chemise Bogolan', 'category' => 'Chemises', 'price' => 28000.0, 'mod' => '--d'],
                 ];
             @endphp
             @foreach($demoProducts as $demo)

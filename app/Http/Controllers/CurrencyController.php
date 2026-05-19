@@ -34,15 +34,11 @@ class CurrencyController extends Controller
             ]);
         }
 
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'currency' => $request->currency,
-                'symbol'   => config("currency.symbols.{$request->currency}"),
-            ]);
-        }
-
-        return redirect()->back()->with('success', 'Devise mise à jour : ' . $request->currency);
+        return response()->json([
+            'success' => true,
+            'currency' => $request->currency,
+            'symbol'   => config("currency.symbols.{$request->currency}"),
+        ]);
     }
 
     /**
