@@ -24,6 +24,8 @@ if (typeof window !== 'undefined') {
             wssPort          : port,
             forceTLS         : scheme === 'https',
             enabledTransports: ['ws', 'wss'],
+            authEndpoint     : '/broadcasting/auth',
+            auth             : { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
         });
     }
 }
