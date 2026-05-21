@@ -103,7 +103,7 @@ class StripeWebhookIdempotencyTest extends TestCase
         $signature = $this->generateStripeSignature($payload, 'whsec_test_secret');
 
         // Premier appel
-        $response1 = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response1 = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);
@@ -124,7 +124,7 @@ class StripeWebhookIdempotencyTest extends TestCase
         Event::fake();
         
         // Deuxième appel avec le même event_id (idempotence)
-        $response2 = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response2 = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);
@@ -167,7 +167,7 @@ class StripeWebhookIdempotencyTest extends TestCase
         ]);
 
         // Appel avec event_id déjà existant
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);
@@ -196,7 +196,7 @@ class StripeWebhookIdempotencyTest extends TestCase
         $this->payment->update(['status' => 'paid']);
 
         // Appel webhook
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);

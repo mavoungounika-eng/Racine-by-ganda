@@ -129,7 +129,7 @@ class PaymentTest extends TestCase
             ],
         ]);
 
-        $response = $this->call('POST', route('payment.card.webhook'), [], [], [], [
+        $response = $this->call('POST', route('api.webhooks.stripe'), [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], $payload);
 

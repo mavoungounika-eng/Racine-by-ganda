@@ -106,13 +106,11 @@ class RouteProtectionTest extends TestCase
     }
 
     /**
-     * Test : Les routes webhook legacy peuvent être coupées via configuration.
-     * Vérifie qu'une fois désactivées, elles retournent 410 Gone.
+     * Test : Les routes webhook legacy sont supprimées (migration vers /api/webhooks/stripe).
+     * Vérifie qu'elles retournent 404.
      */
     public function test_legacy_checkout_routes_can_be_disabled(): void
     {
-        config(['payments.legacy_webhooks_enabled' => false]);
-
         $legacyPaths = [
             '/webhooks/stripe',
             '/payment/card/webhook',
@@ -120,7 +118,7 @@ class RouteProtectionTest extends TestCase
 
         foreach ($legacyPaths as $path) {
             $response = $this->post($path);
-            $response->assertStatus(410);
+            $response->assertStatus(404);
         }
     }
 }

@@ -718,24 +718,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout/mobile-money/{order}/cancel', [\App\Http\Controllers\Front\MobileMoneyPaymentController::class, 'cancel'])->name('checkout.mobile-money.cancel');
 });
 
-// Webhook Stripe Legacy (déprécié - utiliser /api/webhooks/stripe)
-// TODO: Supprimer cette route après migration complète des webhooks Stripe vers /api/webhooks/stripe
-Route::post('/webhooks/stripe', [\App\Http\Controllers\Front\CardPaymentController::class, 'webhook'])
-    ->middleware([
-        'legacy.webhook.guard',
-        'legacy.webhook.deprecation',
-    ])
-    ->name('payment.webhook');
-
-// Webhook Stripe officiel pour paiement par carte (déprécié - utiliser /api/webhooks/stripe)
-// TODO: Supprimer cette route après migration complète des webhooks Stripe vers /api/webhooks/stripe
-Route::post('/payment/card/webhook', [\App\Http\Controllers\Front\CardPaymentController::class, 'webhook'])
-    ->middleware([
-        'legacy.webhook.guard',
-        'legacy.webhook.deprecation',
-    ])
-    ->name('payment.card.webhook');
-
 // Webhooks Payments Hub : Routes déplacées vers routes/api.php
 // Voir routes/api.php pour les routes /api/webhooks/stripe et /api/webhooks/monetbil
 Route::post('/payment/mobile-money/{provider}/callback', [\App\Http\Controllers\Front\MobileMoneyPaymentController::class, 'callback'])->name('payment.mobile-money.callback');

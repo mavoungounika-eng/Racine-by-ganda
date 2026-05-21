@@ -86,7 +86,7 @@ class PaymentWebhookSecurityTest extends TestCase
 
         // Utiliser call() pour envoyer le payload brut (comme Stripe le fait)
         // Sans header Stripe-Signature
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], $payload);
 
@@ -116,7 +116,7 @@ class PaymentWebhookSecurityTest extends TestCase
         // Signature invalide
         $invalidSignature = 'invalid_signature_12345';
 
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $invalidSignature,
         ], $payload);
@@ -148,7 +148,7 @@ class PaymentWebhookSecurityTest extends TestCase
             ],
         ]);
 
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => 'invalid_signature',
         ], $payload);
@@ -180,7 +180,7 @@ class PaymentWebhookSecurityTest extends TestCase
             ],
         ]);
 
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], $payload);
 
