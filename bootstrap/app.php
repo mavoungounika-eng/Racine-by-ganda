@@ -30,6 +30,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust reverse proxy (nginx/load balancer) so $request->ip() returns real client IP
+        $trustedProxies = env('TRUSTED_PROXIES', '');
+        if (!empty($trustedProxies)) {
+            $middleware->trustProxies(at: $trustedProxies);
+        }
+
         // CSRF Exceptions pour les webhooks
         $middleware->validateCsrfTokens(except: [
             'webhooks/*',

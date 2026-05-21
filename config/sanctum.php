@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 10080), // 7 days default; POS tokens need long-lived sessions
 
     /*
     |--------------------------------------------------------------------------

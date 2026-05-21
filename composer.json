@@ -38,7 +38,7 @@
     },
     "config": {
         "audit": {
-            "block-insecure": false
+            "block-insecure": true
         },
         "optimize-autoloader": true,
         "preferred-install": "dist",

@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Hash;
 
 class CreateAdminUser extends Command
 {
-    protected $signature = 'admin:create {--email=admin@racine.com} {--password=admin123} {--name=Administrateur}';
+    protected $signature = 'admin:create {--email=admin@racine.com} {--password=} {--name=Administrateur}';
 
     protected $description = 'Créer un utilisateur administrateur rapidement';
 
     public function handle()
     {
         $email = $this->option('email');
-        $password = $this->option('password');
+        $password = $this->option('password') ?: $this->secret('Password pour le compte admin');
         $name = $this->option('name');
 
         // Vérifier si l'utilisateur existe déjà
