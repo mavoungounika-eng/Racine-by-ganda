@@ -222,7 +222,7 @@
                                         @php $creatorSlug = $product->creator?->creatorProfile?->slug; @endphp
                                         <span class="badge-brand"
                                             @if($creatorSlug)
-                                            onclick="event.preventDefault();event.stopPropagation();window.location='{{ route('creator.shop', $creatorSlug) }}';"
+                                            onclick="event.preventDefault();event.stopPropagation();window.location='{{ route('frontend.creator.shop', $creatorSlug) }}';"
                                             style="cursor:pointer;"
                                             @endif
                                         >

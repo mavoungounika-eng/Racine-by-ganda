@@ -368,9 +368,19 @@
                     
                     @auth
                         {{-- Options compte pour utilisateurs connectés (Mobile) --}}
-                        <a href="{{ route('account.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                            <span style="font-size: 1.25rem;">🏠</span> Mon compte
-                        </a>
+                        @if(auth()->user()->getRoleSlug() === 'createur')
+                            <a href="{{ route('creator.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="font-size: 1.25rem;">🏠</span> Espace créateur
+                            </a>
+                        @elseif(in_array(auth()->user()->getRoleSlug(), ['admin', 'super_admin', 'staff']))
+                            <a href="{{ route('admin.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="font-size: 1.25rem;">🏠</span> Administration
+                            </a>
+                        @else
+                            <a href="{{ route('account.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="font-size: 1.25rem;">🏠</span> Mon compte
+                            </a>
+                        @endif
                         <a href="{{ route('profile.orders') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                             <span style="font-size: 1.25rem;">📦</span> Mes commandes
                         </a>
@@ -400,9 +410,7 @@
             <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
                 <i class="fas fa-check-circle me-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('success') }}</strong>
-                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </div>
     @endif
@@ -412,9 +420,7 @@
             <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
                 <i class="fas fa-exclamation-circle me-2" style="color: #ED5F1E;"></i>
                 <strong>{{ session('error') }}</strong>
-                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </div>
     @endif
