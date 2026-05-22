@@ -485,13 +485,13 @@
         <div class="about-grid">
             <div class="about-images">
                 <div class="about-img">
-                    <img src="{{ asset('storage/showroom/gallery/showroom-01.jpeg') }}" alt="Showroom">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-01.jpeg') }}" alt="Showroom" loading="lazy">
                 </div>
                 <div class="about-img">
-                    <img src="{{ asset('storage/showroom/gallery/showroom-02.jpeg') }}" alt="Collection">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-02.jpeg') }}" alt="Collection" loading="lazy">
                 </div>
                 <div class="about-img">
-                    <img src="{{ asset('storage/showroom/gallery/showroom-03.jpeg') }}" alt="Tissus">
+                    <img src="{{ asset('storage/showroom/gallery/showroom-03.jpeg') }}" alt="Tissus" loading="lazy">
                 </div>
             </div>
             <div class="about-content">
@@ -529,7 +529,7 @@
         
         <div class="collections-grid">
             <div class="collection-card">
-                <img src="{{ asset('storage/showroom/collections/collection-01.jpeg') }}" alt="Collection Printemps">
+                <img src="{{ asset('storage/showroom/collections/collection-01.jpeg') }}" alt="Collection Printemps" loading="lazy">
                 <div class="collection-overlay">
                     <span class="collection-tag">Nouveau</span>
                     <h3>Printemps 2025</h3>
@@ -537,7 +537,7 @@
                 </div>
             </div>
             <div class="collection-card">
-                <img src="{{ asset('storage/showroom/collections/collection-02.jpeg') }}" alt="Haute Couture">
+                <img src="{{ asset('storage/showroom/collections/collection-02.jpeg') }}" alt="Haute Couture" loading="lazy">
                 <div class="collection-overlay">
                     <span class="collection-tag">Exclusif</span>
                     <h3>Haute Couture</h3>
@@ -545,7 +545,7 @@
                 </div>
             </div>
             <div class="collection-card">
-                <img src="{{ asset('storage/showroom/collections/collection-03.jpeg') }}" alt="Accessoires">
+                <img src="{{ asset('storage/showroom/collections/collection-03.jpeg') }}" alt="Accessoires" loading="lazy">
                 <div class="collection-overlay">
                     <span class="collection-tag">Best-seller</span>
                     <h3>Accessoires</h3>

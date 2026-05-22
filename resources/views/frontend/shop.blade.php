@@ -297,7 +297,7 @@
                     <!-- Demo products if no data -->
                     @for($i = 0; $i < 9; $i++)
                     <div class="product-card reveal-item">
-                        <a href="#" class="product-image-link">
+                        <a href="{{ route('frontend.product', $i + 1) }}" class="product-image-link">
                             <div class="product-image">
                                 <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
                                 <div class="product-badges">
@@ -327,7 +327,7 @@
                             </div>
                         </a>
                         <div class="product-info">
-                            <a href="#" class="product-info-link">
+                            <a href="{{ route('frontend.product', $i + 1) }}" class="product-info-link">
                                 <div class="product-category">Mode Africaine</div>
                                 <h3 class="product-name">Robe Wax Élégante Collection {{ $i + 1 }}</h3>
                                 <div class="product-price">

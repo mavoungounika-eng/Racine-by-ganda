@@ -390,7 +390,7 @@
                 </div>
 
                 @if(session('success'))
-                    <div class="alert alert-success" style="background:rgba(34, 197, 94, 0.1);color:#22C55E;padding:15px;border-radius:8px;margin-bottom:20px;">
+                    <div class="alert alert-success contact-success-alert">
                         {{ session('success') }}
                     </div>
                 @endif

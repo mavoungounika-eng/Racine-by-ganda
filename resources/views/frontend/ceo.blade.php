@@ -552,8 +552,8 @@
 <!-- VALUES -->
 <section class="ceo-values">
     <div class="container">
-        <div class="section-title" style="color: white;">
-            <h2 style="color: white;">Mes Valeurs</h2>
+        <div class="section-title section-title--white">
+            <h2 class="text-white">Mes Valeurs</h2>
             <div class="line"></div>
         </div>
         

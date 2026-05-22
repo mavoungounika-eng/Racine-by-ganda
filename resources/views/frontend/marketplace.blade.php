@@ -443,10 +443,9 @@
 {{-- Hero Section --}}
 <section class="marketplace-hero text-center">
     <div class="container">
-        <div class="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill mb-4" 
-             style="background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);">
+        <div class="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill mb-4 marketplace-badge-pill">
             <i class="fas fa-shopping-bag text-white"></i>
-            <span class="text-white font-weight-bold text-uppercase" style="font-size: 0.85rem; letter-spacing: 1px;">Marketplace</span>
+            <span class="text-white font-weight-bold text-uppercase marketplace-badge-label">Marketplace</span>
         </div>
         
         <h1>{{ $cmsPage?->title ?? 'Marketplace Créateurs' }}</h1>
@@ -475,7 +474,7 @@
 </section>
 
 {{-- Filtres & Produits --}}
-<section class="py-5" style="background: rgba(22,13,12,0.05);">
+<section class="py-5 marketplace-filters-section">
     <div class="container">
         {{-- Filtres --}}
         <form method="GET" action="{{ route('frontend.marketplace') }}" class="marketplace-filters">
@@ -534,13 +533,13 @@
                 {{-- Image --}}
                 <div class="product-image">
                     <img src="{{ isset($product->mainImage) ? $product->mainImage->url : ($product->main_image ? Storage::url($product->main_image) : asset('storage/catalogue/vetements/chemise-01.jpeg')) }}"
-                         alt="{{ $product->title }}">
+                         alt="{{ $product->title }}" loading="lazy">
                     
                     {{-- Badge créateur --}}
                     @if($product->creator && $product->creator->creatorProfile)
                     <div class="creator-badge">
                         <img src="{{ Storage::url($product->creator->creatorProfile->logo_path) }}" 
-                             alt="{{ $product->creator->creatorProfile->brand_name }}">
+                             alt="{{ $product->creator->creatorProfile->brand_name }}" loading="lazy">
                         <span>{{ $product->creator->creatorProfile->brand_name }}</span>
                     </div>
                     @endif

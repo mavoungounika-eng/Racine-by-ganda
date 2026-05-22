@@ -317,7 +317,7 @@
 </section>
 
 <!-- FEATURED EVENT -->
-<section style="padding: 4rem 0; background: rgba(22,13,12,0.05);">
+<section class="events-featured-section">
     <div class="container">
         <div class="featured-event">
             <div class="featured-event-image">
@@ -356,7 +356,7 @@
                     </div>
                 </div>
                 
-                <a href="#" class="btn-event" style="width: fit-content; padding: 1rem 2rem;">
+                <a href="#" class="btn-event btn-event--lg">
                     <i class="fas fa-ticket-alt"></i> Réserver ma place
                 </a>
             </div>

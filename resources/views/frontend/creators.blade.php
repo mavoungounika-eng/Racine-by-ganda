@@ -415,11 +415,10 @@
             
             {{-- CTA Marketplace --}}
             <div class="mt-4">
-                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg" 
-                   style="background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%); color: white; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem; font-weight: 600;">
+                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg btn-cta-gradient">
                     <i class="fas fa-shopping-bag"></i>
                     Voir tous les produits au Marketplace
-                    <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.85rem;">{{ $totalProducts }} produits</span>
+                    <span class="btn-cta-count">{{ $totalProducts }} produits</span>
                 </a>
             </div>
         </div>
@@ -459,14 +458,14 @@
                 @if($featuredCreator->avatar_path)
                     <img src="{{ asset('storage/' . $featuredCreator->avatar_path) }}" 
                          alt="{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}" 
-                         class="featured-img">
+                         class="featured-img" loading="lazy">
                 @elseif($featuredCreator->banner_path)
                     <img src="{{ asset('storage/' . $featuredCreator->banner_path) }}" 
                          alt="{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}" 
                          class="featured-img">
                 @else
                     <img src="{{ asset('storage/showroom/hero/showroom-hero-02.jpeg') }}"
-                         alt="Créatrice vedette" class="featured-img">
+                         alt="Créatrice vedette" class="featured-img" loading="lazy">
                 @endif
                 <span class="featured-badge">⭐ Créateur vedette</span>
             </div>
@@ -534,7 +533,7 @@
                 <div class="creator-image">
                     @if($creator->avatar_path)
                         <img src="{{ asset('storage/' . $creator->avatar_path) }}"
-                             alt="{{ $creator->brand_name ?? $creator->user->name }}">
+                             alt="{{ $creator->brand_name ?? $creator->user->name }}" loading="lazy">
                     @else
                         <div class="creator-avatar-initials">
                             {{ strtoupper(substr($creator->brand_name ?? $creator->user->name ?? 'C', 0, 1)) }}
@@ -555,22 +554,15 @@
                             <span>Créations</span>
                         </div>
                     </div>
-                    <a href="{{ route('frontend.creator.shop', $creator->slug) }}"
-                       class="btn btn-sm mt-2"
-                       style="background:#160D0C;color:white;border-radius:30px;padding:0.4rem 1rem;">
+                    <a href="{{ route('frontend.creator.shop', $creator->slug) }}" class="btn btn-sm mt-2 btn-creator-dark">
                         Voir la boutique
                     </a>
                 </div>
             </div>
             @empty
-            <div class="col-12 text-center py-5" style="grid-column: 1 / -1;">
-                <p style="color:rgba(22,13,12,0.5);font-size:1.1rem;">
-                    Aucun créateur actif pour le moment.
-                </p>
-                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg mt-3"
-                   style="background:linear-gradient(135deg,#FFB800,#ED5F1E);color:white;border-radius:50px;padding:0.75rem 2rem;">
-                    Découvrir le marketplace
-                </a>
+            <div class="col-12 text-center py-5 creators-empty-state">
+                <p class="creators-empty-text">Aucun créateur actif pour le moment.</p>
+                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg mt-3 btn-cta-gradient">Découvrir le marketplace</a>
             </div>
             @endforelse
         </div>

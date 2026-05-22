@@ -383,7 +383,7 @@
         <p>{{ $heroData['description'] ?? 'Trouvez rapidement les réponses à vos questions ou contactez notre équipe.' }}</p>
         <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Rechercher une question...">
+            <input type="text" id="faq-search" placeholder="Rechercher une question..." autocomplete="off" aria-label="Rechercher dans la FAQ">
         </div>
     </div>
 </section>
@@ -628,6 +628,23 @@ document.querySelectorAll('.faq-tab').forEach(tab => {
                 item.style.display = 'none';
             }
         });
+        document.getElementById('faq-search').value = '';
+    });
+});
+
+// FAQ live search
+document.getElementById('faq-search')?.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+    const items = document.querySelectorAll('.faq-item');
+
+    // Reset tab active state
+    document.querySelectorAll('.faq-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.faq-tab[data-category="all"]')?.classList.add('active');
+
+    items.forEach(item => {
+        const text = item.querySelector('h4')?.textContent.toLowerCase() ?? '';
+        const answer = item.querySelector('.faq-answer')?.textContent.toLowerCase() ?? '';
+        item.style.display = (query === '' || text.includes(query) || answer.includes(query)) ? 'block' : 'none';
     });
 });
 </script>

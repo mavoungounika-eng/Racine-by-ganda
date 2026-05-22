@@ -143,8 +143,7 @@
             @foreach($categories ?? [] as $category)
             <a href="{{ route('frontend.shop', ['category' => $category->id]) }}" class="category-card category-card-css">
                 @if($category->image)
-                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}"
-                         style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}" loading="lazy" class="category-card-img">
                 @else
                     <div class="category-css-bg">
                         <div class="category-css-pattern"></div>
@@ -202,7 +201,7 @@
             <a href="{{ route('frontend.product', $product->id) }}" class="product-card reveal-item">
                 <div class="product-image">
                     @if($product->main_image)
-                        <img src="{{ asset('storage/products/' . $product->main_image) }}" alt="{{ $product->title }}">
+                        <img src="{{ asset('storage/products/' . $product->main_image) }}" alt="{{ $product->title }}" loading="lazy">
                     @else
                         <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
                     @endif

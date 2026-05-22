@@ -513,7 +513,7 @@
                 </div>
             </div>
             <div class="hero-video">
-                <video autoplay muted loop playsinline style="width:100%;height:450px;object-fit:cover;">
+                <video autoplay muted loop playsinline class="atelier-hero-video">
                     <source src="{{ asset('storage/atelier/atelier-chemise-01.mp4') }}" type="video/mp4">
                 </video>
             </div>
@@ -565,23 +565,23 @@
 
         <div class="gallery-grid">
             <div class="gallery-item large">
-                <img src="{{ asset('storage/showroom/gallery/gallery-01.jpeg') }}" alt="Atelier de couture">
+                <img src="{{ asset('storage/showroom/gallery/gallery-01.jpeg') }}" alt="Atelier de couture" loading="lazy">
                 <div class="gallery-overlay"><span>Atelier de couture</span></div>
             </div>
             <div class="gallery-item">
-                <img src="{{ asset('storage/showroom/gallery/gallery-02.jpeg') }}" alt="Sélection des tissus">
+                <img src="{{ asset('storage/showroom/gallery/gallery-02.jpeg') }}" alt="Sélection des tissus" loading="lazy">
                 <div class="gallery-overlay"><span>Sélection des tissus</span></div>
             </div>
             <div class="gallery-item">
-                <img src="{{ asset('storage/showroom/gallery/gallery-03.jpeg') }}" alt="Travail manuel">
+                <img src="{{ asset('storage/showroom/gallery/gallery-03.jpeg') }}" alt="Travail manuel" loading="lazy">
                 <div class="gallery-overlay"><span>Travail manuel</span></div>
             </div>
             <div class="gallery-item">
-                <img src="{{ asset('storage/showroom/gallery/gallery-04.jpeg') }}" alt="Finitions soignées">
+                <img src="{{ asset('storage/showroom/gallery/gallery-04.jpeg') }}" alt="Finitions soignées" loading="lazy">
                 <div class="gallery-overlay"><span>Finitions soignées</span></div>
             </div>
             <div class="gallery-item">
-                <img src="{{ asset('storage/showroom/gallery/gallery-05.jpeg') }}" alt="Résultat final">
+                <img src="{{ asset('storage/showroom/gallery/gallery-05.jpeg') }}" alt="Résultat final" loading="lazy">
                 <div class="gallery-overlay"><span>Résultat final</span></div>
             </div>
         </div>
@@ -589,15 +589,15 @@
 </section>
 
 <!-- VIDEOS ATELIER -->
-<section style="padding: 4rem 0; background: rgba(22,13,12,0.03);">
+<section class="atelier-videos-section">
     <div class="container">
         <div class="section-header">
             <span class="section-tag">Coulisses</span>
             <h2 class="section-title">L'atelier en vidéo</h2>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+        <div class="atelier-videos-grid">
             @foreach(['atelier-chemise-02.mp4','atelier-kimono-01.mp4','atelier-kimono-02.mp4','atelier-soiree-01.mp4','atelier-soiree-02.mp4'] as $index => $video)
-            <video autoplay muted loop playsinline controls preload="metadata" style="width:100%;border-radius:16px;background:#160D0C;aspect-ratio:16/9;object-fit:cover;{{ $loop->last ? 'grid-column: 2;' : '' }}">
+            <video autoplay muted loop playsinline controls preload="metadata" class="atelier-video-item {{ $loop->last ? 'atelier-video-item--center' : '' }}">
                 <source src="{{ asset('storage/atelier/' . $video) }}" type="video/mp4">
             </video>
             @endforeach
@@ -648,7 +648,7 @@
                 et une équipe à l'écoute."
             </p>
             <div class="testimonial-author">
-                <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Cliente" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
+                <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Cliente" class="atelier-testimonial-avatar" loading="lazy">
                 <div class="author-info">
                     <h4>Marie-Claire Diop</h4>
                     <span>Mariée en Juin 2024</span>

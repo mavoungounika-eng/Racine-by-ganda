@@ -393,7 +393,7 @@
 </section>
 
 <!-- FEATURED ALBUM -->
-<section style="padding: 4rem 0; background: rgba(22,13,12,0.05);">
+<section class="albums-section">
     <div class="container">
         <div class="featured-album">
             <div class="featured-album-gallery">
@@ -409,7 +409,7 @@
                 <span class="featured-badge"><i class="fas fa-star"></i> Album à la une</span>
                 <h2>{{ $featured['title'] ?? 'Défilé Collection Printemps 2024' }}</h2>
                 <p>{{ $featured['description'] ?? 'Retour en images sur notre défilé exceptionnel présentant la collection Printemps 2024. Une soirée magique au cœur de Pointe-Noire, célébrant l\'élégance africaine contemporaine.' }}</p>
-                <div class="album-meta" style="border: none; padding: 0; margin-bottom: 1.5rem;">
+                <div class="album-meta album-meta--flush">
                     <span class="date">
                         <i class="fas fa-calendar"></i>
                         {{ $featured['date'] ?? 'Mars 2024' }}

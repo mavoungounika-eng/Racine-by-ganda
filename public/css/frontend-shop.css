@@ -661,3 +661,65 @@
     .product-card { border-radius: 12px; }
     .shop-hero { padding: 3rem 1rem; }
 }
+/* ============================================================
+   BATCH 3 — Skeleton loader + focus states + glass cards
+   ============================================================ */
+
+/* Skeleton shimmer animation */
+@keyframes skeleton-shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+.product-css-placeholder {
+    background: linear-gradient(
+        90deg,
+        rgba(22,13,12,0.05) 25%,
+        rgba(237,95,30,0.08) 50%,
+        rgba(22,13,12,0.05) 75%
+    ) !important;
+    background-size: 800px 100% !important;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite !important;
+    color: transparent !important;
+}
+
+/* Glass border on product cards hover */
+.product-card {
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+.product-card:hover {
+    border-color: rgba(237, 95, 30, 0.15);
+    box-shadow: 0 20px 50px rgba(22, 13, 12, 0.1), 0 0 0 1px rgba(237,95,30,0.08);
+}
+
+/* Focus states — accessibility */
+:focus-visible {
+    outline: 2px solid var(--racine-orange, #ED5F1E);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+.btn:focus-visible,
+.btn-primary-custom:focus-visible,
+.btn-outline-custom:focus-visible,
+.action-btn:focus-visible {
+    outline: 2px solid var(--racine-orange, #ED5F1E);
+    outline-offset: 3px;
+}
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid rgba(237, 95, 30, 0.4);
+    outline-offset: 0;
+    border-color: var(--racine-orange, #ED5F1E) !important;
+    box-shadow: 0 0 0 3px rgba(237, 95, 30, 0.12) !important;
+}
+
+/* Cursor pointer on all interactive cards */
+.product-card,
+.creator-card,
+.category-card,
+.link-card,
+.guide-card {
+    cursor: pointer;
+}

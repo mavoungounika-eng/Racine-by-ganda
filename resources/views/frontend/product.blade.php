@@ -647,7 +647,7 @@
                         <div class="flex-shrink-0">
                             <img src="{{ $creatorProfile?->logo_path ?? asset('images/default-creator.png') }}"
                                  alt="{{ $creatorProfile?->brand_name }}"
-                                 class="w-14 h-14 rounded-full object-cover border-2 border-[#160D0C]">
+                                 class="w-14 h-14 rounded-full object-cover border-2 border-[#160D0C]" loading="lazy">
                         </div>
                         <div class="flex-1">
                             <h4 class="text-sm font-semibold tracking-wide text-gray-900">

@@ -52,7 +52,7 @@
                 {{-- Info --}}
                 <div class="flex-1 text-center md:text-start">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                        <h1 class="text-3xl md:text-4xl font-bold text-[#160D0C]" style="font-family: 'Cormorant Garamond', serif;">
+                        <h1 class="text-3xl md:text-4xl font-bold text-[#160D0C]" class="font-cormorant">
                             {{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}
                         </h1>
                         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold w-fit mx-auto md:mx-0">
@@ -127,7 +127,7 @@
 <section class="py-12 bg-[rgba(22,13,12,0.05)]">
     <div class="container">
         <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold text-[#160D0C]" style="font-family: 'Cormorant Garamond', serif;">
+            <h2 class="text-2xl font-bold text-[#160D0C]" class="font-cormorant">
                 Produits de {{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}
             </h2>
             <a href="{{ route('frontend.shop', ['product_type' => 'marketplace']) }}" 
