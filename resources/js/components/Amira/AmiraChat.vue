@@ -1,92 +1,81 @@
 <template>
-    <div class="flex flex-col h-full bg-white/50">
+    <div class="d-flex flex-column h-100">
         <!-- Header -->
-        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-500/90 to-purple-600/90 backdrop-blur-sm text-white">
-            <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                    <span class="text-sm font-bold">A</span>
+        <div class="amira-chat-header d-flex align-items-center justify-content-between px-3 py-2 flex-shrink-0">
+            <div class="d-flex align-items-center gap-2">
+                <div class="amira-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0">
+                    A
                 </div>
                 <div>
-                    <h3 class="font-medium text-sm">Amira</h3>
-                    <p class="text-xs text-indigo-100">Assistante virtuelle</p>
+                    <div class="fw-medium text-white" style="font-size: 0.9rem; line-height: 1.2;">Amira</div>
+                    <div class="text-white-50" style="font-size: 0.75rem;">Assistante virtuelle</div>
                 </div>
             </div>
-            <button @click="$emit('close')" class="text-white/80 hover:text-white transition-colors">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+            <button @click="$emit('close')" class="btn-close btn-close-white" aria-label="Fermer"></button>
         </div>
 
-        <!-- Messages Area -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-200" ref="messagesContainer">
-            <!-- Welcome Message -->
-            <div class="flex justify-start">
-                <div class="max-w-[85%] bg-white border border-indigo-50 rounded-2xl rounded-tl-none p-3 shadow-sm">
-                    <p class="text-sm text-gray-700">Bonjour ! Je suis Amira. Comment puis-je vous aider aujourd'hui ?</p>
+        <!-- Messages area -->
+        <div class="amira-messages flex-grow-1 p-3 overflow-y-auto" ref="messagesContainer">
+            <!-- Welcome -->
+            <div class="d-flex justify-content-start mb-3">
+                <div class="amira-bubble amira-bubble--bot">
+                    Bonjour ! Je suis Amira. Comment puis-je vous aider aujourd'hui ?
                 </div>
             </div>
 
             <!-- Conversation -->
-            <div 
-                v-for="(msg, index) in messages" 
+            <div
+                v-for="(msg, index) in messages"
                 :key="index"
-                class="flex"
-                :class="msg.isUser ? 'justify-end' : 'justify-start'"
+                class="d-flex mb-3"
+                :class="msg.isUser ? 'justify-content-end' : 'justify-content-start'"
             >
-                <div 
-                    class="max-w-[85%] p-3 rounded-2xl shadow-sm text-sm"
-                    :class="[
-                        msg.isUser 
-                            ? 'bg-indigo-600 text-white rounded-tr-none' 
-                            : 'bg-white border border-indigo-50 text-gray-700 rounded-tl-none'
-                    ]"
-                >
+                <div class="amira-bubble" :class="msg.isUser ? 'amira-bubble--user' : 'amira-bubble--bot'">
                     {{ msg.text }}
                 </div>
             </div>
 
-            <!-- Loading Indicator -->
-            <div v-if="isLoading" class="flex justify-start">
-                <div class="bg-white border border-indigo-50 rounded-2xl rounded-tl-none p-3 shadow-sm">
-                    <div class="flex space-x-1.5">
-                        <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
-                        <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
-                        <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
-                    </div>
+            <!-- Loading dots -->
+            <div v-if="isLoading" class="d-flex justify-content-start mb-3">
+                <div class="amira-bubble amira-bubble--bot amira-bubble--loading">
+                    <span class="amira-dot"></span>
+                    <span class="amira-dot"></span>
+                    <span class="amira-dot"></span>
                 </div>
             </div>
         </div>
 
-        <!-- Input Area -->
-        <div class="p-4 bg-white border-t border-gray-100">
-            <form @submit.prevent="sendMessage" class="relative">
-                <input 
-                    type="text" 
-                    v-model="inputMessage" 
+        <!-- Input area -->
+        <div class="p-3 border-top bg-white flex-shrink-0">
+            <form @submit.prevent="sendMessage" class="d-flex gap-2">
+                <input
+                    type="text"
+                    v-model="inputMessage"
                     placeholder="Posez votre question..."
-                    class="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-all"
+                    class="form-control form-control-sm"
                     :disabled="isLoading"
                 >
-                <button 
-                    type="submit" 
-                    class="absolute right-2 top-2 p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                <button
+                    type="submit"
+                    class="btn btn-sm amira-send-btn flex-shrink-0"
                     :disabled="!inputMessage.trim() || isLoading"
+                    aria-label="Envoyer"
                 >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
                 </button>
             </form>
-            <div class="mt-2 text-center">
-                <p class="text-[10px] text-gray-400">Amira peut faire des erreurs. Vérifiez les informations importantes.</p>
-            </div>
+            <p class="text-muted text-center mt-2 mb-0" style="font-size: 0.65rem;">
+                Amira peut faire des erreurs. Vérifiez les informations importantes.
+            </p>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import { ref, nextTick } from 'vue';
 import axios from 'axios';
 
 const emit = defineEmits(['close']);
@@ -107,32 +96,18 @@ const sendMessage = async () => {
     if (!inputMessage.value.trim() || isLoading.value) return;
 
     const userQuestion = inputMessage.value.trim();
-    
-    // Add user message
-    messages.value.push({
-        text: userQuestion,
-        isUser: true
-    });
-    
+    messages.value.push({ text: userQuestion, isUser: true });
     inputMessage.value = '';
     isLoading.value = true;
     scrollToBottom();
 
     try {
-        const response = await axios.post('/api/amira/ask', {
-            question: userQuestion
-        });
-
-        // Add Amira response
+        const response = await axios.post('/api/amira/ask', { question: userQuestion });
+        messages.value.push({ text: response.data.answer, isUser: false });
+    } catch {
         messages.value.push({
-            text: response.data.answer,
-            isUser: false
-        });
-    } catch (error) {
-        console.error('Amira Error:', error);
-        messages.value.push({
-            text: "Désolé, je rencontre des difficultés techniques pour le moment. Veuillez réessayer plus tard.",
-            isUser: false
+            text: 'Désolé, je rencontre des difficultés techniques pour le moment. Veuillez réessayer plus tard.',
+            isUser: false,
         });
     } finally {
         isLoading.value = false;
@@ -140,3 +115,83 @@ const sendMessage = async () => {
     }
 };
 </script>
+
+<style scoped>
+.amira-chat-header {
+    background: var(--racine-orange, #ED5F1E);
+    min-height: 58px;
+}
+
+.amira-avatar {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 0.85rem;
+}
+
+.amira-messages {
+    background: #f9f9f9;
+}
+
+.amira-bubble {
+    max-width: 85%;
+    padding: 0.55rem 0.85rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.amira-bubble--bot {
+    background: white;
+    border: 1px solid #eee;
+    border-top-left-radius: 0.25rem;
+    color: #333;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.amira-bubble--user {
+    background: var(--racine-orange, #ED5F1E);
+    color: white;
+    border-top-right-radius: 0.25rem;
+}
+
+.amira-bubble--loading {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 0.75rem 1rem;
+}
+
+.amira-dot {
+    width: 7px;
+    height: 7px;
+    background: #ccc;
+    border-radius: 50%;
+    animation: amira-bounce 1.2s ease-in-out infinite;
+}
+
+.amira-dot:nth-child(2) { animation-delay: 160ms; }
+.amira-dot:nth-child(3) { animation-delay: 320ms; }
+
+@keyframes amira-bounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40% { transform: scale(1.2); opacity: 1; }
+}
+
+.amira-send-btn {
+    background: var(--racine-orange, #ED5F1E);
+    color: white;
+    border: none;
+    padding: 0.375rem 0.625rem;
+}
+
+.amira-send-btn:hover:not(:disabled),
+.amira-send-btn:focus:not(:disabled) {
+    background: #d4501a;
+    color: white;
+}
+
+.amira-send-btn:disabled {
+    opacity: 0.45;
+}
+</style>

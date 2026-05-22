@@ -1,58 +1,25 @@
 <template>
-    <div class="fixed bottom-6 right-6 z-50">
-        <!-- Chat Interface -->
-        <transition
-            enter-active-class="transform transition ease-out duration-300"
-            enter-from-class="translate-y-4 opacity-0 scale-95"
-            enter-to-class="translate-y-0 opacity-100 scale-100"
-            leave-active-class="transform transition ease-in duration-200"
-            leave-from-class="translate-y-0 opacity-100 scale-100"
-            leave-to-class="translate-y-4 opacity-0 scale-95"
-        >
-            <div 
-                v-if="isOpen"
-                class="absolute bottom-16 right-0 w-80 sm:w-96 bg-white/90 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[600px]"
-                style="height: calc(100vh - 120px);"
-            >
+    <div class="amira-widget-container">
+        <Transition name="amira-slide">
+            <div v-if="isOpen" class="amira-panel card border-0 shadow-lg">
                 <AmiraChat @close="toggleChat" />
             </div>
-        </transition>
+        </Transition>
 
-        <!-- Toggle Button -->
-        <button 
+        <button
             @click="toggleChat"
-            class="group relative flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            class="amira-toggle-btn btn rounded-circle shadow"
+            :aria-label="isOpen ? 'Fermer Amira' : 'Ouvrir l\'assistant Amira'"
+            :title="isOpen ? '' : 'Besoin d\'aide ?'"
         >
-            <span class="sr-only">Ouvrir l'assistant Amira</span>
-            
-            <!-- Icon -->
-            <svg 
-                v-if="!isOpen" 
-                class="w-7 h-7 text-white" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-            >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            <svg v-if="!isOpen" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
-            
-            <svg 
-                v-else 
-                class="w-7 h-7 text-white" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-            >
+            <svg v-else width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-
-            <!-- Notification Badge (optional) -->
-            <span class="absolute top-0 right-0 w-3 h-3 bg-red-400 border-2 border-white rounded-full"></span>
-            
-            <!-- Tooltip -->
-            <div class="absolute right-full mr-4 px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                Besoin d'aide ?
-            </div>
+            <span v-if="!isOpen" class="amira-notif-dot"></span>
         </button>
     </div>
 </template>
@@ -62,8 +29,76 @@ import { ref } from 'vue';
 import AmiraChat from './AmiraChat.vue';
 
 const isOpen = ref(false);
-
-const toggleChat = () => {
-    isOpen.value = !isOpen.value;
-};
+const toggleChat = () => { isOpen.value = !isOpen.value; };
 </script>
+
+<style scoped>
+.amira-widget-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 1050;
+}
+
+.amira-panel {
+    position: absolute;
+    bottom: 4.5rem;
+    right: 0;
+    width: 360px;
+    height: 520px;
+    max-height: calc(100vh - 120px);
+    border-radius: 1rem !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.amira-toggle-btn {
+    width: 56px;
+    height: 56px;
+    background: var(--racine-orange, #ED5F1E);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.amira-toggle-btn:hover,
+.amira-toggle-btn:focus {
+    background: #d4501a;
+    color: white;
+    transform: scale(1.06);
+}
+
+.amira-notif-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    background: #f87171;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.amira-slide-enter-active,
+.amira-slide-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.amira-slide-enter-from,
+.amira-slide-leave-to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+}
+
+@media (max-width: 576px) {
+    .amira-panel {
+        width: calc(100vw - 2rem);
+        right: -0.5rem;
+    }
+}
+</style>

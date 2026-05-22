@@ -22,6 +22,13 @@ Route::middleware(['api', 'throttle:webhooks'])->group(function () {
     Route::post('/webhooks/monetbil', [\App\Http\Controllers\Api\WebhookController::class, 'monetbil'])->name('api.webhooks.monetbil');
 });
 
+// ==========================================
+// Amira — Assistante virtuelle (public, throttle 30/min)
+// ==========================================
+Route::middleware(['api', 'throttle:30,1'])->group(function () {
+    Route::post('/amira/ask', [\App\Http\Controllers\Api\AmiraController::class, 'ask'])->name('api.amira.ask');
+});
+
 // Webhooks Stripe Billing (abonnements créateurs)
 // Exclus du middleware CSRF et auth car appelés directement par Stripe
 // Throttle: utilise le rate limiter 'webhooks' (60 requêtes par minute par IP)
