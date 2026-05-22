@@ -318,12 +318,12 @@
     
     <div class="container">
         {{-- Boutons de navigation --}}
-        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <a href="javascript:history.back()" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); text-decoration: none;">
+        <div class="auth-action-btns">
+            <a href="javascript:history.back()" class="auth-btn-secondary">
                 <i class="fas fa-arrow-left"></i>
                 <span>Retour</span>
             </a>
-            <a href="{{ route('frontend.home') }}" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(212, 165, 116, 0.1); border: 1px solid rgba(212, 165, 116, 0.2); border-radius: 12px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.65); text-decoration: none;">
+            <a href="{{ route('frontend.home') }}" class="auth-btn-secondary auth-btn-secondary--warm">
                 <i class="fas fa-home"></i>
                 <span>Accueil</span>
             </a>
@@ -342,7 +342,7 @@
         
         @if ($errors->any())
             <div class="alert-error">
-                <ul style="margin: 0; padding-left: 1.25rem;">
+                <ul class="auth-feature-list">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -456,7 +456,7 @@
                         Vous souhaitez simplement acheter ? 
                         <a href="{{ route('register', ['context' => 'boutique']) }}">Créer un compte client</a>
                     </p>
-                    <p style="margin-top: 0.5rem;">
+                    <p class="auth-link-hint">
                         Déjà un compte ? 
                         <a href="{{ route('login') }}">Se connecter</a>
                     </p>
@@ -552,7 +552,7 @@
                         Vous souhaitez vendre vos créations ? 
                         <a href="{{ route('creator.register') }}">Créer un compte créateur</a>
                     </p>
-                    <p style="margin-top: 0.5rem;">
+                    <p class="auth-link-hint">
                         Déjà un compte ? 
                         <a href="{{ route('login', ['context' => 'boutique']) }}">Se connecter</a>
                     </p>

@@ -717,7 +717,7 @@
                                 <input type="number" class="qty-input" value="1" min="1" max="{{ $product->stock ?? 1 }}" id="qtyInput" onchange="syncCartQty()">
                                 <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
                             </div>
-                            <span style="color: rgba(22,13,12,0.5); font-size: 0.9rem;">
+                            <span class="product-stock-info">
                                 {{ ($product->stock ?? 0) }} disponible{{ ($product->stock ?? 0) > 1 ? 's' : '' }}
                             </span>
                         </div>
@@ -725,12 +725,12 @@
                 </div>
                 
                 <div class="product-actions">
-                    <form action="{{ route('cart.add') }}" method="POST" id="add-to-cart-form" style="flex: 1; display: flex;">
+                    <form action="{{ route('cart.add') }}" method="POST" id="add-to-cart-form" class="add-to-cart-form">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id ?? 1 }}">
                         <input type="hidden" name="quantity" value="1" id="cartQty">
                         <input type="hidden" name="redirect" value="back">
-                        <button type="submit" class="btn-add-cart" id="add-to-cart-btn" style="flex: 1;">
+                        <button type="submit" class="btn-add-cart flex-1" id="add-to-cart-btn">
                             <i class="fas fa-shopping-bag"></i>
                             <span id="add-to-cart-text">Ajouter au panier</span>
                         </button>

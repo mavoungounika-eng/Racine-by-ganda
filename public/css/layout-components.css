@@ -172,3 +172,97 @@
     }
 }
 
+
+/* ===== ALERT RACINE ===== */
+.alert-racine {
+    border-left: 4px solid #ED5F1E;
+    background: #FFFFFF;
+    border-radius: 8px;
+    color: #160D0C;
+}
+
+.alert-racine-icon {
+    color: #ED5F1E;
+}
+
+/* ===== SHOP PAGE ===== */
+.cursor-pointer { cursor: pointer; }
+
+.quick-add--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.shop-intro-section {
+    padding: 3rem 0;
+    background: #FFFFFF;
+}
+
+.shop-footer-section {
+    padding: 2rem 0;
+    background: #FFFFFF;
+}
+
+.shop-intro-title {
+    font-family: 'Aleppo', 'Aileron', serif;
+    color: #160D0C;
+}
+
+.shop-intro-text {
+    max-width: 800px;
+    margin: 0 auto;
+    color: #160D0C;
+}
+
+/* ===== PRODUCT PAGE ===== */
+.product-stock-info {
+    color: rgba(22, 13, 12, 0.5);
+    font-size: 0.9rem;
+}
+
+.add-to-cart-form {
+    flex: 1;
+    display: flex;
+}
+
+.flex-1 { flex: 1; }
+
+/* ===== AUTH REGISTER ===== */
+.auth-action-btns {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.auth-btn-secondary {
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+}
+
+.auth-btn-secondary--warm {
+    background: rgba(212, 165, 116, 0.1);
+    border-color: rgba(212, 165, 116, 0.2);
+}
+
+.auth-feature-list {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.auth-link-hint {
+    margin-top: 0.5rem;
+}

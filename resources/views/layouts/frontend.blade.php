@@ -254,7 +254,7 @@
                     {{-- Dropdown Boutique --}}
                     <div class="nav-dropdown">
                         <button class="nav-dropdown-toggle nav-link-racine" aria-label="Menu boutique" aria-expanded="false" aria-haspopup="true">
-                            Boutique <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 4px;"></i>
+                            Boutique <i class="fas fa-chevron-down nav-chevron"></i>
                         </button>
                         <div class="nav-dropdown-menu">
                             <a href="{{ route('frontend.shop') }}"><i class="fas fa-store"></i> RACINE BY GANDA</a>
@@ -265,19 +265,18 @@
                     <a href="{{ route('frontend.showroom') }}" class="nav-link-racine">Showroom</a>
                     
                     {{-- Panier --}}
-                    <a href="{{ route('cart.index') }}" class="nav-link-racine d-flex align-items-center position-relative" style="gap: 0.5rem;" aria-label="Voir le panier">
+                    <a href="{{ route('cart.index') }}" class="nav-link-racine nav-cart-link d-flex align-items-center position-relative" aria-label="Voir le panier">
                         <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                         <span>Panier</span>
                         @if(isset($cartCount) && $cartCount > 0)
                           <span class="badge bg-danger" 
-                                style="font-size: 0.65rem; padding: 0.2rem 0.4rem; border-radius: 10px; margin-left: 0.25rem;"
                                 id="cart-count-badge">{{ $cartCount }}</span>
                         @endif
                     </a>
                 </nav>
                 
                 {{-- ICÔNES DROITE --}}
-                <div class="d-flex align-items-center" style="gap: 0.75rem;">
+                <div class="d-flex align-items-center nav-icons-right">
                     
                     {{-- Sélecteur de Devise --}}
                     @include('components.currency-selector')
@@ -312,9 +311,9 @@
                                 <a href="{{ route('profile.edit') }}"><i class="fas fa-user-circle"></i> Mon profil</a>
                                 <a href="{{ route('profile.orders') }}"><i class="fas fa-shopping-bag"></i> Mes commandes</a>
                                 <div class="nav-dropdown-divider"></div>
-                                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                                <form method="POST" action="{{ route('logout') }}" class="nav-logout-form">
                                     @csrf
-                                    <button type="submit" style="all: unset; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.8); cursor: pointer; width: 100%; transition: all 0.2s;">
+                                    <button type="submit" class="nav-dropdown-logout-btn">
                                         <i class="fas fa-sign-out-alt"></i> Déconnexion
                                     </button>
                                 </form>
@@ -328,72 +327,72 @@
                     @endauth
                     
                     {{-- Burger menu mobile --}}
-                    <button id="mobile-menu-toggle" class="d-lg-none btn btn-link text-white p-0" style="font-size: 1.75rem; border: none; background: none;" aria-label="Ouvrir le menu mobile" aria-expanded="false" aria-controls="mobile-menu">
+                    <button id="mobile-menu-toggle" class="d-lg-none btn btn-link text-white p-0 nav-burger-btn" aria-label="Ouvrir le menu mobile" aria-expanded="false" aria-controls="mobile-menu">
                         <i class="fas fa-bars" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
             
             {{-- MENU MOBILE --}}
-            <div id="mobile-menu" class="d-lg-none pb-4" style="background: #160D0C; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
-                <div class="d-flex flex-column" style="gap: 0.5rem;">
-                    <a href="{{ route('frontend.home') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Accueil</a>
-                    <a href="{{ route('frontend.atelier') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Atelier</a>
+            <div id="mobile-menu" class="d-lg-none pb-4">
+                <div class="d-flex flex-column mobile-menu-list">
+                    <a href="{{ route('frontend.home') }}" class="text-white py-2 mobile-nav-link">Accueil</a>
+                    <a href="{{ route('frontend.atelier') }}" class="text-white py-2 mobile-nav-link">Atelier</a>
                     
                     {{-- Boutique section --}}
-                    <div class="py-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                        <p class="text-white mb-2" style="font-weight: 600; font-size: 0.9rem;">Boutique</p>
-                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
-                            <i class="fas fa-store" style="margin-right: 0.5rem;"></i> RACINE BY GANDA
+                    <div class="py-2 mobile-nav-section">
+                        <p class="text-white mb-2 mobile-nav-section-label">Boutique</p>
+                        <a href="{{ route('frontend.shop') }}" class="text-white-50 d-block ps-3 py-1 mobile-nav-sublink">
+                            <i class="fas fa-store mobile-nav-icon"></i> RACINE BY GANDA
                         </a>
-                        <a href="{{ route('frontend.marketplace') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">
-                            <i class="fas fa-shopping-bag" style="margin-right: 0.5rem;"></i> Marketplace
+                        <a href="{{ route('frontend.marketplace') }}" class="text-white-50 d-block ps-3 py-1 mobile-nav-sublink">
+                            <i class="fas fa-shopping-bag mobile-nav-icon"></i> Marketplace
                         </a>
                     </div>
                     
-                    <a href="{{ route('frontend.showroom') }}" class="text-white py-2" style="text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Showroom</a>
+                    <a href="{{ route('frontend.showroom') }}" class="text-white py-2 mobile-nav-link">Showroom</a>
                     
                     {{-- Info section --}}
-                    <div class="py-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                        <p class="text-white mb-2" style="font-weight: 600; font-size: 0.9rem;">Informations</p>
-                        <a href="{{ route('frontend.about') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ À propos</a>
-                        <a href="{{ route('frontend.contact') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Contact</a>
-                        <a href="{{ route('frontend.help') }}" class="text-white-50 d-block ps-3 py-1" style="text-decoration: none; font-size: 0.85rem;">→ Aide</a>
+                    <div class="py-2 mobile-nav-section">
+                        <p class="text-white mb-2 mobile-nav-section-label">Informations</p>
+                        <a href="{{ route('frontend.about') }}" class="text-white-50 d-block ps-3 py-1 mobile-nav-sublink">→ À propos</a>
+                        <a href="{{ route('frontend.contact') }}" class="text-white-50 d-block ps-3 py-1 mobile-nav-sublink">→ Contact</a>
+                        <a href="{{ route('frontend.help') }}" class="text-white-50 d-block ps-3 py-1 mobile-nav-sublink">→ Aide</a>
                     </div>
                     
-                    <a href="{{ route('cart.index') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                        <span style="font-size: 1.25rem;">🛒</span> Panier
+                    <a href="{{ route('cart.index') }}" class="text-white d-flex align-items-center py-2 mobile-nav-link-flex">
+                        <span class="mobile-nav-emoji">🛒</span> Panier
                     </a>
                     
                     
                     @auth
                         {{-- Options compte pour utilisateurs connectés (Mobile) --}}
                         @if(auth()->user()->getRoleSlug() === 'createur')
-                            <a href="{{ route('creator.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                                <span style="font-size: 1.25rem;">🏠</span> Espace créateur
+                            <a href="{{ route('creator.dashboard') }}" class="text-white d-flex align-items-center py-2 mobile-nav-link-flex">
+                                <span class="mobile-nav-emoji">🏠</span> Espace créateur
                             </a>
                         @elseif(in_array(auth()->user()->getRoleSlug(), ['admin', 'super_admin', 'staff']))
-                            <a href="{{ route('admin.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                                <span style="font-size: 1.25rem;">🏠</span> Administration
+                            <a href="{{ route('admin.dashboard') }}" class="text-white d-flex align-items-center py-2 mobile-nav-link-flex">
+                                <span class="mobile-nav-emoji">🏠</span> Administration
                             </a>
                         @else
-                            <a href="{{ route('account.dashboard') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                                <span style="font-size: 1.25rem;">🏠</span> Mon compte
+                            <a href="{{ route('account.dashboard') }}" class="text-white d-flex align-items-center py-2 mobile-nav-link-flex">
+                                <span class="mobile-nav-emoji">🏠</span> Mon compte
                             </a>
                         @endif
-                        <a href="{{ route('profile.orders') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                            <span style="font-size: 1.25rem;">📦</span> Mes commandes
+                        <a href="{{ route('profile.orders') }}" class="text-white d-flex align-items-center py-2 mobile-nav-link-flex">
+                            <span class="mobile-nav-emoji">📦</span> Mes commandes
                         </a>
-                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                        <form method="POST" action="{{ route('logout') }}" class="nav-logout-form">
                             @csrf
-                            <button type="submit" class="text-white d-flex align-items-center py-2 w-100 text-start" style="gap: 0.5rem; text-decoration: none; border: none; background: none; cursor: pointer; font-size: 1rem; font-family: inherit;">
-                                <span style="font-size: 1.25rem;">🚪</span> Déconnexion
+                            <button type="submit" class="text-white d-flex align-items-center py-2 w-100 text-start mobile-nav-logout-btn">
+                                <span class="mobile-nav-emoji">🚪</span> Déconnexion
                             </button>
                         </form>
                     @else
                         {{-- Bouton connexion pour invités (Mobile) --}}
-                        <a href="{{ route('login') }}" class="text-white d-flex align-items-center py-2" style="gap: 0.5rem; text-decoration: none;">
-                            <span style="font-size: 1.25rem;">👤</span> Connexion
+                        <a href="{{ route('login') }}" class="text-white d-flex align-items-center py-2 mobile-nav-link-flex">
+                            <span class="mobile-nav-emoji">👤</span> Connexion
                         </a>
                     @endauth
                 </div>
@@ -407,8 +406,8 @@
     {{-- Messages flash globaux --}}
     @if(session('success'))
         <div class="container mt-4">
-            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
-                <i class="fas fa-check-circle me-2" style="color: #ED5F1E;"></i>
+            <div class="alert alert-success alert-dismissible fade show alert-racine" role="alert">
+                <i class="fas fa-check-circle me-2 alert-racine-icon"></i>
                 <strong>{{ session('success') }}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -417,8 +416,8 @@
 
     @if(session('error'))
         <div class="container mt-4">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-start: 4px solid #ED5F1E; background: #FFFFFF; border-radius: 8px; color: #160D0C;">
-                <i class="fas fa-exclamation-circle me-2" style="color: #ED5F1E;"></i>
+            <div class="alert alert-danger alert-dismissible fade show alert-racine" role="alert">
+                <i class="fas fa-exclamation-circle me-2 alert-racine-icon"></i>
                 <strong>{{ session('error') }}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>

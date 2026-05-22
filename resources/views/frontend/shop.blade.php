@@ -223,7 +223,7 @@
                                         <span class="badge-brand"
                                             @if($creatorSlug)
                                             onclick="event.preventDefault();event.stopPropagation();window.location='{{ route('frontend.creator.shop', $creatorSlug) }}';"
-                                            style="cursor:pointer;"
+                                            class="cursor-pointer"
                                             @endif
                                         >
                                             <i class="fas fa-star"></i> RACINE BY GANDA
@@ -286,7 +286,7 @@
                             </form>
                             @else
                             <div class="quick-add-form">
-                                <button type="button" class="quick-add" disabled style="opacity: 0.6; cursor: not-allowed;">
+                                <button type="button" class="quick-add quick-add--disabled" disabled>
                                     <i class="fas fa-ban me-2"></i> Stock épuisé
                                 </button>
                             </div>
@@ -349,7 +349,7 @@
                             </form>
                             @else
                             <div class="quick-add-form">
-                                <button type="button" class="quick-add" disabled style="opacity: 0.6; cursor: not-allowed;">
+                                <button type="button" class="quick-add quick-add--disabled" disabled>
                                     <i class="fas fa-ban me-2"></i> Stock épuisé
                                 </button>
                             </div>
@@ -374,16 +374,16 @@
     
     <!-- CMS INTRO SECTION (si disponible) -->
     @if(isset($introSection) && $introSection && $introSection->is_active)
-    <section class="shop-intro-section" style="padding: 3rem 0; background: #FFFFFF;">
+    <section class="shop-intro-section">
         <div class="container">
             @php
                 $introData = $introSection->data ?? [];
             @endphp
             @if($introData['title'] ?? false)
-            <h2 class="text-center mb-3" style="font-family: 'Aleppo', 'Aileron', serif; color: #160D0C;">{{ $introData['title'] }}</h2>
+            <h2 class="text-center mb-3 shop-intro-title">{{ $introData['title'] }}</h2>
             @endif
             @if($introData['content'] ?? false)
-            <div class="text-center" style="max-width: 800px; margin: 0 auto; color: #160D0C;">
+            <div class="text-center shop-intro-text">
                 {!! $introData['content'] !!}
             </div>
             @endif
@@ -393,7 +393,7 @@
     
     <!-- CMS FOOTER SECTION (si disponible) -->
     @if(isset($footerSection) && $footerSection && $footerSection->is_active)
-    <section class="shop-footer-section" style="padding: 2rem 0; background: #FFFFFF;">
+    <section class="shop-footer-section">
         <div class="container">
             @php
                 $footerData = $footerSection->data ?? [];
