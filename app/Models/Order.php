@@ -140,4 +140,11 @@ class Order extends Model
     {
         return in_array($this->status, ['paid', 'cancelled', 'completed'], true);
     }
+
+    public function recalculateTotal(): void
+    {
+        $this->update([
+            'total_amount' => $this->items()->sum(\Illuminate\Support\Facades\DB::raw('price * quantity')),
+        ]);
+    }
 }

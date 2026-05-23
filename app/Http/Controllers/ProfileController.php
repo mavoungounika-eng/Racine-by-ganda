@@ -321,6 +321,34 @@ class ProfileController extends Controller
         return back()->with('success', 'Un email de vérification a été envoyé à ' . $user->professional_email . '.');
     }
 
+    public function cancelItem(Order $order, OrderItem $item, Request $request)
+    {
+        $this->authorize('view', $order);
+
+        if ($order->status !== 'pending') {
+            abort(403, 'Impossible de modifier une commande déjà traitée.');
+        }
+
+        if ($item->order_id !== $order->id) {
+            abort(404);
+        }
+
+        $item->delete();
+        $order->recalculateTotal();
+
+        if ($order->items()->count() === 0) {
+            $order->update(['status' => 'cancelled']);
+        }
+
+        $message = 'Article retiré de la commande.';
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message]);
+        }
+
+        return back()->with('success', $message);
+    }
+
     public function cancelOrder(Order $order): RedirectResponse
     {
         $this->authorize('view', $order);

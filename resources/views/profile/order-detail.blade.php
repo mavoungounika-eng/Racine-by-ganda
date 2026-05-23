@@ -189,7 +189,7 @@
 
             {{-- COLONNE DROITE : Articles --}}
             <div class="col-lg-6 mb-4">
-                <div class="al-card">
+                <div class="al-card" id="items-card">
                     <div class="px-4 py-3" style="border-bottom: 2px solid rgba(22,13,12,0.08);">
                         <h5 class="mb-0" style="font-weight: 600; color: #160D0C;">
                             <i class="fas fa-box me-2" style="color: #ED5F1E;"></i>
@@ -200,12 +200,15 @@
                         @if($isPending)
                             <p class="px-4 pt-3 pb-0 mb-0" style="font-size: 0.82rem; color: rgba(22,13,12,0.5);">
                                 <i class="fas fa-info-circle me-1" style="color: #FFB800;"></i>
-                                Commande en attente — vous pouvez encore ajuster les quantités.
+                                Commande en attente — vous pouvez encore ajuster les quantités ou retirer des articles.
                             </p>
                         @endif
-                        <table class="al-table w-100">
+                        <table class="al-table w-100" id="items-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 36px; padding-left: 1rem;">
+                                        <input type="checkbox" id="select-all" class="al-cb" title="Tout sélectionner">
+                                    </th>
                                     <th>Produit</th>
                                     <th class="text-center">Qté</th>
                                     <th class="text-end">Prix unit.</th>
@@ -214,10 +217,16 @@
                             </thead>
                             <tbody>
                                 @foreach($order->items as $item)
-                                <tr>
+                                <tr class="item-row"
+                                    data-item-id="{{ $item->id }}"
+                                    data-product-id="{{ $item->product_id }}"
+                                    data-product-title="{{ $item->product->title ?? 'Produit' }}"
+                                    data-cancel-url="{{ route('orders.items.cancel', [$order, $item]) }}">
+                                    <td style="padding-left: 1rem; vertical-align: middle;">
+                                        <input type="checkbox" class="al-cb item-cb" value="{{ $item->id }}">
+                                    </td>
                                     <td>
                                         <strong style="color: #160D0C;">{{ $item->product->title ?? 'Produit supprimé' }}</strong>
-                                        {{-- SKU masqué côté client --}}
                                     </td>
                                     <td class="text-center" style="vertical-align: middle;">
                                         @if($isPending)
@@ -246,6 +255,7 @@
                             </tbody>
                             <tfoot>
                                 <tr>
+                                    <td></td>
                                     <td colspan="3" class="text-end" style="font-weight: 600; color: #160D0C; border-top: 2px solid rgba(22,13,12,0.1); padding: 1rem;">
                                         Total
                                     </td>
@@ -257,6 +267,35 @@
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+
+                    {{-- BARRE D'ACTIONS FLOTTANTE --}}
+                    <div id="items-action-bar" style="display:none; position: sticky; bottom: 0; background: #160D0C; border-top: 2px solid rgba(237,95,30,0.4); padding: 0.75rem 1rem; border-radius: 0 0 12px 12px; z-index: 10;">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span id="selection-count" style="color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem;"></span>
+
+                            <button type="button" id="btn-view-product"
+                                onclick="itemBarViewProduct()"
+                                style="display:none; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                                <i class="fas fa-eye me-1"></i> Voir la fiche
+                            </button>
+
+                            @if($isCompleted)
+                            <button type="button" id="btn-report-item"
+                                onclick="itemBarReport()"
+                                style="background: rgba(255,184,0,0.15); color: #FFB800; border: 1px solid rgba(255,184,0,0.3); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Signaler un problème
+                            </button>
+                            @endif
+
+                            @if($isPending)
+                            <button type="button" id="btn-remove-item"
+                                onclick="itemBarRemove()"
+                                style="background: rgba(220,38,38,0.15); color: #FCA5A5; border: 1px solid rgba(220,38,38,0.35); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                                <i class="fas fa-trash me-1"></i> Retirer de la commande
+                            </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -492,6 +531,15 @@
     .al-table tbody tr:hover {
         background: rgba(237,95,30,0.02);
     }
+    .al-table tbody tr.row-selected {
+        background: rgba(237,95,30,0.06) !important;
+    }
+    .al-cb {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #ED5F1E;
+    }
     .order-timeline {
         min-height: 60px;
     }
@@ -502,7 +550,119 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
+    #items-action-bar button:hover {
+        opacity: 0.85;
+    }
 </style>
+
+<script nonce="{{ csp_nonce() }}">
+(function () {
+    const selectAll = document.getElementById('select-all');
+    const actionBar = document.getElementById('items-action-bar');
+    const selectionCount = document.getElementById('selection-count');
+    const btnViewProduct = document.getElementById('btn-view-product');
+
+    function getChecked() {
+        return Array.from(document.querySelectorAll('.item-cb:checked'));
+    }
+
+    function getSelectedRows() {
+        return getChecked().map(cb => cb.closest('.item-row'));
+    }
+
+    function updateBar() {
+        const checked = getChecked();
+        const count = checked.length;
+
+        if (count === 0) {
+            actionBar.style.display = 'none';
+            if (selectAll) selectAll.indeterminate = false;
+            return;
+        }
+
+        actionBar.style.display = 'block';
+        selectionCount.textContent = count === 1 ? '1 article sélectionné' : count + ' articles sélectionnés';
+
+        if (btnViewProduct) {
+            btnViewProduct.style.display = count === 1 ? 'inline-flex' : 'none';
+        }
+
+        const all = document.querySelectorAll('.item-cb');
+        if (selectAll) {
+            selectAll.checked = count === all.length;
+            selectAll.indeterminate = count > 0 && count < all.length;
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            document.querySelectorAll('.item-cb').forEach(cb => {
+                cb.checked = this.checked;
+                cb.closest('.item-row').classList.toggle('row-selected', this.checked);
+            });
+            updateBar();
+        });
+    }
+
+    document.querySelectorAll('.item-cb').forEach(cb => {
+        cb.addEventListener('change', function () {
+            this.closest('.item-row').classList.toggle('row-selected', this.checked);
+            updateBar();
+        });
+    });
+
+    window.itemBarViewProduct = function () {
+        const rows = getSelectedRows();
+        if (rows.length !== 1) return;
+        const productId = rows[0].dataset.productId;
+        if (productId) {
+            window.open('{{ url('/produit') }}/' + productId, '_blank');
+        }
+    };
+
+    window.itemBarReport = function () {
+        const rows = getSelectedRows();
+        const titles = rows.map(r => r.dataset.productTitle).join(', ');
+        const textarea = document.querySelector('#reportProblemModal textarea[name="initial_message"]');
+        if (textarea && titles) {
+            textarea.value = 'Article(s) concerné(s) : ' + titles + '\n\n';
+        }
+        const modal = document.getElementById('reportProblemModal');
+        if (modal) {
+            bootstrap.Modal.getOrCreateInstance(modal).show();
+        }
+    };
+
+    window.itemBarRemove = function () {
+        const rows = getSelectedRows();
+        if (rows.length === 0) return;
+
+        const names = rows.map(r => r.dataset.productTitle).join(', ');
+        if (!confirm('Retirer ' + (rows.length === 1 ? '"' + names + '"' : rows.length + ' articles') + ' de la commande ?')) return;
+
+        const csrfToken = (document.cookie.split('; ').find(c => c.startsWith('XSRF-TOKEN=')) || '').split('=').slice(1).join('=');
+        const token = decodeURIComponent(csrfToken);
+
+        Promise.all(rows.map(row =>
+            fetch(row.dataset.cancelUrl, {
+                method: 'DELETE',
+                headers: {
+                    'X-XSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+        )).then(responses => {
+            const allOk = responses.every(r => r.ok);
+            if (allOk) {
+                window.location.reload();
+            } else {
+                alert('Une erreur est survenue. Veuillez réessayer.');
+            }
+        }).catch(() => alert('Erreur réseau. Veuillez réessayer.'));
+    };
+})();
+</script>
 
 @include('components.navigation-breadcrumb', [
     'items' => [

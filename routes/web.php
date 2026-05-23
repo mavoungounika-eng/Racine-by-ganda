@@ -293,6 +293,7 @@ Route::middleware(['auth', 'ensure'])->group(function () {
     Route::post('/profil/commandes/{order}/cancel', [\App\Http\Controllers\ProfileController::class, 'cancelOrder'])->name('profile.orders.cancel');
     Route::post('/profil/commandes/{order}/items/{item}/quantity', [\App\Http\Controllers\ProfileController::class, 'updateOrderItemQuantity'])->name('profile.orders.item.quantity');
     Route::post('/profil/commandes/{order}/return', [\App\Http\Controllers\ProfileController::class, 'requestReturn'])->name('profile.orders.return');
+    Route::delete('/profil/commandes/{order}/articles/{item}', [\App\Http\Controllers\ProfileController::class, 'cancelItem'])->name('orders.items.cancel');
     Route::get('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'addresses'])->name('profile.addresses');
     Route::post('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
     Route::delete('/profil/adresses/{address}', [\App\Http\Controllers\ProfileController::class, 'deleteAddress'])->name('profile.addresses.delete');
