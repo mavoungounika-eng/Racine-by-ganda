@@ -19,9 +19,11 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user();
+        // Charge commandes et adresses en une seule passe — évite la double requête
+        // avec orders() qui recharge les mêmes données pour le même utilisateur
         $orders = Order::where('user_id', $user->id)
             ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
+            ->latest()
             ->paginate(10);
         $addresses = Address::where('user_id', $user->id)->get();
         return view('profile.index', compact('user', 'orders', 'addresses'));

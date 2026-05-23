@@ -51,7 +51,8 @@ class ClientAccountController extends Controller
                 ->whereIn('status', ['completed', 'cancelled'])
                 ->count(),
             'total_spent' => Order::where('user_id', $user->id)
-                ->where('payment_status', 'paid')
+                ->whereIn('payment_status', ['paid'])
+                ->whereIn('status', ['completed', 'processing', 'pending', 'paid'])
                 ->sum('total_amount'),
         ];
 

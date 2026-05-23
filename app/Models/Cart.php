@@ -11,7 +11,12 @@ class Cart extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id'];
+    protected $fillable = ['user_id', 'reminder_count', 'last_reminder_sent_at'];
+
+    protected $casts = [
+        'last_reminder_sent_at' => 'datetime',
+        'reminder_count'        => 'integer',
+    ];
 
     public function user(): BelongsTo
     {

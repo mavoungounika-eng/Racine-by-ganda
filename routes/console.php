@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 use App\Jobs\CleanupPendingPosPayments;
+use App\Jobs\SendAbandonedCartReminders;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -20,4 +21,12 @@ Schedule::job(new CleanupPendingPosPayments())
     ->withoutOverlapping()
     ->onFailure(function () {
         Log::error('[POS Cleanup] Scheduled job failed');
+    });
+
+// Relances paniers abandonnés : toutes les heures (détecte 1h, 24h, 72h)
+Schedule::job(new SendAbandonedCartReminders())
+    ->hourly()
+    ->withoutOverlapping()
+    ->onFailure(function () {
+        Log::error('[AbandonedCart] Scheduled reminder job failed');
     });

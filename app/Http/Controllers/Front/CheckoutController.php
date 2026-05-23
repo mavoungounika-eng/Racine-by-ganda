@@ -65,6 +65,23 @@ class CheckoutController extends Controller
         }
 
         $cartService = $this->getCartService();
+
+        // Resync des prix avant affichage — alerte si des prix ont changé
+        if ($cartService instanceof DatabaseCartService) {
+            $priceChanges = $cartService->refreshPrices();
+            if (!empty($priceChanges)) {
+                $lines = array_map(
+                    fn($c) => "{$c['product_name']} : " .
+                              number_format($c['old_price'], 0, ',', ' ') . ' → ' .
+                              number_format($c['new_price'], 0, ',', ' ') . ' FCFA',
+                    $priceChanges
+                );
+                session()->flash('warning',
+                    'Les prix de certains articles ont été mis à jour : ' . implode(' | ', $lines)
+                );
+            }
+        }
+
         $items = $cartService->getItems();
         $subtotal = $cartService->total();
         $shipping_default = 2000; // 2000 FCFA par défaut pour livraison à domicile
