@@ -232,10 +232,42 @@ class CheckoutController extends Controller
                 }
             }
 
+            // Detect previously cancelled items (reorder duplicates)
+            $reorderWarnings = [];
+            foreach ($items as $cartItem) {
+                $productId = is_object($cartItem) ? $cartItem->product_id : $cartItem['product_id'];
+                $previousCancellation = \App\Models\OrderItem::where('product_id', $productId)
+                    ->whereHas('order', fn ($q) => $q->where('user_id', $user->id))
+                    ->where('status', \App\Models\OrderItem::STATUS_CANCELLED)
+                    ->latest()
+                    ->first();
+                if ($previousCancellation) {
+                    $reorderWarnings[$productId] = $previousCancellation->id;
+                }
+            }
+
             $order = $this->orderService->createOrderFromCart(
                 $data, $items, $user->id, $idempotencyKey, $checkoutToken,
                 $promoCodeId, $promoDiscount, $promoFreeShipping
             );
+
+            // Assign previous_cancellation_id on the newly created items
+            if (!empty($reorderWarnings)) {
+                $order->load('items.product');
+                $productNames = [];
+                foreach ($order->items as $newItem) {
+                    if (isset($reorderWarnings[$newItem->product_id])) {
+                        $newItem->update(['previous_cancellation_id' => $reorderWarnings[$newItem->product_id]]);
+                        $productNames[] = $newItem->product->title ?? 'Produit #' . $newItem->product_id;
+                    }
+                }
+                if (!empty($productNames)) {
+                    session()->put('reorder_warnings', array_map(
+                        fn ($name) => ['product_name' => $name],
+                        $productNames
+                    ));
+                }
+            }
 
             \Log::info('Checkout: Order created', [
                 'order_id' => $order->id ?? 'NO ID',
