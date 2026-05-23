@@ -778,7 +778,7 @@
                 <img src="{{ asset('racine/images/logoo.png') }}" alt="Logo">
                 <span class="sidebar-brand-text">
                     RACINE BY GANDA
-                    <small>Espace Pro</small>
+                    <small>{{ match(Auth::user()->role ?? '') { 'client' => 'Espace Client', 'createur' => 'Espace Créateur', 'super_admin', 'admin', 'staff' => 'Espace Admin', default => 'Espace Pro' } }}</small>
                 </span>
             </a>
         </div>

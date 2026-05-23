@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\OrderItem;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -316,6 +319,74 @@ class ProfileController extends Controller
         ));
 
         return back()->with('success', 'Un email de vérification a été envoyé à ' . $user->professional_email . '.');
+    }
+
+    public function cancelOrder(Order $order): RedirectResponse
+    {
+        $this->authorize('view', $order);
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Seules les commandes en attente peuvent être annulées.');
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        \Log::channel('security')->info('Order cancelled by client', [
+            'order_id' => $order->id,
+            'user_id'  => Auth::id(),
+        ]);
+
+        return redirect()->route('profile.orders')
+            ->with('success', 'Commande #' . $order->id . ' annulée avec succès.');
+    }
+
+    public function updateOrderItemQuantity(Order $order, OrderItem $item, Request $request): RedirectResponse
+    {
+        $this->authorize('view', $order);
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Impossible de modifier une commande déjà traitée.');
+        }
+
+        $request->validate(['quantity' => 'required|integer|min:1|max:100']);
+
+        $item->update(['quantity' => $request->integer('quantity')]);
+        $order->update([
+            'total_amount' => $order->items()->sum(DB::raw('price * quantity')),
+        ]);
+
+        return back()->with('success', 'Quantité mise à jour.');
+    }
+
+    public function requestReturn(Order $order, Request $request): RedirectResponse
+    {
+        $this->authorize('view', $order);
+
+        if (!in_array($order->status, ['completed', 'delivered'])) {
+            return back()->with('error', 'Seules les commandes livrées peuvent faire l\'objet d\'un retour.');
+        }
+
+        $request->validate(['reason' => 'required|string|min:20|max:1000']);
+
+        $conversation = \App\Models\Conversation::create([
+            'type'             => \App\Models\Conversation::TYPE_ORDER_THREAD,
+            'subject'          => 'Retour produit — Commande #' . $order->id,
+            'related_order_id' => $order->id,
+            'created_by'       => Auth::id(),
+            'last_message_at'  => now(),
+        ]);
+
+        $conversation->participants()->create(['user_id' => Auth::id(), 'role' => 'client']);
+
+        \App\Models\Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id'       => Auth::id(),
+            'content'         => 'Demande de retour :\n\n' . $request->string('reason'),
+            'type'            => 'text',
+        ]);
+
+        return redirect()->route('messages.show', $conversation)
+            ->with('success', 'Votre demande de retour a été envoyée au support.');
     }
 
     public function confirmProfessionalEmail(Request $request)
