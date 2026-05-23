@@ -710,3 +710,104 @@ Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 ### Points à corriger avant mise en production
 - Dossier `tests_backup_20260126_120336/` à supprimer ou à ignorer explicitement dans `.gitignore`.
 - Vérifier que `.env.production.local` est bien ignoré dans `.gitignore`.
+
+
+---
+
+## Modules autonomes (modules/)
+
+Namespace racine : `Modules\` (PSR-4)
+Point d'entrée de chaque module : `modules/{Nom}/Providers/{Nom}ServiceProvider.php`
+
+| Module   | Namespace          | Rôle principal                          |
+|----------|--------------------|-----------------------------------------|
+| Pos      | Modules\Pos\     | Caisse Electron, sessions, sync offline |
+| Crm      | Modules\Crm\     | Segmentation clients, fidélité          |
+| Erp      | Modules\Erp\     | Production, stock, costing, WIP         |
+| SaaS     | Modules\SaaS\    | Plans abonnements, checkout creators    |
+| Currency | Modules\Currency\ | Conversion devises, cache taux         |
+| Auth     | Modules\Auth\    | 2FA TOTP, OAuth Socialite, sessions     |
+
+⚠️  `racine-pos-electron/` est un projet Electron SÉPARÉ à la racine du dépôt.
+    Ne pas modifier ses fichiers depuis le contexte Laravel.
+    Ne pas le confondre avec `modules/Pos/` qui est le backend API du POS.
+
+---
+
+## Variables d'environnement — .env.testing (valeurs attendues)
+
+Ces variables doivent être présentes dans `.env.testing` pour éviter tout appel
+réseau réel ou Redis pendant PHPUnit.
+
+```ini
+# Queue & Cache — OBLIGATOIRE
+QUEUE_CONNECTION=sync
+CACHE_STORE=array
+SESSION_DRIVER=array
+MAIL_MAILER=array
+
+# Stripe — clés test uniquement, jamais les clés live
+STRIPE_KEY=pk_test_XXXX
+STRIPE_SECRET=sk_test_XXXX
+STRIPE_WEBHOOK_SECRET=whsec_test_XXXX
+
+# Services mockés en test
+RECAPTCHA_SECRET_KEY=test-secret
+RECAPTCHA_SITE_KEY=test-site
+SENTRY_LARAVEL_DSN=
+OPENAI_API_KEY=test-key
+
+# Redis — uniquement QueueCircuitBreaker / QueueRateLimiter
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+```
+
+⚠️  `.env.production.local` doit être dans `.gitignore` — vérifier avant chaque push.
+
+---
+
+## Modules critiques — causes exactes des échecs
+
+| Module           | Cause connue                                                                           | Priorité |
+|------------------|----------------------------------------------------------------------------------------|----------|
+| Auth 2FA (TOTP)  | `withSession(['2fa_verified'=>true,'auth_version'=>$user->auth_version])` manquant     | CRITIQUE |
+| OAuth Socialite  | `Socialite::shouldReceive()` non mocké — appel HTTP réel en test                       | CRITIQUE |
+| Stripe paiements | `STRIPE_SECRET` absente dans `.env.testing` OU webhook non signé                       | CRITIQUE |
+| Service Amira IA | `OPENAI_API_KEY` non définie en test, `OpenAI::fake()` absent                          | CRITIQUE |
+| POS Electron     | Tests dépendent de `QUEUE_CONNECTION=sync`                                             | HAUTE    |
+
+Fix Socialite → `Socialite::shouldReceive('driver->user')->andReturn(...)` dans setUp().
+
+---
+
+## Stratégie de tests — règles par couche
+
+### Unit (tests/Unit/)
+- Un seul Service / classe, sans base de données
+- Mocks pour toutes les dépendances externes
+- Pas de `RefreshDatabase` — PHPUnit pur
+- Durée attendue : < 1s par test
+
+### Feature (tests/Feature/)
+- Route ou flux complet end-to-end avec `RefreshDatabase`
+- Toujours mocker : Stripe, OpenAI, Socialite, Monetbil
+- Auth : toujours `withSession(['2fa_verified'=>true,'auth_version'=>$user->auth_version])`
+- Jobs : `Queue::fake()` en début de test
+
+### Ordre de debug recommandé
+```bash
+# 1. Syntaxe
+php -l app/Services/MonService.php
+
+# 2. Ciblé
+./vendor/bin/phpunit --filter NomDeLaSuiteTest --testdox 2>&1 | tail -20
+
+# 3. Anti-régression globale
+redis-cli FLUSHDB && ./vendor/bin/phpunit 2>&1 | tail -5
+```
+
+### Interprétation
+- `895 tests, 0 failures, 19 skipped` → référence OK
+- Tout failure → STOP (RÈGLE 6)
+- Skipped en hausse → investiguer avant de continuer
+- Tests Redis flaky → toujours `redis-cli FLUSHDB` avant run complet
