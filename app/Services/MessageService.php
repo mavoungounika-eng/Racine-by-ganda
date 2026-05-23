@@ -115,6 +115,27 @@ class MessageService
     }
 
     /**
+     * Obtenir les messages sans déclencher markConversationAsRead (évite double appel depuis show())
+     */
+    public function getMessagesOnly(int $conversationId, int $userId, ?int $limit = 50): \Illuminate\Database\Eloquent\Collection
+    {
+        $participant = ConversationParticipant::where('conversation_id', $conversationId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (!$participant) {
+            return collect();
+        }
+
+        return Message::where('conversation_id', $conversationId)
+            ->with(['user', 'attachments'])
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get()
+            ->reverse();
+    }
+
+    /**
      * Marquer une conversation comme lue
      */
     public function markConversationAsRead(int $conversationId, int $userId): void

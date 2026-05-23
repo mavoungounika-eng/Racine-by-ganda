@@ -364,6 +364,12 @@
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span id="cancelled-selection-count" style="color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem;"></span>
 
+                    <button type="button" id="btn-cancelled-view"
+                        onclick="cancelledBarView()"
+                        style="display:none; background: rgba(255,255,255,0.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                        <i class="fas fa-eye me-1"></i> Voir la fiche
+                    </button>
+
                     @if($isPending)
                     <button type="button" id="btn-restore-item"
                         onclick="cancelledBarRestore()"
@@ -730,16 +736,19 @@
     function updateCancelledBar() {
         const checked = getCancelledChecked();
         const count = checked.length;
+        const viewBtn = document.getElementById('btn-cancelled-view');
 
         if (!cancelledActionBar) return;
 
         if (count === 0) {
             cancelledActionBar.style.display = 'none';
             if (cancelledSelectAll) cancelledSelectAll.indeterminate = false;
+            if (viewBtn) viewBtn.style.display = 'none';
             return;
         }
 
         cancelledActionBar.style.display = 'block';
+        if (viewBtn) viewBtn.style.display = count === 1 ? 'inline-flex' : 'none';
         if (cancelledSelectionCount) {
             cancelledSelectionCount.textContent = count === 1 ? '1 article sélectionné' : count + ' articles sélectionnés';
         }
@@ -792,6 +801,17 @@
                 alert('Une erreur est survenue. Veuillez réessayer.');
             }
         }).catch(() => alert('Erreur réseau. Veuillez réessayer.'));
+    };
+
+    window.cancelledBarView = function () {
+        const rows = getCancelledSelectedRows();
+        if (rows.length !== 1) return;
+        const productId = rows[0].dataset.productId;
+        if (!productId) {
+            alert('Produit indisponible.');
+            return;
+        }
+        window.open('{{ url('/produit') }}/' + productId, '_blank');
     };
 
     window.cancelledBarReorder = function () {

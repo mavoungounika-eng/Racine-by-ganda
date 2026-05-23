@@ -130,20 +130,21 @@ class MessageController extends Controller
             abort(404);
         }
 
-        // Marquer comme lue
+        // Marquer comme lue (une seule fois — getMessages ne rappelle plus markConversationAsRead)
         $this->messageService->markConversationAsRead($id, $user->id);
 
-        // Charger les messages
-        $messages = $this->messageService->getMessages($id, $user->id, 50);
+        // Charger les messages (sans second appel à markConversationAsRead)
+        $messages = $this->messageService->getMessagesOnly($id, $user->id, 50);
 
         // Charger les produits tagués
         $taggedProducts = $conversation->taggedProducts()->with(['taggedBy', 'product'])->get();
 
-        // Liste des produits disponibles pour tagging (si admin/staff avec permission) - avec cache
+        // Liste des produits disponibles pour tagging
+        $availableProducts = collect();
         if ($user->hasPermission('view-all-orders')) {
             $availableProducts = \Illuminate\Support\Facades\Cache::remember(
                 'available_products_for_tagging',
-                300, // 5 minutes
+                300,
                 function () {
                     return Product::where('stock', '>', 0)
                         ->orderBy('title')

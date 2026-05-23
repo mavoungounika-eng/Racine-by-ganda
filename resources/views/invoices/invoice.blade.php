@@ -269,10 +269,14 @@
                     @endphp
                     {{ $statusLabel }}
                 </p>
-                <p><strong>Paiement:</strong> 
-                    <span class="status-badge {{ $order->payment_status === 'paid' ? 'status-paid' : 'status-pending' }}">
-                        {{ $order->payment_status === 'paid' ? 'Payé' : 'En attente' }}
-                    </span>
+                <p><strong>Paiement:</strong>
+                    @if($order->status === 'cancelled')
+                        <span class="status-badge" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:2px 8px;border-radius:4px;">Annulée</span>
+                    @elseif($order->payment_status === 'paid')
+                        <span class="status-badge status-paid">Payé</span>
+                    @else
+                        <span class="status-badge status-pending">En attente</span>
+                    @endif
                 </p>
             </div>
         </div>
@@ -292,9 +296,6 @@
                 <tr>
                     <td>
                         <strong>{{ $item->product->title ?? 'Produit' }}</strong>
-                        @if($item->product && $item->product->sku)
-                        <br><small style="color: #8B7355;">SKU: {{ $item->product->sku }}</small>
-                        @endif
                     </td>
                     <td class="text-center">{{ $item->quantity }}</td>
                     <td class="text-end">{{ number_format($item->price ?? 0, 0, ',', ' ') }} FCFA</td>
