@@ -56,7 +56,9 @@ class ProfileController extends Controller
         if ($statusFilter === 'en-cours') {
             $query->whereIn('status', ['pending', 'processing']);
         } elseif ($statusFilter === 'terminees') {
-            $query->whereIn('status', ['completed', 'cancelled']);
+            $query->whereIn('status', ['completed', 'delivered']);
+        } elseif ($statusFilter === 'annulees') {
+            $query->where('status', 'cancelled');
         }
         // Si 'toutes' ou autre valeur, on affiche tout
         

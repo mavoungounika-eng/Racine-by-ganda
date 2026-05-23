@@ -51,11 +51,19 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ $statusFilter === 'terminees' ? 'active' : '' }}" 
+                        <a class="nav-link {{ $statusFilter === 'terminees' ? 'active' : '' }}"
                            href="{{ route('profile.orders', ['status' => 'terminees']) }}"
                            style="border: none; color: {{ $statusFilter === 'terminees' ? '#ED5F1E' : '#6c757d' }}; font-weight: {{ $statusFilter === 'terminees' ? '600' : '400' }}; padding: 1rem 1.5rem;">
                             <i class="fas fa-check-circle me-2"></i>
                             Terminées
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ $statusFilter === 'annulees' ? 'active' : '' }}"
+                           href="{{ route('profile.orders', ['status' => 'annulees']) }}"
+                           style="border: none; color: {{ $statusFilter === 'annulees' ? '#DC2626' : '#6c757d' }}; font-weight: {{ $statusFilter === 'annulees' ? '600' : '400' }}; padding: 1rem 1.5rem;">
+                            <i class="fas fa-ban me-2"></i>
+                            Annulées
                         </a>
                     </li>
                 </ul>

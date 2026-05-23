@@ -224,6 +224,7 @@
                                 <tr class="item-row"
                                     data-item-id="{{ $item->id }}"
                                     data-product-id="{{ $item->product_id }}"
+                                    data-product-slug="{{ $item->product->slug ?? '' }}"
                                     data-product-title="{{ $item->product->title ?? 'Produit' }}"
                                     data-cancel-url="{{ route('orders.items.cancel', [$order, $item]) }}">
                                     <td style="padding-left: 1rem; vertical-align: middle;">
@@ -336,6 +337,7 @@
                         <tr class="cancelled-item-row"
                             data-item-id="{{ $item->id }}"
                             data-product-id="{{ $item->product_id }}"
+                            data-product-slug="{{ $item->product->slug ?? '' }}"
                             data-product-title="{{ $item->product->title ?? 'Produit' }}"
                             data-restore-url="{{ route('orders.items.restore', [$order, $item]) }}">
                             <td style="padding-left: 1rem; vertical-align: middle;">
@@ -701,9 +703,11 @@
     window.itemBarViewProduct = function () {
         const rows = getSelectedRows();
         if (rows.length !== 1) return;
-        const productId = rows[0].dataset.productId;
-        if (productId) {
-            window.open('{{ url('/produit') }}/' + productId, '_blank');
+        const slug = rows[0].dataset.productSlug;
+        if (slug) {
+            window.open('{{ url('/produit') }}/' + slug, '_blank');
+        } else {
+            alert('Fiche produit indisponible.');
         }
     };
 
@@ -806,20 +810,20 @@
     window.cancelledBarView = function () {
         const rows = getCancelledSelectedRows();
         if (rows.length !== 1) return;
-        const productId = rows[0].dataset.productId;
-        if (!productId) {
-            alert('Produit indisponible.');
+        const slug = rows[0].dataset.productSlug;
+        if (!slug) {
+            alert('Fiche produit indisponible.');
             return;
         }
-        window.open('{{ url('/produit') }}/' + productId, '_blank');
+        window.open('{{ url('/produit') }}/' + slug, '_blank');
     };
 
     window.cancelledBarReorder = function () {
         const rows = getCancelledSelectedRows();
         rows.forEach(row => {
-            const productId = row.dataset.productId;
-            if (productId) {
-                window.open('{{ url('/produit') }}/' + productId + '?reorder=1', '_blank');
+            const slug = row.dataset.productSlug;
+            if (slug) {
+                window.open('{{ url('/produit') }}/' + slug + '?reorder=1', '_blank');
             }
         });
     };
