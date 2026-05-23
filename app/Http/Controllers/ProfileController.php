@@ -49,9 +49,9 @@ class ProfileController extends Controller
         
         // Appliquer le filtre selon le statut
         if ($statusFilter === 'en-cours') {
-            $query->whereIn('status', ['pending', 'processing', 'paid']);
+            $query->whereIn('status', ['pending', 'processing']);
         } elseif ($statusFilter === 'terminees') {
-            $query->whereIn('status', ['completed', 'delivered']);
+            $query->whereIn('status', ['completed', 'cancelled']);
         }
         // Si 'toutes' ou autre valeur, on affiche tout
         

@@ -320,7 +320,14 @@ class OrderService
      */
     protected function formatAddress(array $formData): string
     {
-        return $formData['address_line1'] . ', ' . $formData['city'] . ', ' . $formData['country'];
+        $parts = array_filter([
+            $formData['address_line1'] ?? null,
+            $formData['address_line2'] ?? null,
+            $formData['postal_code'] ?? null,
+            $formData['city'] ?? null,
+            $formData['country'] ?? null,
+        ]);
+        return implode(', ', $parts);
     }
 
     /**

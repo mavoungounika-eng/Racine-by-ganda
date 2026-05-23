@@ -136,41 +136,68 @@
                     <div class="card-body">
                         <div class="form-group">
                             <label for="address_line1">Adresse <span class="text-danger">*</span></label>
-                            <input type="text" 
-                                   class="form-control @error('address_line1') is-invalid @enderror" 
-                                   id="address_line1" 
-                                   name="address_line1" 
-                                   value="{{ old('address_line1') }}" 
-                                   placeholder="Rue, numéro, quartier" 
+                            <input type="text"
+                                   class="form-control @error('address_line1') is-invalid @enderror"
+                                   id="address_line1"
+                                   name="address_line1"
+                                   value="{{ old('address_line1') }}"
+                                   placeholder="Rue, numéro, quartier"
                                    required>
                             @error('address_line1')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
+                        <div class="form-group">
+                            <label for="address_line2">Complément d'adresse</label>
+                            <input type="text"
+                                   class="form-control @error('address_line2') is-invalid @enderror"
+                                   id="address_line2"
+                                   name="address_line2"
+                                   value="{{ old('address_line2') }}"
+                                   placeholder="Appartement, bâtiment, étage (optionnel)">
+                            @error('address_line2')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="city">Ville <span class="text-danger">*</span></label>
-                                    <input type="text" 
-                                           class="form-control @error('city') is-invalid @enderror" 
-                                           id="city" 
-                                           name="city" 
-                                           value="{{ old('city') }}" 
+                                    <input type="text"
+                                           class="form-control @error('city') is-invalid @enderror"
+                                           id="city"
+                                           name="city"
+                                           value="{{ old('city') }}"
                                            required>
                                     @error('city')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="postal_code">Code postal</label>
+                                    <input type="text"
+                                           class="form-control @error('postal_code') is-invalid @enderror"
+                                           id="postal_code"
+                                           name="postal_code"
+                                           value="{{ old('postal_code') }}"
+                                           placeholder="BP / Code postal">
+                                    @error('postal_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="country">Pays <span class="text-danger">*</span></label>
-                                    <input type="text" 
-                                           class="form-control @error('country') is-invalid @enderror" 
-                                           id="country" 
-                                           name="country" 
-                                           value="{{ old('country', 'Congo') }}" 
+                                    <input type="text"
+                                           class="form-control @error('country') is-invalid @enderror"
+                                           id="country"
+                                           name="country"
+                                           value="{{ old('country', 'Congo') }}"
                                            required>
                                     @error('country')
                                         <div class="invalid-feedback">{{ $message }}</div>

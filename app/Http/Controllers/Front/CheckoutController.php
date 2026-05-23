@@ -53,8 +53,16 @@ class CheckoutController extends Controller
         }
 
         $user = Auth::user();
-        
-        // ... (Middle code unchanged)
+
+        if (!$user->isClient()) {
+            return redirect()->route('frontend.shop')
+                ->with('error', 'Cette page est réservée aux clients.');
+        }
+
+        if ($user->status !== 'active') {
+            return redirect()->route('frontend.shop')
+                ->with('error', 'Votre compte est désactivé. Contactez le support.');
+        }
 
         $cartService = $this->getCartService();
         $items = $cartService->getItems();
@@ -179,10 +187,33 @@ class CheckoutController extends Controller
                 ?: $request->input('idempotency_key')
                 ?: session('checkout_idempotency_key');
 
-            // Récupérer le code promo depuis la session (appliqué via applyPromo())
-            $promoCodeId      = session('applied_promo_code_id');
-            $promoDiscount    = session('applied_promo_discount', 0);
-            $promoFreeShipping = session('applied_promo_free_shipping', false);
+            // Re-valider le code promo en DB (la session peut être périmée)
+            $promoCodeId      = null;
+            $promoDiscount    = 0;
+            $promoFreeShipping = false;
+
+            $sessionPromoId = session('applied_promo_code_id');
+            if ($sessionPromoId) {
+                $promoCode = \App\Models\PromoCode::find($sessionPromoId);
+                if ($promoCode && $promoCode->isValid()) {
+                    $cartTotal = $cartService->total();
+                    if ($promoCode->meetsMinimumAmount($cartTotal)) {
+                        $promoCodeId      = $promoCode->id;
+                        $promoDiscount    = $promoCode->calculateDiscount($cartTotal);
+                        $promoFreeShipping = $promoCode->type === 'free_shipping';
+                    } else {
+                        session()->forget([
+                            'applied_promo_code_id', 'applied_promo_code_code',
+                            'applied_promo_discount', 'applied_promo_free_shipping',
+                        ]);
+                    }
+                } else {
+                    session()->forget([
+                        'applied_promo_code_id', 'applied_promo_code_code',
+                        'applied_promo_discount', 'applied_promo_free_shipping',
+                    ]);
+                }
+            }
 
             $order = $this->orderService->createOrderFromCart(
                 $data, $items, $user->id, $idempotencyKey, $checkoutToken,

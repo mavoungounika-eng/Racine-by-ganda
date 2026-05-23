@@ -94,14 +94,16 @@ class ReviewController extends Controller
             }
         }
 
+        $isVerified = !empty($validated['order_id']);
+
         Review::create([
             'product_id' => $validated['product_id'],
             'user_id' => $user->id,
             'order_id' => $validated['order_id'] ?? null,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
-            'is_verified_purchase' => !empty($validated['order_id']),
-            'is_approved' => true, // Auto-approuver pour l'instant
+            'is_verified_purchase' => $isVerified,
+            'is_approved' => $isVerified, // Seuls les achats vérifiés sont publiés immédiatement
         ]);
 
         return redirect()->route('profile.reviews')

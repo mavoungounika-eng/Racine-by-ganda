@@ -45,10 +45,10 @@ class ClientAccountController extends Controller
         $stats = [
             'my_orders_total' => Order::where('user_id', $user->id)->count(),
             'my_orders_pending' => Order::where('user_id', $user->id)
-                ->whereIn('status', ['pending', 'processing', 'paid'])
+                ->whereIn('status', ['pending', 'processing'])
                 ->count(),
             'my_orders_completed' => Order::where('user_id', $user->id)
-                ->whereIn('status', ['completed', 'delivered'])
+                ->whereIn('status', ['completed', 'cancelled'])
                 ->count(),
             'total_spent' => Order::where('user_id', $user->id)
                 ->where('payment_status', 'paid')

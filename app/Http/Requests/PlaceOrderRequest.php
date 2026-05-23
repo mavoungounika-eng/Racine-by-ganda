@@ -31,6 +31,8 @@ class PlaceOrderRequest extends FormRequest
             'email'           => 'required|email',
             'phone'           => 'required|string|max:50',
             'address_line1'   => 'required|string|max:255',
+            'address_line2'   => 'nullable|string|max:255',
+            'postal_code'     => 'nullable|string|max:20',
             'city'            => 'required|string|max:255',
             'country'         => 'required|string|max:255',
             'shipping_method' => 'required|in:home_delivery,showroom_pickup',

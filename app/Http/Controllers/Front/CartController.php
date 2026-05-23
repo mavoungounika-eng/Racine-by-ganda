@@ -84,8 +84,9 @@ class CartController extends Controller
         // Limiter la quantité au stock disponible (sécurité supplémentaire)
         $quantity = min($request->quantity, $product->stock);
 
-        $this->getService()->add($product, $quantity);
-        $count = $this->getService()->count();
+        $service = $this->getService();
+        $service->add($product, $quantity);
+        $count = $service->count();
 
         // Phase 4 : Émettre l'event ProductAddedToCart pour le monitoring
         event(new ProductAddedToCart($product, Auth::id(), $quantity));
@@ -118,9 +119,14 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:0',
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $product = Product::where('id', $request->product_id)
+            ->where('is_active', true)
+            ->first();
 
-        // Vérification stock
+        if (!$product) {
+            return back()->with('error', 'Ce produit n\'est plus disponible.');
+        }
+
         if ($product->stock < $request->quantity) {
             return back()->with('error', 'Stock insuffisant pour la quantité demandée.');
         }
