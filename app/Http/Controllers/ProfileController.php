@@ -321,6 +321,33 @@ class ProfileController extends Controller
         return back()->with('success', 'Un email de vérification a été envoyé à ' . $user->professional_email . '.');
     }
 
+    public function restoreItem(Order $order, OrderItem $item, Request $request): RedirectResponse
+    {
+        $this->authorize('view', $order);
+
+        if ($order->status !== 'pending') {
+            abort(403, 'Restauration impossible : commande non en attente.');
+        }
+
+        if ($item->order_id !== $order->id) {
+            abort(404);
+        }
+
+        try {
+            $item->restore();
+        } catch (\App\Exceptions\InvalidOrderItemTransitionException $e) {
+            return back()->with('error', 'Cet article ne peut pas être restauré (statut actuel : ' . $item->status . ').');
+        }
+
+        $order->recalculateTotal();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Article restauré.']);
+        }
+
+        return back()->with('success', 'Article restauré dans la commande.');
+    }
+
     public function cancelItem(Order $order, OrderItem $item, Request $request)
     {
         $this->authorize('view', $order);
@@ -333,10 +360,10 @@ class ProfileController extends Controller
             abort(404);
         }
 
-        $item->delete();
+        $item->cancel();
         $order->recalculateTotal();
 
-        if ($order->items()->count() === 0) {
+        if ($order->items()->active()->count() === 0) {
             $order->update(['status' => 'cancelled']);
         }
 

@@ -128,7 +128,11 @@
                                     </span>
                                 </td>
                                 <td style="padding: 1.25rem; vertical-align: middle;">
-                                    @if($order->payment_status === 'paid')
+                                    @if($order->status === 'cancelled')
+                                        <span class="badge" style="background: rgba(220,38,38,0.1); color: #DC2626; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(220,38,38,0.2);">
+                                            <i class="fas fa-ban me-1"></i> Annulée
+                                        </span>
+                                    @elseif($order->payment_status === 'paid')
                                         <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #22C55E; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(34, 197, 94, 0.2);">
                                             <i class="fas fa-check-circle me-1"></i> Payé
                                         </span>

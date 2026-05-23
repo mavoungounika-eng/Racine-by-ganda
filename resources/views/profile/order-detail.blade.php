@@ -159,7 +159,11 @@
                     <div class="p-4">
                         <div class="mb-3">
                             <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(22,13,12,0.45); font-weight: 600; margin-bottom: 0.5rem;">Statut</div>
-                            @if($order->payment_status === 'paid')
+                            @if($order->status === 'cancelled')
+                                <span class="badge" style="background: rgba(220,38,38,0.1); color: #DC2626; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(220,38,38,0.25);">
+                                    <i class="fas fa-ban me-1"></i> Annulée
+                                </span>
+                            @elseif($order->payment_status === 'paid')
                                 <span class="badge" style="background: rgba(34,197,94,0.1); color: #22C55E; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(34,197,94,0.25);">
                                     <i class="fas fa-check-circle me-1"></i> Payé
                                 </span>
@@ -300,6 +304,83 @@
                 </div>
             </div>
         </div>
+
+        {{-- SECTION ARTICLES ANNULÉS --}}
+        @php
+            $cancelledItems = $order->items->where('status', \App\Models\OrderItem::STATUS_CANCELLED);
+        @endphp
+        @if($cancelledItems->isNotEmpty())
+        <div class="al-card mb-4" id="cancelled-items-card">
+            <div class="px-4 py-3" style="border-bottom: 2px solid rgba(220,38,38,0.15); background: rgba(220,38,38,0.03);">
+                <h5 class="mb-0" style="font-weight: 600; color: #DC2626;">
+                    <i class="fas fa-ban me-2"></i>
+                    Articles annulés
+                    <span class="ms-2" style="font-size: 0.8rem; font-weight: 400; color: rgba(22,13,12,0.45);">({{ $cancelledItems->count() }} article{{ $cancelledItems->count() > 1 ? 's' : '' }})</span>
+                </h5>
+            </div>
+            <div class="al-table-wrap">
+                <table class="al-table w-100" id="cancelled-items-table">
+                    <thead>
+                        <tr style="background: rgba(220,38,38,0.03);">
+                            <th style="width: 36px; padding-left: 1rem;">
+                                <input type="checkbox" id="cancelled-select-all" class="al-cb" title="Tout sélectionner">
+                            </th>
+                            <th>Produit</th>
+                            <th class="text-center">Qté</th>
+                            <th class="text-end">Prix unit.</th>
+                            <th class="text-end">Annulé le</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($cancelledItems as $item)
+                        <tr class="cancelled-item-row"
+                            data-item-id="{{ $item->id }}"
+                            data-product-id="{{ $item->product_id }}"
+                            data-product-title="{{ $item->product->title ?? 'Produit' }}"
+                            data-restore-url="{{ route('orders.items.restore', [$order, $item]) }}">
+                            <td style="padding-left: 1rem; vertical-align: middle;">
+                                <input type="checkbox" class="al-cb cancelled-item-cb" value="{{ $item->id }}">
+                            </td>
+                            <td>
+                                <strong style="color: #160D0C;">{{ $item->product->title ?? 'Produit supprimé' }}</strong>
+                            </td>
+                            <td class="text-center" style="vertical-align: middle;">
+                                <span style="font-weight: 500; color: rgba(22,13,12,0.6);">{{ $item->quantity }}</span>
+                            </td>
+                            <td class="text-end" style="vertical-align: middle; color: rgba(22,13,12,0.5);">
+                                {{ number_format($item->price ?? 0, 0, ',', ' ') }} FCFA
+                            </td>
+                            <td class="text-end" style="vertical-align: middle; color: rgba(22,13,12,0.45); font-size: 0.85rem;">
+                                {{ $item->cancelled_at ? $item->cancelled_at->format('d/m/Y H:i') : '—' }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- BARRE D'ACTIONS ARTICLES ANNULÉS --}}
+            <div id="cancelled-action-bar" style="display:none; position: sticky; bottom: 0; background: #1c0e0d; border-top: 2px solid rgba(220,38,38,0.4); padding: 0.75rem 1rem; border-radius: 0 0 12px 12px; z-index: 10;">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span id="cancelled-selection-count" style="color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem;"></span>
+
+                    @if($isPending)
+                    <button type="button" id="btn-restore-item"
+                        onclick="cancelledBarRestore()"
+                        style="background: rgba(34,197,94,0.15); color: #86EFAC; border: 1px solid rgba(34,197,94,0.35); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                        <i class="fas fa-undo me-1"></i> Restaurer dans la commande
+                    </button>
+                    @endif
+
+                    <button type="button" id="btn-reorder-item"
+                        onclick="cancelledBarReorder()"
+                        style="background: rgba(237,95,30,0.15); color: #FCA572; border: 1px solid rgba(237,95,30,0.35); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                        <i class="fas fa-redo me-1"></i> Recommander
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
 
         {{-- ACTIONS --}}
         <div class="al-card mb-4">
@@ -633,6 +714,97 @@
         }
     };
 
+    // ─── Cancelled items action bar ────────────────────────────────────────────
+    const cancelledSelectAll = document.getElementById('cancelled-select-all');
+    const cancelledActionBar = document.getElementById('cancelled-action-bar');
+    const cancelledSelectionCount = document.getElementById('cancelled-selection-count');
+
+    function getCancelledChecked() {
+        return Array.from(document.querySelectorAll('.cancelled-item-cb:checked'));
+    }
+
+    function getCancelledSelectedRows() {
+        return getCancelledChecked().map(cb => cb.closest('.cancelled-item-row'));
+    }
+
+    function updateCancelledBar() {
+        const checked = getCancelledChecked();
+        const count = checked.length;
+
+        if (!cancelledActionBar) return;
+
+        if (count === 0) {
+            cancelledActionBar.style.display = 'none';
+            if (cancelledSelectAll) cancelledSelectAll.indeterminate = false;
+            return;
+        }
+
+        cancelledActionBar.style.display = 'block';
+        if (cancelledSelectionCount) {
+            cancelledSelectionCount.textContent = count === 1 ? '1 article sélectionné' : count + ' articles sélectionnés';
+        }
+
+        const all = document.querySelectorAll('.cancelled-item-cb');
+        if (cancelledSelectAll) {
+            cancelledSelectAll.checked = count === all.length;
+            cancelledSelectAll.indeterminate = count > 0 && count < all.length;
+        }
+    }
+
+    if (cancelledSelectAll) {
+        cancelledSelectAll.addEventListener('change', function () {
+            document.querySelectorAll('.cancelled-item-cb').forEach(cb => {
+                cb.checked = this.checked;
+                cb.closest('.cancelled-item-row').classList.toggle('row-selected', this.checked);
+            });
+            updateCancelledBar();
+        });
+    }
+
+    document.querySelectorAll('.cancelled-item-cb').forEach(cb => {
+        cb.addEventListener('change', function () {
+            this.closest('.cancelled-item-row').classList.toggle('row-selected', this.checked);
+            updateCancelledBar();
+        });
+    });
+
+    window.cancelledBarRestore = function () {
+        const rows = getCancelledSelectedRows();
+        if (rows.length === 0) return;
+        if (!confirm('Restaurer ' + (rows.length === 1 ? '"' + rows[0].dataset.productTitle + '"' : rows.length + ' articles') + ' dans la commande ?')) return;
+
+        const csrfToken = (document.cookie.split('; ').find(c => c.startsWith('XSRF-TOKEN=')) || '').split('=').slice(1).join('=');
+        const token = decodeURIComponent(csrfToken);
+
+        Promise.all(rows.map(row =>
+            fetch(row.dataset.restoreUrl, {
+                method: 'PATCH',
+                headers: {
+                    'X-XSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+        )).then(responses => {
+            if (responses.every(r => r.ok)) {
+                window.location.reload();
+            } else {
+                alert('Une erreur est survenue. Veuillez réessayer.');
+            }
+        }).catch(() => alert('Erreur réseau. Veuillez réessayer.'));
+    };
+
+    window.cancelledBarReorder = function () {
+        const rows = getCancelledSelectedRows();
+        rows.forEach(row => {
+            const productId = row.dataset.productId;
+            if (productId) {
+                window.open('{{ url('/produit') }}/' + productId + '?reorder=1', '_blank');
+            }
+        });
+    };
+    // ────────────────────────────────────────────────────────────────────────────
+
     window.itemBarRemove = function () {
         const rows = getSelectedRows();
         if (rows.length === 0) return;
@@ -663,6 +835,46 @@
     };
 })();
 </script>
+
+{{-- MODAL : Doublon détecté (reorder_warnings) --}}
+@php $reorderWarnings = session()->pull('reorder_warnings'); @endphp
+@if($reorderWarnings)
+<div class="modal fade" id="reorderWarningModal" tabindex="-1" aria-labelledby="reorderWarningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 16px 48px rgba(0,0,0,0.18);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(22,13,12,0.1);">
+                <h5 class="modal-title" id="reorderWarningModalLabel" style="font-weight: 700; color: #B45309;">
+                    <i class="fas fa-exclamation-triangle me-2" style="color: #FFB800;"></i> Articles déjà commandés et annulés
+                </h5>
+            </div>
+            <div class="modal-body p-4">
+                <p style="color: rgba(22,13,12,0.7);">
+                    Vous avez déjà commandé et annulé le(s) article(s) suivant(s) par le passé :
+                </p>
+                <ul class="mb-3" style="color: #160D0C; font-weight: 500;">
+                    @foreach($reorderWarnings as $warning)
+                        <li>{{ $warning['product_name'] }}</li>
+                    @endforeach
+                </ul>
+                <p class="mb-0" style="font-size: 0.88rem; color: rgba(22,13,12,0.5);">
+                    Votre commande a bien été enregistrée.
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid rgba(22,13,12,0.1);">
+                <button type="button" class="btn" data-bs-dismiss="modal"
+                    style="background: #ED5F1E; color: #fff; border-radius: 10px; border: none; font-weight: 600; padding: 0.6rem 1.5rem;">
+                    Compris
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script nonce="{{ csp_nonce() }}">
+document.addEventListener('DOMContentLoaded', function () {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('reorderWarningModal')).show();
+});
+</script>
+@endif
 
 @include('components.navigation-breadcrumb', [
     'items' => [

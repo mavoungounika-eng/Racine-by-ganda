@@ -144,7 +144,9 @@ class Order extends Model
     public function recalculateTotal(): void
     {
         $this->update([
-            'total_amount' => $this->items()->sum(\Illuminate\Support\Facades\DB::raw('price * quantity')),
+            'total_amount' => $this->items()
+                ->where('status', '!=', OrderItem::STATUS_CANCELLED)
+                ->sum(\Illuminate\Support\Facades\DB::raw('price * quantity')),
         ]);
     }
 }
