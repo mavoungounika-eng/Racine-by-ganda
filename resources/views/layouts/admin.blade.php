@@ -359,6 +359,16 @@
                 <i class="fas fa-receipt"></i>
                 <span>Commandes</span>
             </a>
+            @php
+                $toHandleCount = \App\Models\OrderItem::whereIn('status', ['disputed', 'return_requested'])->count();
+            @endphp
+            <a href="{{ route('admin.orders.to-handle') }}" class="admin-nav-link {{ request()->routeIs('admin.orders.to-handle') ? 'active' : '' }}" style="position:relative;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>À traiter</span>
+                @if($toHandleCount > 0)
+                    <span style="position:absolute;top:4px;right:8px;background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;padding:1px 5px;border-radius:99px;line-height:1.4;">{{ $toHandleCount }}</span>
+                @endif
+            </a>
             @can('payments.view')
             <a href="{{ route('admin.payments.index') }}" class="admin-nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
                 <i class="fas fa-credit-card"></i>

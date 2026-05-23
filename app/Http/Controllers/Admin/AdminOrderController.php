@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\InvalidOrderItemTransitionException;
 use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -168,6 +170,67 @@ class AdminOrderController extends AdminController
             'Content-Type'        => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="commandes_'.now()->format('Y-m-d').'.csv"',
         ]);
+    }
+
+    public function toHandle(Request $request): View
+    {
+        $this->authorize('viewAny', Order::class);
+
+        $targetStatuses = [
+            OrderItem::STATUS_DISPUTED,
+            OrderItem::STATUS_RETURN_REQUESTED,
+            OrderItem::STATUS_REFUNDED,
+        ];
+        $filterStatus = $request->get('statut');
+
+        $query = Order::with(['items.product', 'user'])
+            ->whereHas('items', fn ($q) => $q->whereIn('status', $targetStatuses))
+            ->latest();
+
+        if ($filterStatus && in_array($filterStatus, $targetStatuses, true)) {
+            $query->whereHas('items', fn ($q) => $q->where('status', $filterStatus));
+        }
+
+        $orders = $query->paginate(20)->withQueryString();
+
+        $counts = [
+            'tous'             => Order::whereHas('items', fn ($q) => $q->whereIn('status', $targetStatuses))->count(),
+            'disputed'         => Order::whereHas('items', fn ($q) => $q->where('status', OrderItem::STATUS_DISPUTED))->count(),
+            'return_requested' => Order::whereHas('items', fn ($q) => $q->where('status', OrderItem::STATUS_RETURN_REQUESTED))->count(),
+            'refunded'         => Order::whereHas('items', fn ($q) => $q->where('status', OrderItem::STATUS_REFUNDED))->count(),
+        ];
+
+        return view('admin.orders.to-handle', compact('orders', 'counts', 'filterStatus'));
+    }
+
+    public function transitionItem(Request $request, Order $order, OrderItem $item): JsonResponse
+    {
+        $this->authorize('viewAny', Order::class);
+
+        $data = $request->validate([
+            'to' => 'required|in:refunded,delivered,shipped,confirmed',
+        ]);
+
+        if ($item->order_id !== $order->id) {
+            return response()->json(['message' => 'Item does not belong to this order.'], 422);
+        }
+
+        $methodMap = [
+            'refunded'  => 'markRefunded',
+            'delivered' => 'markDelivered',
+            'shipped'   => 'markShipped',
+            'confirmed' => 'markConfirmed',
+        ];
+
+        try {
+            $item->{$methodMap[$data['to']]}();
+        } catch (InvalidOrderItemTransitionException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        $order->recalculateTotal();
+
+        return response()->json(['status' => $item->fresh()->status]);
     }
 
     /**

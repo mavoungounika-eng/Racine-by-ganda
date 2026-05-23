@@ -42,7 +42,7 @@ class OrderItem extends Model
         self::STATUS_SHIPPED          => [self::STATUS_DELIVERED],
         self::STATUS_DELIVERED        => [self::STATUS_DISPUTED, self::STATUS_RETURN_REQUESTED],
         self::STATUS_DISPUTED         => [self::STATUS_REFUNDED],
-        self::STATUS_RETURN_REQUESTED => [self::STATUS_REFUNDED],
+        self::STATUS_RETURN_REQUESTED => [self::STATUS_REFUNDED, self::STATUS_DELIVERED],
         self::STATUS_REFUNDED         => [],
     ];
 

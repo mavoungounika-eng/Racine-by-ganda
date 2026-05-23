@@ -533,7 +533,9 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::get('orders/scan', [\App\Http\Controllers\Admin\AdminOrderController::class, 'scanForm'])->name('orders.scan');
         Route::post('orders/scan', [\App\Http\Controllers\Admin\AdminOrderController::class, 'scanHandle'])->name('orders.scan.handle');
         Route::get('orders/{order}/qrcode', [\App\Http\Controllers\Admin\AdminOrderController::class, 'showQr'])->name('orders.qr');
-        
+        Route::get('orders/a-traiter', [\App\Http\Controllers\Admin\AdminOrderController::class, 'toHandle'])->name('orders.to-handle');
+        Route::patch('orders/{order}/articles/{item}/transition', [\App\Http\Controllers\Admin\AdminOrderController::class, 'transitionItem'])->name('orders.items.transition');
+
         // Route resource pour les commandes (doit être APRÈS les routes spécifiques)
         Route::resource('orders', \App\Http\Controllers\Admin\AdminOrderController::class)->only(['index', 'show', 'update']);
         
