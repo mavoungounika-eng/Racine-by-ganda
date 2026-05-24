@@ -75,7 +75,7 @@ class MobileMoneyPaymentController extends Controller
         ]);
 
         // Vérification reCAPTCHA v3 (fail-open si désactivé)
-        $recaptchaToken = $request->input('recaptcha_token', '');
+        $recaptchaToken = (string) $request->input('recaptcha_token', '');
         if (!$this->recaptchaService->verify($recaptchaToken, 'mobile_money_pay')) {
             Log::warning('Mobile Money: reCAPTCHA failed', [
                 'order_id' => $order->id,

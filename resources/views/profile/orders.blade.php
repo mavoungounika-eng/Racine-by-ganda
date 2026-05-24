@@ -5,256 +5,382 @@
 @section('page-subtitle', 'Historique et suivi de vos commandes')
 
 @section('content')
+
+@php
+    $uid  = auth()->id();
+    $base = \App\Models\Order::where('user_id', $uid);
+    $totalAllOrders = (clone $base)->count();
+    $totalSpent     = (clone $base)->where('payment_status', 'paid')->sum('total_amount');
+    $activeOrder    = (clone $base)->whereIn('status', ['pending', 'processing'])->latest()->first();
+    $countEnCours   = (clone $base)->whereIn('status', ['pending', 'processing'])->count();
+    $countTerminees = (clone $base)->whereIn('status', ['completed', 'delivered'])->count();
+    $countAnnulees  = (clone $base)->where('status', 'cancelled')->count();
+@endphp
+
 <div class="row">
     <div class="col-12">
-        <!-- HEADER -->
-        <div class="card-racine"
-            <div class="card-body p-4 text-white">
-                <div class="d-flex align-items-center justify-content-between">
+
+        {{-- HEADER STATS --}}
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="stat-card stat-card--orange">
+                    <div class="stat-icon stat-icon--orange">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
                     <div>
-                        <h3 class="mb-2" style="font-weight: 700; font-size: 1.75rem;">
-                            <i class="fas fa-shopping-bag me-3"></i>
-                            Mes Commandes
-                        </h3>
-                        <p class="mb-0" style="opacity: 0.9; font-size: 0.95rem;">
-                            Suivez l'état de vos commandes et consultez votre historique d'achats
-                        </p>
-                    </div>
-                    <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-receipt" style="font-size: 2.5rem;"></i>
+                        <div class="stat-value">{{ $totalAllOrders }}</div>
+                        <div class="stat-label">Commande{{ $totalAllOrders > 1 ? 's' : '' }}</div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- TABS FILTRES -->
-        <div class="card-racine"
-            <div class="card-body p-0">
-                <ul class="nav nav-tabs border-0" style="background: rgba(22,13,12,0.05); padding: 0.5rem 1rem; border-radius: 16px 16px 0 0;">
-                    <li class="nav-item">
-                        <a class="nav-link {{ $statusFilter === 'toutes' ? 'active' : '' }}" 
-                           href="{{ route('profile.orders') }}"
-                           style="border: none; color: {{ $statusFilter === 'toutes' ? '#ED5F1E' : '#6c757d' }}; font-weight: {{ $statusFilter === 'toutes' ? '600' : '400' }}; padding: 1rem 1.5rem;">
-                            <i class="fas fa-list me-2"></i>
-                            Toutes
-                            @if($statusFilter === 'toutes')
-                                <span class="badge ms-2" style="background: #ED5F1E; color: white;">{{ $orders->total() }}</span>
-                            @endif
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ $statusFilter === 'en-cours' ? 'active' : '' }}" 
-                           href="{{ route('profile.orders', ['status' => 'en-cours']) }}"
-                           style="border: none; color: {{ $statusFilter === 'en-cours' ? '#ED5F1E' : '#6c757d' }}; font-weight: {{ $statusFilter === 'en-cours' ? '600' : '400' }}; padding: 1rem 1.5rem;">
-                            <i class="fas fa-clock me-2"></i>
-                            En cours
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ $statusFilter === 'terminees' ? 'active' : '' }}"
-                           href="{{ route('profile.orders', ['status' => 'terminees']) }}"
-                           style="border: none; color: {{ $statusFilter === 'terminees' ? '#ED5F1E' : '#6c757d' }}; font-weight: {{ $statusFilter === 'terminees' ? '600' : '400' }}; padding: 1rem 1.5rem;">
-                            <i class="fas fa-check-circle me-2"></i>
-                            Terminées
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ $statusFilter === 'annulees' ? 'active' : '' }}"
-                           href="{{ route('profile.orders', ['status' => 'annulees']) }}"
-                           style="border: none; color: {{ $statusFilter === 'annulees' ? '#DC2626' : '#6c757d' }}; font-weight: {{ $statusFilter === 'annulees' ? '600' : '400' }}; padding: 1rem 1.5rem;">
-                            <i class="fas fa-ban me-2"></i>
-                            Annulées
-                        </a>
-                    </li>
-                </ul>
+            <div class="col-sm-4">
+                <div class="stat-card stat-card--green">
+                    <div class="stat-icon stat-icon--green">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value" style="font-size:1.2rem;">{{ number_format($totalSpent, 0, ',', ' ') }}</div>
+                        <div class="stat-label">FCFA dépensés</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                @if($activeOrder)
+                    <a href="{{ route('profile.orders.show', $activeOrder) }}" style="text-decoration:none;display:block;">
+                        <div class="stat-card stat-card--yellow stat-card--link">
+                            <div class="stat-icon stat-icon--yellow">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div style="min-width:0;">
+                                <div class="stat-value" style="font-size:0.95rem;">Commande #{{ $activeOrder->id }}</div>
+                                <div class="stat-label">En cours</div>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto" style="color:#FFB800;font-size:0.75rem;flex-shrink:0;"></i>
+                        </div>
+                    </a>
+                @else
+                    <div class="stat-card stat-card--muted">
+                        <div class="stat-icon stat-icon--green" style="opacity:0.5;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div style="opacity:0.55;">
+                            <div class="stat-value" style="font-size:0.95rem;">Aucune en cours</div>
+                            <div class="stat-label">Tout est livré</div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
-        <!-- TABLEAU DES COMMANDES -->
+        {{-- TABS --}}
+        <div class="orders-tabs-wrap mb-3">
+            <ul class="orders-tabs">
+                <li>
+                    <a class="orders-tab {{ $statusFilter === 'toutes' ? 'active' : '' }}"
+                       href="{{ route('profile.orders') }}">
+                        <i class="fas fa-list"></i>
+                        <span class="tab-text">Toutes</span>
+                        @if($totalAllOrders > 0)
+                            <span class="tab-badge {{ $statusFilter === 'toutes' ? 'tab-badge--orange' : '' }}">{{ $totalAllOrders }}</span>
+                        @endif
+                    </a>
+                </li>
+                <li>
+                    <a class="orders-tab {{ $statusFilter === 'en-cours' ? 'active' : '' }}"
+                       href="{{ route('profile.orders', ['status' => 'en-cours']) }}">
+                        <i class="fas fa-clock"></i>
+                        <span class="tab-text">En cours</span>
+                        @if($countEnCours > 0)
+                            <span class="tab-badge {{ $statusFilter === 'en-cours' ? 'tab-badge--orange' : '' }}">{{ $countEnCours }}</span>
+                        @endif
+                    </a>
+                </li>
+                <li>
+                    <a class="orders-tab {{ $statusFilter === 'terminees' ? 'active' : '' }}"
+                       href="{{ route('profile.orders', ['status' => 'terminees']) }}">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="tab-text">Terminées</span>
+                        @if($countTerminees > 0)
+                            <span class="tab-badge {{ $statusFilter === 'terminees' ? 'tab-badge--orange' : '' }}">{{ $countTerminees }}</span>
+                        @endif
+                    </a>
+                </li>
+                <li>
+                    <a class="orders-tab {{ $statusFilter === 'annulees' ? 'active orders-tab--cancelled' : '' }}"
+                       href="{{ route('profile.orders', ['status' => 'annulees']) }}">
+                        <i class="fas fa-ban"></i>
+                        <span class="tab-text">Annulées</span>
+                        @if($countAnnulees > 0)
+                            <span class="tab-badge {{ $statusFilter === 'annulees' ? 'tab-badge--red' : '' }}">{{ $countAnnulees }}</span>
+                        @endif
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- TABLEAU --}}
         @if($orders->count() > 0)
-        <div class="card-racine"
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead style="background: rgba(22,13,12,0.05);">
-                            <tr>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">N° Commande</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Date</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Articles</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Montant</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Statut</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Paiement</th>
-                                <th style="padding: 1.25rem; font-weight: 600; color: #160D0C; border-bottom: 2px solid rgba(22,13,12,0.1);">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($orders as $order)
-                            <tr style="border-bottom: 1px solid rgba(22,13,12,0.1); transition: background 0.2s;">
-                                <td style="padding: 1.25rem; vertical-align: middle;">
-                                    <strong style="color: #160D0C; font-size: 1.1rem;">#{{ $order->id }}</strong>
-                                </td>
-                                <td style="padding: 1.25rem; vertical-align: middle;">
-                                    <div>
-                                        <div style="font-weight: 500; color: #160D0C;">{{ $order->created_at->format('d/m/Y') }}</div>
-                                        <small class="text-muted">{{ $order->created_at->format('H:i') }}</small>
-                                    </div>
-                                </td>
-                                <td style="padding: 1.25rem; vertical-align: middle;">
-                                    <div>
-                                        <span style="font-weight: 500; color: #160D0C;">{{ $order->items->count() }} article(s)</span>
-                                        @if($order->items->count() > 0 && $order->items->first()->product)
-                                            <br>
-                                            <small class="text-muted">{{ \Illuminate\Support\Str::limit($order->items->first()->product->title ?? 'Produit', 30) }}</small>
-                                            @if($order->items->count() > 1)
-                                                <br>
-                                                <small class="text-muted">+ {{ $order->items->count() - 1 }} autre(s)</small>
-                                            @endif
-                                        @endif
-                                    </div>
-                                </td>
-                                <td style="padding: 1.25rem; vertical-align: middle;">
-                                    <strong style="color: #ED5F1E; font-size: 1.1rem;">
-                                        {{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA
-                                    </strong>
-                                </td>
-                                <td style="padding: 1.25rem; vertical-align: middle;">
-                                    @php
-                                        $statusConfig = [
-                                            'pending' => ['label' => 'En attente', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.1)'],
-                                            'processing' => ['label' => 'En traitement', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.1)'],
-                                            'paid' => ['label' => 'Payée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.1)'],
-                                            'shipped' => ['label' => 'Expédiée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.1)'],
-                                            'completed' => ['label' => 'Complétée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.1)'],
-                                            'delivered' => ['label' => 'Livrée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.1)'],
-                                            'cancelled' => ['label' => 'Annulée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.1)'],
-                                            'failed' => ['label' => 'Échouée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.1)'],
-                                        ];
-                                        $status = $statusConfig[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#160D0C', 'bg' => 'rgba(22,13,12,0.1)'];
-                                    @endphp
-                                    <span class="badge" style="background: {{ $status['bg'] }}; color: {{ $status['color'] }}; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid {{ $status['color'] }}20;">
-                                        {{ $status['label'] }}
-                                    </span>
-                                </td>
-                                <td style="padding: 1.25rem; vertical-align: middle;">
-                                    @if($order->status === 'cancelled')
-                                        <span class="badge" style="background: rgba(220,38,38,0.1); color: #DC2626; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(220,38,38,0.2);">
-                                            <i class="fas fa-ban me-1"></i> Annulée
-                                        </span>
-                                    @elseif($order->payment_status === 'paid')
-                                        <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #22C55E; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(34, 197, 94, 0.2);">
-                                            <i class="fas fa-check-circle me-1"></i> Payé
-                                        </span>
-                                    @elseif($order->payment_status === 'pending')
-                                        <span class="badge" style="background: rgba(255, 184, 0, 0.1); color: #FFB800; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(255, 184, 0, 0.2);">
-                                            <i class="fas fa-clock me-1"></i> En attente
-                                        </span>
-                                    @else
-                                        <span class="badge" style="background: rgba(220, 38, 38, 0.1); color: #DC2626; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(220, 38, 38, 0.2);">
-                                            <i class="fas fa-times-circle me-1"></i> Échoué
-                                        </span>
+        <div class="orders-card">
+            <div class="table-responsive">
+                <table class="table orders-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:4px;padding:0;"></th>
+                            <th>N° Commande</th>
+                            <th>Date</th>
+                            <th class="d-none d-md-table-cell">Articles</th>
+                            <th>Montant</th>
+                            <th>Statut &amp; Paiement</th>
+                            <th style="width:32px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($orders as $order)
+                        @php
+                            $sc = [
+                                'pending'    => ['label' => 'En attente',    'color' => '#FFB800', 'bg' => 'rgba(255,184,0,0.12)'],
+                                'processing' => ['label' => 'En traitement', 'color' => '#FFB800', 'bg' => 'rgba(255,184,0,0.12)'],
+                                'paid'       => ['label' => 'Payée',          'color' => '#ED5F1E', 'bg' => 'rgba(237,95,30,0.12)'],
+                                'shipped'    => ['label' => 'Expédiée',       'color' => '#ED5F1E', 'bg' => 'rgba(237,95,30,0.12)'],
+                                'completed'  => ['label' => 'Complétée',      'color' => '#22C55E', 'bg' => 'rgba(34,197,94,0.12)'],
+                                'delivered'  => ['label' => 'Livrée',         'color' => '#22C55E', 'bg' => 'rgba(34,197,94,0.12)'],
+                                'cancelled'  => ['label' => 'Annulée',        'color' => '#DC2626', 'bg' => 'rgba(220,38,38,0.12)'],
+                                'failed'     => ['label' => 'Échouée',        'color' => '#DC2626', 'bg' => 'rgba(220,38,38,0.12)'],
+                            ];
+                            $st = $sc[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#160D0C', 'bg' => 'rgba(22,13,12,0.1)'];
+                        @endphp
+                        <tr class="orders-row"
+                            onclick="window.location='{{ route('profile.orders.show', $order) }}'"
+                            tabindex="0"
+                            onkeydown="if(event.key==='Enter')window.location='{{ route('profile.orders.show', $order) }}'">
+                            {{-- Pastille statut --}}
+                            <td style="padding:0;vertical-align:middle;">
+                                <div style="width:4px;min-height:60px;background:{{ $st['color'] }};border-radius:3px 0 0 3px;"></div>
+                            </td>
+                            <td style="vertical-align:middle;padding:1rem 1rem 1rem 0.75rem;">
+                                <strong style="color:#160D0C;font-size:1rem;">#{{ $order->id }}</strong>
+                            </td>
+                            <td style="vertical-align:middle;padding:1rem;">
+                                <div style="font-weight:500;color:#160D0C;white-space:nowrap;">{{ $order->created_at->format('d/m/Y') }}</div>
+                                <small style="color:rgba(22,13,12,0.4);">{{ $order->created_at->format('H:i') }}</small>
+                            </td>
+                            <td class="d-none d-md-table-cell" style="vertical-align:middle;padding:1rem;">
+                                <span style="font-weight:500;color:#160D0C;">{{ $order->items->count() }} article{{ $order->items->count() > 1 ? 's' : '' }}</span>
+                                @if($order->items->count() > 0 && $order->items->first()->product)
+                                    <br><small style="color:rgba(22,13,12,0.4);">{{ \Illuminate\Support\Str::limit($order->items->first()->product->title ?? '', 28) }}</small>
+                                    @if($order->items->count() > 1)
+                                        <small style="color:rgba(22,13,12,0.35);"> +{{ $order->items->count() - 1 }}</small>
                                     @endif
-                                </td>
-                                <td style="padding: 1.25rem; vertical-align: middle;">
-                                    <a href="{{ route('profile.orders.show', $order) }}" 
-                                       class="btn btn-sm" 
-                                       style="background: rgba(237, 95, 30, 0.1); color: #ED5F1E; border: 1px solid rgba(237, 95, 30, 0.3); border-radius: 8px; padding: 0.5rem 1rem; font-weight: 500; transition: all 0.3s;">
-                                        <i class="fas fa-eye me-1"></i> Voir
-                                    </a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                @endif
+                            </td>
+                            <td style="vertical-align:middle;padding:1rem;white-space:nowrap;">
+                                <strong style="color:#ED5F1E;font-size:1rem;">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</strong>
+                            </td>
+                            <td style="vertical-align:middle;padding:1rem;">
+                                <span class="status-pill" style="background:{{ $st['bg'] }};color:{{ $st['color'] }};border:1px solid {{ $st['color'] }}30;">
+                                    {{ $st['label'] }}
+                                </span>
+                                <div style="margin-top:5px;">
+                                    @if($order->status === 'cancelled')
+                                        <span class="payment-pill payment-pill--red"><i class="fas fa-ban me-1"></i>Annulée</span>
+                                    @elseif($order->payment_status === 'paid')
+                                        <span class="payment-pill payment-pill--green"><i class="fas fa-check-circle me-1"></i>Payé</span>
+                                    @elseif($order->payment_status === 'pending')
+                                        <span class="payment-pill payment-pill--yellow"><i class="fas fa-clock me-1"></i>En attente</span>
+                                    @else
+                                        <span class="payment-pill payment-pill--red"><i class="fas fa-times-circle me-1"></i>Échoué</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td style="vertical-align:middle;padding:1rem 1rem 1rem 0;text-align:right;">
+                                <i class="fas fa-chevron-right orders-arrow"></i>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                <!-- PAGINATION -->
-                <div class="card-footer bg-white border-0 py-4" style="border-top: 2px solid rgba(22,13,12,0.1);">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <small class="text-muted">
-                                Affichage de {{ $orders->firstItem() ?? 0 }} à {{ $orders->lastItem() ?? 0 }} sur {{ $orders->total() }} commande(s)
-                            </small>
-                        </div>
-                        <div>
-                            {{ $orders->links() }}
-                        </div>
-                    </div>
-                </div>
+            {{-- PAGINATION --}}
+            <div style="padding:1.25rem 1.5rem;border-top:1px solid rgba(22,13,12,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;background:#fafaf9;border-radius:0 0 16px 16px;">
+                <small style="color:rgba(22,13,12,0.4);">
+                    {{ $orders->firstItem() ?? 0 }}–{{ $orders->lastItem() ?? 0 }} sur {{ $orders->total() }} commande{{ $orders->total() > 1 ? 's' : '' }}
+                </small>
+                {{ $orders->links() }}
             </div>
         </div>
+
         @else
-        <!-- ÉTAT VIDE -->
-        <div class="card-racine"
-            <div class="card-body text-center py-5">
-                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, rgba(237, 95, 30, 0.1) 0%, rgba(255, 184, 0, 0.1) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
-                    <i class="fas fa-shopping-bag" style="font-size: 4rem; color: #ED5F1E;"></i>
-                </div>
-                <h4 class="mb-3" style="color: #160D0C; font-weight: 600;">Aucune commande</h4>
-                <p class="text-muted mb-4" style="font-size: 1.1rem;">
-                    @if($statusFilter === 'en-cours')
-                        Vous n'avez aucune commande en cours pour le moment.
-                    @elseif($statusFilter === 'terminees')
-                        Vous n'avez aucune commande terminée pour le moment.
-                    @else
-                        Vous n'avez pas encore passé de commande.
-                    @endif
-                </p>
-                <a href="{{ route('frontend.shop') }}" class="btn" style="background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%); color: white; border-radius: 12px; padding: 0.75rem 2.5rem; font-weight: 600; box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);">
-                    <i class="fas fa-store me-2"></i> Découvrir la boutique
-                </a>
+
+        {{-- ÉTAT VIDE --}}
+        <div class="orders-card" style="text-align:center;padding:3rem 2rem;">
+            <div style="width:96px;height:96px;background:linear-gradient(135deg,rgba(237,95,30,0.08),rgba(255,184,0,0.08));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+                <i class="fas fa-shopping-bag" style="font-size:2.5rem;color:#ED5F1E;"></i>
             </div>
+            <h5 style="color:#160D0C;font-weight:700;margin-bottom:0.75rem;">Aucune commande</h5>
+            <p style="color:rgba(22,13,12,0.5);margin-bottom:1.75rem;font-size:0.95rem;">
+                @if($statusFilter === 'en-cours') Aucune commande en cours pour le moment.
+                @elseif($statusFilter === 'terminees') Aucune commande terminée pour le moment.
+                @elseif($statusFilter === 'annulees') Aucune commande annulée.
+                @else Vous n'avez pas encore passé de commande.
+                @endif
+            </p>
+            <a href="{{ route('frontend.shop') }}" class="btn" style="background:linear-gradient(135deg,#ED5F1E,#d45519);color:#fff;border-radius:12px;padding:0.75rem 2rem;font-weight:600;box-shadow:0 4px 12px rgba(237,95,30,0.25);border:none;">
+                <i class="fas fa-store me-2"></i>Découvrir la boutique
+            </a>
         </div>
+
         @endif
     </div>
 </div>
 
 <style nonce="{{ csp_nonce() }}">
-    .nav-link {
-        transition: all 0.3s;
+    /* ── Stat cards ── */
+    .stat-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.125rem 1.375rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid rgba(22,13,12,0.1);
+        transition: box-shadow 0.2s;
     }
-    .nav-link:hover {
-        color: #ED5F1E !important;
-        background: rgba(237, 95, 30, 0.05);
+    .stat-card--orange { border-color: rgba(237,95,30,0.2); }
+    .stat-card--green  { border-color: rgba(34,197,94,0.2); }
+    .stat-card--yellow { border-color: rgba(255,184,0,0.25); }
+    .stat-card--muted  { border-color: rgba(22,13,12,0.08); }
+    .stat-card--link:hover { box-shadow: 0 4px 16px rgba(22,13,12,0.08); cursor: pointer; }
+    .stat-icon {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; font-size: 1.05rem;
     }
-    .nav-link.active {
-        background: white !important;
-        border-bottom: 3px solid #ED5F1E !important;
+    .stat-icon--orange { background: rgba(237,95,30,0.08); color: #ED5F1E; }
+    .stat-icon--green  { background: rgba(34,197,94,0.08);  color: #22C55E; }
+    .stat-icon--yellow { background: rgba(255,184,0,0.1);   color: #FFB800; }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: #160D0C; line-height: 1.1; }
+    .stat-label { font-size: 0.74rem; color: rgba(22,13,12,0.45); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 3px; }
+
+    /* ── Tabs ── */
+    .orders-tabs-wrap {
+        background: #fff;
+        border: 1px solid rgba(22,13,12,0.1);
+        border-radius: 14px;
+        overflow: hidden;
     }
-    tbody tr:hover {
-        background: rgba(237, 95, 30, 0.02) !important;
+    .orders-tabs {
+        list-style: none;
+        margin: 0;
+        padding: 0 0.5rem;
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid rgba(22,13,12,0.07);
     }
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(237, 95, 30, 0.2);
+    .orders-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.125rem;
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: rgba(22,13,12,0.5);
+        text-decoration: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: color 0.2s, border-color 0.2s, background 0.2s;
+        white-space: nowrap;
+        cursor: pointer;
     }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .table-responsive {
-            display: block;
-        }
-        thead {
-            display: none;
-        }
-        tbody tr {
-            display: block;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(22,13,12,0.1);
-            border-radius: 12px;
-            padding: 1rem;
-        }
-        tbody td {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0 !important;
-            border: none;
-        }
-        tbody td::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: rgba(22,13,12,0.5);
-            margin-right: 1rem;
-        }
+    .orders-tab:hover {
+        color: #ED5F1E;
+        background: rgba(237,95,30,0.03);
+    }
+    .orders-tab.active {
+        color: #ED5F1E;
+        font-weight: 700;
+        border-bottom-color: #ED5F1E;
+    }
+    .orders-tab--cancelled.active {
+        color: #DC2626;
+        border-bottom-color: #DC2626;
+    }
+    .tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: rgba(22,13,12,0.08);
+        color: rgba(22,13,12,0.45);
+    }
+    .tab-badge--orange { background: #ED5F1E; color: #fff; }
+    .tab-badge--red    { background: #DC2626; color: #fff; }
+
+    /* ── Table ── */
+    .orders-card {
+        background: #fff;
+        border: 1px solid rgba(22,13,12,0.1);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .orders-table thead tr { background: rgba(22,13,12,0.025); }
+    .orders-table thead th {
+        padding: 0.875rem 1rem;
+        font-weight: 700;
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(22,13,12,0.4);
+        border-bottom: 2px solid rgba(22,13,12,0.08);
+        border-top: none;
+        white-space: nowrap;
+    }
+    .status-pill {
+        display: inline-block;
+        padding: 0.3rem 0.65rem;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .payment-pill {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 5px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .payment-pill--green  { background: rgba(34,197,94,0.08);  color: #22C55E; border: 1px solid rgba(34,197,94,0.2); }
+    .payment-pill--yellow { background: rgba(255,184,0,0.08);  color: #B45309; border: 1px solid rgba(255,184,0,0.2); }
+    .payment-pill--red    { background: rgba(220,38,38,0.08);  color: #DC2626; border: 1px solid rgba(220,38,38,0.2); }
+    .orders-row {
+        border-bottom: 1px solid rgba(22,13,12,0.06);
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .orders-row:last-child { border-bottom: none; }
+    .orders-row:hover { background: rgba(237,95,30,0.022) !important; }
+    .orders-row:focus { outline: 2px solid #ED5F1E; outline-offset: -2px; }
+    .orders-arrow {
+        color: rgba(22,13,12,0.2);
+        font-size: 0.78rem;
+        transition: color 0.15s, transform 0.15s;
+    }
+    .orders-row:hover .orders-arrow {
+        color: #ED5F1E;
+        transform: translateX(2px);
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 575px) {
+        .orders-tab { padding: 0.75rem 0.875rem; font-size: 0.8rem; }
+        .tab-text { display: none; }
+        .stat-value { font-size: 1.2rem; }
     }
 </style>
 

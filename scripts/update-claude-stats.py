@@ -10,7 +10,7 @@ def run(cmd):
 today = date.today().strftime("%-d %B %Y")
 phpunit_tail = run("redis-cli FLUSHDB > /dev/null 2>&1 && ./vendor/bin/phpunit 2>&1 | tail -3")
 
-match = re.search(r"Tests:\s*(\d+).*?Failures?:\s*(\d+).*?Skipped:\s*(\d+)", phpunit_tail)
+match = re.search(r"Tests:\s*(\d+).*?(?:Failures?:\s*(\d+).*?)?Skipped:\s*(\d+)", phpunit_tail)
 if match:
     tests, failures, skipped = match.groups()
     ref_line = f"Tests: {tests} | Failures: {failures} (stable) | Skipped: {skipped} | Flaky Redis: 0-4 par run"

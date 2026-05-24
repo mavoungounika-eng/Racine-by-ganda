@@ -52,15 +52,15 @@
 
         {{-- FLASH MESSAGES --}}
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="alert-flash alert-flash--success alert-dismissible fade show mb-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="float:right;"></button>
             </div>
         @endif
         @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="alert-flash alert-flash--error alert-dismissible fade show mb-4" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="float:right;"></button>
             </div>
         @endif
 
@@ -101,15 +101,15 @@
                             $labelColor  = $isCancelled ? '#DC2626' : ($isActive ? '#160D0C' : 'rgba(22,13,12,0.35)');
                         @endphp
                         <div class="timeline-step text-center">
-                            <div class="timeline-icon mx-auto mb-1" style="width: 40px; height: 40px; border-radius: 50%; background: {{ $isActive ? $stepColor : 'rgba(22,13,12,0.06)' }}; display: flex; align-items: center; justify-content: center; border: 2px solid {{ $stepColor }}; transition: all 0.3s;">
-                                <i class="fas {{ $step['icon'] }}" style="color: {{ $isActive ? '#fff' : $stepColor }}; font-size: 0.85rem;"></i>
+                            <div class="timeline-icon mx-auto mb-1" style="width: 48px; height: 48px; border-radius: 50%; background: {{ $isActive ? $stepColor : 'rgba(22,13,12,0.06)' }}; display: flex; align-items: center; justify-content: center; border: 2px solid {{ $stepColor }}; transition: all 0.3s; box-shadow: {{ $isActive ? '0 2px 8px ' . $stepColor . '40' : 'none' }};">
+                                <i class="fas {{ $step['icon'] }}" style="color: {{ $isActive ? '#fff' : $stepColor }}; font-size: 0.9rem;"></i>
                             </div>
                             <div style="font-size: 0.75rem; font-weight: {{ $isActive ? '600' : '400' }}; color: {{ $labelColor }};">
                                 {{ $step['label'] }}
                             </div>
                         </div>
                         @if(!$loop->last)
-                            <div class="timeline-line flex-grow-1 mx-2" style="height: 2px; background: {{ $isActive ? '#ED5F1E' : 'rgba(22,13,12,0.1)' }}; margin-bottom: 1.5rem;"></div>
+                            <div class="timeline-line flex-grow-1 mx-2" style="height: 3px; background: {{ $isActive ? '#ED5F1E' : 'rgba(22,13,12,0.1)' }}; margin-bottom: 1.75rem; border-radius: 2px;"></div>
                         @endif
                     @endforeach
                 </div>
@@ -152,7 +152,7 @@
                 </div>
 
                 {{-- PAIEMENT --}}
-                <div class="al-card">
+                <div class="al-card {{ $needsPayment ? 'payment-card--needs-payment' : ($order->status === 'cancelled' ? 'payment-card--cancelled' : ($order->payment_status === 'paid' ? 'payment-card--paid' : '')) }}">
                     <div class="px-4 py-3" style="border-bottom: 2px solid rgba(22,13,12,0.08);">
                         <h5 class="mb-0" style="font-weight: 600; color: #160D0C;">
                             <i class="fas fa-credit-card me-2" style="color: #ED5F1E;"></i>
@@ -163,39 +163,50 @@
                         <div class="mb-3">
                             <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(22,13,12,0.45); font-weight: 600; margin-bottom: 0.5rem;">Statut</div>
                             @if($order->status === 'cancelled')
-                                <span class="badge" style="background: rgba(220,38,38,0.1); color: #DC2626; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(220,38,38,0.25);">
+                                <span class="pmt-badge pmt-badge--red">
                                     <i class="fas fa-ban me-1"></i> Annulée
                                 </span>
                             @elseif($order->payment_status === 'paid')
-                                <span class="badge" style="background: rgba(34,197,94,0.1); color: #22C55E; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(34,197,94,0.25);">
+                                <span class="pmt-badge pmt-badge--green">
                                     <i class="fas fa-check-circle me-1"></i> Payé
                                 </span>
                             @elseif($order->payment_status === 'pending')
-                                <span class="badge" style="background: rgba(255,184,0,0.1); color: #FFB800; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(255,184,0,0.25);">
+                                <span class="pmt-badge pmt-badge--yellow">
                                     <i class="fas fa-clock me-1"></i> En attente
                                 </span>
                             @else
-                                <span class="badge" style="background: rgba(220,38,38,0.1); color: #DC2626; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(220,38,38,0.25);">
+                                <span class="pmt-badge pmt-badge--red">
                                     <i class="fas fa-times-circle me-1"></i> Échoué
                                 </span>
                             @endif
+
                             @if($needsPayment)
-                            <div class="mt-3 p-3" style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px;">
-                                <p class="mb-2" style="font-size: 0.85rem; color: rgba(22,13,12,0.65);">
+                            <div class="mt-3 p-3 payment-cta-box">
+                                <p class="mb-2" style="font-size: 0.83rem; color: rgba(22,13,12,0.65);">
                                     <i class="fas fa-info-circle me-1" style="color: #22C55E;"></i>
                                     Votre commande est en attente de paiement.
                                 </p>
                                 @if($order->payment_method === 'card')
                                     <a href="#" onclick="document.querySelector('form[action*=\'card/pay\']').submit(); return false;"
-                                        style="font-size: 0.85rem; color: #16a34a; font-weight: 600; text-decoration: none;">
+                                        style="font-size: 0.83rem; color: #16a34a; font-weight: 600; text-decoration: none;">
                                         <i class="fas fa-credit-card me-1"></i> Finaliser le paiement par carte →
                                     </a>
                                 @elseif(in_array($order->payment_method, ['mobile_money', 'monetbil']))
                                     <a href="{{ route('checkout.mobile-money.form', $order) }}"
-                                        style="font-size: 0.85rem; color: #16a34a; font-weight: 600; text-decoration: none;">
+                                        style="font-size: 0.83rem; color: #16a34a; font-weight: 600; text-decoration: none;">
                                         <i class="fas fa-mobile-alt me-1"></i> Finaliser le paiement Mobile Money →
                                     </a>
                                 @endif
+                            </div>
+                            @elseif($order->payment_status === 'paid')
+                            <div class="mt-3 p-3" style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.18); border-radius: 10px; display:flex; align-items:center; gap:0.5rem;">
+                                <i class="fas fa-check-circle" style="color: #22C55E; font-size: 1.1rem;"></i>
+                                <span style="font-size: 0.83rem; color: #15803d; font-weight: 600;">Paiement confirmé</span>
+                            </div>
+                            @elseif($order->status === 'cancelled')
+                            <div class="mt-3 p-3" style="background: rgba(220,38,38,0.05); border: 1px solid rgba(220,38,38,0.15); border-radius: 10px; display:flex; align-items:center; gap:0.5rem;">
+                                <i class="fas fa-ban" style="color: #DC2626; font-size: 1rem;"></i>
+                                <span style="font-size: 0.83rem; color: #b91c1c; font-weight: 600;">Commande annulée</span>
                             </div>
                             @endif
                         </div>
@@ -216,11 +227,14 @@
             {{-- COLONNE DROITE : Articles --}}
             <div class="col-lg-6 mb-4">
                 <div class="al-card" id="items-card">
-                    <div class="px-4 py-3" style="border-bottom: 2px solid rgba(22,13,12,0.08);">
+                    <div class="px-4 py-3" style="border-bottom: 2px solid rgba(22,13,12,0.08); display:flex; align-items:center; justify-content:space-between;">
                         <h5 class="mb-0" style="font-weight: 600; color: #160D0C;">
                             <i class="fas fa-box me-2" style="color: #ED5F1E;"></i>
                             Articles Commandés
                         </h5>
+                        <span style="font-size:0.8rem;font-weight:700;color:rgba(22,13,12,0.4);background:rgba(22,13,12,0.05);border-radius:20px;padding:0.2rem 0.65rem;">
+                            {{ $order->items->where('status', \App\Models\OrderItem::STATUS_ACTIVE)->count() }}
+                        </span>
                     </div>
                     <div class="al-table-wrap">
                         @if($isPending)
@@ -229,7 +243,16 @@
                                 Commande en attente — vous pouvez encore ajuster les quantités ou retirer des articles.
                             </p>
                         @endif
-                        <table class="al-table w-100" id="items-table">
+                        @if($order->status === 'cancelled')
+                        <div style="position:relative;">
+                            <div style="position:absolute;inset:0;background:rgba(255,255,255,0.6);z-index:5;display:flex;align-items:center;justify-content:center;border-radius:0;">
+                                <div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:0.6rem 1.25rem;display:flex;align-items:center;gap:0.5rem;">
+                                    <i class="fas fa-ban" style="color:#DC2626;"></i>
+                                    <span style="font-size:0.88rem;font-weight:600;color:#DC2626;">Commande annulée</span>
+                                </div>
+                            </div>
+                        @endif
+                        <table class="al-table w-100" id="items-table" style="{{ $order->status === 'cancelled' ? 'opacity:0.45;pointer-events:none;' : '' }}">
                             <thead>
                                 <tr>
                                     <th style="width: 36px; padding-left: 1rem;">
@@ -294,6 +317,9 @@
                                 </tr>
                             </tfoot>
                         </table>
+                        @if($order->status === 'cancelled')
+                        </div>
+                        @endif
                     </div>
 
                     {{-- BARRE D'ACTIONS FLOTTANTE --}}
@@ -415,101 +441,85 @@
         {{-- ACTIONS --}}
         <div class="al-card mb-4">
             <div class="p-4">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-                    {{-- Retour --}}
-                    <a href="{{ route('profile.orders') }}" class="btn"
-                        style="background: rgba(22,13,12,0.05); color: rgba(22,13,12,0.6); border: 1px solid rgba(22,13,12,0.15); border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 500; transition: all 0.3s;">
+                {{-- NIVEAU 0 : Navigation --}}
+                <div class="mb-4">
+                    <a href="{{ route('profile.orders') }}" class="btn-action btn-action--back">
                         <i class="fas fa-arrow-left me-2"></i> Retour aux commandes
                     </a>
-
-                    <div class="d-flex gap-2 flex-wrap">
-
-                        {{-- Payer maintenant --}}
-                        @if($needsPayment)
-                            @if($order->payment_method === 'card')
-                                <form action="{{ route('checkout.card.pay') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <input type="hidden" name="order_id" value="{{ $order->id }}">
-                                    <button type="submit" class="btn"
-                                        style="background: linear-gradient(135deg, #22C55E 0%, #16a34a 100%); color: white; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; box-shadow: 0 4px 12px rgba(34,197,94,0.3); border: none;">
-                                        <i class="fas fa-credit-card me-2"></i> Payer par carte
-                                    </button>
-                                </form>
-                            @elseif(in_array($order->payment_method, ['mobile_money', 'monetbil']))
-                                <a href="{{ route('checkout.mobile-money.form', $order) }}" class="btn"
-                                    style="background: linear-gradient(135deg, #22C55E 0%, #16a34a 100%); color: white; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; box-shadow: 0 4px 12px rgba(34,197,94,0.3); border: none;">
-                                    <i class="fas fa-mobile-alt me-2"></i> Payer via Mobile Money
-                                </a>
-                            @endif
-                        @endif
-
-                        {{-- Annuler (pending seulement) --}}
-                        @if($isPending)
-                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#cancelOrderModal"
-                                style="background: rgba(220,38,38,0.08); color: #DC2626; border: 1px solid rgba(220,38,38,0.35); border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;">
-                                <i class="fas fa-times me-2"></i> Annuler la commande
-                            </button>
-                        @endif
-
-                        {{-- Discussion / support --}}
-                        @php $existingThread = \App\Models\Conversation::forOrder($order->id)->first(); @endphp
-                        @if($existingThread)
-                            <a href="{{ route('messages.show', $existingThread->id) }}" class="btn"
-                                style="background: rgba(237,95,30,0.1); color: #ED5F1E; border: 1px solid #ED5F1E; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;">
-                                <i class="fas fa-comments me-2"></i> Voir la discussion
-                            </a>
-                        @else
-                            <form action="{{ route('messages.create-order-thread', $order) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn"
-                                    style="background: rgba(237,95,30,0.1); color: #ED5F1E; border: 1px solid #ED5F1E; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;">
-                                    <i class="fas fa-comments me-2"></i> Contacter le support
-                                </button>
-                            </form>
-                        @endif
-
-                        {{-- Signaler un problème (completed/delivered) --}}
-                        @if($isCompleted)
-                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#reportProblemModal"
-                                style="background: rgba(255,184,0,0.1); color: #B45309; border: 1px solid rgba(180,83,9,0.35); border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;">
-                                <i class="fas fa-exclamation-triangle me-2"></i> Signaler un problème
-                            </button>
-                        @endif
-
-                        {{-- Avis (completed/delivered + paid) --}}
-                        @if($isCompleted && $order->payment_status === 'paid')
-                            <a href="{{ route('profile.reviews.create', $order) }}" class="btn"
-                                style="background: rgba(255,184,0,0.1); color: #FFB800; border: 1px solid #FFB800; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;">
-                                <i class="fas fa-star me-2"></i> Laisser un avis
-                            </a>
-                        @endif
-
-                        {{-- Retourner le produit (completed/delivered + paid) --}}
-                        @if($isCompleted && $order->payment_status === 'paid')
-                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#returnModal"
-                                style="background: rgba(22,13,12,0.05); color: rgba(22,13,12,0.65); border: 1px solid rgba(22,13,12,0.2); border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;">
-                                <i class="fas fa-undo me-2"></i> Retourner le produit
-                            </button>
-                        @endif
-
-                        {{-- Facture --}}
-                        <a href="{{ route('profile.invoice.show', $order) }}" class="btn"
-                            style="background: rgba(22,13,12,0.05); color: #160D0C; border: 1px solid rgba(22,13,12,0.2); border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;" target="_blank">
-                            <i class="fas fa-file-invoice me-2"></i> Voir la facture
-                        </a>
-                        <a href="{{ route('profile.invoice.download', $order) }}" class="btn"
-                            style="background: rgba(34,197,94,0.1); color: #22C55E; border: 1px solid #22C55E; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; transition: all 0.3s;">
-                            <i class="fas fa-download me-2"></i> Télécharger la facture
-                        </a>
-
-                        {{-- Continuer achats --}}
-                        <a href="{{ route('frontend.shop') }}" class="btn"
-                            style="background: linear-gradient(135deg, #ED5F1E 0%, #d45519 100%); color: white; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; box-shadow: 0 4px 12px rgba(237,95,30,0.3); transition: all 0.3s; border: none;">
-                            <i class="fas fa-store me-2"></i> Continuer mes achats
-                        </a>
-                    </div>
                 </div>
+
+                {{-- NIVEAU 1 : Paiement (priorité absolue) --}}
+                @if($needsPayment)
+                <div class="mb-4">
+                    @if($order->payment_method === 'card')
+                        <form action="{{ route('checkout.card.pay') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="order_id" value="{{ $order->id }}">
+                            <button type="submit" class="btn-action btn-action--pay">
+                                <i class="fas fa-credit-card me-2"></i> Payer par carte maintenant
+                            </button>
+                        </form>
+                    @elseif(in_array($order->payment_method, ['mobile_money', 'monetbil']))
+                        <a href="{{ route('checkout.mobile-money.form', $order) }}" class="btn-action btn-action--pay">
+                            <i class="fas fa-mobile-alt me-2"></i> Payer via Mobile Money maintenant
+                        </a>
+                    @endif
+                </div>
+                @endif
+
+                {{-- NIVEAU 2 : Actions secondaires --}}
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    @php $existingThread = \App\Models\Conversation::forOrder($order->id)->first(); @endphp
+                    @if($existingThread)
+                        <a href="{{ route('messages.show', $existingThread->id) }}" class="btn-action btn-action--secondary">
+                            <i class="fas fa-comments me-2"></i> Voir la discussion
+                        </a>
+                    @else
+                        <form action="{{ route('messages.create-order-thread', $order) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn-action btn-action--secondary">
+                                <i class="fas fa-comments me-2"></i> Contacter le support
+                            </button>
+                        </form>
+                    @endif
+                    <a href="{{ route('profile.invoice.show', $order) }}" class="btn-action btn-action--secondary" target="_blank">
+                        <i class="fas fa-file-invoice me-2"></i> Voir la facture
+                    </a>
+                    <a href="{{ route('profile.invoice.download', $order) }}" class="btn-action btn-action--secondary">
+                        <i class="fas fa-download me-2"></i> Télécharger
+                    </a>
+                    <a href="{{ route('frontend.shop') }}" class="btn-action btn-action--secondary">
+                        <i class="fas fa-store me-2"></i> Continuer mes achats
+                    </a>
+                </div>
+
+                {{-- NIVEAU 3 : Actions contextuelles (commandes livrées) --}}
+                @if($isCompleted)
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    @if($order->payment_status === 'paid')
+                        <a href="{{ route('profile.reviews.create', $order) }}" class="btn-action btn-action--subtle">
+                            <i class="fas fa-star me-2"></i> Laisser un avis
+                        </a>
+                        <button type="button" class="btn-action btn-action--subtle" data-bs-toggle="modal" data-bs-target="#returnModal">
+                            <i class="fas fa-undo me-2"></i> Retourner le produit
+                        </button>
+                    @endif
+                    <button type="button" class="btn-action btn-action--subtle" data-bs-toggle="modal" data-bs-target="#reportProblemModal">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Signaler un problème
+                    </button>
+                </div>
+                @endif
+
+                {{-- NIVEAU 4 : Zone destructive --}}
+                @if($isPending)
+                <div style="border-top: 1px solid rgba(22,13,12,0.08); padding-top: 1rem; margin-top: 0.25rem;">
+                    <button type="button" class="btn-action btn-action--danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                        <i class="fas fa-times me-2"></i> Annuler la commande
+                    </button>
+                </div>
+                @endif
+
             </div>
         </div>
 
@@ -676,13 +686,112 @@
     .timeline-step {
         flex-shrink: 0;
     }
-    .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    /* ── Flash messages ── */
+    .alert-flash {
+        padding: 0.875rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-left: 4px solid;
+        display: flex;
+        align-items: center;
     }
-    #items-action-bar button:hover {
-        opacity: 0.85;
+    .alert-flash--success {
+        background: rgba(34,197,94,0.06);
+        border-left-color: #22C55E;
+        color: #15803d;
     }
+    .alert-flash--error {
+        background: rgba(220,38,38,0.06);
+        border-left-color: #DC2626;
+        color: #b91c1c;
+    }
+
+    /* ── Payment card states ── */
+    @keyframes paymentPulse {
+        0%, 100% { box-shadow: 0 2px 12px rgba(22,13,12,0.06), 0 0 0 0 rgba(34,197,94,0.2); }
+        50%       { box-shadow: 0 2px 12px rgba(22,13,12,0.06), 0 0 0 8px rgba(34,197,94,0.04); }
+    }
+    .payment-card--needs-payment { animation: paymentPulse 2.5s ease-in-out infinite; border-color: rgba(34,197,94,0.35) !important; }
+    .payment-card--paid     { border-color: rgba(34,197,94,0.25) !important; }
+    .payment-card--cancelled{ border-color: rgba(220,38,38,0.2) !important; }
+    .payment-cta-box {
+        background: rgba(34,197,94,0.06);
+        border: 1px solid rgba(34,197,94,0.2);
+        border-radius: 10px;
+    }
+
+    /* ── Payment badges ── */
+    .pmt-badge {
+        display: inline-block;
+        padding: 0.4rem 0.9rem;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border: 1px solid;
+    }
+    .pmt-badge--green  { background: rgba(34,197,94,0.1);  color: #22C55E; border-color: rgba(34,197,94,0.25); }
+    .pmt-badge--yellow { background: rgba(255,184,0,0.1);  color: #FFB800; border-color: rgba(255,184,0,0.25); }
+    .pmt-badge--red    { background: rgba(220,38,38,0.1);  color: #DC2626; border-color: rgba(220,38,38,0.25); }
+
+    /* ── Action buttons ── */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+    .btn-action--back {
+        background: rgba(22,13,12,0.05);
+        color: rgba(22,13,12,0.6);
+        border-color: rgba(22,13,12,0.15);
+        padding: 0.55rem 1.2rem;
+        font-size: 0.88rem;
+    }
+    .btn-action--back:hover { background: rgba(22,13,12,0.09); color: #160D0C; }
+    .btn-action--pay {
+        background: linear-gradient(135deg, #22C55E 0%, #16a34a 100%);
+        color: #fff !important;
+        border-color: transparent;
+        padding: 0.875rem 2.25rem;
+        font-size: 1rem;
+        font-weight: 700;
+        box-shadow: 0 4px 16px rgba(34,197,94,0.3);
+    }
+    .btn-action--pay:hover { box-shadow: 0 6px 20px rgba(34,197,94,0.4); transform: translateY(-1px); color: #fff; }
+    .btn-action--secondary {
+        background: #fff;
+        color: rgba(22,13,12,0.65);
+        border-color: rgba(22,13,12,0.18);
+        padding: 0.5rem 1rem;
+        font-size: 0.84rem;
+        font-weight: 500;
+    }
+    .btn-action--secondary:hover { color: #ED5F1E; border-color: #ED5F1E; background: rgba(237,95,30,0.03); }
+    .btn-action--subtle {
+        background: transparent;
+        color: rgba(22,13,12,0.5);
+        border-color: rgba(22,13,12,0.12);
+        padding: 0.45rem 0.9rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+    }
+    .btn-action--subtle:hover { color: #160D0C; border-color: rgba(22,13,12,0.25); background: rgba(22,13,12,0.03); }
+    .btn-action--danger {
+        background: transparent;
+        color: #DC2626;
+        border-color: rgba(220,38,38,0.3);
+        padding: 0.5rem 1rem;
+        font-size: 0.84rem;
+    }
+    .btn-action--danger:hover { background: rgba(220,38,38,0.06); border-color: #DC2626; }
+
+    #items-action-bar button:hover { opacity: 0.85; }
 </style>
 
 <script nonce="{{ csp_nonce() }}">
