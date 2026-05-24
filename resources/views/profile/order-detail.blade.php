@@ -42,6 +42,9 @@
 
     $isPending   = $order->status === 'pending';
     $isCompleted = in_array($order->status, ['completed', 'delivered']);
+    $needsPayment = $order->payment_status !== 'paid'
+        && in_array($order->status, ['pending', 'processing'])
+        && $order->payment_method !== 'cash_on_delivery';
 @endphp
 
 <div class="row">
@@ -175,6 +178,25 @@
                                 <span class="badge" style="background: rgba(220,38,38,0.1); color: #DC2626; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 500; border: 1px solid rgba(220,38,38,0.25);">
                                     <i class="fas fa-times-circle me-1"></i> Échoué
                                 </span>
+                            @endif
+                            @if($needsPayment)
+                            <div class="mt-3 p-3" style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px;">
+                                <p class="mb-2" style="font-size: 0.85rem; color: rgba(22,13,12,0.65);">
+                                    <i class="fas fa-info-circle me-1" style="color: #22C55E;"></i>
+                                    Votre commande est en attente de paiement.
+                                </p>
+                                @if($order->payment_method === 'card')
+                                    <a href="#" onclick="document.querySelector('form[action*=\'card/pay\']').submit(); return false;"
+                                        style="font-size: 0.85rem; color: #16a34a; font-weight: 600; text-decoration: none;">
+                                        <i class="fas fa-credit-card me-1"></i> Finaliser le paiement par carte →
+                                    </a>
+                                @elseif(in_array($order->payment_method, ['mobile_money', 'monetbil']))
+                                    <a href="{{ route('checkout.mobile-money.form', $order) }}"
+                                        style="font-size: 0.85rem; color: #16a34a; font-weight: 600; text-decoration: none;">
+                                        <i class="fas fa-mobile-alt me-1"></i> Finaliser le paiement Mobile Money →
+                                    </a>
+                                @endif
+                            </div>
                             @endif
                         </div>
                         <div class="mb-3">
@@ -402,6 +424,25 @@
                     </a>
 
                     <div class="d-flex gap-2 flex-wrap">
+
+                        {{-- Payer maintenant --}}
+                        @if($needsPayment)
+                            @if($order->payment_method === 'card')
+                                <form action="{{ route('checkout.card.pay') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="order_id" value="{{ $order->id }}">
+                                    <button type="submit" class="btn"
+                                        style="background: linear-gradient(135deg, #22C55E 0%, #16a34a 100%); color: white; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; box-shadow: 0 4px 12px rgba(34,197,94,0.3); border: none;">
+                                        <i class="fas fa-credit-card me-2"></i> Payer par carte
+                                    </button>
+                                </form>
+                            @elseif(in_array($order->payment_method, ['mobile_money', 'monetbil']))
+                                <a href="{{ route('checkout.mobile-money.form', $order) }}" class="btn"
+                                    style="background: linear-gradient(135deg, #22C55E 0%, #16a34a 100%); color: white; border-radius: 12px; padding: 0.75rem 1.75rem; font-weight: 600; box-shadow: 0 4px 12px rgba(34,197,94,0.3); border: none;">
+                                    <i class="fas fa-mobile-alt me-2"></i> Payer via Mobile Money
+                                </a>
+                            @endif
+                        @endif
 
                         {{-- Annuler (pending seulement) --}}
                         @if($isPending)
