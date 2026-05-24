@@ -321,7 +321,7 @@ composer run setup    # Setup initial
 ---
 
 ## État tests — RÉFÉRENCE (5 avril 2026)
-Tests: 926 | Failures: 2 (stable) | Skipped: 8 | Flaky Redis: 0-4 par run
+Tests: 926 | Failures: 1 (stable) | Skipped: 8 | Flaky Redis: 0-4 par run
 
 ⚠️ Tests flaky Redis : QueueCircuitBreaker et QueueRateLimiter utilisent Redis::
 directement. L'état s'accumule entre les tests. Toujours exécuter `redis-cli FLUSHDB`

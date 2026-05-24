@@ -5,8 +5,8 @@ paths:
 ---
 # Règles — Tests PHPUnit
 
-## Référence actuelle (4 avril 2026)
-Tests: 895 | Failures: 3 | Skipped: 19 | Incomplete: 0
+## Référence actuelle (24 mai 2026)
+Tests: 926 | Failures: 2 | Skipped: 8 | Incomplete: 0
 
 Toute régression = STOP immédiat avant toute autre action.
 
