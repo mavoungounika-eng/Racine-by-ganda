@@ -332,14 +332,14 @@
                             <span id="selection-count" style="color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem;"></span>
 
                             <button type="button" id="btn-view-product"
-                                onclick="itemBarViewProduct()"
+                                
                                 style="display:none; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
                                 <i class="fas fa-eye me-1"></i> Voir la fiche
                             </button>
 
                             @if($isCompleted)
                             <button type="button" id="btn-report-item"
-                                onclick="itemBarReport()"
+                                
                                 style="background: rgba(255,184,0,0.15); color: #FFB800; border: 1px solid rgba(255,184,0,0.3); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
                                 <i class="fas fa-exclamation-triangle me-1"></i> Signaler un problème
                             </button>
@@ -347,7 +347,7 @@
 
                             @if($isPending)
                             <button type="button" id="btn-remove-item"
-                                onclick="itemBarRemove()"
+                                
                                 style="background: rgba(220,38,38,0.15); color: #FCA5A5; border: 1px solid rgba(220,38,38,0.35); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
                                 <i class="fas fa-trash me-1"></i> Retirer de la commande
                             </button>
@@ -419,21 +419,21 @@
                     <span id="cancelled-selection-count" style="color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem;"></span>
 
                     <button type="button" id="btn-cancelled-view"
-                        onclick="cancelledBarView()"
+                        
                         style="display:none; background: rgba(255,255,255,0.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
                         <i class="fas fa-eye me-1"></i> Voir la fiche
                     </button>
 
                     @if($isPending)
                     <button type="button" id="btn-restore-item"
-                        onclick="cancelledBarRestore()"
+                        
                         style="background: rgba(34,197,94,0.15); color: #86EFAC; border: 1px solid rgba(34,197,94,0.35); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
                         <i class="fas fa-undo me-1"></i> Restaurer dans la commande
                     </button>
                     @endif
 
                     <button type="button" id="btn-reorder-item"
-                        onclick="cancelledBarReorder()"
+                        
                         style="background: rgba(237,95,30,0.15); color: #FCA572; border: 1px solid rgba(237,95,30,0.35); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
                         <i class="fas fa-redo me-1"></i> Recommander
                     </button>
@@ -858,6 +858,12 @@
         });
     });
     updateBar();
+    const btnView = document.getElementById("btn-view-product");
+    const btnReport = document.getElementById("btn-report-item");
+    const btnRemove = document.getElementById("btn-remove-item");
+    if (btnView) btnView.addEventListener("click", function() { itemBarViewProduct(); });
+    if (btnReport) btnReport.addEventListener("click", function() { itemBarReport(); });
+    if (btnRemove) btnRemove.addEventListener("click", function() { itemBarRemove(); });
 
     window.itemBarViewProduct = function () {
         const rows = getSelectedRows();
@@ -937,6 +943,13 @@
         cb.addEventListener('change', function () {
             this.closest('.cancelled-item-row').classList.toggle('row-selected', this.checked);
             updateCancelledBar();
+    updateCancelledBar();
+    const btnCancelledView = document.getElementById("btn-cancelled-view");
+    const btnCancelledRestore = document.getElementById("btn-restore-item");
+    const btnCancelledReorder = document.getElementById("btn-reorder-item");
+    if (btnCancelledView) btnCancelledView.addEventListener("click", function() { cancelledBarView(); });
+    if (btnCancelledRestore) btnCancelledRestore.addEventListener("click", function() { cancelledBarRestore(); });
+    if (btnCancelledReorder) btnCancelledReorder.addEventListener("click", function() { cancelledBarReorder(); });
         });
     });
 
