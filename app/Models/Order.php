@@ -167,8 +167,14 @@ class Order extends Model
     public function recalculateTotal(): void
     {
         $itemsTotal = $this->items()
-            ->whereNotIn('status', [OrderItem::STATUS_CANCELLED])
+            ->whereNotIn('status', [OrderItem::STATUS_CANCELLED, OrderItem::STATUS_REFUNDED])
             ->sum(\Illuminate\Support\Facades\DB::raw('price * quantity'));
+
+        // No billable items → total 0 regardless of shipping
+        if ($itemsTotal <= 0) {
+            $this->update(['total_amount' => 0]);
+            return;
+        }
 
         $net = max(0, $itemsTotal + (float) $this->shipping_cost - (float) $this->discount_amount);
 
