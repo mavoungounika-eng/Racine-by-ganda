@@ -40,6 +40,14 @@
       <option value="failed">Échouée</option>
       <option value="refunded">Remboursée</option>
     </select>
+    <select id="orders-item-status" class="al-filter-select" aria-label="Statut article">
+      <option value="">Contient un article en…</option>
+      <option value="disputed">Litige</option>
+      <option value="return_requested">Retour demandé</option>
+      <option value="refunded">Remboursé</option>
+      <option value="shipped">Expédié</option>
+      <option value="delivered">Livré</option>
+    </select>
     <input type="date" id="orders-date-debut" class="al-filter-input" aria-label="Date début">
     <input type="date" id="orders-date-fin"   class="al-filter-input" aria-label="Date fin">
     <select id="orders-per-page" class="al-per-page" aria-label="Par page">
@@ -89,10 +97,10 @@ const ORDERS = (function(){
   const EXPORT_URL = '{{ route("admin.orders.export.csv") }}';
   const sortState  = { by:'created_at', dir:'desc' };
   let state, bulk, statsTimer;
-  const DEFAULTS = { search:'', status:'', payment_status:'', date_debut:'', date_fin:'', page:1, per_page:20, sort_by:'created_at', sort_dir:'desc' };
+  const DEFAULTS = { search:'', status:'', payment_status:'', item_status:'', date_debut:'', date_fin:'', page:1, per_page:20, sort_by:'created_at', sort_dir:'desc' };
 
   function activeFilters() {
-    return [state.search, state.status, state.payment_status, state.date_debut, state.date_fin].filter(Boolean).length;
+    return [state.search, state.status, state.payment_status, state.item_status, state.date_debut, state.date_fin].filter(Boolean).length;
   }
 
   function statusBadge(s) {
@@ -133,7 +141,7 @@ const ORDERS = (function(){
       ); }).join('');
     }
     AL.buildPager('orders-pag', data, load);
-    AL.syncUrl({ search:state.search, status:state.status, payment_status:state.payment_status, date_debut:state.date_debut, date_fin:state.date_fin, page:state.page, per_page:state.per_page, sort_by:sortState.by, sort_dir:sortState.dir });
+    AL.syncUrl({ search:state.search, status:state.status, payment_status:state.payment_status, item_status:state.item_status, date_debut:state.date_debut, date_fin:state.date_fin, page:state.page, per_page:state.per_page, sort_by:sortState.by, sort_dir:sortState.dir });
     AL.updateResetBtn('orders-reset', activeFilters());
     updateExportLink();
   }
@@ -159,6 +167,7 @@ const ORDERS = (function(){
     if (state.search)         params.set('search',         state.search);
     if (state.status)         params.set('status',         state.status);
     if (state.payment_status) params.set('payment_status', state.payment_status);
+    if (state.item_status)    params.set('item_status',    state.item_status);
     if (state.date_debut)     params.set('date_debut',     state.date_debut);
     if (state.date_fin)       params.set('date_fin',       state.date_fin);
     fetch(DATA_URL+'?'+params, { headers:{'X-Requested-With':'XMLHttpRequest'} })
@@ -201,6 +210,7 @@ const ORDERS = (function(){
       ['orders-search', 'search', true],
       ['orders-status', 'status', false],
       ['orders-payment-status', 'payment_status', false],
+      ['orders-item-status', 'item_status', false],
       ['orders-date-debut', 'date_debut', false],
       ['orders-date-fin', 'date_fin', false],
       ['orders-per-page', 'per_page', false, true]
@@ -232,7 +242,7 @@ const ORDERS = (function(){
   return {
     reset: function() {
       state = Object.assign({}, DEFAULTS);
-      ['orders-search','orders-status','orders-payment-status','orders-date-debut','orders-date-fin'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+      ['orders-search','orders-status','orders-payment-status','orders-item-status','orders-date-debut','orders-date-fin'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
       load(1);
     }
   };

@@ -53,6 +53,7 @@ class OrderItem extends Model
         'price',
         'status',
         'cancelled_at',
+        'return_reason',
         'previous_cancellation_id',
     ];
 

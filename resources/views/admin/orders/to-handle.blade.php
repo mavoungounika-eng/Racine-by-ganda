@@ -108,16 +108,10 @@ $statusColors = [
                   Rembourser
                 </button>
               @elseif($item->status === 'return_requested')
-                <div class="d-flex gap-1 flex-wrap">
-                  <button class="al-btn-action al-btn-success"
-                          onclick="transitionItem({{ $order->id }}, {{ $item->id }}, 'refunded', this)">
-                    Valider le retour
-                  </button>
-                  <button class="al-btn-action al-btn-secondary"
-                          onclick="transitionItem({{ $order->id }}, {{ $item->id }}, 'delivered', this)">
-                    Rejeter
-                  </button>
-                </div>
+                <button class="al-btn-action al-btn-return"
+                        onclick="openReturnModal({{ $order->id }}, {{ $item->id }}, @js($item->product?->title ?? 'Produit'), @js($item->return_reason ?? ''))">
+                  <i class="fas fa-undo-alt me-1" style="font-size:.75rem;"></i> Traiter le retour
+                </button>
               @elseif($item->status === 'refunded')
                 <button class="al-btn-action" disabled style="opacity:.5;cursor:not-allowed;">
                   Clôturé
@@ -198,6 +192,7 @@ $statusColors = [
 .al-btn-danger    { background: #fee2e2; color: #b91c1c; }
 .al-btn-success   { background: #dcfce7; color: #15803d; }
 .al-btn-secondary { background: #f1f5f9; color: #475569; }
+.al-btn-return    { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d40; }
 </style>
 
 <script>
@@ -210,7 +205,7 @@ function transitionItem(orderId, itemId, to, triggerBtn) {
   const csrfMeta = document.querySelector('meta[name="csrf-token"]');
   const csrfToken = csrfMeta ? csrfMeta.content : '';
 
-  fetch('/admin/commandes/' + orderId + '/articles/' + itemId + '/transition', {
+  fetch('{{ url("admin/orders") }}/' + orderId + '/articles/' + itemId + '/transition', {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -255,5 +250,122 @@ function transitionItem(orderId, itemId, to, triggerBtn) {
     allBtns.forEach(function(b) { b.disabled = false; b.style.opacity = '1'; });
   });
 }
+
+// ── Modal retour ──────────────────────────────────────────────────────────────
+let _returnOrderId, _returnItemId;
+
+window.openReturnModal = function(orderId, itemId, productName, clientReason) {
+  _returnOrderId = orderId;
+  _returnItemId  = itemId;
+  document.getElementById('return-modal-product').textContent = productName;
+  const reasonBlock = document.getElementById('return-client-reason-block');
+  if (clientReason) {
+    document.getElementById('return-client-reason-text').textContent = clientReason;
+    reasonBlock.style.display = 'block';
+  } else {
+    reasonBlock.style.display = 'none';
+  }
+  document.getElementById('return-reject-reason').value = '';
+  document.getElementById('return-reject-reason-wrap').style.display = 'none';
+  document.querySelector('input[name="return-action"][value="approve"]').checked = true;
+  var modal = new bootstrap.Modal(document.getElementById('returnModal'));
+  modal.show();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('input[name="return-action"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.getElementById('return-reject-reason-wrap').style.display =
+        this.value === 'reject' ? 'block' : 'none';
+    });
+  });
+
+  document.getElementById('btn-confirm-return').addEventListener('click', function() {
+    const action = document.querySelector('input[name="return-action"]:checked')?.value;
+    const reason = document.getElementById('return-reject-reason').value.trim();
+
+    if (action === 'reject' && !reason) {
+      document.getElementById('return-reject-reason').focus();
+      document.getElementById('return-reject-reason').classList.add('is-invalid');
+      return;
+    }
+    document.getElementById('return-reject-reason').classList.remove('is-invalid');
+
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    fetch('{{ url("admin/orders") }}/' + _returnOrderId + '/articles/' + _returnItemId + '/return', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfMeta ? csrfMeta.content : '',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ action: action, reason: reason }),
+    })
+    .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+    .then(function(result) {
+      bootstrap.Modal.getInstance(document.getElementById('returnModal')).hide();
+      if (result.ok) {
+        window.location.reload();
+      } else {
+        alert(result.data.message || 'Erreur lors du traitement.');
+      }
+    })
+    .catch(function() { alert('Erreur réseau. Réessayez.'); })
+    .finally(function() { btn.disabled = false; btn.textContent = 'Confirmer'; });
+  });
+});
 </script>
+
+{{-- MODALE TRAITEMENT RETOUR --}}
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:12px;overflow:hidden;">
+      <div class="modal-header" style="background:#1c0e0d;border-bottom:2px solid rgba(251,191,36,.3);">
+        <h5 class="modal-title" id="returnModalLabel" style="color:#fbbf24;font-weight:700;">
+          <i class="fas fa-undo-alt me-2"></i>Traiter le retour
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body" style="padding:1.5rem;">
+        <p style="font-size:.9rem;margin-bottom:1rem;">
+          Article : <strong id="return-modal-product" style="color:#ED5F1E;"></strong>
+        </p>
+        <div id="return-client-reason-block" style="display:none;background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem;color:#713f12;">
+          <strong>Motif client :</strong>
+          <span id="return-client-reason-text"></span>
+        </div>
+        <div class="mb-3">
+          <label style="font-weight:600;font-size:.9rem;display:block;margin-bottom:.5rem;">Décision</label>
+          <div class="d-flex gap-3">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:.4rem;">
+              <input type="radio" name="return-action" value="approve" checked>
+              <span style="color:#15803d;font-weight:600;">Approuver</span>
+              <span style="font-size:.8rem;color:#6b7280;">(rembourser)</span>
+            </label>
+            <label style="cursor:pointer;display:flex;align-items:center;gap:.4rem;">
+              <input type="radio" name="return-action" value="reject">
+              <span style="color:#b91c1c;font-weight:600;">Rejeter</span>
+            </label>
+          </div>
+        </div>
+        <div id="return-reject-reason-wrap" style="display:none;">
+          <label for="return-reject-reason" style="font-weight:600;font-size:.9rem;">Motif du rejet <span style="color:#b91c1c;">*</span></label>
+          <textarea id="return-reject-reason" class="form-control mt-1" rows="3" maxlength="500"
+                    placeholder="Expliquez pourquoi le retour est refusé…" style="font-size:.875rem;"></textarea>
+          <div class="invalid-feedback">Le motif est requis pour rejeter un retour.</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #e5e7eb;padding:.75rem 1.5rem;">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="al-btn-action al-btn-success" id="btn-confirm-return" style="padding:.5rem 1.25rem;font-size:.9rem;">
+          Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection

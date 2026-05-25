@@ -535,6 +535,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::get('orders/{order}/qrcode', [\App\Http\Controllers\Admin\AdminOrderController::class, 'showQr'])->name('orders.qr');
         Route::get('orders/a-traiter', [\App\Http\Controllers\Admin\AdminOrderController::class, 'toHandle'])->name('orders.to-handle');
         Route::patch('orders/{order}/articles/{item}/transition', [\App\Http\Controllers\Admin\AdminOrderController::class, 'transitionItem'])->name('orders.items.transition');
+        Route::post('orders/{order}/articles/{item}/return', [\App\Http\Controllers\Admin\AdminOrderController::class, 'processReturn'])->name('orders.items.return');
 
         // Route resource pour les commandes (doit être APRÈS les routes spécifiques)
         Route::resource('orders', \App\Http\Controllers\Admin\AdminOrderController::class)->only(['index', 'show', 'update']);

@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class AdminOrderToHandleTest extends TestCase
@@ -20,6 +21,7 @@ class AdminOrderToHandleTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Notification::fake();
         $this->seed(\Database\Seeders\RolesTableSeeder::class);
 
         $this->admin = User::factory()->create(['role_id' => 2, 'role' => 'admin']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\InvalidOrderItemTransitionException;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Notifications\OrderItemStatusChanged;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,10 @@ class AdminOrderController extends AdminController
             });
         }
 
+        if ($request->filled('item_status')) {
+            $query->whereHas('items', fn($q) => $q->where('status', $request->item_status));
+        }
+
         $orders = $query->paginate(15)->withQueryString();
 
         return view('admin.orders.index', compact('orders'));
@@ -71,6 +76,9 @@ class AdminOrderController extends AdminController
         }
         if ($request->filled('date_fin')) {
             $query->whereDate('created_at', '<=', $request->get('date_fin'));
+        }
+        if ($request->filled('item_status')) {
+            $query->whereHas('items', fn($q) => $q->where('status', $request->get('item_status')));
         }
         return response()->json($query->paginate($request->integer('per_page', 20)));
     }
@@ -230,7 +238,49 @@ class AdminOrderController extends AdminController
 
         $order->recalculateTotal();
 
+        $notifiableStatuses = ['shipped', 'delivered', 'refunded'];
+        if (in_array($data['to'], $notifiableStatuses) && $order->user) {
+            $order->user->notify(new OrderItemStatusChanged($item->fresh(), $order));
+        }
+
         return response()->json(['status' => $item->fresh()->status]);
+    }
+
+    public function processReturn(Request $request, Order $order, OrderItem $item): JsonResponse
+    {
+        $this->authorize('viewAny', Order::class);
+
+        $data = $request->validate([
+            'action' => 'required|in:approve,reject',
+            'reason' => 'required_if:action,reject|nullable|string|max:500',
+        ]);
+
+        if ($item->order_id !== $order->id) {
+            return response()->json(['message' => 'Item does not belong to this order.'], 422);
+        }
+
+        if ($item->status !== OrderItem::STATUS_RETURN_REQUESTED) {
+            return response()->json(['message' => 'Item is not in return_requested status.'], 422);
+        }
+
+        if ($data['action'] === 'approve') {
+            $item->markRefunded();
+            if ($order->user) {
+                $order->user->notify(new OrderItemStatusChanged($item->fresh(), $order));
+            }
+        } else {
+            $reason = $data['reason'];
+            $item->markDelivered();
+            if ($order->user) {
+                $productName = $item->product?->title ?? 'votre article';
+                $customMessage = "Votre demande de retour pour {$productName} a été refusée. Motif : {$reason}";
+                $order->user->notify(new OrderItemStatusChanged($item->fresh(), $order, $customMessage));
+            }
+        }
+
+        $order->recalculateTotal();
+
+        return response()->json(['status' => $item->fresh()->status, 'action' => $data['action']]);
     }
 
     /**
