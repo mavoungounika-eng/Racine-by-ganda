@@ -25,6 +25,7 @@ class ProfileController extends Controller
         // Charge commandes et adresses en une seule passe — évite la double requête
         // avec orders() qui recharge les mêmes données pour le même utilisateur
         $orders = Order::where('user_id', $user->id)
+            ->whereNotIn('status', ['cancelled', 'archived'])
             ->with(['items.product'])
             ->latest()
             ->paginate(10);
@@ -60,7 +61,11 @@ class ProfileController extends Controller
         } elseif ($statusFilter === 'annulees') {
             $query->where('status', 'cancelled');
         }
-        // Si 'toutes' ou autre valeur, on affiche tout
+        // Si 'toutes' → exclure annulées et archivées
+        if ($statusFilter === 'toutes') {
+            $query->whereNotIn('status', ['cancelled', 'archived']);
+        }
+        // Si autre valeur non reconnue, on affiche tout
         
         // Pagination avec préservation des query strings
         $orders = $query->paginate(15)->withQueryString();
