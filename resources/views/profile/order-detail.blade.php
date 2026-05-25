@@ -442,16 +442,10 @@
         <div class="al-card mb-4">
             <div class="p-4">
 
-                {{-- NIVEAU 0 : Navigation --}}
-                <div class="mb-4">
-                    <a href="{{ route('profile.orders') }}" class="btn-action btn-action--back">
-                        <i class="fas fa-arrow-left me-2"></i> Retour aux commandes
-                    </a>
-                </div>
-
                 {{-- NIVEAU 1 : Paiement (priorité absolue) --}}
                 @if($needsPayment)
                 <div class="mb-4">
+                <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #ED5F1E; margin-bottom: 0.75rem;"><i class="fas fa-exclamation-circle me-1"></i> Action requise</div>
                     @if($order->payment_method === 'card')
                         <form action="{{ route('checkout.card.pay') }}" method="POST">
                             @csrf
@@ -469,6 +463,8 @@
                 @endif
 
                 {{-- NIVEAU 2 : Actions secondaires --}}
+                <div style="border-top: 1px solid rgba(22,13,12,0.07); margin-top: 1rem; padding-top: 1rem;">
+                <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(22,13,12,0.35); margin-bottom: 0.75rem;">Gérer la commande</div>
                 <div class="d-flex gap-2 flex-wrap mb-3">
                     @php $existingThread = \App\Models\Conversation::forOrder($order->id)->first(); @endphp
                     @if($existingThread)
@@ -496,6 +492,8 @@
 
                 {{-- NIVEAU 3 : Actions contextuelles (commandes livrées) --}}
                 @if($isCompleted)
+                <div style="border-top: 1px solid rgba(22,13,12,0.07); margin-top: 0.75rem; padding-top: 0.75rem;">
+                <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(22,13,12,0.35); margin-bottom: 0.75rem;">Après livraison</div>
                 <div class="d-flex gap-2 flex-wrap mb-3">
                     @if($order->payment_status === 'paid')
                         <a href="{{ route('profile.reviews.create', $order) }}" class="btn-action btn-action--subtle">
@@ -508,6 +506,7 @@
                     <button type="button" class="btn-action btn-action--subtle" data-bs-toggle="modal" data-bs-target="#reportProblemModal">
                         <i class="fas fa-exclamation-triangle me-2"></i> Signaler un problème
                     </button>
+                </div>
                 </div>
                 @endif
 
