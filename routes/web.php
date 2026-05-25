@@ -324,6 +324,9 @@ Route::middleware(['auth', 'ensure'])->group(function () {
     Route::get('/profil/commandes/{order}/facture/download', [\App\Http\Controllers\Profile\InvoiceController::class, 'download'])->name('profile.invoice.download');
     Route::get('/profil/commandes/{order}/facture/print', [\App\Http\Controllers\Profile\InvoiceController::class, 'print'])->name('profile.invoice.print');
 
+    // Actions commandes annulées (client)
+    Route::patch('/profil/commandes/{order}/restore', [\App\Http\Controllers\ProfileController::class, 'restoreOrder'])->name('orders.restore');
+    Route::delete('/profil/commandes/{order}/archive', [\App\Http\Controllers\ProfileController::class, 'archiveOrder'])->name('orders.archive');
     // Export Données RGPD
     Route::get('/profil/export-donnees', [\App\Http\Controllers\Profile\DataExportController::class, 'export'])->name('profile.data.export');
     Route::get('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'showDeleteAccount'])->name('profile.delete-account');

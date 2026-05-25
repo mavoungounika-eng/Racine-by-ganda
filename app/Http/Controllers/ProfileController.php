@@ -476,5 +476,23 @@ class ProfileController extends Controller
         return redirect()->route('profile.edit')
             ->with('success', 'Email professionnel vérifié avec succès !');
     }
+
+    public function restoreOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+        abort_unless($order->status === 'cancelled', 422);
+        $order->update(['status' => 'pending']);
+        return redirect()->route('profile.orders', ['status' => 'en-cours'])
+            ->with('success', 'Commande #' . $order->id . ' restaurée avec succès.');
+    }
+
+    public function archiveOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+        abort_unless($order->status === 'cancelled', 422);
+        $order->update(['status' => 'archived']);
+        return redirect()->route('profile.orders', ['status' => 'annulees'])
+            ->with('success', 'Commande #' . $order->id . ' archivée.');
+    }
 }
 
