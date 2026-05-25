@@ -667,7 +667,8 @@
                                         <span class="order-items-count">{{ $order->items->count() }} article(s)</span>
                                     </td>
                                     <td>
-                                        <span class="order-amount">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</span>
+                                        @php $displayAmount = ($order->cancellation_type === 'global' && $order->original_total) ? $order->original_total : $order->total_amount; @endphp
+                                        <span class="order-amount">{{ number_format($displayAmount ?? 0, 0, ',', ' ') }} FCFA</span>
                                     </td>
                                     <td>
                                         @php
@@ -871,6 +872,40 @@
                 </div>
             </div>
         </div>
+
+        {{-- COMMANDES SUSPENDUES --}}
+        @if(isset($dormant_orders) && $dormant_orders->count() > 0)
+        <div style="background:rgba(237,95,30,0.05);border:1px solid rgba(237,95,30,0.18);border-radius:16px;padding:1.5rem 2rem;margin-top:2rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+                <h3 style="font-size:1.1rem;font-weight:700;color:#ED5F1E;margin:0;display:flex;align-items:center;gap:0.5rem;">
+                    <i class="fas fa-pause-circle"></i> Commandes suspendues
+                </h3>
+                <a href="{{ route('profile.orders', ['status' => 'annulees']) }}" style="font-size:0.85rem;color:#ED5F1E;font-weight:500;text-decoration:none;">
+                    Voir toutes <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                @foreach($dormant_orders as $dormant)
+                <div style="background:white;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;border:1px solid rgba(237,95,30,0.12);">
+                    <div>
+                        <strong style="color:#160D0C;">#{{ $dormant->id }}</strong>
+                        <span style="color:rgba(22,13,12,0.4);font-size:0.82rem;margin-left:0.5rem;">{{ $dormant->created_at->format('d/m/Y') }}</span>
+                        <div style="font-size:0.85rem;color:#ED5F1E;font-weight:600;margin-top:0.2rem;">
+                            {{ number_format($dormant->original_total ?? $dormant->total_amount ?? 0, 0, ',', ' ') }} FCFA
+                        </div>
+                    </div>
+                    <form action="{{ route('orders.restore', $dormant) }}" method="POST" class="d-inline">
+                        @csrf @method('PATCH')
+                        <button type="submit" style="background:rgba(237,95,30,0.1);color:#ED5F1E;border:1px solid rgba(237,95,30,0.25);border-radius:8px;padding:0.4rem 1rem;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-undo me-1"></i> Restaurer
+                        </button>
+                    </form>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
     </div>
 </section>
 

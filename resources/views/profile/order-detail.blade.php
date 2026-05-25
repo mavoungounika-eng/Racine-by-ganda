@@ -95,9 +95,9 @@
 
             {{-- BANNIÈRE DORMANT --}}
             @if($isCancelled)
-            <div class="px-4 py-2 d-flex align-items-center gap-2" style="background: rgba(220,38,38,0.05); border-bottom: 1px solid rgba(220,38,38,0.12);">
-                <i class="fas fa-pause-circle" style="color: #DC2626; font-size: 0.9rem;"></i>
-                <span style="font-size: 0.82rem; color: #b91c1c; font-weight: 500;">
+            <div class="px-4 py-2 d-flex align-items-center gap-2" style="background: rgba(237,95,30,0.08); border-bottom: 1px solid rgba(237,95,30,0.15);">
+                <i class="fas fa-pause-circle" style="color: #ED5F1E; font-size: 0.9rem;"></i>
+                <span style="font-size: 0.82rem; color: #ED5F1E; font-weight: 500;">
                     @if($isGlobalCancel)
                         Commande suspendue — elle peut être restaurée depuis la section Actions ci-dessous.
                     @else
@@ -237,9 +237,23 @@
                         </div>
                         <div>
                             <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(22,13,12,0.45); font-weight: 600; margin-bottom: 0.5rem;">Montant total</div>
-                            <p class="mb-0" style="color: #ED5F1E; font-size: 1.75rem; font-weight: 700;">
-                                {{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA
-                            </p>
+                            @if($isGlobalCancel && $order->original_total)
+                                <p class="mb-0" style="color: #ED5F1E; font-size: 1.75rem; font-weight: 700;">
+                                    {{ number_format($order->original_total, 0, ',', ' ') }} FCFA
+                                </p>
+                                <small style="color: rgba(22,13,12,0.4); font-size: 0.78rem;">Montant de référence (commande suspendue)</small>
+                            @elseif($isPartialCancel && $order->original_total && $order->original_total != $order->total_amount)
+                                <p class="mb-0" style="color: rgba(22,13,12,0.35); font-size: 1rem; text-decoration: line-through;">
+                                    {{ number_format($order->original_total, 0, ',', ' ') }} FCFA
+                                </p>
+                                <p class="mb-0" style="color: #ED5F1E; font-size: 1.75rem; font-weight: 700;">
+                                    {{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA
+                                </p>
+                            @else
+                                <p class="mb-0" style="color: #ED5F1E; font-size: 1.75rem; font-weight: 700;">
+                                    {{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA
+                                </p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -290,7 +304,7 @@
                                     <td>
                                         <strong style="color: #160D0C;">{{ $item->product->title ?? 'Produit supprimé' }}</strong>
                                         @if($isGlobalCancel)
-                                            <span class="ms-2" style="font-size:0.7rem;font-weight:600;background:rgba(220,38,38,0.08);color:#DC2626;border:1px solid rgba(220,38,38,0.2);border-radius:6px;padding:0.1rem 0.4rem;">suspendu</span>
+                                            <span class="ms-2" style="font-size:0.7rem;font-weight:600;background:rgba(237,95,30,0.1);color:#ED5F1E;border:1px solid rgba(237,95,30,0.25);border-radius:6px;padding:0.1rem 0.4rem;">suspendu</span>
                                         @endif
                                     </td>
                                     <td class="text-center" style="vertical-align: middle;">
@@ -553,14 +567,6 @@
                             @method('PATCH')
                             <button type="submit" class="btn-action btn-action--secondary">
                                 <i class="fas fa-undo me-2"></i> Restaurer
-                            </button>
-                        </form>
-                        <form action="{{ route('orders.restore', $order) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('PATCH')
-                            <input type="hidden" name="edit" value="1">
-                            <button type="submit" class="btn-action btn-action--subtle">
-                                <i class="fas fa-edit me-2"></i> Modifier et relancer
                             </button>
                         </form>
                         <button type="button" class="btn-action btn-action--danger"

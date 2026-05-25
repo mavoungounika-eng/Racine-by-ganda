@@ -182,7 +182,8 @@
                                 @endif
                             </td>
                             <td style="vertical-align:middle;padding:1rem;white-space:nowrap;">
-                                <strong style="color:#ED5F1E;font-size:1rem;">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</strong>
+                                @php $dispAmt = ($order->cancellation_type === 'global' && $order->original_total) ? $order->original_total : $order->total_amount; @endphp
+                                <strong style="color:#ED5F1E;font-size:1rem;">{{ number_format($dispAmt ?? 0, 0, ',', ' ') }} FCFA</strong>
                             </td>
                             <td style="vertical-align:middle;padding:1rem;">
                                 <span class="status-pill" style="background:{{ $st['bg'] }};color:{{ $st['color'] }};border:1px solid {{ $st['color'] }}30;">
@@ -200,8 +201,17 @@
                                     @endif
                                 </div>
                             </td>
-                            <td style="vertical-align:middle;padding:1rem 1rem 1rem 0;text-align:right;">
-                                <i class="fas fa-chevron-right orders-arrow"></i>
+                            <td style="vertical-align:middle;padding:0.75rem 1rem 0.75rem 0;text-align:right;white-space:nowrap;">
+                                @if($order->status === 'cancelled')
+                                    <form action="{{ route('orders.restore', $order) }}" method="POST" class="d-inline" onclick="event.stopPropagation()">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="btn-restore-inline">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <i class="fas fa-chevron-right orders-arrow"></i>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -384,6 +394,26 @@
         transform: translateX(2px);
     }
 
+    .orders-row--selected {
+        background: rgba(237,95,30,0.04) !important;
+        outline: 2px solid #ED5F1E;
+        outline-offset: -2px;
+    }
+    .btn-restore-inline {
+        background: rgba(237,95,30,0.08);
+        color: #ED5F1E;
+        border: 1px solid rgba(237,95,30,0.25);
+        border-radius: 8px;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .btn-restore-inline:hover {
+        background: #ED5F1E;
+        color: #fff;
+    }
+
     /* ── Mobile ── */
     @media (max-width: 575px) {
         .orders-tab { padding: 0.75rem 0.875rem; font-size: 0.8rem; }
@@ -430,13 +460,13 @@ document.addEventListener('DOMContentLoaded', () => {
         row.style.cursor = 'pointer';
         row.addEventListener('click', () => {
             if (selectedRow === row) {
-                row.classList.remove('table-active');
+                row.classList.remove('orders-row--selected');
                 selectedRow = null;
                 bar.classList.add('d-none');
                 return;
             }
-            if (selectedRow) selectedRow.classList.remove('table-active');
-            row.classList.add('table-active');
+            if (selectedRow) selectedRow.classList.remove('orders-row--selected');
+            row.classList.add('orders-row--selected');
             selectedRow = row;
 
             document.getElementById('bar-btn-detail').href = row.dataset.orderUrl;

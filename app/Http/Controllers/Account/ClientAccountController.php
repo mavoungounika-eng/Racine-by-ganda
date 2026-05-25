@@ -58,11 +58,19 @@ class ClientAccountController extends Controller
                 ->sum('total_amount'),
         ];
 
-        // 5 dernières commandes
+        // 5 dernières commandes actives (hors cancelled/archived)
         $my_orders = Order::where('user_id', $user->id)
+            ->whereNotIn('status', ['cancelled', 'archived'])
             ->with(['items.product'])
             ->latest()
             ->take(5)
+            ->get();
+
+        // Commandes dormantes (annulées restaurables)
+        $dormant_orders = Order::where('user_id', $user->id)
+            ->where('status', 'cancelled')
+            ->latest()
+            ->take(3)
             ->get();
 
         // Points de fidélité (si le modèle existe)
@@ -80,7 +88,7 @@ class ClientAccountController extends Controller
                 ->count();
         }
 
-        return view('account.dashboard', compact('stats', 'my_orders', 'loyalty', 'user', 'unreadCount'));
+        return view('account.dashboard', compact('stats', 'my_orders', 'dormant_orders', 'loyalty', 'user', 'unreadCount'));
     }
 }
 
