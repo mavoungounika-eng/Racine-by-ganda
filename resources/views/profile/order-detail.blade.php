@@ -849,6 +849,7 @@
             updateBar();
         });
     });
+    updateBar();
 
     window.itemBarViewProduct = function () {
         const rows = getSelectedRows();
