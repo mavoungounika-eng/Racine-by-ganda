@@ -143,6 +143,11 @@ class Order extends Model
 
     public function recalculateTotal(): void
     {
+        // Commande annulée/archivée : on conserve le total_amount original
+        if (in_array($this->status, ['cancelled', 'archived'])) {
+            return;
+        }
+
         $this->update([
             'total_amount' => $this->items()
                 ->where('status', '!=', OrderItem::STATUS_CANCELLED)
