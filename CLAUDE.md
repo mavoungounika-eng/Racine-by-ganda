@@ -320,12 +320,12 @@ composer run setup    # Setup initial
 
 ---
 
-## État tests — RÉFÉRENCE (5 avril 2026)
-Tests: 926 | Failures: None (stable) | Skipped: 8 | Flaky Redis: 0-4 par run
+## État tests — RÉFÉRENCE (25 mai 2026)
+Tests: 945 | Failures: None (stable) | Skipped: 8 | Flaky Redis: 0-1 par run
 
-⚠️ Tests flaky Redis : QueueCircuitBreaker et QueueRateLimiter utilisent Redis::
-directement. L'état s'accumule entre les tests. Toujours exécuter `redis-cli FLUSHDB`
-avant un run de suite complète pour un résultat fiable.
+ℹ️ QueueCircuitBreaker et QueueRateLimiter utilisent déjà Cache:: — CACHE_STORE=array
+en tests, plus de flaky Redis systématique. Toujours exécuter `redis-cli FLUSHDB`
+avant un run de suite complète pour un résultat reproductible.
 
 Commande de vérification rapide :
 ```bash
@@ -339,14 +339,13 @@ Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 ## Ce qui reste à faire
 
 ### Priorité haute (variables d'environnement à configurer)
-1. EXCHANGE_RATE_API_KEY — obtenir sur exchangerate-api.com (free tier)
-2. URLs Monetbil prod — MONETBIL_NOTIFY_URL et MONETBIL_RETURN_URL avec vrai domaine
-3. RECAPTCHA_SITE_KEY + RECAPTCHA_SECRET_KEY — Google reCAPTCHA v3
-4. SENTRY_LARAVEL_DSN — configurer sur sentry.io
+1. SENTRY_LARAVEL_DSN — ABSENT de .env, obtenir sur sentry.io (monitoring aveugle en prod)
+2. MONETBIL_NOTIFY_URL — encore localhost, remplacer par le vrai domaine avant mise en prod
+3. MONETBIL_RETURN_URL — encore localhost, idem
 
-### Priorité moyenne — Code
-- Refactorer QueueCircuitBreaker/QueueRateLimiter : utiliser Cache:: au lieu de Redis::
-  pour respecter CACHE_STORE=array en tests (fix flaky tests)
+### Terminé — variables env (ne plus refaire)
+- ✅ EXCHANGE_RATE_API_KEY — configuré
+- ✅ RECAPTCHA_SITE_KEY + RECAPTCHA_SECRET_KEY — configurés (Google reCAPTCHA v3)
 
 ### Terminé (ne plus refaire)
 - ✅ CI/CD GitHub Actions — workflow complet avec Redis, suite entière, PHP 8.3
@@ -362,6 +361,12 @@ Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 - ✅ 15 routes manquantes dans les vues — corrigées ou ajoutées
 - ✅ Bootstrap 4 → Bootstrap 5 — data-dismiss/toggle/target dans 5 vues admin
 - ✅ CheckoutTimeoutTest flaky — test_cleanup_handles_multiple_orders_correctly stabilisé
+- ✅ QueueCircuitBreaker/QueueRateLimiter — déjà sur Cache:: (plus de Redis:: direct)
+- ✅ Architecture Order dormant/restore — cancelGlobally/restore/archivePermanently + original_total + cancellation_type
+- ✅ recalculateTotal — exclut refunded, garde zéro-items, shipping ignoré si aucun item facturable
+- ✅ Espace client refonte — dashboard/orders/order-detail avec états global/partial/actif
+- ✅ Notifications OrderItemStatusChanged — mail+database pour shipped/delivered/refunded
+- ✅ Admin processReturn — approve/reject retours avec notifications
 
 ### Tests skipped légitimes (ne pas forcer)
 - CreatorPayoutAccountingTest — architecture SaaS pur, hors scope
