@@ -85,3 +85,5 @@ reset-db-socket.php
 "claude designe contexte de progression.md"
 "assset racine by ganda/"
 assset racine by ganda/
+.claude/backups/
+.claude/logs/
