@@ -399,9 +399,6 @@ class ProfileController extends Controller
             ->with('success', 'Commande #' . $order->id . ' annulée. Vous pouvez la restaurer à tout moment.');
     }
 
-        return redirect()->route('profile.orders')
-            ->with('success', 'Commande #' . $order->id . ' annulée avec succès.');
-    }
 
     public function updateOrderItemQuantity(Order $order, OrderItem $item, Request $request): RedirectResponse
     {
@@ -414,6 +411,10 @@ class ProfileController extends Controller
         $order->recalculateTotal();
         return back()->with('success', 'Quantité mise à jour.');
     }
+    public function requestReturn(Order $order, Request $request): RedirectResponse
+    {
+        $this->authorize('view', $order);
+        if (! in_array($order->status, ['completed', 'delivered'])) {
             return back()->with('error', 'Seules les commandes livrées peuvent faire l\'objet d\'un retour.');
         }
 
