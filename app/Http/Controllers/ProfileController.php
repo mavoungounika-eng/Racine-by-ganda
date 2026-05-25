@@ -386,17 +386,18 @@ class ProfileController extends Controller
     public function cancelOrder(Order $order): RedirectResponse
     {
         $this->authorize('view', $order);
-
-        if ($order->status !== 'pending') {
-            return back()->with('error', 'Seules les commandes en attente peuvent être annulées.');
+        if (! in_array($order->status, ['pending', 'processing'])) {
+            return back()->with('error', 'Seules les commandes en attente ou en traitement peuvent être annulées.');
         }
-
-        $order->update(['status' => 'cancelled']);
-
+        $order->cancelGlobally();
         \Log::channel('security')->info('Order cancelled by client', [
-            'order_id' => $order->id,
-            'user_id'  => Auth::id(),
+            'order_id'          => $order->id,
+            'user_id'           => Auth::id(),
+            'cancellation_type' => 'global',
         ]);
+        return redirect()->route('profile.orders', ['status' => 'annulees'])
+            ->with('success', 'Commande #' . $order->id . ' annulée. Vous pouvez la restaurer à tout moment.');
+    }
 
         return redirect()->route('profile.orders')
             ->with('success', 'Commande #' . $order->id . ' annulée avec succès.');
@@ -405,26 +406,14 @@ class ProfileController extends Controller
     public function updateOrderItemQuantity(Order $order, OrderItem $item, Request $request): RedirectResponse
     {
         $this->authorize('view', $order);
-
         if ($order->status !== 'pending') {
             return back()->with('error', 'Impossible de modifier une commande déjà traitée.');
         }
-
         $request->validate(['quantity' => 'required|integer|min:1|max:100']);
-
         $item->update(['quantity' => $request->integer('quantity')]);
-        $order->update([
-            'total_amount' => $order->items()->sum(DB::raw('price * quantity')),
-        ]);
-
+        $order->recalculateTotal();
         return back()->with('success', 'Quantité mise à jour.');
     }
-
-    public function requestReturn(Order $order, Request $request): RedirectResponse
-    {
-        $this->authorize('view', $order);
-
-        if (!in_array($order->status, ['completed', 'delivered'])) {
             return back()->with('error', 'Seules les commandes livrées peuvent faire l\'objet d\'un retour.');
         }
 
@@ -481,18 +470,16 @@ class ProfileController extends Controller
     {
         abort_unless($order->user_id === auth()->id(), 403);
         abort_unless($order->status === 'cancelled', 422);
-        $order->update(['status' => 'pending']);
+        $order->restore();
         return redirect()->route('profile.orders', ['status' => 'en-cours'])
-            ->with('success', 'Commande #' . $order->id . ' restaurée avec succès.');
+            ->with('success', 'Commande #' . $order->id . ' restaurée. Vérifiez les détails avant de confirmer.');
     }
-
     public function archiveOrder(Order $order): RedirectResponse
     {
         abort_unless($order->user_id === auth()->id(), 403);
         abort_unless($order->status === 'cancelled', 422);
-        $order->update(['status' => 'archived']);
-        return redirect()->route('profile.orders', ['status' => 'annulees'])
-            ->with('success', 'Commande #' . $order->id . ' archivée.');
+        $order->archivePermanently();
+        return redirect()->route('profile.orders')
+            ->with('success', 'Commande #' . $order->id . ' supprimée définitivement.');
     }
 }
-
