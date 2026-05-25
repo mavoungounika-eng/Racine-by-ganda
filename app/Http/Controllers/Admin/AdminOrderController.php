@@ -99,7 +99,12 @@ class AdminOrderController extends AdminController
     public function bulkCancel(Request $request): JsonResponse
     {
         $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
-        $count = Order::whereIn('id', $ids)->whereNotIn('status', ['completed', 'cancelled'])->update(['status' => 'cancelled']);
+        $orders = Order::whereIn('id', $ids)->whereNotIn('status', ['completed', 'cancelled'])->get();
+        $count = 0;
+        foreach ($orders as $order) {
+            $order->cancelGlobally();
+            $count++;
+        }
         return response()->json(['success' => true, 'message' => $count.' commande(s) annulée(s)']);
     }
 
@@ -130,7 +135,11 @@ class AdminOrderController extends AdminController
             'status' => 'required|in:pending,paid,shipped,completed,cancelled',
         ]);
 
-        $order->update(['status' => $request->status]);
+        if ($request->status === 'cancelled') {
+            $order->cancelGlobally();
+        } else {
+            $order->update(['status' => $request->status]);
+        }
 
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Statut de la commande mis à jour.');

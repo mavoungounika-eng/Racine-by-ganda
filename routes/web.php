@@ -713,7 +713,7 @@ Route::middleware(['auth', 'throttle:120,1'])->group(function () {
 // Routes Paiement
 Route::middleware(['auth'])->group(function () {
     // Paiement par Carte Bancaire (Stripe)
-    Route::post('/checkout/card/pay', [\App\Http\Controllers\Front\CardPaymentController::class, 'pay'])->name('checkout.card.pay');
+    Route::match(['GET', 'POST'], '/checkout/card/pay', [\App\Http\Controllers\Front\CardPaymentController::class, 'pay'])->name('checkout.card.pay');
     Route::get('/checkout/card/{order}/success', [\App\Http\Controllers\Front\CardPaymentController::class, 'success'])->name('checkout.card.success');
     Route::get('/checkout/card/{order}/cancel', [\App\Http\Controllers\Front\CardPaymentController::class, 'cancel'])->name('checkout.card.cancel');
     

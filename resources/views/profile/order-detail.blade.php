@@ -40,8 +40,11 @@
         $timelineSteps['annulé'] = ['label' => 'Annulé', 'icon' => 'fa-times-circle', 'statuses' => ['cancelled']];
     }
 
-    $isPending   = $order->status === 'pending';
-    $isCompleted = in_array($order->status, ['completed', 'delivered']);
+    $isPending       = $order->status === 'pending';
+    $isCompleted     = in_array($order->status, ['completed', 'delivered']);
+    $isCancelled     = $order->status === 'cancelled';
+    $isGlobalCancel  = $isCancelled && $order->cancellation_type === 'global';
+    $isPartialCancel = $isCancelled && $order->cancellation_type === 'partial';
     $needsPayment = $order->payment_status !== 'paid'
         && in_array($order->status, ['pending', 'processing'])
         && $order->payment_method !== 'cash_on_delivery';
@@ -89,6 +92,20 @@
                     </div>
                 </div>
             </div>
+
+            {{-- BANNIÈRE DORMANT --}}
+            @if($isCancelled)
+            <div class="px-4 py-2 d-flex align-items-center gap-2" style="background: rgba(220,38,38,0.05); border-bottom: 1px solid rgba(220,38,38,0.12);">
+                <i class="fas fa-pause-circle" style="color: #DC2626; font-size: 0.9rem;"></i>
+                <span style="font-size: 0.82rem; color: #b91c1c; font-weight: 500;">
+                    @if($isGlobalCancel)
+                        Commande suspendue — elle peut être restaurée depuis la section Actions ci-dessous.
+                    @else
+                        Commande partiellement annulée — certains articles ont été retirés avant l'annulation.
+                    @endif
+                </span>
+            </div>
+            @endif
 
             {{-- TIMELINE --}}
             <div class="px-4 py-3" style="background: rgba(22,13,12,0.03); border-bottom: 1px solid rgba(22,13,12,0.08);">
@@ -247,16 +264,7 @@
                                 Commande en attente — vous pouvez encore ajuster les quantités ou retirer des articles.
                             </p>
                         @endif
-                        @if($order->status === 'cancelled')
-                        <div style="position:relative;">
-                            <div style="position:absolute;inset:0;background:rgba(255,255,255,0.6);z-index:5;display:flex;align-items:center;justify-content:center;border-radius:0;">
-                                <div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:0.6rem 1.25rem;display:flex;align-items:center;gap:0.5rem;">
-                                    <i class="fas fa-ban" style="color:#DC2626;"></i>
-                                    <span style="font-size:0.88rem;font-weight:600;color:#DC2626;">Commande annulée</span>
-                                </div>
-                            </div>
-                        @endif
-                        <table class="al-table w-100" id="items-table" style="{{ $order->status === 'cancelled' ? 'opacity:0.45;pointer-events:none;' : '' }}">
+                        <table class="al-table w-100" id="items-table">
                             <thead>
                                 <tr>
                                     <th style="width: 36px; padding-left: 1rem;">
@@ -281,6 +289,9 @@
                                     </td>
                                     <td>
                                         <strong style="color: #160D0C;">{{ $item->product->title ?? 'Produit supprimé' }}</strong>
+                                        @if($isGlobalCancel)
+                                            <span class="ms-2" style="font-size:0.7rem;font-weight:600;background:rgba(220,38,38,0.08);color:#DC2626;border:1px solid rgba(220,38,38,0.2);border-radius:6px;padding:0.1rem 0.4rem;">suspendu</span>
+                                        @endif
                                     </td>
                                     <td class="text-center" style="vertical-align: middle;">
                                         @if($isPending)
@@ -314,6 +325,11 @@
                                         Total
                                     </td>
                                     <td class="text-end" style="border-top: 2px solid rgba(22,13,12,0.1); padding: 1rem;">
+                                        @if($isPartialCancel && $order->original_total && $order->original_total != $order->total_amount)
+                                            <span style="color: rgba(22,13,12,0.35); font-size: 0.9rem; text-decoration: line-through; display:block;">
+                                                {{ number_format($order->original_total, 0, ',', ' ') }} FCFA
+                                            </span>
+                                        @endif
                                         <strong style="color: #ED5F1E; font-size: 1.2rem;">
                                             {{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA
                                         </strong>
@@ -321,9 +337,6 @@
                                 </tr>
                             </tfoot>
                         </table>
-                        @if($order->status === 'cancelled')
-                        </div>
-                        @endif
                     </div>
 
                     {{-- BARRE D'ACTIONS FLOTTANTE --}}
@@ -358,11 +371,11 @@
             </div>
         </div>
 
-        {{-- SECTION ARTICLES ANNULÉS --}}
+        {{-- SECTION ARTICLES ANNULÉS (partielle seulement) --}}
         @php
             $cancelledItems = $order->items->where('status', \App\Models\OrderItem::STATUS_CANCELLED);
         @endphp
-        @if($cancelledItems->isNotEmpty())
+        @if($cancelledItems->isNotEmpty() && !$isGlobalCancel)
         <div class="al-card mb-4" id="cancelled-items-card">
             <div class="px-4 py-3" style="border-bottom: 2px solid rgba(220,38,38,0.15); background: rgba(220,38,38,0.03);">
                 <h5 class="mb-0" style="font-weight: 600; color: #DC2626;">
@@ -525,6 +538,48 @@
                     <button type="button" class="btn-action btn-action--danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
                         <i class="fas fa-times me-2"></i> Annuler la commande
                     </button>
+                </div>
+                @endif
+
+                {{-- NIVEAU 5 : Commande annulée (dormant) --}}
+                @if($isCancelled)
+                <div style="border-top: 1px solid rgba(220,38,38,0.12); padding-top: 1rem; margin-top: 0.5rem;">
+                    <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #DC2626; margin-bottom: 0.75rem;">
+                        <i class="fas fa-pause-circle me-1"></i> Commande suspendue
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <form action="{{ route('orders.restore', $order) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn-action btn-action--secondary">
+                                <i class="fas fa-undo me-2"></i> Restaurer
+                            </button>
+                        </form>
+                        <form action="{{ route('orders.restore', $order) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="edit" value="1">
+                            <button type="submit" class="btn-action btn-action--subtle">
+                                <i class="fas fa-edit me-2"></i> Modifier et relancer
+                            </button>
+                        </form>
+                        <button type="button" class="btn-action btn-action--danger"
+                            onclick="ConfirmModal.show({
+                                title: 'Supprimer définitivement',
+                                message: 'Cette action est irréversible. La commande sera archivée et ne pourra plus être restaurée.',
+                                confirmLabel: 'Supprimer définitivement',
+                                danger: true,
+                                onConfirm: function() {
+                                    document.getElementById('archive-order-form').submit();
+                                }
+                            })">
+                            <i class="fas fa-trash me-2"></i> Supprimer définitivement
+                        </button>
+                        <form id="archive-order-form" action="{{ route('orders.archive', $order) }}" method="POST" class="d-none">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    </div>
                 </div>
                 @endif
 
