@@ -186,7 +186,7 @@
                                     <i class="fas fa-info-circle me-1" style="color: #22C55E;"></i>
                                     Votre commande est en attente de paiement.
                                 </p>
-                                @if($order->payment_method === 'card')
+                                @if(in_array($order->payment_method, ['card', 'stripe']))
                                     <a href="#" onclick="document.querySelector('form[action*=\'card/pay\']').submit(); return false;"
                                         style="font-size: 0.83rem; color: #16a34a; font-weight: 600; text-decoration: none;">
                                         <i class="fas fa-credit-card me-1"></i> Finaliser le paiement par carte →
@@ -196,6 +196,10 @@
                                         style="font-size: 0.83rem; color: #16a34a; font-weight: 600; text-decoration: none;">
                                         <i class="fas fa-mobile-alt me-1"></i> Finaliser le paiement Mobile Money →
                                     </a>
+                                @elseif($order->payment_method === 'cash_on_delivery')
+                                    <span style="font-size: 0.83rem; color: rgba(22,13,12,0.55);">
+                                        <i class="fas fa-hand-holding-usd me-1"></i> Paiement à la livraison
+                                    </span>
                                 @endif
                             </div>
                             @elseif($order->payment_status === 'paid')
@@ -446,7 +450,7 @@
                 @if($needsPayment)
                 <div class="mb-4">
                 <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #ED5F1E; margin-bottom: 0.75rem;"><i class="fas fa-exclamation-circle me-1"></i> Action requise</div>
-                    @if($order->payment_method === 'card')
+                    @if(in_array($order->payment_method, ['card', 'stripe']))
                         <form action="{{ route('checkout.card.pay') }}" method="POST">
                             @csrf
                             <input type="hidden" name="order_id" value="{{ $order->id }}">
@@ -458,6 +462,11 @@
                         <a href="{{ route('checkout.mobile-money.form', $order) }}" class="btn-action btn-action--pay">
                             <i class="fas fa-mobile-alt me-2"></i> Payer via Mobile Money maintenant
                         </a>
+                    @elseif($order->payment_method === 'cash_on_delivery')
+                        <div style="background: rgba(22,13,12,0.04); border: 1px solid rgba(22,13,12,0.12); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.9rem; color: rgba(22,13,12,0.65);">
+                            <i class="fas fa-hand-holding-usd me-2" style="color: #ED5F1E;"></i>
+                            Paiement à la livraison — aucune action requise maintenant
+                        </div>
                     @endif
                 </div>
                 @endif
