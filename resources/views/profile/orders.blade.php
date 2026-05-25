@@ -149,10 +149,18 @@
                             ];
                             $st = $sc[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#160D0C', 'bg' => 'rgba(22,13,12,0.1)'];
                         @endphp
-                        <tr class="orders-row"
+                        <tr class="orders-row {{ $order->status === 'cancelled' ? 'orders-row--cancelled' : '' }}"
+                            @if($order->status !== 'cancelled')
                             onclick="window.location='{{ route('profile.orders.show', $order) }}'"
-                            tabindex="0"
-                            onkeydown="if(event.key==='Enter')window.location='{{ route('profile.orders.show', $order) }}'">
+                            onkeydown="if(event.key==='Enter')window.location='{{ route('profile.orders.show', $order) }}'"
+                            @else
+                            data-order-id="{{ $order->id }}"
+                            data-order-status="cancelled"
+                            data-order-url="{{ route('profile.orders.show', $order) }}"
+                            data-restore-url="{{ route('orders.restore', $order) }}"
+                            data-archive-url="{{ route('orders.archive', $order) }}"
+                            @endif
+                            tabindex="0">
                             {{-- Pastille statut --}}
                             <td style="padding:0;vertical-align:middle;">
                                 <div style="width:4px;min-height:60px;background:{{ $st['color'] }};border-radius:3px 0 0 3px;"></div>
@@ -393,4 +401,62 @@
     'backText' => 'Retour au tableau de bord',
     'position' => 'bottom',
 ])
+{{-- BARRE D'ACTIONS FLOTTANTE — commandes annulées --}}
+<div id="cancelled-action-bar" class="d-none position-fixed bottom-0 start-0 end-0 py-3 px-4"
+     style="background:#160D0C;z-index:1050;border-top:2px solid #ED5F1E;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <span class="text-white small">1 commande sélectionnée</span>
+        <div class="d-flex gap-2">
+            <a id="bar-btn-detail" href="#" class="btn btn-sm fw-semibold" style="background:#FFB800;color:#160D0C;">
+                <i class="fas fa-eye me-1"></i>Voir le détail
+            </a>
+            <button id="bar-btn-restore" class="btn btn-sm btn-outline-light fw-semibold">
+                <i class="fas fa-undo me-1"></i>Restaurer
+            </button>
+            <button id="bar-btn-archive" class="btn btn-sm fw-semibold" style="background:#ED5F1E;color:#fff;">
+                <i class="fas fa-archive me-1"></i>Archiver
+            </button>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const bar = document.getElementById('cancelled-action-bar');
+    let selectedRow = null;
+
+    document.querySelectorAll('tr[data-order-status="cancelled"]').forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', () => {
+            if (selectedRow === row) {
+                row.classList.remove('table-active');
+                selectedRow = null;
+                bar.classList.add('d-none');
+                return;
+            }
+            if (selectedRow) selectedRow.classList.remove('table-active');
+            row.classList.add('table-active');
+            selectedRow = row;
+
+            document.getElementById('bar-btn-detail').href = row.dataset.orderUrl;
+            document.getElementById('bar-btn-restore').onclick = () => submitAction('PATCH', row.dataset.restoreUrl);
+            document.getElementById('bar-btn-archive').onclick = () => submitAction('DELETE', row.dataset.archiveUrl);
+            bar.classList.remove('d-none');
+        });
+    });
+
+    function submitAction(method, action) {
+        const f = document.createElement('form');
+        f.method = 'POST';
+        f.action = action;
+        f.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}">'
+                    + '<input type="hidden" name="_method" value="' + method + '">';
+        document.body.appendChild(f);
+        f.submit();
+    }
+});
+</script>
+@endpush
+
 @endsection
