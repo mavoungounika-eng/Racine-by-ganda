@@ -43,12 +43,14 @@ class ClientAccountController extends Controller
 
         // Statistiques du client
         $stats = [
-            'my_orders_total' => Order::where('user_id', $user->id)->count(),
+            'my_orders_total' => Order::where('user_id', $user->id)
+                ->whereNotIn('status', ['cancelled', 'archived'])
+                ->count(),
             'my_orders_pending' => Order::where('user_id', $user->id)
                 ->whereIn('status', ['pending', 'processing'])
                 ->count(),
             'my_orders_completed' => Order::where('user_id', $user->id)
-                ->whereIn('status', ['completed', 'cancelled'])
+                ->whereIn('status', ['completed', 'delivered'])
                 ->count(),
             'total_spent' => Order::where('user_id', $user->id)
                 ->whereIn('payment_status', ['paid'])
