@@ -868,9 +868,9 @@
     window.itemBarViewProduct = function () {
         const rows = getSelectedRows();
         if (rows.length !== 1) return;
-        const slug = rows[0].dataset.productSlug;
-        if (slug) {
-            window.open('{{ url('/produit') }}/' + slug, '_blank');
+        const productId = rows[0].dataset.productId;
+        if (productId) {
+            window.open('{{ url('/produit') }}/' + productId, '_blank');
         } else {
             alert('Fiche produit indisponible.');
         }
@@ -982,20 +982,20 @@
     window.cancelledBarView = function () {
         const rows = getCancelledSelectedRows();
         if (rows.length !== 1) return;
-        const slug = rows[0].dataset.productSlug;
-        if (!slug) {
+        const productId = rows[0].dataset.productId;
+        if (!productId) {
             alert('Fiche produit indisponible.');
             return;
         }
-        window.open('{{ url('/produit') }}/' + slug, '_blank');
+        window.open('{{ url('/produit') }}/' + productId, '_blank');
     };
 
     window.cancelledBarReorder = function () {
         const rows = getCancelledSelectedRows();
         rows.forEach(row => {
-            const slug = row.dataset.productSlug;
-            if (slug) {
-                window.open('{{ url('/produit') }}/' + slug + '?reorder=1', '_blank');
+            const productId = row.dataset.productId;
+            if (productId) {
+                window.open('{{ url('/produit') }}/' + productId + '?reorder=1', '_blank');
             }
         });
     };
