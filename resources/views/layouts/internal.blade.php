@@ -993,6 +993,7 @@
     {{-- SCROLL TO TOP BUTTON --}}
     @include('components.scroll-to-top')
     
+    <x-confirm-modal />
     @stack('scripts')
 </body>
 </html>
