@@ -80,11 +80,9 @@ class ProfileController extends Controller
      */
     public function showOrder(Order $order)
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
-        // Charger les relations nécessaires
-        $order->load(['items.product', 'address']);
+        $order->load(['items.product', 'address', 'promoCode']);
 
         return view('profile.order-detail', compact('order'));
     }
@@ -482,5 +480,87 @@ class ProfileController extends Controller
         $order->archivePermanently();
         return redirect()->route('profile.orders')
             ->with('success', 'Commande #' . $order->id . ' supprimée définitivement.');
+    }
+
+    public function reorderFromOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        $order->load(['items.product', 'address', 'promoCode']);
+
+        $cartService = app(\App\Services\Cart\DatabaseCartService::class);
+        $cartService->clear();
+
+        $warnings = [];
+        foreach ($order->items as $item) {
+            $product = $item->product;
+            if (!$product || !$product->is_active) {
+                $warnings[] = ($product->title ?? 'Article #' . $item->product_id) . ' — produit indisponible';
+                continue;
+            }
+            if ($product->stock <= 0) {
+                $warnings[] = $product->title . ' — en rupture de stock';
+                continue;
+            }
+            $cartService->add($product, min($item->quantity, $product->stock));
+        }
+
+        if ($warnings) {
+            session()->flash('reorder_warnings', $warnings);
+        }
+
+        if ($cartService->count() === 0) {
+            return redirect()->route('profile.orders.show', $order)
+                ->with('error', 'Aucun article disponible pour re-commander.');
+        }
+
+        // Re-appliquer le code promo si encore valide
+        if ($order->promoCode && $order->promoCode->isValid()) {
+            $cartTotal = $cartService->total();
+            if ($order->promoCode->meetsMinimumAmount($cartTotal)) {
+                $discount = $order->promoCode->calculateDiscount($cartTotal);
+                session([
+                    'applied_promo_code_id'      => $order->promoCode->id,
+                    'applied_promo_code_code'     => $order->promoCode->code,
+                    'applied_promo_discount'      => $discount,
+                    'applied_promo_free_shipping' => $order->promoCode->type === 'free_shipping',
+                ]);
+            }
+        } else {
+            session()->forget([
+                'applied_promo_code_id', 'applied_promo_code_code',
+                'applied_promo_discount', 'applied_promo_free_shipping',
+            ]);
+        }
+
+        return redirect()->route('checkout.index');
+    }
+
+    public function updateOrder(Order $order, Request $request): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Seules les commandes en attente peuvent être modifiées.');
+        }
+
+        $validated = $request->validate([
+            'address_id'       => 'nullable|exists:addresses,id',
+            'customer_address' => 'nullable|string|max:500',
+        ]);
+
+        if (isset($validated['address_id'])) {
+            $address = \App\Models\Address::where('id', $validated['address_id'])
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+            $order->update([
+                'address_id'      => $address->id,
+                'customer_address' => $address->full_address ?? null,
+            ]);
+        } elseif (isset($validated['customer_address'])) {
+            $order->update(['customer_address' => $validated['customer_address']]);
+        }
+
+        return back()->with('success', 'Commande #' . $order->id . ' mise à jour.');
     }
 }

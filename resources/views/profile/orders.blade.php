@@ -150,16 +150,10 @@
                             $st = $sc[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#160D0C', 'bg' => 'rgba(22,13,12,0.1)'];
                         @endphp
                         <tr class="orders-row {{ $order->status === 'cancelled' ? 'orders-row--cancelled' : '' }}"
-                            @if($order->status !== 'cancelled')
                             onclick="window.location='{{ route('profile.orders.show', $order) }}'"
                             onkeydown="if(event.key==='Enter')window.location='{{ route('profile.orders.show', $order) }}'"
-                            @else
                             data-order-id="{{ $order->id }}"
-                            data-order-status="cancelled"
-                            data-order-url="{{ route('profile.orders.show', $order) }}"
-                            data-restore-url="{{ route('orders.restore', $order) }}"
-                            data-archive-url="{{ route('orders.archive', $order) }}"
-                            @endif
+                            data-order-status="{{ $order->status }}"
                             tabindex="0">
                             {{-- Pastille statut --}}
                             <td style="padding:0;vertical-align:middle;">
@@ -201,14 +195,28 @@
                                     @endif
                                 </div>
                             </td>
-                            <td style="vertical-align:middle;padding:0.75rem 1rem 0.75rem 0;text-align:right;white-space:nowrap;">
+                            <td style="vertical-align:middle;padding:0.75rem 1rem 0.75rem 0;text-align:right;white-space:nowrap;" onclick="event.stopPropagation()">
                                 @if($order->status === 'cancelled')
-                                    <form action="{{ route('orders.restore', $order) }}" method="POST" class="d-inline" onclick="event.stopPropagation()">
+                                    <form action="{{ route('orders.restore', $order) }}" method="POST" class="d-inline">
                                         @csrf @method('PATCH')
-                                        <button type="submit" class="btn-restore-inline">
+                                        <button type="submit" class="btn-restore-inline" title="Restaurer">
                                             <i class="fas fa-undo"></i>
                                         </button>
                                     </form>
+                                    <form action="{{ route('orders.reorder', $order) }}" method="POST" class="d-inline ms-1">
+                                        @csrf
+                                        <button type="submit" class="btn-restore-inline" title="Re-commander" style="background:rgba(237,95,30,0.12);color:#ED5F1E;border-color:rgba(237,95,30,0.3);">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </form>
+                                @elseif(in_array($order->status, ['completed', 'delivered']))
+                                    <form action="{{ route('orders.reorder', $order) }}" method="POST" class="d-inline me-1">
+                                        @csrf
+                                        <button type="submit" class="btn-restore-inline" title="Re-commander" style="background:rgba(237,95,30,0.12);color:#ED5F1E;border-color:rgba(237,95,30,0.3);">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </form>
+                                    <i class="fas fa-chevron-right orders-arrow"></i>
                                 @else
                                     <i class="fas fa-chevron-right orders-arrow"></i>
                                 @endif

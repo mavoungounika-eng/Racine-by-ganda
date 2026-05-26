@@ -48,6 +48,8 @@
     $needsPayment = $order->payment_status !== 'paid'
         && in_array($order->status, ['pending', 'processing'])
         && $order->payment_method !== 'cash_on_delivery';
+    $isArchived   = $order->status === "archived";
+    $canReorder   = in_array($order->status, ["cancelled", "archived", "completed", "delivered"]);
 @endphp
 
 <div class="row">
@@ -469,6 +471,42 @@
         </div>
         @endif
 
+        {{-- RÉCAPITULATIF FINANCIER --}}
+        @if($order->discount_amount > 0 || ($order->shipping_cost !== null) || $order->promoCode)
+        <div class="al-card mb-4">
+            <div class="px-4 py-3" style="border-bottom: 1px solid rgba(22,13,12,0.07);">
+                <h5 class="mb-0" style="font-weight: 600; color: #160D0C; font-size: 0.95rem;">
+                    <i class="fas fa-receipt me-2" style="color: #ED5F1E;"></i>Récapitulatif des coûts
+                </h5>
+            </div>
+            <div class="p-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:rgba(22,13,12,0.6);">Sous-total articles</span>
+                    <strong>{{ number_format(($order->total_amount + $order->discount_amount - ($order->shipping_cost ?? 0)), 0, ',', ' ') }} FCFA</strong>
+                </div>
+                @if($order->shipping_cost !== null)
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:rgba(22,13,12,0.6);">Frais de livraison</span>
+                    <strong>{{ $order->shipping_cost == 0 ? 'Gratuit' : number_format($order->shipping_cost, 0, ',', ' ') . ' FCFA' }}</strong>
+                </div>
+                @endif
+                @if($order->discount_amount > 0)
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:#16a34a;">
+                        <i class="fas fa-tag me-1"></i>
+                        Réduction{{ $order->promoCode ? ' — ' . $order->promoCode->code : '' }}
+                    </span>
+                    <strong style="color:#16a34a;">−{{ number_format($order->discount_amount, 0, ',', ' ') }} FCFA</strong>
+                </div>
+                @endif
+                <div class="d-flex justify-content-between pt-2" style="border-top:1px solid rgba(22,13,12,0.1);">
+                    <strong style="font-size:1rem;">Total payé</strong>
+                    <strong style="color:#ED5F1E;font-size:1.1rem;">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</strong>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- ACTIONS --}}
         <div class="al-card mb-4">
             <div class="p-4">
@@ -586,6 +624,18 @@
                             @method('DELETE')
                         </form>
                     </div>
+                </div>
+                @endif
+
+                {{-- NIVEAU 6 : Re-commander (annulée, archivée, livrée) --}}
+                @if($canReorder)
+                <div style="border-top: 1px solid rgba(22,13,12,0.07); padding-top: 1rem; margin-top: 0.5rem;">
+                    <form action="{{ route('orders.reorder', $order) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn-action btn-action--secondary">
+                            <i class="fas fa-redo me-2"></i> Re-commander
+                        </button>
+                    </form>
                 </div>
                 @endif
 
