@@ -495,6 +495,62 @@
             font-size: 2.5rem;
         }
     }
+
+    .promo-applied-state {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.6rem 1rem;
+        background: rgba(34, 197, 94, 0.08);
+        border: 1.5px solid rgba(34, 197, 94, 0.3);
+        border-radius: 10px;
+    }
+
+    .promo-tag {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: #16a34a;
+        font-size: 0.9rem;
+    }
+
+    .promo-tag small {
+        font-weight: 400;
+        color: #16a34a;
+        opacity: 0.8;
+    }
+
+    .promo-remove-btn {
+        background: none;
+        border: none;
+        color: rgba(22,13,12,0.4);
+        cursor: pointer;
+        padding: 0.2rem 0.4rem;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+    }
+
+    .promo-remove-btn:hover { color: #dc2626; }
+
+    .promo-feedback {
+        margin-top: 0.4rem;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 8px;
+    }
+
+    .promo-feedback.success {
+        background: rgba(34,197,94,0.1);
+        color: #16a34a;
+    }
+
+    .promo-feedback.error {
+        background: rgba(220,38,38,0.1);
+        color: #dc2626;
+    }
+
+    .promo-discount-row span:last-child { color: #16a34a; font-weight: 600; }
 </style>
 @endpush
 
@@ -519,7 +575,13 @@
             $itemCount = $items->sum(function($item) {
                 return is_object($item) && isset($item->quantity) ? $item->quantity : (is_array($item) ? $item['quantity'] : 0);
             });
-            $freeShipping = $total >= 100000; // 100 000 FCFA pour livraison gratuite
+            $freeShipping = $total >= 100000;
+            $appliedPromoCode     = session('applied_promo_code_code');
+            $appliedPromoDiscount = (int) session('applied_promo_discount', 0);
+            $promoFreeShipping    = session('applied_promo_free_shipping', false);
+            $effectiveFreeShipping = $freeShipping || $promoFreeShipping;
+            $effectiveShipping     = $effectiveFreeShipping ? 0 : 2000;
+            $effectiveTotal        = max(0, $total - $appliedPromoDiscount + $effectiveShipping);
         @endphp
         
         <div class="cart-grid">
@@ -606,20 +668,43 @@
                 
                 <div class="summary-row">
                     <span>Livraison</span>
-                    <span>{{ $freeShipping ? 'Gratuite' : '5 900 FCFA' }}</span>
+                    <span id="shipping-display">{{ $effectiveFreeShipping ? 'Gratuite' : '2 000 FCFA' }}</span>
                 </div>
                 
                 <div class="promo-code">
                     <label>Code promo</label>
-                    <div class="promo-input">
-                        <input type="text" placeholder="Entrez votre code">
-                        <button>Appliquer</button>
+                    @if($appliedPromoCode)
+                    <div id="promo-applied" class="promo-applied-state">
+                        <span class="promo-tag">
+                            <i class="fas fa-tag"></i> {{ $appliedPromoCode }}
+                            @if($promoFreeShipping)
+                                <small>Livraison offerte</small>
+                            @else
+                                <small>−{{ number_format($appliedPromoDiscount, 0, ',', ' ') }} FCFA</small>
+                            @endif
+                        </span>
+                        <button type="button" id="remove-promo-btn" class="promo-remove-btn" title="Retirer le code promo">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
+                    @else
+                    <div class="promo-input" id="promo-input-wrapper">
+                        <input type="text" id="promo-code-input" placeholder="Entrez votre code">
+                        <button type="button" id="apply-promo-btn">Appliquer</button>
+                    </div>
+                    <div id="promo-feedback" class="promo-feedback" style="display:none;"></div>
+                    @endif
                 </div>
                 
+                @if($appliedPromoDiscount > 0)
+                <div class="summary-row promo-discount-row">
+                    <span>Réduction ({{ $appliedPromoCode }})</span>
+                    <span class="text-success">−{{ number_format($appliedPromoDiscount, 0, ',', ' ') }} FCFA</span>
+                </div>
+                @endif
                 <div class="summary-row total">
                     <span>Total</span>
-                    <span>{{ number_format($total + ($freeShipping ? 0 : 5900), 0, ',', ' ') }} FCFA</span>
+                    <span id="cart-total-display">{{ number_format($effectiveTotal, 0, ',', ' ') }} FCFA</span>
                 </div>
                 
                 <a href="{{ route('checkout.index') }}" class="btn-checkout">
@@ -644,7 +729,7 @@
                 <div class="feature-icon"><i class="fas fa-truck"></i></div>
                 <div class="feature-text">
                     <h4>Livraison gratuite</h4>
-                    <span>Dès 100€ d'achat</span>
+                    <span>Dès 100 000 FCFA d'achat</span>
                 </div>
             </div>
             <div class="feature-card">
@@ -683,7 +768,7 @@
                 <div class="feature-icon"><i class="fas fa-truck"></i></div>
                 <div class="feature-text">
                     <h4>Livraison gratuite</h4>
-                    <span>Dès 100€ d'achat</span>
+                    <span>Dès 100 000 FCFA d'achat</span>
                 </div>
             </div>
             <div class="feature-card">
@@ -715,5 +800,78 @@
     'backText' => 'Continuer mes achats',
     'position' => 'bottom',
 ])
-@endsection
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+(function () {
+    var applyBtn   = document.getElementById('apply-promo-btn');
+    var removeBtn  = document.getElementById('remove-promo-btn');
+    var input      = document.getElementById('promo-code-input');
+    var feedback   = document.getElementById('promo-feedback');
+    var csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
+    function showFeedback(msg, type) {
+        if (!feedback) return;
+        feedback.textContent = msg;
+        feedback.className = 'promo-feedback ' + type;
+        feedback.style.display = 'block';
+    }
+
+    if (applyBtn && input) {
+        applyBtn.addEventListener('click', function () {
+            var code = input.value.trim();
+            if (!code) { showFeedback('Entrez un code promo.', 'error'); return; }
+
+            applyBtn.disabled = true;
+            applyBtn.textContent = '…';
+
+            fetch('/api/checkout/apply-promo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ code: code, total: {{ (int)$total }} }),
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showFeedback(data.message || 'Code invalide.', 'error');
+                    applyBtn.disabled = false;
+                    applyBtn.textContent = 'Appliquer';
+                }
+            })
+            .catch(function () {
+                showFeedback('Erreur réseau. Réessayez.', 'error');
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Appliquer';
+            });
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); applyBtn.click(); }
+        });
+    }
+
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function () {
+            fetch('/api/checkout/remove-promo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({}),
+            })
+            .then(function () { location.reload(); })
+            .catch(function () { location.reload(); });
+        });
+    }
+})();
+</script>
+@endpush
+
+@endsection

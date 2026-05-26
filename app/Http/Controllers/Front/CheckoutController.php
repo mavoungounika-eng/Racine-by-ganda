@@ -605,4 +605,16 @@ class CheckoutController extends Controller
             'free_shipping' => $freeShipping,
         ]);
     }
+
+    public function removePromo(): \Illuminate\Http\JsonResponse
+    {
+        session()->forget([
+            'applied_promo_code_id',
+            'applied_promo_code_code',
+            'applied_promo_discount',
+            'applied_promo_free_shipping',
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

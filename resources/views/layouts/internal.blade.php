@@ -800,7 +800,7 @@
             <a href="{{ route($dashboardRoute) }}" class="sidebar-link {{ request()->routeIs('dashboard.*') || request()->routeIs('account.dashboard') ? 'active' : '' }}">
                 <span class="icon">🏠</span> Dashboard
             </a>
-            <a href="{{ route('profile.index') }}" class="sidebar-link {{ request()->routeIs('profile.*') && !request()->routeIs('messages.*') ? 'active' : '' }}">
+            <a href="{{ route('profile.index') }}" class="sidebar-link {{ request()->routeIs('profile.index', 'profile.edit', 'profile.update', 'profile.password', 'profile.verify-email', 'profile.data.*', 'profile.delete-account*', 'profile.professional-email*') ? 'active' : '' }}">
                 <span class="icon">👤</span> Mon Profil
             </a>
             <a href="{{ route('messages.index') }}" class="sidebar-link {{ request()->routeIs('messages.*') ? 'active' : '' }}">
@@ -813,6 +813,29 @@
                 @endif
             </a>
 
+
+            @if($role === 'client')
+            {{-- Espace Client --}}
+            <div class="sidebar-section">Mes Achats</div>
+            <a href="{{ route('profile.orders') }}" class="sidebar-link {{ request()->routeIs('profile.orders*') ? 'active' : '' }}">
+                <span class="icon">📦</span> Mes Commandes
+            </a>
+            <a href="{{ route('profile.addresses') }}" class="sidebar-link {{ request()->routeIs('profile.addresses*') ? 'active' : '' }}">
+                <span class="icon">📍</span> Mes Adresses
+            </a>
+            <a href="{{ route('profile.loyalty') }}" class="sidebar-link {{ request()->routeIs('profile.loyalty') ? 'active' : '' }}">
+                <span class="icon">⭐</span> Fidélité
+            </a>
+            <a href="{{ route('profile.wishlist') }}" class="sidebar-link {{ request()->routeIs('profile.wishlist*') ? 'active' : '' }}">
+                <span class="icon">❤️</span> Mes Favoris
+            </a>
+            <a href="{{ route('profile.reviews') }}" class="sidebar-link {{ request()->routeIs('profile.reviews*') ? 'active' : '' }}">
+                <span class="icon">💬</span> Mes Avis
+            </a>
+            <a href="{{ route('notifications.index') }}" class="sidebar-link {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
+                <span class="icon">🔔</span> Notifications
+            </a>
+            @endif
             @can('access-erp')
             {{-- ERP --}}
             <div class="sidebar-section">ERP</div>

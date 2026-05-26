@@ -295,7 +295,7 @@ class ProfileController extends Controller
     public function loyalty()
     {
         $user = Auth::user();
-        $loyaltyPoint = $user->loyaltyPoints;
+        $loyaltyPoint = $user->loyaltyPoints()->first();
         $transactions = $user->loyaltyTransactions()->latest()->paginate(20);
         
         return view('profile.loyalty', compact('loyaltyPoint', 'transactions'));

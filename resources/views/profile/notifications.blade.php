@@ -1,14 +1,16 @@
-@extends('layouts.frontend')
+@extends('layouts.internal')
 
 @section('title', 'Mes Notifications - RACINE BY GANDA')
+@section('page-title', 'Mes Notifications')
+@section('page-subtitle', 'Vos alertes et mises à jour')
 
 @push('styles')
 <style nonce="{{ csp_nonce() }}">
     .notifications-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
-        padding: 3rem 0;
-        margin-top: -70px;
-        padding-top: calc(3rem + 70px);
+        padding: 2rem 0;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
     }
     
     .notifications-content {

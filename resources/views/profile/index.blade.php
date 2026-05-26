@@ -1,4 +1,4 @@
-@extends('layouts.frontend')
+@extends('layouts.internal')
 
 @section('title', 'Mon Profil - RACINE BY GANDA')
 @section('page-title', 'Mon Profil')

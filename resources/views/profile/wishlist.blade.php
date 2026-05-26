@@ -1,14 +1,16 @@
-@extends('layouts.frontend')
+@extends('layouts.internal')
 
 @section('title', 'Mes Favoris - RACINE BY GANDA')
+@section('page-title', 'Mes Favoris')
+@section('page-subtitle', 'Vos produits sauvegardés')
 
 @push('styles')
 <style nonce="{{ csp_nonce() }}">
     .wishlist-hero {
         background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
-        padding: 3rem 0;
-        margin-top: -70px;
-        padding-top: calc(3rem + 70px);
+        padding: 2rem 0;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
     }
     
     .wishlist-content {

@@ -708,6 +708,7 @@ Route::middleware(['auth', 'throttle:120,1'])->group(function () {
     Route::post('/api/checkout/validate-email', [\App\Http\Controllers\Front\CheckoutController::class, 'validateEmail'])->name('api.checkout.validate-email');
     Route::post('/api/checkout/validate-phone', [\App\Http\Controllers\Front\CheckoutController::class, 'validatePhone'])->name('api.checkout.validate-phone');
     Route::post('/api/checkout/apply-promo', [\App\Http\Controllers\Front\CheckoutController::class, 'applyPromo'])->name('api.checkout.apply-promo');
+    Route::post('/api/checkout/remove-promo', [\App\Http\Controllers\Front\CheckoutController::class, 'removePromo'])->name('api.checkout.remove-promo');
 });
 
 // Routes Paiement
