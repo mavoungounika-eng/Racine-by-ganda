@@ -453,10 +453,10 @@
                     {{ $heroData['quote'] ?? "La mode africaine n'est pas une tendance, c'est un héritage vivant que nous avons le devoir de préserver et de sublimer." }}
                 </p>
                 <div class="ceo-social">
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="{{ cache('settings.social_instagram') ?: route('frontend.contact') }}" aria-label="Instagram" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="{{ route('frontend.contact') }}" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="{{ cache('settings.social_twitter') ?: route('frontend.contact') }}" aria-label="Twitter" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="{{ cache('settings.social_facebook') ?: route('frontend.contact') }}" aria-label="Facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 </div>
             </div>
         </div>

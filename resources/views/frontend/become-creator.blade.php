@@ -289,7 +289,7 @@
     <section class="plans-section" id="plans">
         <div class="plans-container">
             <div class="plans-grid">
-                @foreach($plans as $plan)
+                @forelse($plans as $plan)
                     @php
                         $isFree = $plan->code === 'free';
                         $isOfficial = $plan->code === 'official';
@@ -372,7 +372,11 @@
                             @endif
                         </a>
                     </div>
-                @endforeach
+                @empty
+                    <div class="plan-card" style="grid-column: 1/-1; text-align:center; padding: 3rem;">
+                        <p style="color:#8B7355; font-size:1.1rem;">Les plans seront disponibles prochainement. <a href="{{ route('frontend.contact') }}" style="color:#ED5F1E;">Contactez-nous</a> pour plus d'informations.</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </section>

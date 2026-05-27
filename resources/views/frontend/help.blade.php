@@ -525,7 +525,7 @@
         </div>
         
         <div class="guides-grid">
-            <a href="#" class="guide-card">
+            <a href="{{ route('frontend.contact') }}" class="guide-card">
                 <div class="guide-image">
                     <img src="{{ asset('storage/catalogue/vetements/soiree-01.jpeg') }}" alt="Guide tailles">
                 </div>
@@ -535,7 +535,7 @@
                     <p>Toutes les astuces pour choisir la bonne taille.</p>
                 </div>
             </a>
-            <a href="#" class="guide-card">
+            <a href="{{ route('frontend.contact') }}" class="guide-card">
                 <div class="guide-image">
                     <img src="{{ asset('storage/catalogue/vetements/bazin-01.jpeg') }}" alt="Entretien wax">
                 </div>
@@ -545,7 +545,7 @@
                     <p>Conseils pour préserver vos pièces africaines.</p>
                 </div>
             </a>
-            <a href="#" class="guide-card">
+            <a href="{{ route('frontend.contact') }}" class="guide-card">
                 <div class="guide-image">
                     <img src="{{ asset('storage/catalogue/vetements/pagne-01.jpeg') }}" alt="Style">
                 </div>

@@ -356,7 +356,7 @@
                     </div>
                 </div>
                 
-                <a href="#" class="btn-event btn-event--lg">
+                <a href="{{ route('frontend.contact') }}" class="btn-event btn-event--lg">
                     <i class="fas fa-ticket-alt"></i> Réserver ma place
                 </a>
             </div>
@@ -391,7 +391,7 @@
                     </div>
                     <div class="event-footer">
                         <span class="event-price free">Entrée libre</span>
-                        <a href="#" class="btn-event">En savoir plus</a>
+                        <a href="{{ route('frontend.contact') }}" class="btn-event">En savoir plus</a>
                     </div>
                 </div>
             </div>
@@ -414,7 +414,7 @@
                     </div>
                     <div class="event-footer">
                         <span class="event-price">{{ format_price(25000) }}</span>
-                        <a href="#" class="btn-event">S'inscrire</a>
+                        <a href="{{ route('frontend.contact') }}" class="btn-event">S'inscrire</a>
                     </div>
                 </div>
             </div>
@@ -437,7 +437,7 @@
                     </div>
                     <div class="event-footer">
                         <span class="event-price">Sur invitation</span>
-                        <a href="#" class="btn-event">Demander accès</a>
+                        <a href="{{ route('frontend.contact') }}" class="btn-event">Demander accès</a>
                     </div>
                 </div>
             </div>
@@ -460,7 +460,7 @@
                     </div>
                     <div class="event-footer">
                         <span class="event-price free">Entrée libre</span>
-                        <a href="#" class="btn-event">Réserver</a>
+                        <a href="{{ route('frontend.contact') }}" class="btn-event">Réserver</a>
                     </div>
                 </div>
             </div>

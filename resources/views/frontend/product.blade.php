@@ -695,7 +695,7 @@
                     <div class="option-group">
                         <div class="option-label">
                             <span>Taille</span>
-                            <a href="#">Guide des tailles</a>
+                            <a href="{{ route('frontend.help') }}">Guide des tailles</a>
                         </div>
                         <div class="size-options">
                             <button class="size-btn">XS</button>

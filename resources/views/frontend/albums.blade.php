@@ -419,7 +419,7 @@
                         {{ $featured['photos_count'] ?? 48 }} photos
                     </span>
                 </div>
-                <a href="{{ $featured['button_url'] ?? '#' }}" class="btn-album">
+                <a href="{{ $featured['button_url'] ?? route('frontend.contact') }}" class="btn-album">
                     <i class="fas fa-eye"></i>
                     {{ $featured['button_label'] ?? 'Voir l\'album complet' }}
                 </a>

@@ -374,10 +374,10 @@
                     <h3>Suivez-nous</h3>
                     <p>Restez connecté pour découvrir nos dernières créations et actualités.</p>
                     <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-pinterest"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                        <a href="{{ cache('settings.social_instagram') ?: route('frontend.contact') }}" class="social-link" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="{{ cache('settings.social_facebook') ?: route('frontend.contact') }}" class="social-link" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        <a href="{{ route('frontend.contact') }}" class="social-link"><i class="fab fa-pinterest"></i></a>
+                        <a href="{{ route('frontend.contact') }}" class="social-link"><i class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
             </div>
