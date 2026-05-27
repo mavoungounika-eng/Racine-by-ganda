@@ -38,13 +38,13 @@
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Téléphone</label>
-                    <input type="text" name="site_phone" class="form-control" value="{{ old('site_phone', '') }}" placeholder="+237 6XX XX XX XX">
+                    <input type="text" name="site_phone" class="form-control" value="{{ old('site_phone', $settings['site_phone']) }}" placeholder="+237 6XX XX XX XX">
                     <small class="text-muted">Numéro de contact affiché</small>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Adresse physique</label>
-                    <input type="text" name="site_address" class="form-control" value="{{ old('site_address', '') }}" placeholder="Douala, Cameroun">
+                    <input type="text" name="site_address" class="form-control" value="{{ old('site_address', $settings['site_address']) }}" placeholder="Douala, Cameroun">
                     <small class="text-muted">Adresse du magasin/bureau</small>
                 </div>
             </div>
@@ -60,22 +60,22 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold"><i class="fab fa-facebook text-primary me-2"></i>Facebook</label>
-                    <input type="url" name="social_facebook" class="form-control" value="{{ old('social_facebook', '') }}" placeholder="https://facebook.com/racinebyganda">
+                    <input type="url" name="social_facebook" class="form-control" value="{{ old('social_facebook', $settings['social_facebook']) }}" placeholder="https://facebook.com/racinebyganda">
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold"><i class="fab fa-instagram text-danger me-2"></i>Instagram</label>
-                    <input type="url" name="social_instagram" class="form-control" value="{{ old('social_instagram', '') }}" placeholder="https://instagram.com/racinebyganda">
+                    <input type="url" name="social_instagram" class="form-control" value="{{ old('social_instagram', $settings['social_instagram']) }}" placeholder="https://instagram.com/racinebyganda">
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold"><i class="fab fa-twitter text-info me-2"></i>Twitter / X</label>
-                    <input type="url" name="social_twitter" class="form-control" value="{{ old('social_twitter', '') }}" placeholder="https://twitter.com/racinebyganda">
+                    <input type="url" name="social_twitter" class="form-control" value="{{ old('social_twitter', $settings['social_twitter']) }}" placeholder="https://twitter.com/racinebyganda">
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold"><i class="fab fa-whatsapp text-success me-2"></i>WhatsApp</label>
-                    <input type="text" name="social_whatsapp" class="form-control" value="{{ old('social_whatsapp', '') }}" placeholder="+237 6XX XX XX XX">
+                    <input type="text" name="social_whatsapp" class="form-control" value="{{ old('social_whatsapp', $settings['social_whatsapp']) }}" placeholder="+237 6XX XX XX XX">
                     <small class="text-muted">Numéro WhatsApp Business</small>
                 </div>
             </div>
@@ -97,7 +97,7 @@
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Frais de livraison par défaut (FCFA)</label>
-                    <input type="number" name="shipping_fee" class="form-control" value="{{ old('shipping_fee', '2000') }}" min="0" step="100">
+                    <input type="number" name="shipping_fee" class="form-control" value="{{ old('shipping_fee', $settings['shipping_fee']) }}" min="0" step="100">
                     <small class="text-muted">Frais de livraison standard</small>
                 </div>
 

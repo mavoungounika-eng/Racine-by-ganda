@@ -99,7 +99,7 @@ $statusColors = [
               </div>
             </td>
             <td style="white-space:nowrap;font-weight:600;">
-              {{ number_format($order->total_amount / 100, 0, ',', ' ') }} XAF
+              {{ number_format($order->total_amount, 0, ',', ' ') }} XAF
             </td>
             <td id="actions-{{ $item->id }}">
               @if($item->status === 'disputed')
@@ -121,6 +121,14 @@ $statusColors = [
           </tr>
           @endforeach
         @endforeach
+        @if($orders->isEmpty())
+          <tr>
+            <td colspan="6" style="text-align:center;padding:2.5rem 1rem;color:#6b7280;">
+              <i class="fas fa-check-circle" style="font-size:1.5rem;margin-bottom:.5rem;display:block;color:#4ade80;"></i>
+              Aucun article à traiter
+            </td>
+          </tr>
+        @endif
       </tbody>
     </table>
   </div>

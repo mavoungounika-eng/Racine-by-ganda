@@ -178,10 +178,10 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 
-                                            onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce produit ?')" 
+                                            onclick="return confirm('Supprimer définitivement ce produit ? Cette action est irréversible.')"
                                             class="creator-action-btn"
                                             style="background: rgba(239, 68, 68, 0.1); color: #EF4444; border-color: rgba(239, 68, 68, 0.2);"
-                                            title="Désactiver">
+                                            title="Supprimer définitivement">
                                         <i class="fas fa-trash text-sm"></i>
                                     </button>
                                 </form>

@@ -203,6 +203,14 @@
                                 </td>
                             </tr>
                             @endforeach
+                            @if($order->items->isEmpty())
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500">
+                                    <i class="fas fa-box-open mb-2" style="font-size:1.5rem;display:block;"></i>
+                                    Aucun article dans cette commande
+                                </td>
+                            </tr>
+                            @endif
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-racine-orange/20">
