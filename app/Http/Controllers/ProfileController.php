@@ -328,7 +328,7 @@ class ProfileController extends Controller
 
     public function restoreItem(Order $order, OrderItem $item, Request $request): RedirectResponse
     {
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         if ($order->status !== 'pending') {
             abort(403, 'Restauration impossible : commande non en attente.');
@@ -355,7 +355,7 @@ class ProfileController extends Controller
 
     public function cancelItem(Order $order, OrderItem $item, Request $request)
     {
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         if ($order->status !== 'pending') {
             abort(403, 'Impossible de modifier une commande déjà traitée.');
@@ -383,7 +383,7 @@ class ProfileController extends Controller
 
     public function cancelOrder(Order $order): RedirectResponse
     {
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
         if (! in_array($order->status, ['pending', 'processing'])) {
             return back()->with('error', 'Seules les commandes en attente ou en traitement peuvent être annulées.');
         }
@@ -400,7 +400,7 @@ class ProfileController extends Controller
 
     public function updateOrderItemQuantity(Order $order, OrderItem $item, Request $request): RedirectResponse
     {
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
         if ($order->status !== 'pending') {
             return back()->with('error', 'Impossible de modifier une commande déjà traitée.');
         }
@@ -411,7 +411,7 @@ class ProfileController extends Controller
     }
     public function requestReturn(Order $order, Request $request): RedirectResponse
     {
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
         if (! in_array($order->status, ['completed', 'delivered'])) {
             return back()->with('error', 'Seules les commandes livrées peuvent faire l\'objet d\'un retour.');
         }

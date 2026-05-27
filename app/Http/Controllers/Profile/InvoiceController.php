@@ -23,7 +23,7 @@ class InvoiceController extends Controller
     public function show(Order $order)
     {
         // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === Auth::id(), 403);
 
         $order->load(['items.product', 'address', 'user']);
         
@@ -38,7 +38,7 @@ class InvoiceController extends Controller
      */
     public function download(Order $order)
     {
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === Auth::id(), 403);
 
         $invoiceNumber = $this->invoiceService->generateInvoiceNumber($order);
         $filename = "facture-{$invoiceNumber}.pdf";
@@ -51,7 +51,7 @@ class InvoiceController extends Controller
      */
     public function print(Order $order)
     {
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === Auth::id(), 403);
 
         $invoiceNumber = $this->invoiceService->generateInvoiceNumber($order);
         $filename = "facture-{$invoiceNumber}.pdf";

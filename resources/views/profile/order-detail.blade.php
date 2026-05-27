@@ -165,7 +165,23 @@
                                 </p>
                             @endif
                         @else
-                            <p class="text-muted mb-0">Adresse non disponible</p>
+                            <p style="color:rgba(22,13,12,0.5);" class="mb-0">{{ $order->customer_address ?? 'Adresse non disponible' }}</p>
+                        @endif
+                        @if($isPending)
+                        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(22,13,12,0.08);">
+                            <form action="{{ route('orders.update', $order) }}" method="POST">
+                                @csrf @method('PATCH')
+                                <label style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:rgba(22,13,12,0.45);margin-bottom:0.5rem;display:block;">
+                                    Modifier l'adresse de livraison
+                                </label>
+                                <textarea name="customer_address" class="form-control mb-2" rows="2"
+                                    placeholder="Ex: 42 Avenue des Baobabs, Brazzaville"
+                                    style="border-radius:8px;border:1px solid rgba(22,13,12,0.2);font-size:0.9rem;">{{ old('customer_address', $order->customer_address) }}</textarea>
+                                <button type="submit" class="btn btn-sm" style="background:#ED5F1E;color:#fff;border-radius:8px;border:none;font-weight:600;padding:0.4rem 1rem;">
+                                    <i class="fas fa-save me-1"></i> Enregistrer
+                                </button>
+                            </form>
+                        </div>
                         @endif
                     </div>
                 </div>
