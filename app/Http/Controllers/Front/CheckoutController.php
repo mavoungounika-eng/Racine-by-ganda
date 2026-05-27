@@ -451,8 +451,7 @@ class CheckoutController extends Controller
             'session_success' => session('success'),
         ]);
 
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         $order->load(['items.product.category', 'items.product.creator', 'address']);
 
@@ -464,8 +463,7 @@ class CheckoutController extends Controller
      */
     public function cancel(Order $order)
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         // Récupérer le mode de paiement depuis la commande
         $paymentMethod = $order->payment_method ?? 'card';

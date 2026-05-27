@@ -26,6 +26,8 @@ class MobileMoneyPaymentController extends Controller
      */
     public function form(Order $order)
     {
+        abort_unless($order->user_id === auth()->id(), 403);
+
         if ($order->payment_status === 'paid') {
             return redirect()->route('checkout.mobile-money.success', $order);
         }
@@ -45,6 +47,8 @@ class MobileMoneyPaymentController extends Controller
      */
     public function pay(Request $request, Order $order)
     {
+        abort_unless($order->user_id === auth()->id(), 403);
+
         // Protection contre double paiement
         if ($order->payment_status === 'paid') {
             return redirect()->route('checkout.mobile-money.success', $order)
@@ -110,6 +114,8 @@ class MobileMoneyPaymentController extends Controller
      */
     public function pending(Request $request, Order $order)
     {
+        abort_unless($order->user_id === auth()->id(), 403);
+
         $paymentId = $request->query('payment');
         $payment = $paymentId ? Payment::find($paymentId) : $order->payments()->where('channel', 'mobile_money')->latest()->first();
 
@@ -128,6 +134,8 @@ class MobileMoneyPaymentController extends Controller
      */
     public function checkStatus(Request $request, Order $order)
     {
+        abort_unless($order->user_id === auth()->id(), 403);
+
         $paymentId = $request->query('payment');
         $payment = $paymentId ? Payment::find($paymentId) : $order->payments()->where('channel', 'mobile_money')->latest()->first();
 
@@ -150,8 +158,7 @@ class MobileMoneyPaymentController extends Controller
      */
     public function success(Order $order)
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         $payment = $order->payments()->where('channel', 'mobile_money')->where('status', 'paid')->latest()->first();
 
@@ -179,6 +186,8 @@ class MobileMoneyPaymentController extends Controller
      */
     public function cancel(Order $order)
     {
+        abort_unless($order->user_id === auth()->id(), 403);
+
         return view('frontend.checkout.mobile-money-cancel', [
             'order' => $order,
         ]);

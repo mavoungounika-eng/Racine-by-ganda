@@ -38,8 +38,7 @@ class CardPaymentController extends Controller
             // Charger la commande
             $order = Order::findOrFail($orderId);
 
-            // Utiliser OrderPolicy pour vérifier l'accès
-            $this->authorize('view', $order);
+            abort_unless($order->user_id === auth()->id(), 403);
 
             // Protection contre double paiement
             if ($order->payment_status === 'paid') {
@@ -86,8 +85,7 @@ class CardPaymentController extends Controller
      */
     public function success(Request $request, Order $order): View
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         $sessionId = $request->query('session_id');
 
@@ -106,8 +104,7 @@ class CardPaymentController extends Controller
      */
     public function cancel(Request $request, Order $order): View
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         return view('frontend.checkout.card-cancel', [
             'order' => $order,
