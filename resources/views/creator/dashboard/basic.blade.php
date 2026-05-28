@@ -1,7 +1,7 @@
 @extends('layouts.creator')
 
-@section('title', 'Tableau de Bord - RACINE BY GANDA')
-@section('page-title', 'Tableau de bord')
+@section('title', 'Tableau de Bord Atelier - RACINE BY GANDA')
+@section('page-title', 'Tableau de bord — Atelier')
 
 @push('styles')
 <style nonce="{{ csp_nonce() }}">
@@ -96,11 +96,16 @@
     </div>
 
     {{-- UPGRADE BANNER --}}
-    @if($user->activePlan() && $user->activePlan()->code === 'free')
+    @php $activePlan = $user->activePlan(); @endphp
+    @if($activePlan && $activePlan->code === 'atelier')
     <div class="upgrade-banner">
-        <h3>🚀 Passez au plan Officiel</h3>
-        <p>Débloquez des fonctionnalités avancées : produits illimités, statistiques détaillées, et bien plus encore !</p>
-        <a href="{{ route('creator.subscription.upgrade') }}" class="upgrade-btn">Découvrir les plans</a>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+            <div>
+                <h3 style="margin:0 0 0.25rem 0;">Plan actif : <strong>Atelier</strong></h3>
+                <p style="margin:0;opacity:.85;">Limite : {{ $activePlan->products_limit }} produits · Renouvellement mensuel</p>
+            </div>
+            <a href="{{ route('creator.subscription.upgrade') }}" class="upgrade-btn">Passer à Maison →</a>
+        </div>
     </div>
     @endif
 

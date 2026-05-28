@@ -1,7 +1,7 @@
 @extends('layouts.creator')
 
-@section('title', 'Tableau de Bord Premium - RACINE BY GANDA')
-@section('page-title', 'Tableau de bord Premium')
+@section('title', 'Tableau de Bord Signature - RACINE BY GANDA')
+@section('page-title', 'Tableau de bord — Signature')
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
@@ -107,7 +107,7 @@
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
                         <h2 style="color: white; margin: 0; font-size: 2rem;">Bonjour, {{ $creatorProfile->brand_name ?? $user->name ?? 'Créateur' }}</h2>
-                        <span class="premium-badge">⭐ Premium</span>
+                        <span class="premium-badge">✦ Signature</span>
                     </div>
                     <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 1rem;">Accès complet à toutes les fonctionnalités</p>
                 </div>
@@ -158,10 +158,10 @@
         </div>
         @endif
 
-        {{-- PREMIUM FEATURES --}}
+        {{-- SIGNATURE FEATURES --}}
         <div class="premium-features">
             <h3 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; color: var(--racine-black);">
-                <i class="fas fa-star" style="color: var(--racine-orange);"></i> Fonctionnalités Premium
+                <i class="fas fa-star" style="color: var(--racine-orange);"></i> Fonctionnalités Signature
             </h3>
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
@@ -178,7 +178,7 @@
                 </li>
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
                     <i class="fas fa-check-circle" style="color: #FFB800;"></i>
-                    <span>Accès API</span>
+                    <span>POS Electron inclus</span>
                 </li>
                 <li style="padding: 0.75rem 0; display: flex; align-items: center; gap: 0.75rem;">
                     <i class="fas fa-check-circle" style="color: #FFB800;"></i>
@@ -187,6 +187,17 @@
             </ul>
         </div>
     </div>
+
+    {{-- POS ELECTRON BLOC --}}
+    @if($user->hasCapability('can_use_pos'))
+    <div style="background: linear-gradient(135deg, #160D0C 0%, #2a1a18 100%); border-radius: 1rem; padding: 1.75rem; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h4 style="margin: 0 0 0.35rem 0; color: #FFB800; font-weight: 700; font-size: 1.1rem;"><i class="fas fa-cash-register"></i> POS Electron — Application de caisse</h4>
+            <p style="margin: 0; color: rgba(255,255,255,0.8); font-size: 0.9rem;">Téléchargez l'application desktop pour gérer votre caisse physique en ligne et hors ligne.</p>
+        </div>
+        <a href="{{ route('creator.pos.download') }}" style="padding: 0.7rem 1.5rem; background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; white-space: nowrap;"><i class="fas fa-download"></i> Télécharger POS</a>
+    </div>
+    @endif
 
     {{-- RECENT ORDERS --}}
     @if(isset($recentOrders) && $recentOrders->count() > 0)

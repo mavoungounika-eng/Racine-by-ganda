@@ -132,13 +132,13 @@
             <div class="row">
                 @foreach($plans as $plan)
                     <div class="col-md-4 mb-4">
-                        <div class="creator-card plan-card {{ $plan->code === 'premium' ? 'border-primary' : '' }}">
+                        <div class="creator-card plan-card {{ $plan->code === 'signature' ? 'border-primary' : '' }}">
                             {{-- Badge --}}
                             <div class="mb-3">
                                 @if($currentSubscription && $currentSubscription->plan && $currentSubscription->plan->id === $plan->id)
                                     <span class="badge bg-success px-3 py-2 rounded-pill">Plan Actuel</span>
-                                @elseif($plan->code === 'premium')
-                                    <span class="badge px-3 py-2 rounded-pill text-white" style="background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);">⭐ Recommandé</span>
+                                @elseif($plan->code === 'signature')
+                                    <span class="badge px-3 py-2 rounded-pill text-white" style="background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);">✦ Signature</span>
                                 @else
                                     <div style="height: 28px;"></div>
                                 @endif
@@ -147,10 +147,23 @@
                             <h3 class="h2 font-weight-bold text-dark mb-2">{{ $plan->name }}</h3>
                             <p class="text-muted mb-4">{{ $plan->description }}</p>
 
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <span class="display-4 font-weight-bold text-dark">{{ number_format($plan->price, 0, ',', ' ') }}</span>
                                 <span class="h4 text-muted"> FCFA/mois</span>
                             </div>
+                            @if($plan->quarterly_price || $plan->annual_price)
+                            <div class="mb-4" style="font-size: 0.82rem; color: #666;">
+                                @if($plan->quarterly_price)
+                                <span style="margin-right: 0.75rem;">Trimestriel : <strong>{{ number_format($plan->quarterly_price, 0, ',', ' ') }} FCFA</strong></span>
+                                @endif
+                                @if($plan->annual_price)
+                                <span>Annuel : <strong>{{ number_format($plan->annual_price, 0, ',', ' ') }} FCFA</strong></span>
+                                @endif
+                            </div>
+                            @endif
+                            @if($plan->trial_days)
+                            <div class="mb-3"><span class="badge" style="background: rgba(34,197,94,0.12); color: #15803d;">{{ $plan->trial_days }} jours d'essai gratuit</span></div>
+                            @endif
 
                             {{-- Key Features --}}
                             <ul class="list-unstyled mb-auto">
@@ -218,7 +231,7 @@
                             <tr>
                                 <th class="text-start">Fonctionnalités</th>
                                 @foreach($plans as $plan)
-                                    <th class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
+                                    <th class="{{ $plan->code === 'signature' ? 'plan-highlight-bg' : '' }}">
                                         {{ $plan->name }}
                                         <div class="small font-weight-normal opacity-75 mt-1">
                                             {{ number_format($plan->price, 0, ',', ' ') }} FCFA/mois
@@ -242,7 +255,7 @@
                                         $capability = $plan->capabilities->where('capability_key', 'max_products')->first();
                                         $maxProducts = $capability?->value['int'] ?? 0;
                                     @endphp
-                                    <td class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
+                                    <td class="{{ $plan->code === 'signature' ? 'plan-highlight-bg' : '' }}">
                                         @if($maxProducts === -1)
                                             <span class="badge bg-dark">Illimité</span>
                                         @else
@@ -254,7 +267,7 @@
                             <tr>
                                 <td class="text-start font-weight-bold text-dark">Variantes produits</td>
                                 @foreach($plans as $plan)
-                                    <td class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
+                                    <td class="{{ $plan->code === 'signature' ? 'plan-highlight-bg' : '' }}">
                                         <i class="fas fa-check text-success"></i>
                                     </td>
                                 @endforeach
@@ -270,7 +283,7 @@
                             <tr>
                                 <td class="text-start font-weight-bold text-dark">Statistiques de base</td>
                                 @foreach($plans as $plan)
-                                    <td class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
+                                    <td class="{{ $plan->code === 'signature' ? 'plan-highlight-bg' : '' }}">
                                         <i class="fas fa-check text-success"></i>
                                     </td>
                                 @endforeach
@@ -282,7 +295,7 @@
                                         $capability = $plan->capabilities->where('capability_key', 'can_view_analytics')->first();
                                         $hasAnalytics = $capability?->value['bool'] ?? false;
                                     @endphp
-                                    <td class="{{ $plan->code === 'premium' ? 'plan-highlight-bg' : '' }}">
+                                    <td class="{{ $plan->code === 'signature' ? 'plan-highlight-bg' : '' }}">
                                         @if($hasAnalytics)
                                             <i class="fas fa-check text-success"></i>
                                         @else

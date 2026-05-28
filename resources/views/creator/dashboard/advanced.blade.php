@@ -1,7 +1,7 @@
 @extends('layouts.creator')
 
-@section('title', 'Tableau de Bord Avancé - RACINE BY GANDA')
-@section('page-title', 'Tableau de bord')
+@section('title', 'Tableau de Bord Maison - RACINE BY GANDA')
+@section('page-title', 'Tableau de bord — Maison')
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
@@ -56,7 +56,7 @@
                 </div>
                 <div>
                     <h2 style="color: white; margin: 0 0 0.5rem 0; font-size: 1.75rem;">Bonjour, {{ $creatorProfile->brand_name ?? $user->name ?? 'Créateur' }}</h2>
-                    <p style="color: rgba(255,255,255,0.7); margin: 0;">Plan : <strong style="color: white;">{{ $user->activePlan()?->name ?? 'Gratuit' }}</strong></p>
+                    <p style="color: rgba(255,255,255,0.7); margin: 0;">Plan : <strong style="color: white;">{{ $user->activePlan()?->name ?? 'Maison' }}</strong></p>
                 </div>
             </div>
             <a href="{{ route('creator.products.create') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--racine-orange) 0%, var(--racine-yellow) 100%); color: white; border-radius: var(--radius-lg); text-decoration: none; font-weight: 600;">
@@ -136,6 +136,18 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    @endif
+
+    {{-- ADD-ON POS --}}
+    @php $activePlan = $user->activePlan(); @endphp
+    @if($activePlan && $activePlan->code === 'maison' && !$activePlan->has_pos)
+    <div style="background: linear-gradient(135deg, rgba(237,95,30,0.06) 0%, rgba(255,184,0,0.06) 100%); border: 1.5px solid rgba(237,95,30,0.25); border-radius: 1rem; padding: 1.5rem; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h4 style="margin: 0 0 0.25rem 0; color: #160D0C; font-weight: 700;"><i class="fas fa-cash-register" style="color: #ED5F1E;"></i> Add-on POS Electron</h4>
+            <p style="margin: 0; color: #555; font-size: 0.9rem;">Gérez votre caisse physique depuis l'application desktop. <strong>+8 000 FCFA / mois</strong></p>
+        </div>
+        <a href="{{ route('creator.subscription.upgrade') }}" style="padding: 0.6rem 1.4rem; background: #ED5F1E; color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; white-space: nowrap;">Activer le POS</a>
     </div>
     @endif
 </div>
