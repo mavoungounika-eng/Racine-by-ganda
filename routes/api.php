@@ -23,10 +23,15 @@ Route::middleware(['api', 'throttle:webhooks'])->group(function () {
 });
 
 // ==========================================
-// Amira — Assistante virtuelle (public, throttle 30/min)
+// Amira — Assistante virtuelle
 // ==========================================
 Route::middleware(['api', 'throttle:30,1'])->group(function () {
     Route::post('/amira/ask', [\App\Http\Controllers\Api\AmiraController::class, 'ask'])->name('api.amira.ask');
+});
+
+// Amira contextuelle — requiert auth (client/créateur/admin)
+Route::middleware(['auth:sanctum', 'throttle:20,1'])->group(function () {
+    Route::post('/amira/chat', [\App\Http\Controllers\Api\AmiraContextController::class, 'chat'])->name('api.amira.chat');
 });
 
 // Webhooks Stripe Billing (abonnements créateurs)

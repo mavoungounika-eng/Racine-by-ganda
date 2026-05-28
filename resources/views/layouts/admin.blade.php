@@ -518,6 +518,9 @@
 
 {{-- Bootstrap 5 + JS chargés via Vite (app.js) — jQuery/Bootstrap 4 legacy supprimés --}}
 
+{{-- AMIRA — widget contextuel admin --}}
+<x-amira-widget space="admin" />
+
 @stack('scripts')
 </body>
 </html>

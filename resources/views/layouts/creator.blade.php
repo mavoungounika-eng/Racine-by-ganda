@@ -542,7 +542,10 @@
     
     {{-- Scroll to Top Component --}}
     @include('components.scroll-to-top')
-    
+
+    {{-- AMIRA — widget contextuel créateur --}}
+    <x-amira-widget space="creator" />
+
     @stack('scripts')
 </body>
 </html>
