@@ -17,7 +17,7 @@ class InvoiceService
 
     public function generatePdf(Order $order): \Barryvdh\DomPDF\PDF
     {
-        $order->loadMissing(['items.product', 'address', 'user']);
+        $order->loadMissing(['items.product', 'address', 'user', 'promoCode']);
 
         return Pdf::loadView('invoices.invoice-pdf', [
             'order'         => $order,
@@ -28,7 +28,7 @@ class InvoiceService
 
     public function generateInvoiceHtml(Order $order): string
     {
-        $order->loadMissing(['items.product', 'address', 'user']);
+        $order->loadMissing(['items.product', 'address', 'user', 'promoCode']);
 
         return View::make('invoices.invoice', [
             'order'         => $order,

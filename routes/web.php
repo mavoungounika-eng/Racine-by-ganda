@@ -603,7 +603,7 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::prefix('mobile-money')->name('mobile-money.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'index'])->name('index');
             Route::get('/{subscription}', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'show'])->name('show');
-            Route::post('/{subscription}/validate', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'validate'])->name('validate');
+            Route::post('/{subscription}/validate', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'validateTransaction'])->name('validate');
             Route::post('/{subscription}/reject', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'reject'])->name('reject');
         });
         
@@ -619,6 +619,9 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
             Route::get('users', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportUsers'])->name('users');
             Route::get('products', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportProducts'])->name('products');
             Route::get('financial-report', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportFinancialReport'])->name('financial-report');
+            Route::get('multi-sheet', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportMultiSheet'])->name('multi-sheet');
+            Route::get('multi-sheet/page', fn () => view('admin.exports.multi-sheet'))->name('multi-sheet.page');
+            Route::post('multi-sheet/import', [\App\Http\Controllers\Admin\AdminExportController::class, 'importMultiSheet'])->name('multi-sheet.import');
         });
         
         // Paramètres

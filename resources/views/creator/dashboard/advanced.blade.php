@@ -56,7 +56,7 @@
                 </div>
                 <div>
                     <h2 style="color: white; margin: 0 0 0.5rem 0; font-size: 1.75rem;">Bonjour, {{ $creatorProfile->brand_name ?? $user->name ?? 'Créateur' }}</h2>
-                    <p style="color: rgba(255,255,255,0.7); margin: 0;">Plan : <strong style="color: white;">{{ $user->activePlan()->name ?? 'Gratuit' }}</strong></p>
+                    <p style="color: rgba(255,255,255,0.7); margin: 0;">Plan : <strong style="color: white;">{{ $user->activePlan()?->name ?? 'Gratuit' }}</strong></p>
                 </div>
             </div>
             <a href="{{ route('creator.products.create') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--racine-orange) 0%, var(--racine-yellow) 100%); color: white; border-radius: var(--radius-lg); text-decoration: none; font-weight: 600;">

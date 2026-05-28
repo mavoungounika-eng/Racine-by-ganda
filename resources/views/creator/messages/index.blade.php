@@ -92,7 +92,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start mb-1">
                                 <h3 class="font-bold text-[#160D0C] truncate">{{ $name }}</h3>
-                                <span class="text-xs text-gray-500 whitespace-nowrap">{{ $conversation->last_message_at->diffForHumans() }}</span>
+                                <span class="text-xs text-gray-500 whitespace-nowrap">{{ $conversation->last_message_at?->diffForHumans() ?? '' }}</span>
                             </div>
                             
                             <div class="flex items-center gap-2 mb-2">

@@ -85,7 +85,7 @@ class CreatorOrdersExport implements FromCollection, WithHeadings, WithMapping
 
     public function map($order): array
     {
-        $commission = $order->creator_total * 0.20;
+        $commission = $order->creator_total * 0.05;
         $net = $order->creator_total - $commission;
 
         return [
