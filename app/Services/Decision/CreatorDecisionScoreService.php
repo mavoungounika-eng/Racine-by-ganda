@@ -305,11 +305,11 @@ class CreatorDecisionScoreService extends BaseDecisionService
         $subscription = $creator->subscriptions()->latest()->first();
         if ($subscription && $subscription->plan) {
             $planCode = $subscription->plan->code;
-            if ($planCode === 'premium') {
+            if ($planCode === 'signature') {
                 $score += 30;
-            } elseif ($planCode === 'official') {
+            } elseif ($planCode === 'maison') {
                 $score += 20;
-            } elseif ($planCode === 'free') {
+            } elseif ($planCode === 'atelier') {
                 $score += 10;
             }
         }

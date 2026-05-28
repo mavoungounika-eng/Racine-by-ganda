@@ -93,24 +93,27 @@ class CreatorCapabilityService
     }
 
     /**
-     * Obtenir le plan FREE.
-     * 
-     * @return CreatorPlan
+     * Obtenir le plan de fallback (atelier) — remplace l'ancien free.
      */
     protected function getFreePlan(): CreatorPlan
     {
-        $cacheKey = 'creator_plan_free';
+        $cacheKey = 'creator_plan_atelier';
 
         return Cache::remember($cacheKey, now()->addHours(24), function () {
             return CreatorPlan::firstOrCreate(
-                ['code' => 'free'],
+                ['code' => 'atelier'],
                 [
-                    'name' => 'Gratuit',
-                    'price' => 0,
-                    'billing_cycle' => 'monthly',
-                    'is_active' => true,
-                    'description' => 'Plan gratuit pour démarrer votre activité de créateur',
-                    'features' => ['Jusqu\'à 5 produits', 'Dashboard basique', 'Gestion des commandes'],
+                    'name'           => 'Atelier',
+                    'price'          => 15000.00,
+                    'quarterly_price'=> 40500.00,
+                    'annual_price'   => 150000.00,
+                    'billing_cycle'  => 'monthly',
+                    'is_active'      => true,
+                    'products_limit' => 80,
+                    'has_pos'        => false,
+                    'trial_days'     => 30,
+                    'description'    => 'Plan essentiel pour démarrer votre activité de créateur',
+                    'features'       => ['Jusqu\'à 80 produits', 'Dashboard basique', 'Gestion des commandes'],
                 ]
             );
         });

@@ -92,8 +92,8 @@ class CreatorSubscriptionCheckoutService
             );
         }
 
-        // Vérification 4 : Le plan n'est pas gratuit
-        if ($plan->code === 'free' || $plan->price == 0) {
+        // Vérification 4 : Le plan est payant (price > 0)
+        if ((float) $plan->price <= 0.0) {
             throw new \RuntimeException(
                 "Le plan {$plan->code} est gratuit. Utilisez l'activation directe, pas le checkout."
             );
