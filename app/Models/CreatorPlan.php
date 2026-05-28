@@ -14,20 +14,28 @@ class CreatorPlan extends Model
         'code',
         'name',
         'price',
-        'annual_price', // V2.1
+        'quarterly_price',
+        'annual_price',
         'billing_cycle',
         'is_active',
         'description',
         'features',
+        'products_limit',
+        'has_pos',
+        'trial_days',
         'stripe_product_id',
         'stripe_price_id',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'annual_price' => 'decimal:2', // V2.1
+        'quarterly_price' => 'decimal:2',
+        'annual_price' => 'decimal:2',
         'is_active' => 'boolean',
+        'has_pos' => 'boolean',
         'features' => 'array',
+        'products_limit' => 'integer',
+        'trial_days' => 'integer',
     ];
 
     /**
