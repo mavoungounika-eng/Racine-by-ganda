@@ -47,9 +47,9 @@ class BiMetricsServiceTest extends TestCase
     public function test_mrr_calculation_active_subscriptions_only(): void
     {
         // Créer des plans
-        $plan1 = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'official']);
-        $plan2 = CreatorPlan::factory()->create(['price' => 20000, 'code' => 'premium']);
-        $freePlan = CreatorPlan::factory()->create(['price' => 0, 'code' => 'free']);
+        $plan1 = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'maison']);
+        $plan2 = CreatorPlan::factory()->create(['price' => 20000, 'code' => 'signature']);
+        $freePlan = CreatorPlan::factory()->create(['price' => 0, 'code' => 'atelier']);
         
         // Créer des abonnements actifs
         CreatorSubscription::factory()->create([
@@ -93,7 +93,7 @@ class BiMetricsServiceTest extends TestCase
      */
     public function test_arr_calculation_is_mrr_times_12(): void
     {
-        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'official']);
+        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'maison']);
         
         CreatorSubscription::factory()->create([
             'status' => 'active',
@@ -115,7 +115,7 @@ class BiMetricsServiceTest extends TestCase
      */
     public function test_arpu_calculation(): void
     {
-        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'official']);
+        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'maison']);
         
         $creator1 = CreatorProfile::factory()->create();
         $creator2 = CreatorProfile::factory()->create();
@@ -150,7 +150,7 @@ class BiMetricsServiceTest extends TestCase
      */
     public function test_churn_rate_calculation(): void
     {
-        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'official']);
+        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'maison']);
         
         // 10 abonnements actifs au début du mois précédent
         for ($i = 0; $i < 10; $i++) {
@@ -188,7 +188,7 @@ class BiMetricsServiceTest extends TestCase
      */
     public function test_ltv_calculation(): void
     {
-        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'official']);
+        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'maison']);
         
         $creator = CreatorProfile::factory()->create();
         
@@ -221,7 +221,7 @@ class BiMetricsServiceTest extends TestCase
      */
     public function test_mrr_excludes_expired_subscriptions(): void
     {
-        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'official']);
+        $plan = CreatorPlan::factory()->create(['price' => 10000, 'code' => 'maison']);
         
         // Abonnement actif
         CreatorSubscription::factory()->create([
@@ -272,7 +272,7 @@ class BiMetricsServiceTest extends TestCase
      */
     public function test_mrr_arr_consistency(): void
     {
-        $plan = CreatorPlan::factory()->create(['price' => 15000, 'code' => 'official']);
+        $plan = CreatorPlan::factory()->create(['price' => 15000, 'code' => 'maison']);
         
         CreatorSubscription::factory()->create([
             'status' => 'active',
