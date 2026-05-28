@@ -90,7 +90,7 @@ Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(
 
     // Routes protégées (créateur actif)
     // PHASE 3: Migration vers EnsureAuthenticated
-    Route::middleware(['ensure:creator,createur', 'creator.active'])->group(function () {
+    Route::middleware(['ensure:creator,createur', 'creator.active', 'onboarding'])->group(function () {
         Route::get('dashboard', [CreatorDashboardController::class, 'index'])->name('dashboard');
         
         // Produits
@@ -266,7 +266,7 @@ Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(fu
     Route::post('/skip',    [\App\Http\Controllers\OnboardingController::class, 'skip'])->name('skip');
 });
 
-Route::middleware(['auth', 'ensure:client'])->group(function () {
+Route::middleware(['auth', 'ensure:client', 'onboarding'])->group(function () {
     // Dashboard Client - Route principale (utiliser celle-ci uniquement)
     Route::get('/compte', [\App\Http\Controllers\Account\ClientAccountController::class, 'index'])
         ->name('account.dashboard');

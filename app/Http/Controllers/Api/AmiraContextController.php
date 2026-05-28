@@ -33,6 +33,19 @@ class AmiraContextController extends Controller
             return response()->json(['error' => 'Accès non autorisé.'], 403);
         }
 
+        $openAiKey = config('openai.api_key') ?: config('amira.nlp_api_key');
+        $isPlaceholder = empty($openAiKey)
+            || str_starts_with($openAiKey, 'REPLACE_')
+            || $openAiKey === 'your-api-key';
+
+        if ($isPlaceholder) {
+            return response()->json([
+                'answer' => "Je suis Amira ! Pour m'activer, configure OPENAI_API_KEY dans ton .env.",
+                'space'  => $space,
+                'disabled' => true,
+            ]);
+        }
+
         try {
             $context      = $this->contextService->buildContext($user, $space);
             $systemPrompt = $this->contextService->buildSystemPrompt($space);
@@ -46,8 +59,8 @@ class AmiraContextController extends Controller
             $result = OpenAI::chat()->create([
                 'model'       => config('amira.model', 'gpt-4o-mini'),
                 'messages'    => $messages,
-                'max_tokens'  => 250,
-                'temperature' => 0.65,
+                'max_tokens'  => config('amira.max_tokens', 250),
+                'temperature' => config('amira.temperature', 0.65),
             ]);
 
             $answer = trim($result->choices[0]->message->content);

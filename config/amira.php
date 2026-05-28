@@ -13,13 +13,15 @@ return [
     /*
     |--------------------------------------------------------------------------
     | NLP Provider
+    | AMIRA_NLP_PROVIDER=openai  → active le mode IA pour /api/amira/chat
+    | Sans clé OpenAI réelle, le widget retourne un message de fallback.
     |--------------------------------------------------------------------------
     */
-    'nlp_provider' => env('AMIRA_NLP_PROVIDER', 'knowledge_base'), // 'knowledge_base' ou 'openai'
-    'nlp_api_key' => env('AMIRA_NLP_API_KEY'),
-    'model' => env('AMIRA_MODEL', 'gpt-4'),
-    'max_tokens' => 150,
-    'temperature' => 0.7,
+    'nlp_provider' => env('AMIRA_NLP_PROVIDER', env('AMIRA_AI_PROVIDER', 'knowledge_base')),
+    'nlp_api_key'  => env('AMIRA_NLP_API_KEY', env('OPENAI_API_KEY')),
+    'model'        => env('AMIRA_MODEL', 'gpt-4o-mini'),
+    'max_tokens'   => (int) env('AMIRA_MAX_TOKENS', 250),
+    'temperature'  => (float) env('AMIRA_TEMPERATURE', 0.65),
 
     /*
     |--------------------------------------------------------------------------

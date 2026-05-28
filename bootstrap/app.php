@@ -73,6 +73,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\EnsureAuthenticated::class,
             'role.creator' => \App\Http\Middleware\EnsureAuthenticated::class . ':createur',
             'terms' => \App\Http\Middleware\EnsureTermsAccepted::class,
+            'onboarding' => \App\Http\Middleware\EnsureOnboardingCompleted::class,
         ]);
 
 
