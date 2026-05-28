@@ -257,6 +257,15 @@ Route::get('/staff/dashboard', function () {
     return view('admin.dashboard', compact('stats', 'recentActivity'));
 })->name('staff.dashboard')->middleware(['auth', 'ensure:staff,admin,super_admin']);
 
+// Onboarding
+Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(function () {
+    Route::get('/client',   [\App\Http\Controllers\OnboardingController::class, 'showClient'])->name('client');
+    Route::post('/client',  [\App\Http\Controllers\OnboardingController::class, 'completeClient'])->name('client.complete');
+    Route::get('/creator',  [\App\Http\Controllers\OnboardingController::class, 'showCreator'])->name('creator');
+    Route::post('/creator', [\App\Http\Controllers\OnboardingController::class, 'completeCreator'])->name('creator.complete');
+    Route::post('/skip',    [\App\Http\Controllers\OnboardingController::class, 'skip'])->name('skip');
+});
+
 Route::middleware(['auth', 'ensure:client'])->group(function () {
     // Dashboard Client - Route principale (utiliser celle-ci uniquement)
     Route::get('/compte', [\App\Http\Controllers\Account\ClientAccountController::class, 'index'])

@@ -105,6 +105,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'locale',
         'preferred_currency',
         'terms_accepted_at',
+        'onboarding_completed',
+        'onboarding_type',
     ];
 
     protected $hidden = [
@@ -132,6 +134,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'trusted_device_expires_at' => 'datetime',
         'auth_version' => 'integer',
         'terms_accepted_at' => 'datetime',
+        'onboarding_completed' => 'boolean',
     ];
 
     /**
