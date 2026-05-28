@@ -68,7 +68,7 @@ Si régression détectée → STOP immédiat, signaler, ne pas continuer.
 Une tâche n'est JAMAIS terminée tant que ces critères ne sont pas tous validés :
 - [ ] php -l sur tous les fichiers modifiés → 0 erreurs syntaxe
 - [ ] Run ciblé PHPUnit → 0 failures, skipped stables ou en baisse
-- [ ] Run global PHPUnit → pas de régression vs référence (894 tests, 0 failures)
+- [ ] Run global PHPUnit → pas de régression vs référence (977 tests, 0 failures)
 - [ ] Aucun TODO / markTestSkipped ajouté sans justification écrite
 - [ ] Aucun fichier protégé touché
 - [ ] Commit proposé avec message conventionnel
@@ -320,8 +320,8 @@ composer run setup    # Setup initial
 
 ---
 
-## État tests — RÉFÉRENCE (25 mai 2026)
-Tests: 945 | Failures: None (stable) | Skipped: 8 | Flaky Redis: 0-1 par run
+## État tests — RÉFÉRENCE (28 mai 2026)
+Tests: 977 | Failures: None (stable) | Skipped: 8 | Flaky Redis: 0-1 par run
 
 ℹ️ QueueCircuitBreaker et QueueRateLimiter utilisent déjà Cache:: — CACHE_STORE=array
 en tests, plus de flaky Redis systématique. Toujours exécuter `redis-cli FLUSHDB`
@@ -812,7 +812,7 @@ redis-cli FLUSHDB && ./vendor/bin/phpunit 2>&1 | tail -5
 ```
 
 ### Interprétation
-- `895 tests, 0 failures, 19 skipped` → référence OK
+- `977 tests, 0 failures, 8 skipped` → référence OK
 - Tout failure → STOP (RÈGLE 6)
 - Skipped en hausse → investiguer avant de continuer
 - Tests Redis flaky → toujours `redis-cli FLUSHDB` avant run complet
