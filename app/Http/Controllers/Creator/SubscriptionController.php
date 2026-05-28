@@ -88,29 +88,9 @@ class SubscriptionController extends Controller
                 ->with('error', 'Ce plan n\'est pas disponible.');
         }
 
-        // SÉCURITÉ P0.1 : Vérification stricte - seul FREE peut être activé directement
-        if ($plan->code === 'free') {
-            // Vérification supplémentaire : s'assurer que le prix est bien 0
-            if ($plan->price > 0) {
-                \Illuminate\Support\Facades\Log::critical('Plan marqué FREE mais avec prix > 0', [
-                    'plan_id' => $plan->id,
-                    'plan_code' => $plan->code,
-                    'plan_price' => $plan->price,
-                ]);
-                abort(500, 'Erreur de configuration. Veuillez contacter le support.');
-            }
-            return $this->activateFreePlan($user);
-        }
-
-        // SÉCURITÉ P0.1 : Pour TOUS les plans payants, forcer le passage par Stripe
-        // Aucune activation directe possible
-        if ($plan->price <= 0) {
-            \Illuminate\Support\Facades\Log::warning('Plan payant avec prix <= 0', [
-                'plan_id' => $plan->id,
-                'plan_code' => $plan->code,
-            ]);
-            return redirect()->route('creator.subscription.upgrade')
-                ->with('error', 'Erreur de configuration du plan. Veuillez contacter le support.');
+        // Plans à prix zéro activables directement (sans Stripe)
+        if ((float) $plan->price <= 0.0) {
+            return $this->activateZeroPricePlan($user, $plan);
         }
 
         // Pour les plans payants, créer une session Stripe Checkout
@@ -127,86 +107,41 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Activer le plan gratuit.
-     * 
-     * SÉCURITÉ P0.1 : Cette méthode ne peut activer QUE le plan FREE.
-     * Tous les autres plans doivent passer par le paiement Stripe.
+     * Activer directement un plan à prix zéro (sans Stripe).
+     * Garde price==0 comme seule condition — indépendant du code plan.
      */
-    protected function activateFreePlan(User $user): RedirectResponse
+    protected function activateZeroPricePlan(User $user, CreatorPlan $plan): RedirectResponse
     {
-        // SÉCURITÉ P0.1 : Vérification stricte - seul le plan FREE peut être activé directement
-        $freePlan = CreatorPlan::where('code', 'free')
-            ->where('is_active', true)
-            ->first();
-        
-        if (!$freePlan) {
-            \Illuminate\Support\Facades\Log::error('Plan FREE non trouvé ou inactif', [
-                'user_id' => $user->id,
-            ]);
-            return redirect()->route('creator.subscription.upgrade')
-                ->with('error', 'Plan gratuit non disponible. Veuillez contacter le support.');
-        }
-
-        // SÉCURITÉ P0.1 : Double vérification - s'assurer qu'on n'active que FREE
-        if ($freePlan->price > 0) {
+        if ((float) $plan->price > 0.0) {
             \Illuminate\Support\Facades\Log::critical('Tentative d\'activation directe d\'un plan payant', [
-                'user_id' => $user->id,
-                'plan_id' => $freePlan->id,
-                'plan_code' => $freePlan->code,
-                'plan_price' => $freePlan->price,
-                'ip' => request()->ip(),
+                'user_id'    => $user->id,
+                'plan_id'    => $plan->id,
+                'plan_code'  => $plan->code,
+                'plan_price' => $plan->price,
+                'ip'         => request()->ip(),
             ]);
             abort(403, 'Les plans payants nécessitent un paiement. Accès refusé.');
         }
 
-        // Créer ou mettre à jour l'abonnement
         $subscription = CreatorSubscription::updateOrCreate(
+            ['creator_id' => $user->id],
             [
-                'creator_id' => $user->id,
-            ],
-            [
-                'creator_profile_id' => $user->creatorProfile->id ?? null,
-                'creator_plan_id' => $freePlan->id, // SÉCURITÉ : Toujours FREE
-                'status' => 'active',
-                'started_at' => now(),
-                'ends_at' => null, // Gratuit = pas d'expiration
-                'stripe_subscription_id' => null, // Pas de Stripe pour FREE
-                'stripe_customer_id' => null,
+                'creator_profile_id'      => $user->creatorProfile->id ?? null,
+                'creator_plan_id'         => $plan->id,
+                'status'                  => 'active',
+                'started_at'              => now(),
+                'ends_at'                 => null,
+                'stripe_subscription_id'  => null,
+                'stripe_customer_id'      => null,
             ]
         );
 
-        // SÉCURITÉ P0.1 : Vérification finale - s'assurer que l'abonnement créé est bien FREE
-        $subscription->refresh();
-        if ($subscription->plan->code !== 'free') {
-            \Illuminate\Support\Facades\Log::critical('Incohérence détectée : abonnement créé n\'est pas FREE', [
-                'user_id' => $user->id,
-                'subscription_id' => $subscription->id,
-                'plan_code' => $subscription->plan->code,
-            ]);
-            // Rollback
-            $subscription->delete();
-            abort(500, 'Erreur lors de l\'activation. Veuillez contacter le support.');
-        }
-
-        // Invalider le cache
         $this->capabilityService->clearCache($user);
 
-        // Tracker l'événement
-        $this->analyticsService->trackEvent(
-            $user->id,
-            'created',
-            null,
-            $freePlan->id,
-            $freePlan->price
-        );
-
-        \Illuminate\Support\Facades\Log::info('Plan FREE activé avec succès', [
-            'user_id' => $user->id,
-            'subscription_id' => $subscription->id,
-        ]);
+        $this->analyticsService->trackEvent($user->id, 'created', null, $plan->id, 0);
 
         return redirect()->route('creator.dashboard')
-            ->with('success', 'Plan gratuit activé avec succès !');
+            ->with('success', 'Plan activé avec succès !');
     }
 
     /**

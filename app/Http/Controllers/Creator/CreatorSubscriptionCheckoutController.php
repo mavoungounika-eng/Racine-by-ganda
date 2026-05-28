@@ -40,9 +40,9 @@ class CreatorSubscriptionCheckoutController extends Controller
     {
         $user = Auth::user();
 
-        if ($plan->code === 'free' || (float) $plan->price <= 0.0) {
+        if ((float) $plan->price <= 0.0) {
             return redirect()->route('creator.subscription.plans')
-                ->with('info', 'Le plan Gratuit ne necessite pas Stripe Checkout.');
+                ->with('info', 'Ce plan ne nécessite pas Stripe Checkout.');
         }
 
         if (empty($plan->stripe_price_id)) {
