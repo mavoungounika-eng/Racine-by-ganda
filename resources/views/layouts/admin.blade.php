@@ -322,7 +322,7 @@
     @stack('styles')
 </head>
 <body>
-
+<x-flash />
 <div class="admin-layout">
     {{-- SIDEBAR ADMIN --}}
     <aside class="admin-sidebar">

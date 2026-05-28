@@ -367,6 +367,7 @@
     @stack('styles')
 </head>
 <body>
+    <x-flash />
     {{-- SIDEBAR CRÉATEUR --}}
     <aside class="creator-sidebar">
         {{-- Header --}}
