@@ -289,92 +289,90 @@
     <section class="plans-section" id="plans">
         <div class="plans-container">
             <div class="plans-grid">
-                @forelse($plans as $plan)
+                @forelse($plans->whereIn('code', ['atelier','maison','signature']) as $plan)
                     @php
-                        $isFree = $plan->code === 'free';
-                        $isOfficial = $plan->code === 'official';
-                        $isPremium = $plan->code === 'premium';
-                        
-                        // Features selon le plan
-                        $features = [];
-                        if ($isFree) {
-                            $features = [
-                                'Jusqu\'à 5 produits',
-                                'Commission élevée',
-                                'Dashboard basique',
-                                'Pas de mise en avant',
-                                'Paiements soumis à validation',
-                            ];
-                        } elseif ($isOfficial) {
-                            $features = [
+                        $isAtelier   = $plan->code === 'atelier';
+                        $isMaison    = $plan->code === 'maison';
+                        $isSignature = $plan->code === 'signature';
+
+                        $featuresMap = [
+                            'atelier' => [
+                                'Jusqu\'à 80 produits',
+                                'Dashboard créateur basique',
+                                'Gestion des commandes',
+                                '30 jours d\'essai gratuit',
+                            ],
+                            'maison' => [
+                                'Jusqu\'à 250 produits',
+                                'Dashboard avancé + analytics',
+                                'Export des données',
+                                'Add-on POS +8 000 FCFA/mois',
+                                '30 jours d\'essai gratuit',
+                            ],
+                            'signature' => [
                                 'Produits illimités',
-                                'Commission réduite',
-                                'Boutique personnalisée',
-                                'Statistiques complètes',
-                                'Badge Créateur Officiel',
-                                'Paiements sécurisés et réguliers',
-                            ];
-                        } elseif ($isPremium) {
-                            $features = [
-                                'Mise en avant sur la marketplace',
-                                'Dashboard premium',
-                                'Accès ventes physiques',
-                                'Exports & analytics avancés',
-                                'Support prioritaire',
-                                'Commission minimale',
-                            ];
-                        }
+                                'POS Electron inclus',
+                                'Analytics avancées',
+                                'Support dédié',
+                                '30 jours d\'essai gratuit',
+                            ],
+                        ];
+                        $features = $featuresMap[$plan->code] ?? $plan->features ?? [];
                     @endphp
-                    
-                    <div class="plan-card {{ $isOfficial ? 'recommended' : '' }}">
+
+                    <div class="plan-card {{ $isMaison ? 'recommended' : '' }}">
                         <div class="plan-header">
                             <h2 class="plan-name">
-                                @if($isFree) 🟢 CRÉATEUR DÉCOUVERTE
-                                @elseif($isOfficial) 🔵 CRÉATEUR OFFICIEL
-                                @else 🟣 CRÉATEUR PREMIUM
+                                @if($isAtelier) ATELIER
+                                @elseif($isMaison) MAISON
+                                @else SIGNATURE
                                 @endif
                             </h2>
-                            @if($isFree)
-                                <div class="plan-price">Gratuit</div>
-                            @else
-                                <div class="plan-price">{{ format_price($plan->price) }}</div>
-                                <div class="plan-price-subtitle">/ mois</div>
+                            <div class="plan-price">{{ number_format($plan->price, 0, ',', ' ') }} FCFA</div>
+                            <div class="plan-price-subtitle">/ mois</div>
+                            @if($plan->quarterly_price)
+                            <div style="font-size:0.78rem;color:rgba(255,255,255,0.7);margin-top:0.25rem;">
+                                ou {{ number_format($plan->quarterly_price, 0, ',', ' ') }} FCFA / trimestre
+                                · {{ number_format($plan->annual_price, 0, ',', ' ') }} FCFA / an
+                            </div>
                             @endif
                         </div>
-                        
+
                         <p class="plan-description">
-                            @if($isFree)
-                                Tester la plateforme, publier vos premiers produits.
-                            @elseif($isOfficial)
-                                Le statut minimum pour vendre sérieusement sur RACINE.
-                            @else
-                                Pour les marques ambitieuses et partenaires stratégiques.
+                            @if($isAtelier) Démarrez votre activité de créateur en toute sérénité.
+                            @elseif($isMaison) Développez votre marque avec des outils avancés.
+                            @else Pour les créateurs qui veulent aller jusqu'au bout.
                             @endif
                         </p>
-                        
+
+                        @if($plan->trial_days)
+                        <div style="text-align:center;margin-bottom:0.75rem;">
+                            <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:999px;background:rgba(34,197,94,0.15);color:#15803d;font-size:0.8rem;font-weight:600;">{{ $plan->trial_days }} jours gratuits</span>
+                        </div>
+                        @endif
+
                         <ul class="plan-features">
                             @foreach($features as $feature)
                                 <li>
-                                    <i class="fas fa-{{ $isFree ? 'check' : 'check-circle' }}"></i>
+                                    <i class="fas fa-check-circle"></i>
                                     <span>{{ $feature }}</span>
                                 </li>
                             @endforeach
                         </ul>
-                        
-                        <a href="{{ $isFree ? route('creator.register') : route('creator.subscription.select', $plan) }}" 
-                           class="plan-cta {{ $isOfficial ? 'primary' : ($isFree ? 'free' : 'secondary') }}">
-                            @if($isFree)
-                                Commencer gratuitement
-                            @elseif($isOfficial)
-                                Passer créateur officiel
-                            @else
-                                Accéder au Premium
-                            @endif
-                        </a>
+
+                        @if($isSignature)
+                            <a href="{{ route('frontend.contact') }}" class="plan-cta secondary">
+                                Nous contacter
+                            </a>
+                        @else
+                            <a href="{{ route('creator.register') }}" class="plan-cta {{ $isMaison ? 'primary' : 'free' }}">
+                                Commencer — {{ $plan->name }}
+                            </a>
+                        @endif
                     </div>
                 @empty
                     <div class="plan-card" style="grid-column: 1/-1; text-align:center; padding: 3rem;">
-                        <p style="color:#8B7355; font-size:1.1rem;">Les plans seront disponibles prochainement. <a href="{{ route('frontend.contact') }}" style="color:#ED5F1E;">Contactez-nous</a> pour plus d'informations.</p>
+                        <p style="color:#8B7355; font-size:1.1rem;">Les plans seront disponibles prochainement. <a href="{{ route('frontend.contact') }}" style="color:#ED5F1E;">Contactez-nous</a></p>
                     </div>
                 @endforelse
             </div>
