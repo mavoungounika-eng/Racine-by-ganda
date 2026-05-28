@@ -32,7 +32,7 @@ class AmiraController extends Controller
 
         $validated = $request->validate([
             'question' => 'required|string|max:500',
-            'context' => 'nullable|array',
+            'context' => 'nullable|array|max:20',
         ]);
 
         $response = $this->amiraService->ask(

@@ -662,6 +662,7 @@ Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('po
     Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
     Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
     Route::post('order/{order}/confirm-payment', [\App\Http\Controllers\Admin\PosController::class, 'confirmCardPayment'])->name('confirm-payment');
+    Route::post('order/{order}/validate-pickup', [\App\Http\Controllers\Admin\PosController::class, 'validatePickup'])->name('validate-pickup');
     Route::get('order/{order}', [\App\Http\Controllers\Admin\PosController::class, 'getOrder'])->name('order');
     
     // Analytics POS simplifiées pour le staff
