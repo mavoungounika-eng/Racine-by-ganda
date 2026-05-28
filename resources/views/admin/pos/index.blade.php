@@ -488,15 +488,17 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
                 paymentInfo.style.display = 'none';
             }
             
-            $('#success-modal').modal('show');
-            
+            new bootstrap.Modal(document.getElementById('success-modal')).show();
+
+            // Remettre le focus sur le scan après fermeture
+            document.getElementById('success-modal').addEventListener('hidden.bs.modal', () => {
+                barcodeInput.focus();
+            }, { once: true });
+
             // Réinitialiser le panier
             cart = [];
             updateCartDisplay();
             this.reset();
-            
-            // Remettre le focus sur le scan
-            barcodeInput.focus();
         } else {
             showAlert('danger', data.message || 'Erreur lors de la création de la commande');
         }
@@ -505,13 +507,8 @@ document.getElementById('pos-form').addEventListener('submit', async function(e)
         console.error(error);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-check me-2"></i> Valider la vente';
+        submitBtn.textContent = 'Valider la vente';
     }
-});
-
-// Réinitialiser après fermeture du modal
-$('#success-modal').on('hidden.bs.modal', function() {
-    barcodeInput.focus();
 });
 </script>
 

@@ -827,5 +827,43 @@ class PosController extends Controller
             ], 500);
         }
     }
+
+    public function exportAllCsv(\Illuminate\Http\Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $query = \App\Models\PosSession::with(['opener', 'sales.payments'])
+            ->orderByDesc('opened_at');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $sessions = $query->get();
+        $filename = 'pos_sessions_export_' . now()->format('Ymd_Hi') . '.csv';
+
+        return response()->streamDownload(function () use ($sessions) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($out, ['Session ID', 'Opérateur', 'Ouverture', 'Clôture', 'Statut', 'Fond de caisse', 'Total ventes', 'Nb tickets'], ';');
+
+            foreach ($sessions as $session) {
+                fputcsv($out, [
+                    $session->id,
+                    $session->opener?->name ?? '-',
+                    $session->opened_at?->format('d/m/Y H:i'),
+                    $session->closed_at?->format('d/m/Y H:i') ?? 'En cours',
+                    $session->status,
+                    number_format($session->opening_cash ?? 0, 0, ',', ' '),
+                    number_format($session->total_ventes ?? 0, 0, ',', ' '),
+                    $session->nombre_tickets ?? 0,
+                ], ';');
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-cache',
+        ]);
+    }
 }
 
