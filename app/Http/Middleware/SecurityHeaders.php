@@ -51,6 +51,8 @@ class SecurityHeaders
         $styleExtra   = $isLocal ? ' http://127.0.0.1:5173' : '';
         $connectExtra = $isLocal ? ' http://127.0.0.1:5173 ws://127.0.0.1:5173' : '';
 
+        $isSecure = $request->secure() || env('FORCE_HTTPS', false);
+
         $csp = "default-src 'self'; " .
                "script-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com https://cdn.tiny.cloud{$scriptExtra}; " .
                "style-src 'self' 'unsafe-inline' 'nonce-{$nonce}' https://fonts.googleapis.com https://cdnjs.cloudflare.com{$styleExtra}; " .
@@ -62,8 +64,8 @@ class SecurityHeaders
                "object-src 'none'; " .
                "base-uri 'self'; " .
                "form-action 'self'; " .
-               "frame-ancestors 'none'; " .
-               "upgrade-insecure-requests;";
+               "frame-ancestors 'none';" .
+               ($isSecure ? " upgrade-insecure-requests;" : "");
 
         $response->headers->set('Content-Security-Policy', $csp);
 
