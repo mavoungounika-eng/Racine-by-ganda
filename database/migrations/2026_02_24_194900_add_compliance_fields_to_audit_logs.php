@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('audit_logs', function (Blueprint $table) {
             if (!Schema::hasColumn('audit_logs', 'user_agent')) {
-                $table->text('user_agent')->nullable()->after('ip_address');
+                $table->text('user_agent')->nullable();
             }
             if (!Schema::hasColumn('audit_logs', 'request_id')) {
                 $table->uuid('request_id')->nullable()->index();
