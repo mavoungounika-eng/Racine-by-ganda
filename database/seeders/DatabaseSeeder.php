@@ -92,6 +92,24 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Compte admin production
+        User::updateOrCreate(
+            ['email' => 'admin@racinebyganda.com'],
+            [
+                'name' => 'Administrateur Racine',
+                'email' => 'admin@racinebyganda.com',
+                'password' => Hash::make('Admin@2026!'),
+                'is_admin' => true,
+                'role_id' => 1,
+                'status' => 'active',
+                'email_verified_at' => now(),
+                'two_factor_secret' => null,
+                'two_factor_recovery_codes' => null,
+                'two_factor_confirmed_at' => null,
+                'two_factor_required' => false,
+            ]
+        );
+
         // Créer un utilisateur de test (non admin)
         User::firstOrCreate(
             ['email' => 'test@example.com'],

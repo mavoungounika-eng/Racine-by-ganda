@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CmsSection;
 use Modules\CMS\Models\CmsPage;
 use Modules\CMS\Models\CmsBlock;
 use Illuminate\Database\Seeder;
