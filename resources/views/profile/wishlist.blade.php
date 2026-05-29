@@ -252,12 +252,16 @@
                                  alt="{{ $item->product->title ?? $item->product->name }}">
                         </a>
                         <div class="wishlist-item-actions">
-                            <form action="{{ route('profile.wishlist.remove', $item->product->id) }}" method="POST" class="remove-wishlist-form">
+                            <form id="wishlist-remove-{{ $item->product->id }}"
+                                  action="{{ route('profile.wishlist.remove', $item->product->id) }}"
+                                  method="POST" class="remove-wishlist-form d-none">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="wishlist-remove-btn" title="Retirer des favoris">
-                                    <i class="fas fa-heart"></i>
-                                </button>
+                            </form>
+                            <button type="button" class="wishlist-remove-btn" title="Retirer des favoris"
+                                onclick="ConfirmModal.show({title:'Retirer des favoris ?',message:'Ce produit sera retiré de vos favoris.',confirmText:'Retirer',confirmClass:'btn-warning',onConfirm:function(){ document.getElementById('wishlist-remove-{{ $item->product->id }}').submit(); }})">
+                                <i class="fas fa-heart"></i>
+                            </button>
                             </form>
                         </div>
                     </div>

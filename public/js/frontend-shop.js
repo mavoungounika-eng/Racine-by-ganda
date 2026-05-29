@@ -1,7 +1,7 @@
 /* ===================================================
    RACINE BY GANDA - Frontend Shop JavaScript
    Page boutique - Scripts extraits de shop.blade.php
-   Version: 2.0 (Refactorisé AXE E)
+   Version: 2.1 (feedback toast ajout panier)
    =================================================== */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -36,15 +36,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (window.Racine && window.Racine.Ajax) {
             window.Racine.Ajax.handleFormSubmit(form, {
                 onSuccess: (data) => {
-                    // Compteur déjà mis à jour par Racine.Ajax.addToCart
                     if (data.count !== undefined) {
                         window.Racine.Ajax.updateCartCount(data.count);
                     }
+                    window.Racine.Utils.showNotification(
+                        data.message || 'Produit ajouté au panier !',
+                        'success'
+                    );
+                },
+                onError: (data) => {
+                    window.Racine.Utils.showNotification(
+                        data.message || 'Impossible d\'ajouter ce produit. Réessaie.',
+                        'error'
+                    );
                 },
                 loadingText: 'Ajout...'
             });
         } else {
-            // Fallback si Racine.Ajax pas chargé
             console.warn('[Shop] Racine.Ajax not loaded, using fallback');
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -63,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const button = this.querySelector('.wishlist-btn');
 
             if (window.Racine && window.Racine.Ajax) {
+                // toggleWishlist affiche déjà son propre toast via data.message
                 window.Racine.Ajax.toggleWishlist(productId, button);
             } else {
                 console.warn('[Shop] Racine.Ajax not loaded');

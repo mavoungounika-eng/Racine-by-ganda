@@ -746,6 +746,9 @@
     @auth
         <x-amira-widget space="client" />
     @endauth
+
+    {{-- Modal de confirmation universel --}}
+    @include('components.confirm-modal')
     
     {{-- SCROLL TO TOP BUTTON --}}
     @include('components.scroll-to-top')

@@ -235,20 +235,32 @@
                     <i class="fas fa-sync-alt text-racine-orange me-2"></i>
                     Statut de la commande
                 </h3>
-                <form action="{{ route('admin.orders.update', $order) }}" method="POST">
+                <form id="admin-order-status-form" action="{{ route('admin.orders.update', $order) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="mb-4">
-                        <select name="status" id="status"
-                                class="premium-select w-full">
-                            <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>En attente</option>
-                            <option value="paid" {{ $order->status === 'paid' ? 'selected' : '' }}>Payée</option>
-                            <option value="shipped" {{ $order->status === 'shipped' ? 'selected' : '' }}>Expédiée</option>
+                        <select name="status" id="status" class="premium-select w-full">
+                            <option value="pending"   {{ $order->status === 'pending'   ? 'selected' : '' }}>En attente</option>
+                            <option value="paid"      {{ $order->status === 'paid'      ? 'selected' : '' }}>Payée</option>
+                            <option value="shipped"   {{ $order->status === 'shipped'   ? 'selected' : '' }}>Expédiée</option>
                             <option value="completed" {{ $order->status === 'completed' ? 'selected' : '' }}>Terminée</option>
                             <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Annulée</option>
                         </select>
                     </div>
-                    <button type="submit" class="premium-btn w-full">
+                    <button type="button" class="premium-btn w-full"
+                        onclick="(function(){
+                            var sel = document.getElementById('status');
+                            var label = sel.options[sel.selectedIndex].text;
+                            var isCritical = ['cancelled','completed'].includes(sel.value);
+                            ConfirmModal.show({
+                                title: 'Changer le statut ?',
+                                message: 'La commande #{{ $order->id }} passera au statut : ' + label,
+                                consequence: isCritical ? 'Action critique — notifie le client automatiquement.' : null,
+                                confirmText: 'Confirmer',
+                                confirmClass: isCritical ? 'btn-danger' : 'btn-primary',
+                                onConfirm: function() { document.getElementById('admin-order-status-form').submit(); }
+                            });
+                        })()">
                         <i class="fas fa-save"></i>
                         Mettre à jour
                     </button>

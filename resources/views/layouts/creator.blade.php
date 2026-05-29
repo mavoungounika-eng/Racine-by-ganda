@@ -547,6 +547,9 @@
     {{-- AMIRA — widget contextuel créateur --}}
     <x-amira-widget space="creator" />
 
+    {{-- Modal de confirmation universel --}}
+    @include('components.confirm-modal')
+
     @stack('scripts')
 </body>
 </html>

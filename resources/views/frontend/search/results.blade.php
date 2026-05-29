@@ -133,11 +133,11 @@
                                             <span><i class="icon-eye"></i></span>
                                         </a>
                                         @if($product->stock > 0)
-                                        <form action="{{ route('cart.add') }}" method="POST" class="d-inline">
+                                        <form action="{{ route('cart.add') }}" method="POST" class="d-inline search-cart-form">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                                             <input type="hidden" name="quantity" value="1">
-                                            <button type="submit" class="buy-now d-flex justify-content-center align-items-center text-center">
+                                            <button type="submit" class="buy-now d-flex justify-content-center align-items-center text-center" title="Ajouter au panier">
                                                 <span><i class="icon-shopping-cart"></i></span>
                                             </button>
                                         </form>
@@ -192,6 +192,30 @@
                             });
                     }, 300);
                 }
+            });
+        }
+    });
+
+    // Ajout panier depuis la recherche — toast feedback
+    document.querySelectorAll('.search-cart-form').forEach(function(form) {
+        if (window.Racine && window.Racine.Ajax) {
+            window.Racine.Ajax.handleFormSubmit(form, {
+                onSuccess: function(data) {
+                    if (data.count !== undefined) {
+                        window.Racine.Ajax.updateCartCount(data.count);
+                    }
+                    window.Racine.Utils.showNotification(
+                        data.message || 'Produit ajouté au panier !',
+                        'success'
+                    );
+                },
+                onError: function(data) {
+                    window.Racine.Utils.showNotification(
+                        data.message || 'Impossible d\'ajouter ce produit.',
+                        'error'
+                    );
+                },
+                loadingText: 'Ajout...'
             });
         }
     });

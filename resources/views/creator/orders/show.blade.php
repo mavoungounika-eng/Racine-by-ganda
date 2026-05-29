@@ -256,19 +256,32 @@
             Mettre à jour le statut
         </h3>
         
-        <form method="POST" action="{{ route('creator.orders.updateStatus', $order) }}" class="flex items-center gap-4">
+        <form id="creator-order-status-form"
+              method="POST" action="{{ route('creator.orders.updateStatus', $order) }}"
+              class="flex items-center gap-4">
             @csrf
             @method('PATCH')
-            
-            <select name="status" class="premium-select flex-1">
+
+            <select name="status" id="creator-order-status" class="premium-select flex-1">
                 @foreach($availableStatuses as $value => $label)
                     <option value="{{ $value }}" {{ $order->status === $value ? 'selected' : '' }}>
                         {{ $label }}
                     </option>
                 @endforeach
             </select>
-            
-            <button type="submit" class="premium-btn">
+
+            <button type="button" class="premium-btn"
+                onclick="(function(){
+                    var sel = document.getElementById('creator-order-status');
+                    var label = sel.options[sel.selectedIndex].text;
+                    ConfirmModal.show({
+                        title: 'Changer le statut ?',
+                        message: 'Commande #{{ $order->id }} → ' + label,
+                        confirmText: 'Confirmer',
+                        confirmClass: 'btn-primary',
+                        onConfirm: function() { document.getElementById('creator-order-status-form').submit(); }
+                    });
+                })()">
                 <i class="fas fa-save"></i>
                 Mettre à jour
             </button>

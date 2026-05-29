@@ -81,14 +81,24 @@
                                                 <i class="fas fa-{{ $plan->is_active ? 'pause' : 'play' }}"></i>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.subscriptions.plans.destroy', $plan) }}" 
-                                              method="POST" class="d-inline"
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce plan ?');">
+                                        <button type="button" class="btn btn-outline-danger" title="Supprimer"
+                                            onclick="ConfirmModal.show({
+                                                title: 'Supprimer le plan {{ addslashes($plan->name) }} ?',
+                                                message: 'Ce plan sera supprimé définitivement. Les créateurs abonnés à ce plan perdront leur accès.',
+                                                consequence: 'Cette action est irréversible. Désactivez plutôt si des abonnés actifs existent.',
+                                                confirmText: 'Supprimer',
+                                                confirmClass: 'btn-danger',
+                                                onConfirm: function() {
+                                                    document.getElementById('delete-plan-{{ $plan->id }}').submit();
+                                                }
+                                            })">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <form id="delete-plan-{{ $plan->id }}"
+                                              action="{{ route('admin.subscriptions.plans.destroy', $plan) }}"
+                                              method="POST" class="d-none">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
                                         </form>
                                     </div>
                                 </td>

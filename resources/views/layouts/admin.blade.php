@@ -565,6 +565,9 @@
 {{-- AMIRA — widget contextuel admin --}}
 <x-amira-widget space="admin" />
 
+{{-- Modal de confirmation universel --}}
+@include('components.confirm-modal')
+
 <script nonce="{{ csp_nonce() }}">
 function adminSidebarToggle() {
     document.querySelector('.admin-sidebar')?.classList.toggle('open');
