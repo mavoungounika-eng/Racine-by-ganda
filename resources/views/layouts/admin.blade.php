@@ -303,17 +303,53 @@
 
         @media (max-width: 992px) {
             .admin-sidebar {
-                display: none;
+                transform: translateX(-100%);
+                transition: transform .25s ease;
             }
-
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
             .admin-layout {
                 flex-direction: column;
             }
-
             .admin-main {
                 width: 100%;
+                margin-left: 0 !important;
+            }
+            .admin-mobile-bar {
+                display: flex !important;
             }
         }
+        .admin-mobile-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: .75rem 1.25rem;
+            background: var(--racine-black);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .admin-mobile-bar .brand {
+            color: var(--racine-yellow, #FFB800);
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .admin-mobile-bar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+        .admin-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 999;
+        }
+        .admin-overlay.open { display: block; }
     </style>
 
     {{-- Vite assets --}}
@@ -323,6 +359,14 @@
 </head>
 <body>
 <x-flash />
+
+{{-- Barre de navigation mobile --}}
+<div class="admin-mobile-bar">
+    <span class="brand">Racine Admin</span>
+    <button onclick="adminSidebarToggle()" aria-label="Menu"><i class="fas fa-bars"></i></button>
+</div>
+<div class="admin-overlay" id="admin-overlay" onclick="adminSidebarToggle()"></div>
+
 <div class="admin-layout">
     {{-- SIDEBAR ADMIN --}}
     <aside class="admin-sidebar">
@@ -520,6 +564,13 @@
 
 {{-- AMIRA — widget contextuel admin --}}
 <x-amira-widget space="admin" />
+
+<script nonce="{{ csp_nonce() }}">
+function adminSidebarToggle() {
+    document.querySelector('.admin-sidebar')?.classList.toggle('open');
+    document.getElementById('admin-overlay')?.classList.toggle('open');
+}
+</script>
 
 @stack('scripts')
 </body>
