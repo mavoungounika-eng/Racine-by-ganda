@@ -12,11 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('audit_logs', function (Blueprint $table) {
-            // Correlation ID for relating multiple logs from the same request
-            $table->uuid('request_id')->nullable()->after('user_agent')->index();
-            
-            // Cryptographic link to previous record (hash chaining)
-            $table->string('integrity_hash', 64)->nullable()->after('metadata')->index();
+            if (!Schema::hasColumn('audit_logs', 'user_agent')) {
+                $table->text('user_agent')->nullable()->after('ip_address');
+            }
+            if (!Schema::hasColumn('audit_logs', 'request_id')) {
+                $table->uuid('request_id')->nullable()->index();
+            }
+            if (!Schema::hasColumn('audit_logs', 'integrity_hash')) {
+                $table->string('integrity_hash', 64)->nullable()->index();
+            }
         });
     }
 
