@@ -159,7 +159,7 @@
                     @endif
 
                     <div class="message-meta">
-                        {{ $msg->created_at->format('H:i') }}
+                        {{ $msg->created_at?->format('H:i') ?? '' }}
                         @if($msg->user_id == Auth::id())
                             <i class="fas fa-check-double ms-1 {{ $msg->read_by ? 'text-blue-300' : 'text-gray-400' }}"></i>
                         @endif

@@ -43,8 +43,8 @@ return [
         'widget_version' => env('MONETBIL_WIDGET_VERSION', 'v2.1'),
         'country' => env('MONETBIL_COUNTRY', 'CG'),
         'currency' => env('MONETBIL_CURRENCY', 'XAF'),
-        'notify_url' => env('MONETBIL_NOTIFY_URL'),
-        'return_url' => env('MONETBIL_RETURN_URL'),
+        'notify_url' => env('MONETBIL_NOTIFY_URL', rtrim(env('APP_URL', 'http://localhost'), '/') . '/payment/monetbil/notify'),
+        'return_url' => env('MONETBIL_RETURN_URL', rtrim(env('APP_URL', 'http://localhost'), '/') . '/checkout/success'),
         'allowed_ips' => env('MONETBIL_ALLOWED_IPS'),
     ],
 

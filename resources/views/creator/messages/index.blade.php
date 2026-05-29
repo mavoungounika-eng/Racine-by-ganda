@@ -97,15 +97,15 @@
                             
                             <div class="flex items-center gap-2 mb-2">
                                 @if($conversation->type == 'order_thread')
-                                    <span class="badge-order"><i class="fas fa-shopping-bag me-1"></i> Commande #{{ $conversation->order->order_number ?? 'N/A' }}</span>
+                                    <span class="badge-order"><i class="fas fa-shopping-bag me-1"></i> Commande #{{ $conversation->order?->order_number ?? 'N/A' }}</span>
                                 @elseif($conversation->type == 'product_thread')
                                     <span class="badge-product"><i class="fas fa-box me-1"></i> Produit</span>
                                 @endif
                                 <span class="text-sm font-medium text-gray-700 truncate">{{ $conversation->subject }}</span>
                             </div>
-                            
+
                             <p class="text-gray-600 text-sm truncate">
-                                {{ $conversation->lastMessage->first()->content ?? 'Aucun message' }}
+                                {{ $conversation->lastMessage?->first()?->content ?? 'Aucun message' }}
                             </p>
                         </div>
                         
