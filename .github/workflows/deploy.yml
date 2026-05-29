@@ -16,7 +16,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/racine-backend
-            git pull origin main
+            git pull origin 12.x
             composer install --no-dev --optimize-autoloader --no-interaction
             php artisan migrate --force
             php artisan config:cache
