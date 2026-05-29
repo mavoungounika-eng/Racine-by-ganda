@@ -176,6 +176,9 @@ Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(
         });
         
         // Abonnements (Phase 8 - Legacy, à migrer)
+        // POS Electron — téléchargement application desktop (plan Signature)
+        Route::get('pos/download', [\App\Http\Controllers\Creator\CreatorPosDownloadController::class, 'index'])->name('pos.download');
+
         Route::prefix('abonnement')->name('subscription.')->group(function () {
             Route::get('upgrade', [\App\Http\Controllers\Creator\SubscriptionController::class, 'upgrade'])->name('upgrade');
             Route::get('plan/{plan}', [\App\Http\Controllers\Creator\SubscriptionController::class, 'show'])->name('show');

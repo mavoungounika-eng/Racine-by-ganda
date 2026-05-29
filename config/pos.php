@@ -51,4 +51,12 @@ return [
     */
     'stale_payment_threshold_minutes' => (int) env('POS_STALE_PAYMENT_MINUTES', 30),
 
+    /*
+    |----------------------------------------------------------------------
+    | POS Electron — Distribution
+    |----------------------------------------------------------------------
+    */
+    'version'     => env('POS_ELECTRON_VERSION', '1.0.0'),
+    'release_url' => env('POS_ELECTRON_RELEASE_URL', '#'),
+
 ];
