@@ -12,6 +12,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Task 3: Global Audit Trail (Automated cleanup based on Prunable trait)
+Schedule::command('trusted-devices:prune')->daily();
+
 Schedule::command('model:prune', [
     '--model' => [\App\Models\AuditLog::class],
 ])->daily();

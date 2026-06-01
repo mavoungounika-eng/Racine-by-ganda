@@ -230,28 +230,50 @@ class TwoFactorService
     public function generateTrustedDeviceToken(User $user, int $days = 30): string
     {
         $token = Str::random(64);
-        
-        $user->trusted_device_token = hash('sha256', $token);
-        $user->trusted_device_expires_at = now()->addDays($days);
-        $user->save();
-        
+        \App\Models\TrustedDevice::create([
+            'user_id'      => $user->id,
+            'device_token' => hash('sha256', $token),
+            'device_name'  => $this->detectDevice(request()),
+            'ip_address'   => request()?->ip(),
+            'last_used_at' => now(),
+            'expires_at'   => now()->addDays($days),
+        ]);
         return $token;
     }
-    
+
     /**
      * Vérifie si l'appareil est de confiance
      */
     public function isTrustedDevice(User $user, ?string $token): bool
     {
-        if (!$token || !$user->trusted_device_token) {
+        if (!$token) {
             return false;
         }
-        
-        if ($user->trusted_device_expires_at && $user->trusted_device_expires_at < now()) {
-            return false;
-        }
-        
-        return hash_equals($user->trusted_device_token, hash('sha256', $token));
+        return \App\Models\TrustedDevice::where('user_id', $user->id)
+            ->where('device_token', hash('sha256', $token))
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
+
+    private function detectDevice(\Illuminate\Http\Request $request): string
+    {
+        $ua = $request->userAgent() ?? '';
+        $browser = match(true) {
+            str_contains($ua, 'Chrome')  => 'Chrome',
+            str_contains($ua, 'Firefox') => 'Firefox',
+            str_contains($ua, 'Safari')  => 'Safari',
+            str_contains($ua, 'Edge')    => 'Edge',
+            default                      => 'Navigateur',
+        };
+        $os = match(true) {
+            str_contains($ua, 'Windows') => 'Windows',
+            str_contains($ua, 'Mac')     => 'Mac',
+            str_contains($ua, 'iPhone')  => 'iPhone',
+            str_contains($ua, 'Android') => 'Android',
+            str_contains($ua, 'Linux')   => 'Linux',
+            default                      => 'Appareil',
+        };
+        return "{$browser} sur {$os}";
     }
     
     /**
