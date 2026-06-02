@@ -219,7 +219,7 @@ class Order extends Model
                 ->update(['status' => OrderItem::STATUS_RESTORED, 'cancelled_at' => null]);
         }
         $this->update([
-            'status'            => 'pending',
+            'status'            => 'restored',
             'cancellation_type' => null,
         ]);
         $this->refresh();

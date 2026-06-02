@@ -22,7 +22,7 @@ class ClientOrderActionsTest extends TestCase
     }
 
     #[Test]
-    public function restore_cancelled_order_sets_status_to_pending(): void
+    public function restore_cancelled_order_sets_status_to_restored(): void
     {
         $client = User::factory()->create(['role_id' => $this->clientRole->id]);
 
@@ -36,7 +36,7 @@ class ClientOrderActionsTest extends TestCase
             ->patch("/profil/commandes/{$order->id}/restore");
 
         $response->assertRedirect();
-        $this->assertEquals('pending', $order->fresh()->status);
+        $this->assertEquals('restored', $order->fresh()->status);
         $this->assertNull($order->fresh()->cancellation_type);
     }
 

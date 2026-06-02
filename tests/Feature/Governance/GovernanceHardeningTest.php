@@ -72,16 +72,16 @@ class GovernanceHardeningTest extends TestCase
     public function terminal_order_status_cancelled_cannot_be_modified(): void
     {
         // 'cancelled' est un état DORMANT restaurable — pas terminal.
-        // Il peut revenir en 'pending' via restore().
+        // Il peut revenir en 'restored' via restore(), puis 'pending' via relaunch.
         // Seuls 'completed' et 'archived' sont vraiment terminaux.
         $order = Order::factory()->create([
             'status'            => 'cancelled',
             'cancellation_type' => 'global',
         ]);
 
-        // La restauration vers pending est autorisée
+        // La restauration vers restored est autorisée
         $order->restore();
-        $this->assertEquals('pending', $order->fresh()->status);
+        $this->assertEquals('restored', $order->fresh()->status);
 
         // En revanche, completed est bien terminal
         $order->update(['status' => 'completed']);

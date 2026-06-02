@@ -55,7 +55,7 @@ class ProfileController extends Controller
         
         // Appliquer le filtre selon le statut
         if ($statusFilter === 'en-cours') {
-            $query->whereIn('status', ['pending', 'processing']);
+            $query->whereIn('status', ['pending', 'processing', 'restored']);
         } elseif ($statusFilter === 'terminees') {
             $query->whereIn('status', ['completed', 'delivered']);
         } elseif ($statusFilter === 'annulees') {
@@ -470,8 +470,8 @@ class ProfileController extends Controller
         abort_unless($order->user_id === auth()->id(), 403);
         abort_unless($order->status === 'cancelled', 422);
         $order->restore();
-        return redirect()->route('profile.orders', ['status' => 'en-cours'])
-            ->with('success', 'Commande #' . $order->id . ' restaurée. Vérifiez les détails avant de confirmer.');
+        return redirect()->route('client.orders.relaunch', $order)
+            ->with('success', 'Commande #' . $order->id . ' restaurée. Vérifiez les quantités avant de relancer.');
     }
     public function archiveOrder(Order $order): RedirectResponse
     {

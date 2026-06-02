@@ -61,7 +61,7 @@ class OrderStateMachineTest extends TestCase
         $order->cancelGlobally();
     }
 
-    public function test_restore_sets_pending_and_items_to_restored(): void
+    public function test_restore_sets_restored_and_items_to_restored(): void
     {
         $order = $this->makeOrderWithItems(2);
         $order->cancelGlobally();
@@ -69,7 +69,7 @@ class OrderStateMachineTest extends TestCase
         $order->restore();
         $order->refresh();
 
-        $this->assertSame('pending', $order->status);
+        $this->assertSame('restored', $order->status);
         $this->assertNull($order->cancellation_type);
         $this->assertSame(2, $order->items()->where('status', OrderItem::STATUS_RESTORED)->count());
     }
