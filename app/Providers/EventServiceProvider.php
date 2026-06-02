@@ -83,6 +83,10 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\StockAnomalyDetected::class => [
             \App\Listeners\HandleStockAnomaly::class,
         ],
+        // ── Order Relaunch ──────────────────────────────────────────────
+        \App\Events\OrderRelaunched::class => [
+            \App\Listeners\NotifyAdminOrderRelaunched::class,
+        ],
     ];
 
     /**
