@@ -9,10 +9,26 @@ class CreatorPlanSeeder extends Seeder
 {
     public function run(): void
     {
-        // Désactiver le plan free (créateurs existants en lecture seule)
-        CreatorPlan::where('code', 'free')->update(['is_active' => false]);
         // Désactiver les anciens plans official/premium si présents
         CreatorPlan::whereIn('code', ['official', 'premium'])->update(['is_active' => false]);
+
+        // Plan gratuit — requis par DowngradeExpiredSubscriptions job
+        CreatorPlan::updateOrCreate(
+            ['code' => 'free'],
+            [
+                'name'            => 'Découverte',
+                'price'           => 0.00,
+                'quarterly_price' => 0.00,
+                'annual_price'    => 0.00,
+                'billing_cycle'   => 'monthly',
+                'is_active'       => true,
+                'products_limit'  => 5,
+                'has_pos'         => false,
+                'trial_days'      => 0,
+                'description'     => 'Plan gratuit pour démarrer sur Racine',
+                'features'        => ['5 produits max', 'Dashboard basique', 'Support communautaire'],
+            ]
+        );
 
         $plans = [
             [
