@@ -367,6 +367,11 @@ Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 - ✅ Espace client refonte — dashboard/orders/order-detail avec états global/partial/actif
 - ✅ Notifications OrderItemStatusChanged — mail+database pour shipped/delivered/refunded
 - ✅ Admin processReturn — approve/reject retours avec notifications
+- ✅ Trust device 2FA — TrustedDeviceService, cookie 30j, middleware check, prune schedulé
+- ✅ Mot de passe oublié — forgot/reset views + PublicAuthController + 4 routes
+- ✅ Order relaunch — statut intermédiaire 'restored', ClientOrderController, event/notification, vue, 6 tests
+- ✅ PHPUnit MySQL — switch SQLite→MySQL racine_testing pour compatibilité migrations
+- ✅ POS Electron stabilisé — 163/163 tests pass (122 Feature + 41 Unit)
 
 ### Tests skipped légitimes (ne pas forcer)
 - CreatorPayoutAccountingTest — architecture SaaS pur, hors scope
@@ -389,11 +394,12 @@ Toute régression sur ces chiffres = STOP immédiat avant toute autre action.
 
 | Module | Statut | Priorité |
 |---|---|---|
-| Auth 2FA (TOTP) | Tests en échec | CRITIQUE |
-| OAuth providers (Socialite) | Tests en échec | CRITIQUE |
-| Stripe / paiements | Tests en échec | CRITIQUE |
-| Service Amira (IA) | Tests en échec | CRITIQUE |
-| POS Electron | À stabiliser | HAUTE |
+| Auth 2FA (TOTP) | ✅ Stable (trust device, challenge, middleware) | — |
+| OAuth providers (Socialite) | Tests en échec (mock manquant) | CRITIQUE |
+| Stripe / paiements | Tests en échec (env testing) | CRITIQUE |
+| Service Amira (IA) | Tests en échec (OpenAI mock) | CRITIQUE |
+| POS Electron | ✅ 163/163 tests pass | — |
+| Déploiement VPS | En cours | HAUTE |
 
 ---
 
@@ -775,11 +781,11 @@ REDIS_PORT=6379
 
 | Module           | Cause connue                                                                           | Priorité |
 |------------------|----------------------------------------------------------------------------------------|----------|
-| Auth 2FA (TOTP)  | `withSession(['2fa_verified'=>true,'auth_version'=>$user->auth_version])` manquant     | CRITIQUE |
+| Auth 2FA (TOTP)  | ✅ Résolu — trust device + middleware + challenge view fonctionnels                    | —        |
 | OAuth Socialite  | `Socialite::shouldReceive()` non mocké — appel HTTP réel en test                       | CRITIQUE |
 | Stripe paiements | `STRIPE_SECRET` absente dans `.env.testing` OU webhook non signé                       | CRITIQUE |
 | Service Amira IA | `OPENAI_API_KEY` non définie en test, `OpenAI::fake()` absent                          | CRITIQUE |
-| POS Electron     | Tests dépendent de `QUEUE_CONNECTION=sync`                                             | HAUTE    |
+| POS Electron     | ✅ Résolu — 163/163 tests pass, `QUEUE_CONNECTION=sync` en place                      | —        |
 
 Fix Socialite → `Socialite::shouldReceive('driver->user')->andReturn(...)` dans setUp().
 

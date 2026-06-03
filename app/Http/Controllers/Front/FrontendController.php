@@ -220,8 +220,8 @@ class FrontendController extends Controller
     public function terms() { return $this->renderStaticPageWithCms('cgv', 'frontend.terms'); }
     public function privacy() { return $this->renderStaticPageWithCms('confidentialite', 'frontend.privacy'); }
     public function cookies() { return redirect()->route('frontend.page.show', 'cookies'); }
-    public function about() { return redirect()->route('frontend.page.show', 'a-propos'); }
-    public function legal() { return redirect()->route('frontend.page.show', 'mentions-legales'); }
+    public function about() { return $this->renderStaticPageWithCms('a-propos', 'frontend.about'); }
+    public function legal() { return $this->renderStaticPageWithCms('mentions-legales', 'frontend.legal'); }
     public function becomeCreator()
     {
         $plans = \App\Models\CreatorPlan::where('is_active', true)->orderBy('price')->get();
