@@ -351,8 +351,8 @@
                 <a href="{{ route('password.request') }}">
                     <i class="fas fa-key"></i> Mot de passe oublié ?
                 </a>
-                <span style="color:rgba(255,255,255,0.2);margin:0 0.75rem;">|</span>
-                <a href="{{ url('/') }}">
+                <br>
+                <a href="{{ url('/') }}" style="margin-top:0.5rem;display:inline-block;">
                     <i class="fas fa-arrow-left me-1"></i>Retour au site
                 </a>
             </div>
