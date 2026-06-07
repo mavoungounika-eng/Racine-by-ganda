@@ -84,6 +84,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(BannerService::class);
         $this->app->singleton(ContentBlockService::class);
 
+
+        // Settings Service (Sprint 1)
+        $this->app->singleton(\App\Services\Settings\SettingsService::class);
         // AI Module Services
         $this->app->singleton(\App\Services\Ai\AiService::class);
         $this->app->singleton(\App\Services\Ai\ProductAiService::class);
