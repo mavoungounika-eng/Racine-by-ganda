@@ -291,6 +291,13 @@
                     {{ $errors->first() }}
                 </div>
             @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ session('error') }}
+                </div>
+            @endif
             
             <form method="POST" action="{{ route('admin.login.post') }}">
                 @csrf

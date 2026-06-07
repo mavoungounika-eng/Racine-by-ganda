@@ -191,10 +191,22 @@
             <p class="login-subtitle">Accédez à votre espace RACINE BY GANDA</p>
         </div>
 
-        {{-- ERROR --}}
+        {{-- ERRORS --}}
+        @if($errors->any())
+            <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:1rem;margin-bottom:1.5rem;color:#fecaca;font-size:.9rem;">
+                {{ $errors->first() }}
+            </div>
+        @endif
+
         @if(session('error'))
-            <div style="color:#ff6b6b;margin-bottom:1rem;">
+            <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:1rem;margin-bottom:1.5rem;color:#fecaca;font-size:.9rem;">
                 {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('status'))
+            <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:1rem;margin-bottom:1.5rem;color:#bbf7d0;font-size:.9rem;">
+                {{ session('status') }}
             </div>
         @endif
 
