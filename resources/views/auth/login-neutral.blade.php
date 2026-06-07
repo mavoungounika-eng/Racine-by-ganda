@@ -179,7 +179,7 @@
 
     {{-- NAV --}}
     <div style="display:flex;gap:1rem;margin-bottom:1.5rem;">
-        <a href="javascript:history.back()" class="btn-social">← Retour</a>
+        <a href="{{ url('/') }}" class="btn-social">← Retour</a>
         <a href="{{ route('frontend.home') }}" class="btn-social">🏠 Accueil</a>
     </div>
 
@@ -231,20 +231,26 @@
         {{-- SOCIAL LOGIN --}}
         <div class="social-login">
 
+            @if(config('services.google.client_id'))
             <a class="btn-social"
                href="{{ route('auth.social.redirect', ['provider'=>'google','role'=>'client']) }}?context=boutique">
                 <i class="fab fa-google"></i> Continuer avec Google
             </a>
+            @endif
 
+            @if(config('services.apple.client_id'))
             <a class="btn-social btn-apple"
                href="{{ route('auth.social.redirect', ['provider'=>'apple','role'=>'client']) }}?context=boutique">
                 <i class="fab fa-apple"></i> Continuer avec Apple
             </a>
+            @endif
 
+            @if(config('services.facebook.client_id'))
             <a class="btn-social btn-facebook"
                href="{{ route('auth.social.redirect', ['provider'=>'facebook','role'=>'client']) }}?context=boutique">
                 <i class="fab fa-facebook-f"></i> Continuer avec Facebook
             </a>
+            @endif
 
         </div>
 

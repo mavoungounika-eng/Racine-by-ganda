@@ -37,7 +37,7 @@ class NonRegressionTest extends TestCase
     #[Test]
     public function legacy_google_auth_still_works(): void
     {
-        $response = $this->get(route('auth.google.redirect'));
+        $response = $this->get(route('auth.social.redirect', ['provider' => 'google']));
         $response->assertStatus(302); // Redirection vers Google
     }
 

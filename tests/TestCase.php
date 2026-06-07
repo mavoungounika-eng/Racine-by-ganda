@@ -18,7 +18,7 @@ abstract class TestCase extends BaseTestCase
      * elle peut avoir été générée en dehors de l'environnement testing et exclure les
      * routes conditionnelles (ex. `if (app()->environment('testing'))`). On la supprime
      * une seule fois par process de test pour garantir que les routes de fixture
-     * (/api/test-idempotency, /api/api-test/*, auth.google.redirect) soient visibles.
+     * (/api/test-idempotency, /api/api-test/*) soient visibles.
      */
     protected function setUp(): void
     {

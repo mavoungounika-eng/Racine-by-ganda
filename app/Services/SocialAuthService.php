@@ -147,7 +147,14 @@ class SocialAuthService
 
         return $user;
     } catch (\Throwable $e) {
-
+            Log::error("OAuth existing account error", [
+                'user_id' => $oauthAccount->user_id ?? null,
+                'provider' => $oauthAccount->provider ?? null,
+                'error' => $e->getMessage(),
+            ]);
+            throw new OAuthException(
+                'Erreur lors de la connexion avec votre compte. Veuillez réessayer.'
+            );
         }
     }
 

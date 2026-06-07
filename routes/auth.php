@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PublicAuthController;
-use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\SocialAuthController;
 
 /*
@@ -81,29 +80,6 @@ Route::prefix('admin')->name('admin.')->middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
-
-// ============================================
-// CONNEXION GOOGLE (Social Login) - Module v1
-// ============================================
-// PHASE 2.1 : Route avec paramètre role optionnel (client|creator)
-// Route::get('/auth/google/redirect/{role?}', [GoogleAuthController::class, 'redirect'])
-//     ->where('role', 'client|creator')
-//     ->name('auth.google.redirect');
-
-// Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
-//     ->name('auth.google.callback');
-
-// Compatibilité pour anciens tests / routes Google v1
-if (app()->environment('testing')) {
-    Route::get('/auth/google/redirect/{role?}', [SocialAuthController::class, 'redirect'])
-        ->where('role', 'client|creator')
-        ->defaults('provider', 'google')
-        ->name('auth.google.redirect');
-
-    Route::get('/auth/google/callback', [SocialAuthController::class, 'callback'])
-        ->defaults('provider', 'google')
-        ->name('auth.google.callback');
-}
 
 // ============================================
 // CONNEXION SOCIALE MULTI-PROVIDERS (Social Auth v2)

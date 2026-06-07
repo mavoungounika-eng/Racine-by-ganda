@@ -150,7 +150,7 @@ class GoogleAuthTest extends TestCase
         $googleUser = $this->mockGoogleUser('test@example.com', 'google123', 'Test User');
         
         // Redirection (génère un state)
-        $this->get(route('auth.google.redirect', ['role' => 'client']));
+        $this->get(route('auth.social.redirect', ['provider' => 'google', 'role' => 'client']));
         
         // Callback avec state invalide
         $callbackResponse = $this->get(route('auth.social.callback', ['provider' => 'google', 'state' => 'invalid_state']));
