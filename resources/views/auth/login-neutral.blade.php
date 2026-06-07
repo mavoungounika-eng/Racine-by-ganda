@@ -211,8 +211,9 @@
         @endif
 
         {{-- FORM --}}
-        <form method="POST" action="{{ route('login.post') }}">
+        <form method="POST" action="{{ route('login.post') }}" id="login-form">
             @csrf
+            <input type="hidden" name="g-recaptcha-response" id="recaptcha-token">
 
             <div class="form-group">
                 <label class="form-label">Email</label>
@@ -274,6 +275,22 @@
 
     </div> {{-- login-card --}}
 </div> {{-- container --}}
+
+@if(config('recaptcha.site_key'))
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('recaptcha.site_key') }}" nonce="{{ csp_nonce() }}"></script>
+<script nonce="{{ csp_nonce() }}">
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    grecaptcha.ready(function() {
+        grecaptcha.execute('{{ config('recaptcha.site_key') }}', {action: 'login'}).then(function(token) {
+            document.getElementById('recaptcha-token').value = token;
+            form.submit();
+        });
+    });
+});
+</script>
+@endif
 
 </body>
 </html>
