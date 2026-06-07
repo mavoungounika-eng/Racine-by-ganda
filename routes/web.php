@@ -639,8 +639,10 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         });
         
         // Paramètres
-        Route::get('settings', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
-        Route::post('settings', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
+        Route::get('settings/{tab?}', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
+        Route::post('settings/{tab}', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/test/email', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testEmail'])->name('settings.test-email');
+        
         
         // Notifications
         Route::get('notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->name('notifications.index');
