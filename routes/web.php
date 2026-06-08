@@ -647,6 +647,12 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::post('settings/test/google', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testGoogle'])->name('settings.test.google');
         Route::post('settings/test/ai', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testAI'])->name('settings.test.ai');
 
+        Route::post('settings/actions/clear-cache', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'clearCache'])->name('settings.actions.clear-cache');
+        Route::post('settings/actions/retry-jobs', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'retryJobs'])->name('settings.actions.retry-jobs');
+        Route::get('settings/profile', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'showProfile'])->name('settings.profile');
+        Route::post('settings/profile/update', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'updateProfile'])->name('settings.profile.update');
+        Route::post('settings/profile/password', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'updatePassword'])->name('settings.profile.password');
+        Route::post('settings/profile/logout-others', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'logoutOtherSessions'])->name('settings.profile.logout-others');
 
         // Notifications
         Route::get('notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->name('notifications.index');
