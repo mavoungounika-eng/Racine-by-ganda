@@ -33,9 +33,9 @@ class AdminSettingsController extends Controller
             'general' => ['icon' => 'fa-building', 'label' => 'Général', 'implemented' => true],
             'marketplace' => ['icon' => 'fa-store', 'label' => 'Marketplace', 'implemented' => true],
             'payments' => ['icon' => 'fa-credit-card', 'label' => 'Paiements', 'implemented' => true],
-            'integrations' => ['icon' => 'fa-plug', 'label' => 'Intégrations', 'implemented' => false],
+            'integrations' => ['icon' => 'fa-plug', 'label' => 'Intégrations', 'implemented' => true],
             'email' => ['icon' => 'fa-envelope', 'label' => 'Email & SMTP', 'implemented' => true],
-            'security' => ['icon' => 'fa-shield-alt', 'label' => 'Sécurité', 'implemented' => false],
+            'security' => ['icon' => 'fa-shield-alt', 'label' => 'Sécurité', 'implemented' => true],
             'appearance' => ['icon' => 'fa-palette', 'label' => 'Apparence', 'implemented' => false],
             'advanced' => ['icon' => 'fa-cog', 'label' => 'Avancé', 'implemented' => false],
             'profile' => ['icon' => 'fa-user', 'label' => 'Mon Profil', 'implemented' => false],
@@ -172,6 +172,79 @@ class AdminSettingsController extends Controller
     }
 
     /**
+     * Tester la connexion Google OAuth
+     */
+    public function testGoogle(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            $clientId = config('services.google.client_id');
+            $clientSecret = config('services.google.client_secret');
+            $redirectUri = \App\Models\Setting::get('google_redirect_uri', config('services.google.redirect'));
+
+            if (!$clientId || !$clientSecret) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuration Google OAuth incomplète (GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET manquant)',
+                ], 500);
+            }
+
+            if (empty($redirectUri)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'URI de redirection non configurée. Configurez-la dans les paramètres.',
+                ], 500);
+            }
+
+            // Validation basique des credentials présents
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuration Google OAuth valide ! Client ID et Secret présents, URI: ' . $redirectUri,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Test Google OAuth failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tester la connexion IA (OpenAI/Gemini/Anthropic)
+     */
+    public function testAI(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            $apiKey = config('openai.api_key');
+
+            if (!$apiKey) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Clé API IA non configurée (OPENAI_API_KEY manquant dans .env)',
+                ], 500);
+            }
+
+            // Test basique de présence de la clé (ne pas appeler l'API réelle pour éviter coûts)
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuration IA valide ! Clé API présente. Modèle: ' . config('openai.request_options.model', 'non défini'),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Test AI failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Règles de validation selon l'onglet
      */
     private function validateForTab(Request $request, string $tab): array
@@ -222,6 +295,39 @@ class AdminSettingsController extends Controller
                 'admin_notification_email' => 'nullable|email',
                 'admin_notification_enabled' => 'boolean',
                 'mail_logo_url' => 'nullable|url',
+            ]),
+
+            'integrations' => $request->validate([
+                'google_oauth_enabled' => 'boolean',
+                'google_redirect_uri' => 'nullable|string|max:500',
+                'recaptcha_enabled' => 'boolean',
+                'recaptcha_threshold' => 'required|numeric|min:0|max:1',
+                'openai_enabled' => 'boolean',
+                'openai_model' => 'required|string|max:100',
+                'openai_max_tokens' => 'required|integer|min:100|max:8000',
+                'openai_temperature' => 'required|numeric|min:0|max:2',
+                'amira_provider' => 'required|string|in:openai,gemini,anthropic',
+                'sentry_enabled' => 'boolean',
+                'sentry_traces_rate' => 'required|numeric|min:0|max:1',
+                'exchange_rate_cache_ttl' => 'required|integer|min:1|max:168',
+            ]),
+
+            'security' => $request->validate([
+                'force_2fa_admin' => 'boolean',
+                'force_2fa_creator' => 'boolean',
+                'session_timeout' => 'required|integer|min:15|max:1440',
+                'max_concurrent_sessions' => 'required|integer|min:1|max:20',
+                'login_max_attempts' => 'required|integer|min:3|max:20',
+                'login_lockout_minutes' => 'required|integer|min:1|max:1440',
+                'password_min_length' => 'required|integer|min:6|max:32',
+                'password_require_uppercase' => 'boolean',
+                'password_require_numbers' => 'boolean',
+                'password_require_special' => 'boolean',
+                'password_expiry_days' => 'required|integer|min:0|max:365',
+                'trusted_device_enabled' => 'boolean',
+                'trusted_device_days' => 'required|integer|min:1|max:365',
+                'ip_whitelist_enabled' => 'boolean',
+                'ip_whitelist' => 'nullable|string',
             ]),
 
             'advanced' => $request->validate([

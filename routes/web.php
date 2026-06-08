@@ -644,6 +644,8 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::post('settings/test/email', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testEmail'])->name('settings.test-email');
         Route::post('settings/test/stripe', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testStripe'])->name('settings.test.stripe');
         Route::post('settings/test/monetbil', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testMonetbil'])->name('settings.test.monetbil');
+        Route::post('settings/test/google', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testGoogle'])->name('settings.test.google');
+        Route::post('settings/test/ai', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testAI'])->name('settings.test.ai');
 
 
         // Notifications
