@@ -52,6 +52,12 @@
         @include('admin.settings.tabs.integrations')
     @elseif($currentTab === 'security')
         @include('admin.settings.tabs.security')
+    @elseif($currentTab === 'appearance')
+        @include('admin.settings.tabs.appearance')
+    @elseif($currentTab === 'advanced')
+        @include('admin.settings.tabs.advanced')
+    @elseif($currentTab === 'profile')
+        @include('admin.settings.tabs.profile')
     @elseif(isset($tabs[$currentTab]) && !$tabs[$currentTab]['implemented'])
         {{-- Placeholder pour onglets non implémentés --}}
         <div class="card border-0 shadow-sm" style="border-radius:18px;">
