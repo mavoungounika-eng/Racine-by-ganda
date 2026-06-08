@@ -48,6 +48,10 @@
         @include('admin.settings.tabs.payments')
     @elseif($currentTab === 'email')
         @include('admin.settings.tabs.email')
+    @elseif($currentTab === 'integrations')
+        @include('admin.settings.tabs.integrations')
+    @elseif($currentTab === 'security')
+        @include('admin.settings.tabs.security')
     @elseif(isset($tabs[$currentTab]) && !$tabs[$currentTab]['implemented'])
         {{-- Placeholder pour onglets non implémentés --}}
         <div class="card border-0 shadow-sm" style="border-radius:18px;">
