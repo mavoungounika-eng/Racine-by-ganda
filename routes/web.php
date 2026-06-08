@@ -291,6 +291,13 @@ Route::middleware(['auth', 'ensure:client', 'onboarding'])->group(function () {
         Route::delete('/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
         Route::delete('/clear/read', [\App\Http\Controllers\NotificationController::class, 'deleteRead'])->name('delete-read');
     });
+
+    // Routes Sécurité - Gestion des sessions (Phase 10)
+    Route::prefix('account/security')->name('account.security.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\SecurityController::class, 'index'])->name('index');
+        Route::post('sessions/{id}/logout', [\App\Http\Controllers\Client\SecurityController::class, 'logoutOther'])->name('logout-session');
+        Route::post('logout-others', [\App\Http\Controllers\Client\SecurityController::class, 'logoutAllOthers'])->name('logout-others');
+    });
 });
 
 // Routes Profil & Messagerie — accessibles à tous les rôles authentifiés
