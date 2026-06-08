@@ -216,13 +216,30 @@
             <input type="hidden" name="g-recaptcha-response" id="recaptcha-token">
 
             <div class="form-group">
-                <label class="form-label">Email</label>
-                <input class="form-control" type="email" name="email" value="{{ old('email') }}" required>
+                <label for="email" class="form-label">Email</label>
+                <input id="email"
+                       class="form-control"
+                       type="email"
+                       name="email"
+                       value="{{ old('email') }}"
+                       aria-label="Adresse email"
+                       aria-describedby="email-hint"
+                       aria-required="true"
+                       required>
+                <small id="email-hint" class="text-muted" style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Votre adresse email</small>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Mot de passe</label>
-                <input class="form-control" type="password" name="password" required>
+                <label for="password" class="form-label">Mot de passe</label>
+                <input id="password"
+                       class="form-control"
+                       type="password"
+                       name="password"
+                       aria-label="Mot de passe"
+                       aria-describedby="password-hint"
+                       aria-required="true"
+                       required>
+                <small id="password-hint" class="text-muted" style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Votre mot de passe</small>
             </div>
 
             <div class="form-options">
@@ -282,12 +299,29 @@
 document.getElementById('login-form').addEventListener('submit', function(e) {
     e.preventDefault();
     var form = this;
+    var btn = form.querySelector('button[type="submit"]');
+    var originalHTML = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:0.5rem;"></i>Connexion...';
+
     grecaptcha.ready(function() {
         grecaptcha.execute('{{ config('recaptcha.site_key') }}', {action: 'login'}).then(function(token) {
             document.getElementById('recaptcha-token').value = token;
             form.submit();
+        }).catch(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
         });
     });
+});
+</script>
+@else
+<script nonce="{{ csp_nonce() }}">
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    var btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:0.5rem;"></i>Connexion...';
 });
 </script>
 @endif

@@ -214,51 +214,75 @@
                 </div>
             @endif
             
-            <form method="POST" action="{{ route('password.update') }}">
+            <form method="POST" action="{{ route('password.update') }}" id="reset-form">
                 @csrf
-                
+
                 <input type="hidden" name="token" value="{{ $token }}">
-                
+
                 <div class="form-group">
-                    <label for="email" class="form-label">Adresse Email</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           class="form-control" 
-                           placeholder="votre@email.com" 
+                    <label for="reset-email" class="form-label">Adresse Email</label>
+                    <input type="email"
+                           id="reset-email"
+                           name="email"
+                           class="form-control"
+                           placeholder="votre@email.com"
+                           aria-label="Adresse email"
+                           aria-describedby="reset-email-hint"
+                           aria-required="true"
                            required
                            autofocus
                            value="{{ old('email', request()->email) }}">
+                    <small id="reset-email-hint" class="form-help">Votre adresse email</small>
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="password" class="form-label">Nouveau mot de passe</label>
-                    <input type="password" 
-                           id="password" 
-                           name="password" 
-                           class="form-control" 
-                           placeholder="••••••••••••" 
+                    <label for="reset-password" class="form-label">Nouveau mot de passe</label>
+                    <input type="password"
+                           id="reset-password"
+                           name="password"
+                           class="form-control"
+                           placeholder="••••••••••••"
+                           aria-label="Nouveau mot de passe"
+                           aria-describedby="reset-password-hint"
+                           aria-required="true"
                            required
                            autocomplete="new-password">
-                    <p class="form-help">Minimum 12 caractères</p>
+                    <p id="reset-password-hint" class="form-help">Minimum 12 caractères</p>
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="password_confirmation" class="form-label">Confirmer le mot de passe</label>
-                    <input type="password" 
-                           id="password_confirmation" 
-                           name="password_confirmation" 
-                           class="form-control" 
-                           placeholder="••••••••••••" 
+                    <label for="reset-password-confirmation" class="form-label">Confirmer le mot de passe</label>
+                    <input type="password"
+                           id="reset-password-confirmation"
+                           name="password_confirmation"
+                           class="form-control"
+                           placeholder="••••••••••••"
+                           aria-label="Confirmation du mot de passe"
+                           aria-describedby="reset-password-confirmation-hint"
+                           aria-required="true"
                            required
                            autocomplete="new-password">
+                    <small id="reset-password-confirmation-hint" class="form-help">Répétez votre nouveau mot de passe</small>
                 </div>
-                
-                <button type="submit" class="btn-submit">
+
+                <button type="submit" class="btn-submit" id="reset-submit-btn">
                     Réinitialiser le mot de passe
                 </button>
             </form>
         </div>
     </div>
+
+<script nonce="{{ csp_nonce() }}">
+document.getElementById('reset-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('reset-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Réinitialisation...';
+    const spinner = document.createElement('i');
+    spinner.className = 'fas fa-spinner fa-spin';
+    spinner.style.marginRight = '0.5rem';
+    btn.insertBefore(spinner, btn.firstChild);
+});
+</script>
+
 </body>
 </html>

@@ -281,23 +281,27 @@
                     <span class="step-number">3</span>
                     <span class="step-title">Entrez le code de vérification</span>
                     <div class="step-content">
-                        <form action="{{ route('2fa.confirm') }}" method="POST">
+                        <form action="{{ route('2fa.confirm') }}" method="POST" id="setup-form">
                             @csrf
                             <div class="form-group">
-                                <label for="code">Code à 6 chiffres</label>
-                                <input type="text" 
-                                       name="code" 
-                                       id="code" 
-                                       class="code-input" 
-                                       maxlength="6" 
+                                <label for="setup-code">Code à 6 chiffres</label>
+                                <input type="text"
+                                       name="code"
+                                       id="setup-code"
+                                       class="code-input"
+                                       maxlength="6"
                                        pattern="[0-9]{6}"
                                        inputmode="numeric"
                                        autocomplete="one-time-code"
                                        placeholder="000000"
+                                       aria-label="Code de vérification à 6 chiffres"
+                                       aria-describedby="setup-code-hint"
+                                       aria-required="true"
                                        required>
+                                <small id="setup-code-hint" style="font-size:0.85rem;color:#5C4A3D;margin-top:0.5rem;display:block;">Code généré par votre application</small>
                             </div>
-                            
-                            <button type="submit" class="btn-primary">
+
+                            <button type="submit" class="btn-primary" id="setup-submit-btn">
                                 <i class="fas fa-shield-alt"></i> Activer la protection
                             </button>
                         </form>

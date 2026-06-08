@@ -268,22 +268,26 @@
                 </div>
             @endif
             
-            <form method="POST" action="{{ route('password.email') }}">
+            <form method="POST" action="{{ route('password.email') }}" id="forgot-form">
                 @csrf
-                
+
                 <div class="form-group">
-                    <label for="email" class="form-label">Adresse Email</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           class="form-control" 
-                           placeholder="votre@email.com" 
+                    <label for="forgot-email" class="form-label">Adresse Email</label>
+                    <input type="email"
+                           id="forgot-email"
+                           name="email"
+                           class="form-control"
+                           placeholder="votre@email.com"
+                           aria-label="Adresse email"
+                           aria-describedby="forgot-email-hint"
+                           aria-required="true"
                            required
                            autofocus
                            value="{{ old('email') }}">
+                    <small id="forgot-email-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:0.25rem;display:block;">Entrez l'email de votre compte</small>
                 </div>
-                
-                <button type="submit" class="btn-submit">
+
+                <button type="submit" class="btn-submit" id="forgot-submit-btn">
                     Envoyer le lien de réinitialisation
                 </button>
             </form>
@@ -296,5 +300,18 @@
             </div>
         </div>
     </div>
+
+<script nonce="{{ csp_nonce() }}">
+document.getElementById('forgot-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('forgot-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours...';
+    const spinner = document.createElement('i');
+    spinner.className = 'fas fa-spinner fa-spin';
+    spinner.style.marginRight = '0.5rem';
+    btn.insertBefore(spinner, btn.firstChild);
+});
+</script>
+
 </body>
 </html>
