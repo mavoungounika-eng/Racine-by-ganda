@@ -144,8 +144,8 @@ class SocialAuthController extends Controller
         session()->forget(['oauth_state', 'oauth_provider']);
 
         try {
-            // Récupérer l'utilisateur du provider
-            $providerUser = Socialite::driver($provider)->stateless()->user();
+            // Récupérer l'utilisateur du provider avec timeout de 5 secondes
+            $providerUser = Socialite::driver($provider)->stateless()->timeout(5)->user();
         } catch (\Exception $e) {
             Log::error("OAuth {$provider} callback error", [
                 'error' => $e->getMessage(),

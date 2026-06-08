@@ -112,3 +112,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
     Route::post('/email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'resend'])->middleware('throttle:6,1')->name('verification.send');
 });
+
+// ============================================
+// CHANGEMENT EMAIL SÉCURISÉ
+// ============================================
+Route::middleware('auth')->group(function () {
+    Route::post('/profile/email/change', [\App\Http\Controllers\Auth\EmailChangeController::class, 'requestChange'])
+        ->middleware('throttle:3,60')
+        ->name('profile.email.change');
+});
+
+// Routes de vérification (sans auth pour permettre clics depuis email)
+Route::get('/profile/email/verify-old/{token}', [\App\Http\Controllers\Auth\EmailChangeController::class, 'verifyOldEmail'])
+    ->name('profile.email.verify-old');
+Route::get('/profile/email/verify-new/{token}', [\App\Http\Controllers\Auth\EmailChangeController::class, 'verifyNewEmail'])
+    ->name('profile.email.verify-new');

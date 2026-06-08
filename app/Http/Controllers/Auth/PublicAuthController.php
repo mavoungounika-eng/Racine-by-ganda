@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -130,18 +131,6 @@ class PublicAuthController extends Controller
         return redirect()->route('verification.notice');
     }
 
-    /**
-     * Handle logout request.
-     */
-    public function logout(Request $request): RedirectResponse
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-    }
 
     /**
      * Afficher le formulaire "Mot de passe oublié"
@@ -157,6 +146,16 @@ class PublicAuthController extends Controller
     public function sendResetLink(Request $request): RedirectResponse
     {
         $request->validate(['email' => 'required|email']);
+
+        // Rate limiting: 3 tentatives par heure par IP
+        $key = 'password-reset:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $seconds = RateLimiter::availableIn($key);
+            return back()->withErrors([
+                'email' => 'Trop de tentatives. Réessayez dans ' . ceil($seconds / 60) . ' min.'
+            ]);
+        }
+        RateLimiter::hit($key, 3600); // 3 tentatives/heure
 
         $status = Password::sendResetLink(
             $request->only('email')
