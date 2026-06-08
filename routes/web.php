@@ -642,8 +642,10 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::get('settings/{tab?}', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
         Route::post('settings/{tab}', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
         Route::post('settings/test/email', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testEmail'])->name('settings.test-email');
-        
-        
+        Route::post('settings/test/stripe', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testStripe'])->name('settings.test.stripe');
+        Route::post('settings/test/monetbil', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testMonetbil'])->name('settings.test.monetbil');
+
+
         // Notifications
         Route::get('notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->name('notifications.index');
         Route::get('orders/{order}/qrcode', [\App\Http\Controllers\Admin\AdminOrderController::class, 'showQr'])->name('orders.qr');
