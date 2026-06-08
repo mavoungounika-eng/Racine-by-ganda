@@ -42,6 +42,12 @@
 <div class="tab-content">
     @if($currentTab === 'general')
         @include('admin.settings.tabs.general')
+    @elseif($currentTab === 'marketplace')
+        @include('admin.settings.tabs.marketplace')
+    @elseif($currentTab === 'payments')
+        @include('admin.settings.tabs.payments')
+    @elseif($currentTab === 'email')
+        @include('admin.settings.tabs.email')
     @elseif(isset($tabs[$currentTab]) && !$tabs[$currentTab]['implemented'])
         {{-- Placeholder pour onglets non implémentés --}}
         <div class="card border-0 shadow-sm" style="border-radius:18px;">
