@@ -36,9 +36,9 @@ class AdminSettingsController extends Controller
             'integrations' => ['icon' => 'fa-plug', 'label' => 'Intégrations', 'implemented' => true],
             'email' => ['icon' => 'fa-envelope', 'label' => 'Email & SMTP', 'implemented' => true],
             'security' => ['icon' => 'fa-shield-alt', 'label' => 'Sécurité', 'implemented' => true],
-            'appearance' => ['icon' => 'fa-palette', 'label' => 'Apparence', 'implemented' => false],
-            'advanced' => ['icon' => 'fa-cog', 'label' => 'Avancé', 'implemented' => false],
-            'profile' => ['icon' => 'fa-user', 'label' => 'Mon Profil', 'implemented' => false],
+            'appearance' => ['icon' => 'fa-palette', 'label' => 'Apparence', 'implemented' => true],
+            'advanced' => ['icon' => 'fa-cog', 'label' => 'Avancé', 'implemented' => true],
+            'profile' => ['icon' => 'fa-user', 'label' => 'Mon Profil', 'implemented' => true],
         ];
 
         return view('admin.settings.index', [
@@ -244,9 +244,166 @@ class AdminSettingsController extends Controller
         }
     }
 
+
+    /**
+     * Vider le cache applicatif
+     */
+    public function clearCache(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cache vidé avec succès (cache, views, config, routes)',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Clear cache failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du vidage du cache: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Relancer les jobs échoués
+     */
+    public function retryJobs(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('queue:retry', ['id' => 'all']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jobs échoués relancés avec succès',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Retry jobs failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du relancement des jobs: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Règles de validation selon l'onglet
      */
+    /**
+     * Afficher le profil admin
+     */
+    public function showProfile(): View
+    {
+        $this->authorize('access-system-config');
+
+        $settings = $this->settingsService->getForView('profile');
+
+        $tabs = [
+            'general' => ['icon' => 'fa-building', 'label' => 'Général', 'implemented' => true],
+            'marketplace' => ['icon' => 'fa-store', 'label' => 'Marketplace', 'implemented' => true],
+            'payments' => ['icon' => 'fa-credit-card', 'label' => 'Paiements', 'implemented' => true],
+            'integrations' => ['icon' => 'fa-plug', 'label' => 'Intégrations', 'implemented' => true],
+            'email' => ['icon' => 'fa-envelope', 'label' => 'Email & SMTP', 'implemented' => true],
+            'security' => ['icon' => 'fa-shield-alt', 'label' => 'Sécurité', 'implemented' => true],
+            'appearance' => ['icon' => 'fa-palette', 'label' => 'Apparence', 'implemented' => true],
+            'advanced' => ['icon' => 'fa-cog', 'label' => 'Avancé', 'implemented' => true],
+            'profile' => ['icon' => 'fa-user', 'label' => 'Mon Profil', 'implemented' => true],
+        ];
+
+        return view('admin.settings.index', [
+            'currentTab' => 'profile',
+            'settings' => $settings,
+            'tabs' => $tabs,
+        ]);
+    }
+
+    /**
+     * Mettre à jour le profil admin
+     */
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $this->authorize('access-system-config');
+
+        $validated = $request->validate([
+            'admin_display_name' => 'required|string|max:100',
+            'admin_bio' => 'nullable|string|max:500',
+            'admin_language' => 'required|in:fr,en',
+            'admin_avatar_url' => 'nullable|url',
+            'admin_notifications_email' => 'boolean',
+            'admin_notifications_browser' => 'boolean',
+        ]);
+
+        $this->settingsService->updateBatch($validated, 'profile');
+
+        return redirect()->route('admin.settings.index', 'profile')
+            ->with('success', 'Profil mis à jour avec succès !');
+    }
+
+    /**
+     * Changer le mot de passe admin
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $this->authorize('access-system-config');
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+            'new_password_confirmation' => 'required',
+        ]);
+
+        $user = auth()->user();
+
+        if (!\Illuminate\Support\Facades\Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->route('admin.settings.index', 'profile')
+                ->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
+        }
+
+        $user->update([
+            'password' => bcrypt($validated['new_password']),
+        ]);
+
+        return redirect()->route('admin.settings.index', 'profile')
+            ->with('success', 'Mot de passe changé avec succès !');
+    }
+
+    /**
+     * Déconnecter toutes les autres sessions
+     */
+    public function logoutOtherSessions(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Illuminate\Support\Facades\DB::table('sessions')
+                ->where('user_id', auth()->id())
+                ->where('id', '!=', session()->getId())
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Toutes les autres sessions ont été déconnectées.',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Logout other sessions failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la déconnexion des autres sessions.',
+            ], 500);
+        }
+    }
+
     private function validateForTab(Request $request, string $tab): array
     {
         return match ($tab) {
@@ -330,9 +487,30 @@ class AdminSettingsController extends Controller
                 'ip_whitelist' => 'nullable|string',
             ]),
 
+            'appearance' => $request->validate([
+                'logo_url' => 'nullable|url',
+                'logo_dark_url' => 'nullable|url',
+                'favicon_url' => 'nullable|url',
+                'primary_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'secondary_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'dark_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'default_theme' => 'required|in:light,dark,auto',
+                'default_accent' => 'required|in:orange,yellow,gold,red',
+                'animation_intensity' => 'required|in:none,soft,standard,luxury',
+                'custom_css' => 'nullable|string|max:10000',
+            ]),
+
             'advanced' => $request->validate([
-                'registrations_enabled' => 'nullable|boolean',
+                'maintenance_mode' => 'boolean',
+                'registrations_enabled' => 'boolean',
                 'maintenance_message' => 'nullable|string|max:500',
+                'debug_mode' => 'boolean',
+                'log_level' => 'required|in:debug,info,warning,error',
+                'log_channel' => 'required|in:single,daily,stack',
+                'logs_retention_days' => 'required|integer|min:1|max:365',
+                'cache_enabled' => 'boolean',
+                'queue_connection' => 'required|in:redis,database,sync',
+                'backup_enabled' => 'boolean',
             ]),
 
             // Autres onglets à implémenter dans les sprints suivants
