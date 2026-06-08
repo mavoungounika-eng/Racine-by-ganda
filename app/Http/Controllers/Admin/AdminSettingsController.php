@@ -31,10 +31,10 @@ class AdminSettingsController extends Controller
         // Onglets disponibles
         $tabs = [
             'general' => ['icon' => 'fa-building', 'label' => 'Général', 'implemented' => true],
-            'marketplace' => ['icon' => 'fa-store', 'label' => 'Marketplace', 'implemented' => false],
-            'payments' => ['icon' => 'fa-credit-card', 'label' => 'Paiements', 'implemented' => false],
+            'marketplace' => ['icon' => 'fa-store', 'label' => 'Marketplace', 'implemented' => true],
+            'payments' => ['icon' => 'fa-credit-card', 'label' => 'Paiements', 'implemented' => true],
             'integrations' => ['icon' => 'fa-plug', 'label' => 'Intégrations', 'implemented' => false],
-            'email' => ['icon' => 'fa-envelope', 'label' => 'Email & SMTP', 'implemented' => false],
+            'email' => ['icon' => 'fa-envelope', 'label' => 'Email & SMTP', 'implemented' => true],
             'security' => ['icon' => 'fa-shield-alt', 'label' => 'Sécurité', 'implemented' => false],
             'appearance' => ['icon' => 'fa-palette', 'label' => 'Apparence', 'implemented' => false],
             'advanced' => ['icon' => 'fa-cog', 'label' => 'Avancé', 'implemented' => false],
@@ -96,6 +96,82 @@ class AdminSettingsController extends Controller
     }
 
     /**
+     * Tester la connexion Stripe
+     */
+    public function testStripe(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+            // Tenter de récupérer le compte Stripe
+            $account = \Stripe\Account::retrieve();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Connexion Stripe réussie ! Compte: ' . $account->id,
+            ]);
+        } catch (\Stripe\Exception\AuthenticationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur d\'authentification Stripe: Clé API invalide',
+            ], 401);
+        } catch (\Exception $e) {
+            Log::error('Test Stripe failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur Stripe: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tester la connexion Monetbil
+     */
+    public function testMonetbil(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            $serviceKey = config('services.monetbil.service_key');
+            $baseUrl = config('services.monetbil.base_url');
+
+            if (!$serviceKey || !$baseUrl) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuration Monetbil incomplète (.env)',
+                ], 500);
+            }
+
+            // Ping simple vers l'API Monetbil
+            $response = \Illuminate\Support\Facades\Http::timeout(5)->get($baseUrl . '/status', [
+                'service_key' => $serviceKey,
+            ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Connexion Monetbil réussie ! API accessible.',
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur Monetbil: HTTP ' . $response->status(),
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Test Monetbil failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur Monetbil: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Règles de validation selon l'onglet
      */
     private function validateForTab(Request $request, string $tab): array
@@ -120,15 +196,32 @@ class AdminSettingsController extends Controller
             ]),
 
             'marketplace' => $request->validate([
-                'commission_rate' => 'nullable|numeric|min:0|max:100',
-                'shipping_fee' => 'nullable|numeric|min:0',
-                'currency' => 'nullable|string|in:FCFA,EUR,USD',
-                'low_stock_threshold' => 'nullable|integer|min:1',
+                'commission_rate' => 'required|numeric|min:0|max:100',
+                'shipping_fee' => 'required|integer|min:0',
+                'currency' => 'required|string|in:FCFA,EUR,USD',
+                'low_stock_threshold' => 'required|integer|min:1',
+                'low_stock_critical' => 'required|integer|min:1',
+                'max_variants_per_product' => 'required|integer|min:1|max:100',
+                'order_auto_cancel_hours' => 'required|integer|min:0|max:168',
+                'auto_reorder_enabled' => 'boolean',
+                'free_shipping_threshold' => 'required|integer|min:0',
             ]),
 
             'payments' => $request->validate([
-                'stripe_mode' => 'nullable|string|in:test,live',
-                'payments_enabled' => 'nullable|boolean',
+                'stripe_mode' => 'required|string|in:test,live',
+                'stripe_currency' => 'required|string|in:EUR,USD,GBP',
+                'payments_enabled' => 'boolean',
+                'monetbil_auto_approve_threshold' => 'required|integer|min:0',
+                'payment_max_attempts' => 'required|integer|min:1|max:10',
+                'payment_retry_enabled' => 'boolean',
+            ]),
+
+            'email' => $request->validate([
+                'mail_from_name' => 'required|string|max:100',
+                'mail_from_address' => 'required|email',
+                'admin_notification_email' => 'nullable|email',
+                'admin_notification_enabled' => 'boolean',
+                'mail_logo_url' => 'nullable|url',
             ]),
 
             'advanced' => $request->validate([
