@@ -83,7 +83,13 @@
                 @if($slide['type'] === 'video')
                     <video class="hero-slide-video" src="{{ asset('storage/hero/' . $slide['file']) }}" muted playsinline preload="none" aria-label="Racine by Ganda - Vidéo collection"></video>
                 @else
-                    <img src="{{ asset('storage/hero/' . $slide['file']) }}" alt="Racine by Ganda - Look {{ $index + 1 }}" loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
+                    <x-responsive-image
+                        :src="asset('storage/hero/' . $slide['file'])"
+                        :alt="'Racine by Ganda - Look ' . ($index + 1)"
+                        :eager="$index === 0"
+                        width="1200"
+                        height="800"
+                    />
                 @endif
             </div>
             @endforeach

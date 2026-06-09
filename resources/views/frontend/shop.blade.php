@@ -233,9 +233,12 @@
                                     $imgUrl = $rawImg ? asset('storage/' . (str_contains($rawImg, '/') ? $rawImg : 'products/' . $rawImg)) : null;
                                 @endphp
                                 @if($imgUrl)
-                                <img src="{{ $imgUrl }}"
-                                     alt="{{ $product->title ?? $product->name ?? 'Produit' }}"
-                                     loading="lazy">
+                                <x-responsive-image
+                                    :src="$imgUrl"
+                                    :alt="$product->title ?? $product->name ?? 'Produit'"
+                                    width="400"
+                                    height="500"
+                                />
                                 @else
                                 <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
                                 @endif

@@ -72,3 +72,52 @@ if (!function_exists('convert_price')) {
         return $service->convert($amount, $from, $to);
     }
 }
+
+if (!function_exists('responsive_srcset')) {
+    /**
+     * Generate srcset attribute for responsive images.
+     *
+     * Given an image path like "storage/hero/hero-01.jpeg",
+     * returns srcset with 400w, 800w, 1200w variants.
+     *
+     * Example output:
+     * "http://localhost/storage/hero/hero-01_400w.jpeg 400w,
+     *  http://localhost/storage/hero/hero-01_800w.jpeg 800w,
+     *  http://localhost/storage/hero/hero-01_1200w.jpeg 1200w"
+     *
+     * @param string $src Original image path (can be asset() URL or relative path)
+     * @return string Srcset attribute value
+     */
+    function responsive_srcset(string $src): string {
+        // Extract path from full URL if needed
+        $path = str_replace(url('/'), '', $src);
+        $path = ltrim($path, '/');
+
+        // Parse path info
+        $pathInfo = pathinfo($path);
+        $directory = $pathInfo['dirname'] ?? '';
+        $filename = $pathInfo['filename'] ?? '';
+        $extension = $pathInfo['extension'] ?? '';
+
+        $srcsetParts = [];
+
+        foreach ([400, 800, 1200] as $width) {
+            $variantFilename = "{$filename}_{$width}w.{$extension}";
+            $variantPath = $directory ? "{$directory}/{$variantFilename}" : $variantFilename;
+
+            // Check if variant exists
+            $fullPath = public_path($variantPath);
+
+            if (file_exists($fullPath)) {
+                $srcsetParts[] = asset($variantPath) . " {$width}w";
+            }
+        }
+
+        // If no variants exist, return original src as fallback
+        if (empty($srcsetParts)) {
+            return $src;
+        }
+
+        return implode(', ', $srcsetParts);
+    }
+}
