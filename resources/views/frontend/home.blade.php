@@ -229,7 +229,8 @@
             </a>
             @endforeach
             
-            @if(empty($featuredProducts) || count($featuredProducts ?? []) === 0)
+            {{-- TODO PROD: Supprimer fallback demo products en production --}}
+            @if((empty($featuredProducts) || count($featuredProducts ?? []) === 0) && app()->environment('local', 'testing'))
             @php
                 $demoProducts = [
                     ['title' => 'Robe Wax Premium', 'category' => 'Robes', 'price' => 45000.0, 'mod' => ''],
@@ -309,17 +310,18 @@
                         Nous collaborons avec plus de 50 artisans et créateurs à travers l'Afrique, 
                         garantissant des conditions de travail équitables et la préservation des techniques traditionnelles.
                     </p>
+                    {{-- TODO PROD: Remplacer stats hardcodées par vraies métriques depuis DB --}}
                     <div class="about-stats">
                         <div class="stat-item">
-                            <h3>50+</h3>
+                            <h3>{{ $stats['creators_count'] ?? '50+' }}</h3>
                             <span>Créateurs partenaires</span>
                         </div>
                         <div class="stat-item">
-                            <h3>15</h3>
+                            <h3>{{ $stats['countries_count'] ?? '15' }}</h3>
                             <span>Pays représentés</span>
                         </div>
                         <div class="stat-item">
-                            <h3>5000+</h3>
+                            <h3>{{ $stats['clients_count'] ?? '5000+' }}</h3>
                             <span>Clients satisfaits</span>
                         </div>
                     </div>
@@ -369,6 +371,8 @@
                 </a>
             </div>
             @empty
+            {{-- TODO PROD: Supprimer fallback demo creators en production --}}
+            @if(app()->environment('local', 'testing'))
             @php
                 $demoCreators = [
                     ['initials' => 'A', 'name' => 'Amina Diallo', 'specialty' => 'Styliste · Dakar', 'bio' => 'Spécialiste du wax moderne, crée des pièces qui allient tradition et contemporanéité.'],

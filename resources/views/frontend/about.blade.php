@@ -572,6 +572,8 @@
                     <p>Visionnaire passionnée, elle a créé {{ config('app.company.name') }} pour partager sa culture avec le monde.</p>
                 </div>
             </div>
+            {{-- TODO PROD: Remplacer par vrais membres équipe ou retirer section --}}
+            @if(false) {{-- Membres fictifs désactivés pour production --}}
             <div class="team-card">
                 <div class="team-img">
                     <img src="{{ asset('storage/showroom/gallery/showroom-04.jpeg') }}" alt="Directeur des Opérations">
@@ -592,6 +594,7 @@
                     <p>Elle sublime les créations traditionnelles avec une touche de modernité.</p>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </section>
