@@ -1,0 +1,9 @@
+<!-- TODO PROD: Remplacer ce placeholder par vraie image Open Graph 1200x630px -->
+<!-- Format requis: JPG, 1200x630px, < 300KB, avec logo et texte RACINE BY GANDA -->
+<!-- Temporary SVG placeholder -->
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#160D0C"/>
+  <text x="600" y="280" font-family="sans-serif" font-size="72" fill="#FFB800" text-anchor="middle" font-weight="bold">RACINE BY GANDA</text>
+  <text x="600" y="360" font-family="sans-serif" font-size="32" fill="#ED5F1E" text-anchor="middle">Artisanat Africain Authentique</text>
+  <text x="600" y="580" font-family="sans-serif" font-size="18" fill="#FFFFFF" text-anchor="middle" opacity="0.7">racinebyganda.com</text>
+</svg>
