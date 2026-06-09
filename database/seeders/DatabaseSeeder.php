@@ -29,10 +29,17 @@ class DatabaseSeeder extends Seeder
             PlanCapabilitySeeder::class,
             // V2 : Seeders pour add-ons et bundles
             CreatorAddonSeeder::class,
-            CreatorBundleSeeder::class,
-            // Création des utilisateurs de test complets
-            TestUsersSeeder::class,
+            // CreatorBundleSeeder::class, // TODO PROD: Corriger plans obsolètes (official, premium) avant activation
         ]);
+
+        // ====================================
+        // SEEDERS DEMO (LOCAL/TESTING UNIQUEMENT)
+        // ====================================
+        if (app()->environment('local', 'testing')) {
+            $this->call([
+                TestUsersSeeder::class,
+            ]);
+        }
 
         /**
          * SUPER ADMINISTRATEUR PAR DÉFAUT
@@ -65,33 +72,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        /**
-         * COMPTE DÉVELOPPEUR PASSE-PARTOUT
-         * 
-         * Compte de développement avec accès complet
-         * 
-         * Identifiants :
-         * - Email: dev@racine.com
-         * - Password: dev123
-         */
-        User::updateOrCreate(
-            ['email' => 'dev@racine.com'],
-            [
-                'name' => 'Developer',
-                'email' => 'dev@racine.com',
-                'password' => Hash::make('dev123'),
-                'is_admin' => true,
-                'role_id' => 1, // Super admin
-                'status' => 'active',
-                'email_verified_at' => now(),
-                // Désactiver la 2FA en développement
-                'two_factor_secret' => null,
-                'two_factor_recovery_codes' => null,
-                'two_factor_confirmed_at' => null,
-                'two_factor_required' => false,
-            ]
-        );
-
         // Compte admin production
         User::updateOrCreate(
             ['email' => 'admin@racinebyganda.com'],
@@ -110,21 +90,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Créer un utilisateur de test (non admin)
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-                'password' => Hash::make('password'),
-                'is_admin' => false,
-                'role_id' => 4, // ID du rôle 'client'
-                'status' => 'active',
-                'email_verified_at' => now(),
-            ]
-        );
-
-        // Optionnel : créer des utilisateurs via factory
-        // User::factory(10)->create();
+        // TODO PROD: Changer le mot de passe admin@racine.com et admin@racinebyganda.com
+        // TODO PROD: Activer two_factor_required = true pour admin@racinebyganda.com
     }
 }
