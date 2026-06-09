@@ -41,9 +41,23 @@ class FrontendController extends Controller
             ->limit(6)
             ->get();
 
+        // Stats homepage (cache 5min pour performance)
+        $stats = cache()->remember('homepage.stats', 300, function () {
+            return [
+                'creators_count' => \App\Models\User::whereHas('creatorProfile', function ($q) {
+                    $q->where('status', 'active');
+                })->count(),
+                'countries_count' => \App\Models\User::distinct('country')->count('country'),
+                'clients_count' => \App\Models\User::whereHas('role', function ($q) {
+                    $q->where('slug', 'client');
+                })->count(),
+                'products_count' => \App\Models\Product::where('is_active', true)->count(),
+            ];
+        });
+
         // Données CMS injectées par HomeComposer
         return view('frontend.home', compact(
-            'featuredProducts', 'latestCreators'
+            'featuredProducts', 'latestCreators', 'stats'
         ));
     }
 

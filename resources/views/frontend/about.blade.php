@@ -572,29 +572,20 @@
                     <p>Visionnaire passionnée, elle a créé {{ config('app.company.name') }} pour partager sa culture avec le monde.</p>
                 </div>
             </div>
-            {{-- TODO PROD: Remplacer par vrais membres équipe ou retirer section --}}
-            @if(false) {{-- Membres fictifs désactivés pour production --}}
-            <div class="team-card">
-                <div class="team-img">
-                    <img src="{{ asset('storage/showroom/gallery/showroom-04.jpeg') }}" alt="Directeur des Opérations">
+            {{-- Équipe étendue : à ajouter au fil du temps --}}
+            <div class="team-card" style="border: 2px dashed rgba(22,13,12,0.2); background: rgba(255,184,0,0.05);">
+                <div class="team-img" style="background: rgba(237,95,30,0.1); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-users" style="font-size: 3rem; color: #ED5F1E;"></i>
                 </div>
                 <div class="team-info">
-                    <h3>Moussa Diallo</h3>
-                    <span>Directeur des Opérations</span>
-                    <p>Expert en logistique, il coordonne les relations avec nos artisans partenaires.</p>
+                    <h3>Notre équipe s'agrandit</h3>
+                    <span>Nous recrutons</span>
+                    <p>Vous partagez notre passion pour l'artisanat africain ? Rejoignez l'aventure RACINE BY GANDA.</p>
+                    <a href="{{ route('frontend.contact') }}" style="color: #ED5F1E; font-weight: 600; text-decoration: none;">
+                        Nous contacter <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
-            <div class="team-card">
-                <div class="team-img">
-                    <img src="{{ asset('storage/showroom/gallery/showroom-05.jpeg') }}" alt="Cheffe Styliste">
-                </div>
-                <div class="team-info">
-                    <h3>Fatou Ndiaye</h3>
-                    <span>Cheffe Styliste</span>
-                    <p>Elle sublime les créations traditionnelles avec une touche de modernité.</p>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 </section>

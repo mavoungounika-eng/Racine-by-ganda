@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             PlanCapabilitySeeder::class,
             // V2 : Seeders pour add-ons et bundles
             CreatorAddonSeeder::class,
-            // CreatorBundleSeeder::class, // TODO PROD: Corriger plans obsolètes (official, premium) avant activation
+            CreatorBundleSeeder::class, // Corrigé: utilise plans atelier/maison
         ]);
 
         // ====================================
