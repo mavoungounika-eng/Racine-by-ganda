@@ -217,7 +217,7 @@
             <div class="legal-body">
                 <div class="legal-section" id="article1">
                     <h2><span class="number">1</span> Objet</h2>
-                    <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre RACINE BY GANDA, société par actions simplifiée au capital de 10 000 €, dont le siège social est situé au 15 Rue de la Mode, 75003 Paris, immatriculée au RCS de Paris sous le numéro XXX XXX XXX, et toute personne physique ou morale (le "Client") effectuant un achat sur le site www.racine-ganda.com.</p>
+                    <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre RACINE BY GANDA, société par actions simplifiée au capital de [CAPITAL_A_CONFIRMER] {{-- TODO PROD: Confirmer le capital social exact --}}, dont le siège social est situé au [ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}, immatriculée au RCS de Paris sous le numéro [RCS_A_RENSEIGNER] {{-- TODO PROD: Insérer le vrai numéro RCS --}}, et toute personne physique ou morale (le "Client") effectuant un achat sur le site www.racine-ganda.com.</p>
                     <div class="highlight-box">
                         <p>En passant commande, le Client accepte sans réserve les présentes CGV.</p>
                     </div>

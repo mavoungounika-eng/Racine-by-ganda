@@ -822,3 +822,6 @@ redis-cli FLUSHDB && ./vendor/bin/phpunit 2>&1 | tail -5
 - Tout failure → STOP (RÈGLE 6)
 - Skipped en hausse → investiguer avant de continuer
 - Tests Redis flaky → toujours `redis-cli FLUSHDB` avant run complet
+
+## Autorisations
+Mode autonome activé. Pas besoin de confirmation pour les opérations fichiers, git, et commandes bash.

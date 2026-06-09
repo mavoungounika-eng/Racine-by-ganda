@@ -579,7 +579,7 @@
                 <div class="contact-option">
                     <i class="fas fa-phone"></i>
                     <h4>Téléphone</h4>
-                    <span>+33 1 23 45 67 89</span>
+                    <span>[TELEPHONE_A_CONFIRMER] {{-- TODO PROD: Insérer vrai numéro support --}}</span>
                 </div>
                 <div class="contact-option">
                     <i class="fas fa-comments"></i>

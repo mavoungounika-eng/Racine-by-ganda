@@ -214,9 +214,9 @@
                 <p>Le responsable du traitement des données est :</p>
                 <p>
                     <strong>RACINE BY GANDA SAS</strong><br>
-                    15 Rue de la Mode, 75003 Paris<br>
+                    [ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}<br>
                     Email : dpo@racine-ganda.com<br>
-                    Téléphone : +33 1 23 45 67 89
+                    Téléphone : [TELEPHONE_A_CONFIRMER] {{-- TODO PROD: Insérer vrai numéro support --}}
                 </p>
             </div>
             
@@ -261,7 +261,7 @@
                 <p>Pour toute question concernant cette politique ou vos données personnelles :</p>
                 <p>
                     <strong>Email :</strong> <a href="mailto:dpo@racine-ganda.com">dpo@racine-ganda.com</a><br>
-                    <strong>Courrier :</strong> RACINE BY GANDA - DPO, 15 Rue de la Mode, 75003 Paris
+                    <strong>Courrier :</strong> RACINE BY GANDA - DPO, [ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}
                 </p>
                 <p>Vous pouvez également déposer une réclamation auprès de la CNIL : <a href="https://www.cnil.fr" target="_blank">www.cnil.fr</a></p>
             </div>

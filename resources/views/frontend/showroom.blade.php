@@ -465,7 +465,7 @@
         <div class="info-grid">
             <div class="info-item">
                 <i class="fas fa-map-marker-alt"></i>
-                <span>15 Rue de la Mode, 75003 Paris</span>
+                <span>[ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}</span>
             </div>
             <div class="info-item">
                 <i class="fas fa-clock"></i>
@@ -574,7 +574,7 @@
                         <div class="visit-icon"><i class="fas fa-map-marker-alt"></i></div>
                         <div>
                             <h4>Adresse</h4>
-                            <span>15 Rue de la Mode, 75003 Paris</span>
+                            <span>[ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}</span>
                         </div>
                     </div>
                     <div class="visit-item">
@@ -588,7 +588,7 @@
                         <div class="visit-icon"><i class="fas fa-phone"></i></div>
                         <div>
                             <h4>Téléphone</h4>
-                            <span>+33 1 23 45 67 89</span>
+                            <span>[TELEPHONE_A_CONFIRMER] {{-- TODO PROD: Insérer vrai numéro support --}}</span>
                         </div>
                     </div>
                 </div>
