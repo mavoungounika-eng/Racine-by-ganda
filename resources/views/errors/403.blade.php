@@ -138,11 +138,11 @@
         <h1 class="error-title">Accès Refusé</h1>
         <p class="error-message">
             @if(request()->is('erp*'))
-                Vous n'avez pas l'autorisation d'accéder au module ERP.
+                Tu n'as pas accès d'accéder au module ERP.
             @elseif(request()->is('admin*'))
-                Vous n'avez pas l'autorisation d'accéder à l'administration.
+                Tu n'as pas accès d'accéder à l'administration.
             @else
-                Cette action n'est pas autorisée.
+                Tu n'as pas accès à cette page.
             @endif
         </p>
         
