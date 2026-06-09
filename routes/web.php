@@ -9,6 +9,12 @@ use App\Http\Controllers\Front\FrontendController;
 use App\Http\Controllers\Frontend\FrontendContactController;
 use App\Http\Controllers\Auth\PublicAuthController;
 use App\Http\Controllers\AppearanceController;
+use App\Http\Controllers\SitemapController;
+
+// ============================================
+// SITEMAP (SEO)
+// ============================================
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // ============================================
 // AUTH ROUTES (Unifiées)

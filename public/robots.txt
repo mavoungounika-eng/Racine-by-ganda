@@ -18,5 +18,5 @@ Disallow: /password/
 Disallow: /checkout/
 Disallow: /cart/
 
-# TODO PROD: Ajouter sitemap.xml après génération
-# Sitemap: https://racinebyganda.com/sitemap.xml
+# Sitemap
+Sitemap: https://racinebyganda.com/sitemap.xml
