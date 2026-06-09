@@ -217,7 +217,28 @@
             <div class="legal-body">
                 <div class="legal-section" id="article1">
                     <h2><span class="number">1</span> Objet</h2>
-                    <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre RACINE BY GANDA, société par actions simplifiée au capital de [CAPITAL_A_CONFIRMER] {{-- TODO PROD: Confirmer le capital social exact --}}, dont le siège social est situé au [ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}, immatriculée au RCS de Paris sous le numéro [RCS_A_RENSEIGNER] {{-- TODO PROD: Insérer le vrai numéro RCS --}}, et toute personne physique ou morale (le "Client") effectuant un achat sur le site www.racine-ganda.com.</p>
+                    <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre {{ config('company.name') }}, société par actions simplifiée au capital de
+                    @if(config('company.capital'))
+                        {{ number_format(config('company.capital'), 0, ',', ' ') }} €
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner capital social avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[CAPITAL_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                    @endif
+                    , dont le siège social est situé au
+                    @if(config('company.address'))
+                        {{ config('company.address') }}
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner adresse siège social avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[ADRESSE_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                    @endif
+                    , immatriculée au RCS sous le numéro
+                    @if(config('company.rcs'))
+                        {{ config('company.rcs') }}
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner RCS réel avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[RCS_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                    @endif
+                    , et toute personne physique ou morale (le "Client") effectuant un achat sur le site www.racine-ganda.com.</p>
                     <div class="highlight-box">
                         <p>En passant commande, le Client accepte sans réserve les présentes CGV.</p>
                     </div>

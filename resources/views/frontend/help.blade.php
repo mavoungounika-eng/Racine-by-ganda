@@ -574,12 +574,19 @@
                 <div class="contact-option">
                     <i class="fas fa-envelope"></i>
                     <h4>Email</h4>
-                    <span>contact@racine-ganda.com</span>
+                    <span>{{ config('company.support_email') }}</span>
                 </div>
                 <div class="contact-option">
                     <i class="fas fa-phone"></i>
                     <h4>Téléphone</h4>
-                    <span>[TELEPHONE_A_CONFIRMER] {{-- TODO PROD: Insérer vrai numéro support --}}</span>
+                    <span>
+                    @if(config('company.phone'))
+                        {{ config('company.phone') }}
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner téléphone support avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[TELEPHONE_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                    @endif
+                    </span>
                 </div>
                 <div class="contact-option">
                     <i class="fas fa-comments"></i>

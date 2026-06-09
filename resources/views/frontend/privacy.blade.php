@@ -213,10 +213,21 @@
                 <h2><i class="fas fa-building"></i> Responsable du traitement</h2>
                 <p>Le responsable du traitement des données est :</p>
                 <p>
-                    <strong>RACINE BY GANDA SAS</strong><br>
-                    [ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}<br>
-                    Email : dpo@racine-ganda.com<br>
-                    Téléphone : [TELEPHONE_A_CONFIRMER] {{-- TODO PROD: Insérer vrai numéro support --}}
+                    <strong>{{ config('company.name') }} SAS</strong><br>
+                    @if(config('company.address'))
+                        {{ config('company.address') }}<br>
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner adresse siège social avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[ADRESSE_A_RENSEIGNER]</span><em>(adresse à renseigner)</em><br>
+                    @endif
+                    Email : {{ config('company.dpo_email') }}<br>
+                    Téléphone :
+                    @if(config('company.phone'))
+                        {{ config('company.phone') }}
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner téléphone support avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[TELEPHONE_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                    @endif
                 </p>
             </div>
             
@@ -260,8 +271,14 @@
                 <h3><i class="fas fa-envelope"></i> Nous contacter</h3>
                 <p>Pour toute question concernant cette politique ou vos données personnelles :</p>
                 <p>
-                    <strong>Email :</strong> <a href="mailto:dpo@racine-ganda.com">dpo@racine-ganda.com</a><br>
-                    <strong>Courrier :</strong> RACINE BY GANDA - DPO, [ADRESSE_A_CONFIRMER] {{-- TODO PROD: Insérer vraie adresse siège social --}}
+                    <strong>Email :</strong> <a href="mailto:{{ config('company.dpo_email') }}">{{ config('company.dpo_email') }}</a><br>
+                    <strong>Courrier :</strong> {{ config('company.name') }} - DPO,
+                    @if(config('company.address'))
+                        {{ config('company.address') }}
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner adresse siège social avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[ADRESSE_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                    @endif
                 </p>
                 <p>Vous pouvez également déposer une réclamation auprès de la CNIL : <a href="https://www.cnil.fr" target="_blank">www.cnil.fr</a></p>
             </div>
