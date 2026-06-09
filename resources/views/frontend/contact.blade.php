@@ -399,29 +399,29 @@
                     @csrf
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Prénom</label>
-                            <input type="text" name="first_name" placeholder="Votre prénom" required>
+                            <label for="first_name">Prénom</label>
+                            <input type="text" id="first_name" name="first_name" placeholder="Votre prénom" required aria-required="true">
                         </div>
                         <div class="form-group">
-                            <label>Nom</label>
-                            <input type="text" name="last_name" placeholder="Votre nom" required>
+                            <label for="last_name">Nom</label>
+                            <input type="text" id="last_name" name="last_name" placeholder="Votre nom" required aria-required="true">
                         </div>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" name="email" placeholder="votre@email.com" required>
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="votre@email.com" required aria-required="true">
                         </div>
                         <div class="form-group">
-                            <label>Téléphone</label>
-                            <input type="tel" name="phone" placeholder="+33 6 12 34 56 78">
+                            <label for="phone">Téléphone</label>
+                            <input type="tel" id="phone" name="phone" placeholder="+33 6 12 34 56 78" aria-label="Numéro de téléphone optionnel">
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Sujet</label>
-                        <select name="subject" required>
+                        <label for="subject">Sujet</label>
+                        <select id="subject" name="subject" required aria-required="true">
                             <option value="">Choisir un sujet</option>
                             <option value="order">Question sur une commande</option>
                             <option value="product">Question sur un produit</option>
@@ -431,10 +431,10 @@
                             <option value="other">Autre</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Votre message</label>
-                        <textarea name="message" placeholder="Décrivez votre demande en détail..." required></textarea>
+                        <label for="message">Votre message</label>
+                        <textarea id="message" name="message" placeholder="Décrivez votre demande en détail..." required aria-required="true"></textarea>
                     </div>
                     
                     <button type="submit" class="btn-submit">
