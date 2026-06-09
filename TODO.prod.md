@@ -1,8 +1,21 @@
 # TODO PRODUCTION — RACINE BY GANDA
-**Dernière mise à jour:** 9 juin 2026
+**Dernière mise à jour:** 10 juin 2026
 **Sprints complétés:**
 - ✅ Sprint 0 — Audit Pré-Production (6 commits, 9 P0 résolus)
 - ✅ Sprint 1 — SEO+Performance+Contenu (4 commits, 8 P1 résolus)
+- 🔄 Sprint 2 — OG Image JPG + Srcset (1 commit, en cours)
+
+---
+
+## SPRINT 2 — RÉSUMÉ (10 juin 2026)
+
+**Commits:** c53afa1c
+**Impact:** Open Graph 100% Facebook/LinkedIn compatible, CLS prévention en cours
+
+### Réalisations
+1. **OG Image JPG:** Génération via GD library, 1200x630px, 96.85 KB
+2. **Script autonome:** generate-og-image.php avec charte RACINE exacte
+3. **Prochaine étape:** Explicit dimensions + srcset (images manquantes)
 
 ---
 
@@ -39,22 +52,23 @@
 
 ## P1 — IMPORTANT (avant lancement)
 
-### SEO ✅ SPRINT 1 COMPLÉTÉ
+### SEO ✅ SPRINT 1 + SPRINT 2 COMPLÉTÉ
 - [x] **Sitemap.xml:** ✅ SitemapController créé (sans dépendance), route /sitemap.xml active
 - [x] **Structured data:** ✅ JSON-LD implémenté:
   - Organization (homepage) ✅
   - Product (pages produits) ✅
   - BreadcrumbList (shop) ✅
-- [ ] **Open Graph image:** Convertir SVG en JPG 1200x630px optimisé pour Facebook/LinkedIn
+- [x] **Open Graph image:** ✅ JPG 1200x630px généré (96.85 KB), GD library, charte RACINE
 
 ### Performance ⚡ SPRINT 1 COMPLÉTÉ
 - [x] **Preconnect fonts:** ✅ Google Fonts avec crossorigin
 - [x] **Font Awesome async:** ✅ Chargement non-bloquant (media="print" trick)
 - [x] **Lazy loading:** ✅ Déjà présent sur shop + home
-- [ ] **Srcset images:** Générer 3 tailles (mobile/tablet/desktop) pour:
-  - Images hero (home, about)
-  - Images produits (shop, product detail)
-  - Images créateurs
+- [ ] **Srcset images:** NÉCESSITE GÉNÉRATION D'IMAGES (3 tailles mobile/tablet/desktop)
+  - Templates prêts avec lazy loading
+  - ⚠️ Générer images via Intervention Image ou script batch
+  - Cibles: hero, produits, créateurs
+  - Ajouter width/height explicites pour CLS
 
 ### Contenu 📝 SPRINT 1 COMPLÉTÉ
 - [x] **Stats homepage:** ✅ Calcul dynamique depuis DB (cache 5min)
