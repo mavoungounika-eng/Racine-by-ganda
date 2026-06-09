@@ -1,0 +1,33 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#160D0C"/>
+
+  <!-- Decorative pattern -->
+  <g opacity="0.1">
+    <circle cx="100" cy="100" r="150" fill="#FFB800"/>
+    <circle cx="1100" cy="530" r="200" fill="#ED5F1E"/>
+  </g>
+
+  <!-- Main title -->
+  <text x="600" y="260" font-family="serif" font-size="80" font-weight="700" fill="#FFB800" text-anchor="middle">
+    RACINE BY GANDA
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="340" font-family="sans-serif" font-size="36" fill="#ED5F1E" text-anchor="middle">
+    Mode Africaine Contemporaine
+  </text>
+
+  <!-- Decorative line -->
+  <line x1="400" y1="380" x2="800" y2="380" stroke="#FFB800" stroke-width="3"/>
+
+  <!-- Bottom text -->
+  <text x="600" y="540" font-family="sans-serif" font-size="24" fill="#FFFFFF" text-anchor="middle" opacity="0.9">
+    Créations Authentiques · Artisanat Premium
+  </text>
+
+  <!-- URL -->
+  <text x="600" y="590" font-family="sans-serif" font-size="20" fill="#FFFFFF" text-anchor="middle" opacity="0.6">
+    racinebyganda.com
+  </text>
+</svg>
