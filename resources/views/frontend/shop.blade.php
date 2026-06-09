@@ -3,6 +3,29 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Boutique - RACINE BY GANDA')
 {{-- CSS extrait vers public/css/frontend-shop.css --}}
 
+@push('structured-data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Accueil",
+      "item": "{{ route('frontend.home') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Boutique",
+      "item": "{{ url()->current() }}"
+    }
+  ]
+}
+</script>
+@endpush
+
 @section('content')
 <!-- HERO -->
 <section class="shop-hero">

@@ -34,6 +34,9 @@
     <meta name="theme-color" content="#ED5F1E">
     
     {{-- Fonts RACINE --}}
+    {{-- Preconnect pour performance --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     {{-- Aileron (accentué, disponible Google Fonts) --}}
     {{-- Cormorant Garamond (fallback Aleppo) + Nunito (fallback Coco Gothic) --}}
     <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -56,8 +59,9 @@
         <link rel="stylesheet" href="{{ asset('css/frontend-shop.css') }}">
     @endif
     
-    {{-- Font Awesome --}}
-    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    {{-- Font Awesome (chargement async pour performance) --}}
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}"></noscript>
     
     <style nonce="{{ csp_nonce() }}">
         :root {
@@ -224,6 +228,7 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     @stack('styles')
+    @stack('structured-data')
 </head>
 <body class="racine-frontend-layout">
     {{-- ANNOUNCEMENT BAR PREMIUM --}}

@@ -2,6 +2,40 @@
 
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'RACINE BY GANDA - Mode Africaine Contemporaine')
 
+@push('structured-data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "RACINE BY GANDA",
+  "url": "{{ url('/') }}",
+  "logo": "{{ asset('images/logo-racine.png') }}",
+  "description": "RACINE BY GANDA - Mode africaine premium. Créations authentiques qui célèbrent l'héritage africain avec une touche contemporaine.",
+  "foundingDate": "2020",
+  "founder": {
+    "@type": "Person",
+    "name": "{{ config('app.company.ceo', 'Amira Ganda') }}"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "FR"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "{{ config('app.company.phone', '+33-1-XX-XX-XX-XX') }}",
+    "contactType": "Customer Service",
+    "email": "{{ config('app.company.email', 'contact@racinebyganda.com') }}",
+    "availableLanguage": ["French", "English"]
+  },
+  "sameAs": [
+    "https://www.instagram.com/racinebyganda",
+    "https://www.facebook.com/racinebyganda",
+    "https://twitter.com/racinebyganda"
+  ]
+}
+</script>
+@endpush
+
 @section('content')
 <!-- HERO SECTION -->
 @if(!empty($cmsHeroBanners) && $cmsHeroBanners->count())

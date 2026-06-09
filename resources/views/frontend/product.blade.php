@@ -2,6 +2,34 @@
 
 @section('title', ($product->name ?? 'Produit') . ' - RACINE BY GANDA')
 
+@push('structured-data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ $product->name ?? 'Produit' }}",
+  "image": "{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('images/placeholder-product.jpg') }}",
+  "description": "{{ strip_tags($product->description ?? 'Produit artisanal africain') }}",
+  "sku": "RAC-{{ $product->id ?? '001' }}",
+  "brand": {
+    "@type": "Brand",
+    "name": "{{ $product->isBrand() ? 'RACINE BY GANDA' : ($product->creator->name ?? 'RACINE BY GANDA') }}"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ url()->current() }}",
+    "priceCurrency": "XAF",
+    "price": "{{ $product->price ?? 0 }}",
+    "availability": "{{ ($product->stock ?? 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
+    "seller": {
+      "@type": "Organization",
+      "name": "RACINE BY GANDA"
+    }
+  }
+}
+</script>
+@endpush
+
 @push('styles')
 <style nonce="{{ csp_nonce() }}">
     .product-page {
