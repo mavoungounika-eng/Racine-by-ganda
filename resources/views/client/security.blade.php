@@ -2,7 +2,7 @@
 
 @section('title', 'Sécurité du Compte - RACINE BY GANDA')
 @section('page-title', 'Sécurité du Compte')
-@section('page-subtitle', 'Gérez vos sessions actives et paramètres de sécurité')
+@section('page-subtitle', 'Gérez vos appareils connectés et paramètres de sécurité')
 
 @section('content')
 
@@ -10,7 +10,7 @@
 <div class="card border-0 shadow-sm mb-4" style="border-radius: 18px;">
     <div class="card-header py-3" style="border-bottom: 2px solid #FFB800; background: none; border-radius: 18px 18px 0 0;">
         <h5 class="mb-0 fw-semibold">
-            <i class="fas fa-laptop me-2" style="color: #ED5F1E;"></i>Sessions Actives
+            <i class="fas fa-laptop me-2" style="color: #ED5F1E;"></i>Appareils connectés
         </h5>
     </div>
     <div class="card-body">
@@ -32,7 +32,7 @@
                                 <i class="fas fa-{{ $session['device'] === 'Mobile' ? 'mobile-alt' : ($session['device'] === 'Tablette' ? 'tablet-alt' : 'laptop') }} me-2" style="color: #ED5F1E;"></i>
                                 {{ $session['device'] }}
                                 @if($session['is_current'])
-                                    <span class="badge bg-success ms-2">Session actuelle</span>
+                                    <span class="badge bg-success ms-2">Cet appareil</span>
                                 @endif
                             </td>
                             <td>{{ $session['browser'] }}</td>
@@ -44,7 +44,7 @@
                             </td>
                             <td>
                                 @if($session['is_current'])
-                                    <span class="text-muted">Session courante</span>
+                                    <span class="text-muted">Appareil actuel</span>
                                 @else
                                     <button type="button" class="btn btn-sm btn-outline-danger logout-session-btn" data-session-id="{{ $session['id'] }}">
                                         <i class="fas fa-sign-out-alt me-1"></i>Révoquer
@@ -55,7 +55,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="text-center text-muted py-4">
-                                Aucune session active trouvée.
+                                Aucun appareil connecté trouvée.
                             </td>
                         </tr>
                     @endforelse
@@ -65,7 +65,7 @@
 
         <div class="mt-3">
             <button type="button" id="logout-all-btn" class="btn btn-danger" style="background: #ED5F1E; border-color: #ED5F1E;">
-                <i class="fas fa-sign-out-alt me-2"></i>Déconnecter toutes les autres sessions
+                <i class="fas fa-sign-out-alt me-2"></i>Déconnecter tous les autres appareils
             </button>
             <div id="logout-result" class="mt-2"></div>
         </div>
@@ -92,7 +92,7 @@
                 <p class="mb-0">
                     <span class="badge" style="font-size: 16px; background: #ED5F1E; color: white;">{{ count($sessions) }}</span>
                 </p>
-                <small class="text-muted">Nombre de sessions ouvertes sur différents appareils</small>
+                <small class="text-muted">Nombre d'appareils connectés sur différents appareils</small>
             </div>
 
             <div class="col-md-12">
@@ -103,11 +103,11 @@
                 </a>
                 @if(Auth::user()->two_factor_secret)
                     <a href="{{ route('2fa.manage') }}" class="btn btn-outline-secondary mb-2" style="border-color: #160D0C; color: #160D0C;">
-                        <i class="fas fa-mobile-alt me-1"></i>Gérer l'authentification 2FA
+                        <i class="fas fa-mobile-alt me-1"></i>Gérer la double vérification
                     </a>
                 @else
                     <a href="{{ route('2fa.enable') }}" class="btn btn-outline-success mb-2" style="border-color: #FFB800; color: #160D0C;">
-                        <i class="fas fa-shield-alt me-1"></i>Activer l'authentification 2FA
+                        <i class="fas fa-shield-alt me-1"></i>Activer la double vérification
                     </a>
                 @endif
             </div>
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultDiv = document.getElementById('logout-result');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-    // Déconnecter toutes les autres sessions
+    // Déconnecter tous les autres appareils
     logoutAllBtn.addEventListener('click', function() {
         if (!confirm('Êtes-vous sûr de vouloir déconnecter toutes les autres sessions ?')) {
             return;
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
             resultDiv.appendChild(alertDiv);
 
             logoutAllBtn.disabled = false;
-            logoutAllBtn.innerHTML = '<i class="fas fa-sign-out-alt me-2"></i>Déconnecter toutes les autres sessions';
+            logoutAllBtn.innerHTML = '<i class="fas fa-sign-out-alt me-2"></i>Déconnecter tous les autres appareils';
 
             if (data.success) {
                 setTimeout(() => location.reload(), 1500);
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             resultDiv.appendChild(alertDiv);
 
             logoutAllBtn.disabled = false;
-            logoutAllBtn.innerHTML = '<i class="fas fa-sign-out-alt me-2"></i>Déconnecter toutes les autres sessions';
+            logoutAllBtn.innerHTML = '<i class="fas fa-sign-out-alt me-2"></i>Déconnecter tous les autres appareils';
         });
     });
 
