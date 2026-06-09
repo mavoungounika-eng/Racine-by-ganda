@@ -170,7 +170,7 @@
                 </li>
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
                     <i class="fas fa-check-circle" style="color: #FFB800;"></i>
-                    <span>Analytics avancées</span>
+                    <span>Statistiques avancées</span>
                 </li>
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
                     <i class="fas fa-check-circle" style="color: #FFB800;"></i>

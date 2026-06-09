@@ -58,8 +58,8 @@
         <form action="{{ route('creator.settings.payment-preferences.schedule.update') }}" method="POST">
             @csrf
             <div class="radio-group">
-                <label class="radio-card {{ $preferences->payout_schedule === 'automatic' ? 'radio-card--active' : '' }}">
-                    <input type="radio" name="schedule" value="automatic" {{ $preferences->payout_schedule === 'automatic' ? 'checked' : '' }}>
+                <label class="radio-card {{ $preferences->versement_schedule === 'automatic' ? 'radio-card--active' : '' }}">
+                    <input type="radio" name="schedule" value="automatic" {{ $preferences->versement_schedule === 'automatic' ? 'checked' : '' }}>
                     <div class="radio-card-content">
                         <div class="radio-card-header">
                             <i class="fas fa-bolt"></i>
@@ -69,8 +69,8 @@
                     </div>
                 </label>
 
-                <label class="radio-card {{ $preferences->payout_schedule === 'monthly' ? 'radio-card--active' : '' }}">
-                    <input type="radio" name="schedule" value="monthly" {{ $preferences->payout_schedule === 'monthly' ? 'checked' : '' }}>
+                <label class="radio-card {{ $preferences->versement_schedule === 'monthly' ? 'radio-card--active' : '' }}">
+                    <input type="radio" name="schedule" value="monthly" {{ $preferences->versement_schedule === 'monthly' ? 'checked' : '' }}>
                     <div class="radio-card-content">
                         <div class="radio-card-header">
                             <i class="fas fa-calendar"></i>
@@ -80,8 +80,8 @@
                     </div>
                 </label>
 
-                <label class="radio-card {{ $preferences->payout_schedule === 'manual' ? 'radio-card--active' : '' }}">
-                    <input type="radio" name="schedule" value="manual" {{ $preferences->payout_schedule === 'manual' ? 'checked' : '' }}>
+                <label class="radio-card {{ $preferences->versement_schedule === 'manual' ? 'radio-card--active' : '' }}">
+                    <input type="radio" name="schedule" value="manual" {{ $preferences->versement_schedule === 'manual' ? 'checked' : '' }}>
                     <div class="radio-card-content">
                         <div class="radio-card-header">
                             <i class="fas fa-hand-pointer"></i>

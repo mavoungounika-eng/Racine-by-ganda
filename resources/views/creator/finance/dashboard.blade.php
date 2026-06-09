@@ -1,13 +1,13 @@
 @extends('layouts.creator')
 
-@section('title', 'Dashboard Financier')
+@section('title', 'Tableau de bord Financier')
 
 @section('content')
 <div class="container-fluid py-4">
     {{-- En-tête --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Dashboard Financier</h1>
+            <h1 class="h3 mb-1">Tableau de bord Financier</h1>
             <p class="text-muted mb-0">Vue d'ensemble de vos revenus et ventes</p>
         </div>
         <div class="btn-group" role="group">

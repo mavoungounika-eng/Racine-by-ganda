@@ -7,8 +7,8 @@
 <div class="creator-content-wrapper">
     {{-- Breadcrumb --}}
     <div class="creator-breadcrumb mb-3">
-        <a href="{{ route('creator.dashboard') }}">Dashboard</a> / 
-        <a href="{{ route('creator.analytics.index') }}">Analytics</a> / 
+        <a href="{{ route('creator.dashboard') }}">Tableau de bord</a> / 
+        <a href="{{ route('creator.statistics.index') }}">Statistiques</a> / 
         <span>Ventes</span>
     </div>
 
@@ -19,11 +19,11 @@
             <p class="text-muted mb-0">Analyse détaillée de vos ventes et performances</p>
         </div>
         <div>
-            <a href="{{ route('creator.analytics.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('creator.statistics.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-2"></i>
                 Retour
             </a>
-            <a href="{{ route('creator.analytics.sales', ['refresh' => 1]) }}" class="btn btn-outline-primary ms-2" title="Actualiser les données">
+            <a href="{{ route('creator.statistics.sales', ['refresh' => 1]) }}" class="btn btn-outline-primary ms-2" title="Actualiser les données">
                 <i class="fas fa-sync-alt me-2"></i>
                 Actualiser
             </a>
@@ -32,7 +32,7 @@
 
     {{-- Filtres période --}}
     <div class="card-racine mb-4">
-        <form method="GET" action="{{ route('creator.analytics.sales') }}" class="d-flex align-items-center gap-3 flex-wrap">
+        <form method="GET" action="{{ route('creator.statistics.sales') }}" class="d-flex align-items-center gap-3 flex-wrap">
             <label class="mb-0 font-weight-bold">Période :</label>
             <select name="period" class="form-control form-control-sm" style="width: auto;">
                 <option value="7days" {{ $period === '7days' ? 'selected' : '' }}>7 derniers jours</option>

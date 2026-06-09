@@ -1,28 +1,28 @@
 @extends('layouts.creator')
 
-@section('title', 'Analytics - RACINE BY GANDA')
-@section('page-title', 'Analytics')
+@section('title', 'Statistiques - RACINE BY GANDA')
+@section('page-title', 'Statistiques')
 
 @section('content')
 <div class="creator-content-wrapper">
     {{-- Breadcrumb --}}
     <div class="creator-breadcrumb mb-3">
-        <a href="{{ route('creator.dashboard') }}">Dashboard</a> / 
-        <span>Analytics</span>
+        <a href="{{ route('creator.dashboard') }}">Tableau de bord</a> / 
+        <span>Statistiques</span>
     </div>
 
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 font-weight-bold mb-1">Mes Analytics</h1>
+            <h1 class="h3 font-weight-bold mb-1">Mes Statistiques</h1>
             <p class="text-muted mb-0">Vue d'ensemble de vos performances de vente</p>
         </div>
         <div>
-            <a href="{{ route('creator.analytics.sales') }}" class="btn btn-primary">
+            <a href="{{ route('creator.statistics.sales') }}" class="btn btn-primary">
                 <i class="fas fa-chart-line me-2"></i>
                 Détails ventes
             </a>
-            <a href="{{ route('creator.analytics.index', ['refresh' => 1]) }}" class="btn btn-outline-secondary ms-2" title="Actualiser les données">
+            <a href="{{ route('creator.statistics.index', ['refresh' => 1]) }}" class="btn btn-outline-secondary ms-2" title="Actualiser les données">
                 <i class="fas fa-sync-alt"></i>
             </a>
         </div>
@@ -30,7 +30,7 @@
 
     {{-- Filtres période --}}
     <div class="card-racine mb-4">
-        <form method="GET" action="{{ route('creator.analytics.index') }}" class="d-flex align-items-center gap-3">
+        <form method="GET" action="{{ route('creator.statistics.index') }}" class="d-flex align-items-center gap-3">
             <label class="mb-0 font-weight-bold">Période :</label>
             <select name="period" class="form-control form-control-sm" style="width: auto;" onchange="this.form.submit()">
                 <option value="7days" {{ $period === '7days' ? 'selected' : '' }}>7 derniers jours</option>

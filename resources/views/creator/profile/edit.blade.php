@@ -301,9 +301,9 @@
             <div class="info-item">
                 <div class="info-label">Méthode de paiement</div>
                 <div class="info-value">
-                    @if($creatorProfile->payout_method === 'bank')
+                    @if($creatorProfile->versement_method === 'bank')
                         Virement bancaire
-                    @elseif($creatorProfile->payout_method === 'mobile_money')
+                    @elseif($creatorProfile->versement_method === 'mobile_money')
                         Mobile Money
                     @else
                         Autre
@@ -312,10 +312,10 @@
             </div>
         </div>
         
-        @if($creatorProfile->payout_details)
+        @if($creatorProfile->versement_details)
         <div style="margin-top: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, #F8F6F3 0%, white 100%); border-radius: 16px; border: 1px solid #E5DDD3;">
             <div class="info-label mb-3">Détails de paiement</div>
-            <pre style="margin: 0; color: #160D0C; font-size: 0.9rem; white-space: pre-wrap; font-family: var(--font-accent, 'Aileron', sans-serif);">{{ json_encode($creatorProfile->payout_details, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+            <pre style="margin: 0; color: #160D0C; font-size: 0.9rem; white-space: pre-wrap; font-family: var(--font-accent, 'Aileron', sans-serif);">{{ json_encode($creatorProfile->versement_details, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
         </div>
         @endif
     </div>

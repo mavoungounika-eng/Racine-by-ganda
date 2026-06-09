@@ -121,7 +121,7 @@
                     <div class="payment-icon-wrapper stripe-icon shadow-sm">
                         <i class="fab fa-stripe"></i>
                     </div>
-                    @if($stripeAccount && $stripeAccount->payouts_enabled)
+                    @if($stripeAccount && $stripeAccount->versements_enabled)
                         <span class="badge-premium bg-success-premium">
                             <i class="fas fa-check-circle me-1"></i> Compte Actif
                         </span>
@@ -136,7 +136,7 @@
                 <p class="text-muted">Standard mondial pour les paiements en ligne. Recommandé pour les virements automatiques.</p>
 
                 <div class="mt-4">
-                    @if(!$stripeAccount || !$stripeAccount->payouts_enabled)
+                    @if(!$stripeAccount || !$stripeAccount->versements_enabled)
                         <div class="alert bg-warning border-0 px-3 py-3" style="background-color: #FEF3C7 !important;">
                             <p class="small mb-0 font-weight-bold" style="color: #92400E !important;">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
@@ -147,14 +147,14 @@
                         {{-- ... (reste inchangé) --}}
                     @endif
 
-                    <form action="{{ route('creator.settings.payment-preferences.stripe.connect') }}" method="POST" class="{{ $stripeAccount && $stripeAccount->payouts_enabled ? 'd-none' : '' }}">
+                    <form action="{{ route('creator.settings.payment-preferences.stripe.connect') }}" method="POST" class="{{ $stripeAccount && $stripeAccount->versements_enabled ? 'd-none' : '' }}">
                         @csrf
                         <button type="submit" class="btn creator-btn w-100 py-3">
                             <i class="fas fa-link me-2"></i> Configurer mon compte Stripe
                         </button>
                     </form>
 
-                    @if($stripeAccount && $stripeAccount->payouts_enabled)
+                    @if($stripeAccount && $stripeAccount->versements_enabled)
                         <div class="info-item border-bottom pb-2 mb-3">
                             <span class="info-label">Identifiant Compte</span>
                             <span class="info-value">{{ $stripeAccount->stripe_account_id }}</span>
@@ -166,7 +166,7 @@
                             </span>
                         </div>
                         <a href="{{ route('creator.finances.index') }}" class="btn btn-outline-dark w-100 rounded-pill font-weight-bold">
-                            <i class="fas fa-external-link-alt me-2"></i> Gérer via le Dashboard
+                            <i class="fas fa-external-link-alt me-2"></i> Gérer via le Tableau de bord
                         </a>
                     @endif
                 </div>
@@ -188,7 +188,7 @@
 
                 <div class="mt-4">
                     {{-- On permet désormais la config MoMo même si Stripe est en attente, mais avec un avertissement --}}
-                    @if(!$stripeAccount || !$stripeAccount->payouts_enabled)
+                    @if(!$stripeAccount || !$stripeAccount->versements_enabled)
                         <div class="alert border-0 px-3 py-3 mb-4" style="background-color: #E0F2FE; color: #075985;">
                             <p class="small mb-0 font-weight-bold">
                                 <i class="fas fa-info-circle me-2"></i>
@@ -200,16 +200,16 @@
                     <form action="{{ route('creator.settings.payment.update') }}" method="POST">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" name="payout_method" value="mobile_money">
+                        <input type="hidden" name="versement_method" value="mobile_money">
 
                         <div class="form-group mb-3">
                             <label class="creator-label">Opérateur</label>
                             <select name="mobile_money_provider" class="form-control creator-input h-auto py-3 @error('mobile_money_provider') is-invalid @enderror">
                                 <option value="">Choisir un opérateur</option>
-                                <option value="orange" {{ old('mobile_money_provider', $profile->payout_details['mobile_money']['provider'] ?? '') == 'orange' ? 'selected' : '' }}>Orange Money</option>
-                                <option value="mtn" {{ old('mobile_money_provider', $profile->payout_details['mobile_money']['provider'] ?? '') == 'mtn' ? 'selected' : '' }}>MTN MoMo</option>
-                                <option value="moov" {{ old('mobile_money_provider', $profile->payout_details['mobile_money']['provider'] ?? '') == 'moov' ? 'selected' : '' }}>Moov Money</option>
-                                <option value="wave" {{ old('mobile_money_provider', $profile->payout_details['mobile_money']['provider'] ?? '') == 'wave' ? 'selected' : '' }}>Wave</option>
+                                <option value="orange" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'orange' ? 'selected' : '' }}>Orange Money</option>
+                                <option value="mtn" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'mtn' ? 'selected' : '' }}>MTN MoMo</option>
+                                <option value="moov" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'moov' ? 'selected' : '' }}>Moov Money</option>
+                                <option value="wave" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'wave' ? 'selected' : '' }}>Wave</option>
                             </select>
                             @error('mobile_money_provider') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -217,7 +217,7 @@
                         <div class="form-group mb-3">
                             <label class="creator-label">Numéro de téléphone</label>
                             <input type="tel" name="mobile_money_number" class="form-control creator-input h-auto py-3 @error('mobile_money_number') is-invalid @enderror" 
-                                   placeholder="06 XXX XXX" value="{{ old('mobile_money_number', $profile->payout_details['mobile_money']['number'] ?? '') }}">
+                                   placeholder="06 XXX XXX" value="{{ old('mobile_money_number', $profile->versement_details['mobile_money']['number'] ?? '') }}">
                             @error('mobile_money_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 

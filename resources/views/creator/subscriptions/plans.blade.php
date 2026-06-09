@@ -273,11 +273,11 @@
                                 @endforeach
                             </tr>
 
-                            {{-- Analytics & Stats --}}
+                            {{-- Statistiques & Stats --}}
                             <tr>
                                 <td colspan="{{ count($plans) + 1 }}" class="feature-category">
                                     <i class="fas fa-chart-line me-2 text-warning"></i>
-                                    Analytics & Statistiques
+                                    Statistiques & Statistiques
                                 </td>
                             </tr>
                             <tr>
@@ -289,7 +289,7 @@
                                 @endforeach
                             </tr>
                             <tr>
-                                <td class="text-start font-weight-bold text-dark">Analytics avancées</td>
+                                <td class="text-start font-weight-bold text-dark">Statistiques avancées</td>
                                 @foreach($plans as $plan)
                                     @php
                                         $capability = $plan->capabilities->where('capability_key', 'can_view_analytics')->first();

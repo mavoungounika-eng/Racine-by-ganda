@@ -155,7 +155,7 @@
     @php
         $hasLogo = !empty($creatorProfile->logo_path);
         $hasProduct = ($stats['products_count'] ?? 0) > 0;
-        $hasPayout = !empty($creatorProfile->payout_method);
+        $hasPayout = !empty($creatorProfile->versement_method);
         $progress = 0;
         if($hasLogo) $progress += 33;
         if($hasProduct) $progress += 34;
@@ -200,15 +200,15 @@
                 </div>
             </a>
 
-            {{-- Step 3: Payout --}}
+            {{-- Step 3: Versement --}}
             <a href="{{ route('creator.settings.payment') }}" style="text-decoration: none;">
                 <div style="padding: 1rem; border-radius: 12px; background: {{ $hasPayout ? '#FFFFFFFFF' : 'white' }}; border: 1px solid {{ $hasPayout ? '#FFFFFFFFF' : '#FFFFFFFFF' }}; display: flex; align-items: center; gap: 1rem; transition: all 0.2s;">
                     <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $hasPayout ? '#FFB800' : '#FFFFFF' }}; color: {{ $hasPayout ? 'white' : '#ED5F1E' }}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
                         <i class="fas {{ $hasPayout ? 'fa-check' : 'fa-wallet' }}"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: {{ $hasPayout ? '#160D0C' : '#160D0C' }}; font-size: 0.9rem;">Mode de versement</div>
-                        <div style="font-size: 0.75rem; color: gray;">{{ $hasPayout ? 'Fait' : 'Pour recevoir vos gains' }}</div>
+                        <div style="font-weight: 600; color: {{ $hasPayout ? '#160D0C' : '#160D0C' }}; font-size: 0.9rem;">Moyen de paiement</div>
+                        <div style="font-size: 0.75rem; color: gray;">{{ $hasPayout ? 'Fait' : 'Pour recevoir tes gains' }}</div>
                     </div>
                 </div>
             </a>
