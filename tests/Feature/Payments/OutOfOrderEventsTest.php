@@ -25,6 +25,9 @@ class OutOfOrderEventsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Authentifier pour Auth::id() dans LedgerService
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
         $this->seedAccounting();
     }
 

@@ -45,7 +45,7 @@ class AmiraServiceTest extends TestCase
 
         $this->assertEquals('success', $response['status']);
         $this->assertStringContainsString('Tissu Wax Royal', $response['message']);
-        $this->assertStringContainsString('10 mètres', $response['message']);
+        $this->assertStringContainsString('10.00 mètres', $response['message']);
     }
 
     #[Test]

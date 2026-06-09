@@ -22,6 +22,10 @@ class WebhookIdempotencyTest extends TestCase
      */
     public function test_stripe_webhook_idempotency()
     {
+        // Authentifier pour Auth::id() dans LedgerService
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+
         // Initialiser la comptabilité pour éviter ModelNotFoundException sur les Journaux
         $this->seedAccounting();
 

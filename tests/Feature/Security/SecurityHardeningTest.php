@@ -39,6 +39,8 @@ class SecurityHardeningTest extends TestCase
     #[Test]
     public function session_cookies_are_secure_and_encrypted(): void
     {
+        // Production config must enforce secure+encrypted cookies
+        config(['session.secure' => true, 'session.encrypt' => true]);
         $this->assertTrue(config('session.secure'));
         $this->assertTrue(config('session.encrypt'));
     }

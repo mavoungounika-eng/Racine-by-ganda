@@ -27,14 +27,11 @@ class StripeWebhookLoadTest extends TestCase
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
 
         CreatorPlan::firstOrCreate(
-            ['slug' => 'FREE'],
+            ['code' => 'FREE'],
             [
                 'name' => 'Free Plan',
                 'description' => 'Default free plan',
-                'code' => 'FREE',
                 'price' => 0,
-                'currency' => 'XAF',
-                'interval' => 'month',
                 'stripe_product_id' => 'prod_test_123',
                 'stripe_price_id' => 'price_test_123',
                 'features' => [],

@@ -29,6 +29,7 @@ class PurchaseAccountingIntegrationTest extends TestCase
         $this->seedAccounting();
 
         $this->user = User::factory()->create();
+        $this->actingAs($this->user);
         $this->supplier = ErpSupplier::create([
             'name' => 'Supplier Test',
             'is_active' => true,

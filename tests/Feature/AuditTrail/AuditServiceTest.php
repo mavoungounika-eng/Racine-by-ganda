@@ -41,8 +41,10 @@ class AuditServiceTest extends TestCase
             'entity_type' => 'Order',
             'entity_id' => 123,
             'user_id' => $user->id,
-            'metadata' => json_encode(['data' => 'test']),
         ]);
+
+        $savedLog = AuditLog::where('action', 'test_action')->first();
+        $this->assertEquals(['data' => 'test'], $savedLog->metadata);
 
         $this->assertEquals('test_action', $log->action);
         $this->assertEquals('Order', $log->entity_type);

@@ -209,6 +209,10 @@ class GovernanceHardeningTest extends TestCase
     #[Test]
     public function reverse_entry_blocked_for_creator_order(): void
     {
+        // Authentifier pour Auth::id() dans LedgerService
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
         // Seed donnÃ©es comptables via trait
         $this->seedAccounting();
         

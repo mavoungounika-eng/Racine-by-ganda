@@ -39,6 +39,7 @@ class UserFactory extends Factory
             'status' => 'active',
             'auth_version' => 1, // Default auth_version
             'terms_accepted_at' => now(),
+            'onboarding_completed' => true,
         ];
     }
 

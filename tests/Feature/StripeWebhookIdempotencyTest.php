@@ -29,12 +29,14 @@ class StripeWebhookIdempotencyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seedAccounting();
 
         $this->user = User::factory()->create([
             'role' => 'client',
             'status' => 'active',
         ]);
+
+        $this->actingAs($this->user);
+        $this->seedAccounting();
 
         $this->product = Product::factory()->create([
             'stock' => 10,

@@ -27,7 +27,7 @@ class MonetbilWebhookResilienceTest extends TestCase
         // Nettoyage caches
         app(WebhookDeduplicationService::class)->clearCache();
         app(CircuitBreakerService::class)->resetAll();
-        \App\Models\ProcessedWebhook::truncate();
+        \App\Models\ProcessedWebhook::query()->delete();
     }
 
     /** @test */

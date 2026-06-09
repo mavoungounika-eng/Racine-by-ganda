@@ -62,6 +62,9 @@ class MonetbilPaymentTest extends TestCase
             'services.monetbil.api_key' => 'test_service_key', // Mappe vers service_key pour ce test
         ]);
 
+        // Authentifier pour Auth::id() dans LedgerService
+        $this->actingAs($this->user);
+
         // Seed Accounting initialization necessary for payment processing
         $this->seedAccounting();
     }
@@ -177,7 +180,7 @@ class MonetbilPaymentTest extends TestCase
         ];
         ksort($params);
         $values = array_values($params);
-        $stringToHash = 'test_service_secret' . implode('', $values);
+        $stringToHash = 'test_service_key' . implode('', $values);
         $signature = md5($stringToHash);
         $params['sign'] = $signature;
 
@@ -250,7 +253,7 @@ class MonetbilPaymentTest extends TestCase
         ];
         ksort($params);
         $values = array_values($params);
-        $stringToHash = 'test_service_secret' . implode('', $values);
+        $stringToHash = 'test_service_key' . implode('', $values);
         $signature = md5($stringToHash);
         $params['sign'] = $signature;
 

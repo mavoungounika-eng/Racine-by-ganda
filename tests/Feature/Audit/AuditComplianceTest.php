@@ -73,7 +73,7 @@ class AuditComplianceTest extends TestCase
         $this->assertEquals(0, $exitCode);
 
         // 3. Simuler une altération manuelle
-        $tamperedLog = AuditLog::find(2);
+        $tamperedLog = AuditLog::orderBy('id')->skip(1)->first();
         $tamperedLog->update(['metadata' => ['tampered' => 'true']]);
 
         // 4. Vérifier à nouveau (doit échouer)

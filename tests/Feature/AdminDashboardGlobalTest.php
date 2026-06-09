@@ -58,18 +58,18 @@ class AdminDashboardGlobalTest extends TestCase
         Product::factory()->count(15)->create();
         Payment::factory()->count(10)->create();
         
-        $startTime = microtime(true);
-        
+        $startTime = hrtime(true);
+
         $response = $this->actingAs($this->admin)
             ->withSession([
                 'auth_version' => $this->admin->auth_version,
                 '2fa_verified' => true,
             ])
             ->get(route('admin.dashboard'));
-        
-        $endTime = microtime(true);
-        $responseTime = ($endTime - $startTime) * 1000; // Convertir en ms
-        
+
+        $endTime = hrtime(true);
+        $responseTime = ($endTime - $startTime) / 1e6; // Convertir ns en ms
+
         // Vérifier que le temps de réponse est < 500ms
         $this->assertLessThan(500, $responseTime, "Dashboard Admin devrait répondre en moins de 500ms, temps réel: {$responseTime}ms");
         

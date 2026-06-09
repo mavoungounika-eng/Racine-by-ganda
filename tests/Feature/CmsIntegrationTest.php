@@ -98,7 +98,8 @@ class CmsIntegrationTest extends TestCase
      */
     public function test_legacy_routes_redirect_to_cms()
     {
+        // /a-propos now renders directly via FrontendController::about
         $response = $this->get('/a-propos');
-        $response->assertRedirect('/pages/a-propos');
+        $response->assertStatus(200);
     }
 }

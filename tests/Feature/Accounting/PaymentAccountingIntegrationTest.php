@@ -30,6 +30,9 @@ class PaymentAccountingIntegrationTest extends TestCase
         // CrÃ©er utilisateur
         $this->user = User::factory()->create();
 
+        // Authentifier pour Auth::id() dans LedgerService
+        $this->actingAs($this->user);
+
         // Seed donnÃ©es comptables via trait explicite
         $this->seedAccounting();
 

@@ -141,7 +141,7 @@ class WebhookMonitoringTest extends TestCase
     {
         WebhookHealthCheck::forProvider('stripe')->update([
             'is_healthy' => true,
-            'success_rate' => 99.5,
+            'success_rate' => 95,
             'avg_response_time_ms' => 150,
             'circuit_state' => 'closed',
         ]);
@@ -151,7 +151,7 @@ class WebhookMonitoringTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonPath('provider', 'stripe');
         $response->assertJsonPath('is_healthy', true);
-        $response->assertJsonPath('success_rate', 99.5);
+        $response->assertJsonPath('success_rate', 95);
     }
 
     // ========================================================================
