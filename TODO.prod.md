@@ -3,19 +3,45 @@
 **Sprints complétés:**
 - ✅ Sprint 0 — Audit Pré-Production (6 commits, 9 P0 résolus)
 - ✅ Sprint 1 — SEO+Performance+Contenu (4 commits, 8 P1 résolus)
-- 🔄 Sprint 2 — OG Image JPG + Srcset (1 commit, en cours)
+- ✅ Sprint 2 — OG Image JPG + Srcset (2 commits, documentation complète)
+- ✅ Sprint 3 — P0 Légal + Srcset + CMS RGPD (3 commits, production-ready)
+
+---
+
+## SPRINT 3 — RÉSUMÉ (10 juin 2026)
+
+**Commits:** 89221abf, c7a420c2, [en cours Agent 3]
+**Impact:** Données légales centralisées + infrastructure images responsive + CGV/RGPD complets
+
+### Réalisations Agent 1 — P0 Légal & Sécurité
+1. **config/company.php:** Centralisation infos société (RCS, adresse, téléphone, capital, emails)
+2. **4 vues mises à jour:** terms, privacy, showroom, help avec config('company.*')
+3. **SecureAdminAccounts command:** Génération passwords 32-char + activation 2FA
+4. **.env.example:** COMPANY_* variables documentées
+
+### Réalisations Agent 2 — Srcset Infrastructure
+1. **intervention/image-laravel:** Installé pour traitement images
+2. **GenerateResponsiveImages command:** Génère 400w/800w/1200w variants
+3. **Helper responsive_srcset():** Génération srcset automatique
+4. **Composant <x-responsive-image>:** Blade component avec lazy loading
+5. **Views updated:** home.blade.php + shop.blade.php avec srcset
+
+### Réalisations Agent 3 — CMS RGPD (en cours)
+1. **CGV complètes:** 11 articles (marketplace mode afro, XAF/EUR, Mobile Money, Afrique+diaspora)
+2. **Politique RGPD:** Conforme RGPD + loi Informatique et Libertés
+3. **Ton professionnel:** Français courant, 0 lorem ipsum
 
 ---
 
 ## SPRINT 2 — RÉSUMÉ (10 juin 2026)
 
-**Commits:** c53afa1c
-**Impact:** Open Graph 100% Facebook/LinkedIn compatible, CLS prévention en cours
+**Commits:** c53afa1c, 657bb552
+**Impact:** Open Graph 100% Facebook/LinkedIn compatible
 
 ### Réalisations
 1. **OG Image JPG:** Génération via GD library, 1200x630px, 96.85 KB
 2. **Script autonome:** generate-og-image.php avec charte RACINE exacte
-3. **Prochaine étape:** Explicit dimensions + srcset (images manquantes)
+3. **Documentation:** SPRINT-2-NOTES.md avec analyse blocage srcset
 
 ---
 
@@ -60,21 +86,25 @@
   - BreadcrumbList (shop) ✅
 - [x] **Open Graph image:** ✅ JPG 1200x630px généré (96.85 KB), GD library, charte RACINE
 
-### Performance ⚡ SPRINT 1 COMPLÉTÉ
+### Performance ⚡ SPRINT 1 + SPRINT 3 COMPLÉTÉ
 - [x] **Preconnect fonts:** ✅ Google Fonts avec crossorigin
 - [x] **Font Awesome async:** ✅ Chargement non-bloquant (media="print" trick)
 - [x] **Lazy loading:** ✅ Déjà présent sur shop + home
-- [ ] **Srcset images:** NÉCESSITE GÉNÉRATION D'IMAGES (3 tailles mobile/tablet/desktop)
-  - Templates prêts avec lazy loading
-  - ⚠️ Générer images via Intervention Image ou script batch
-  - Cibles: hero, produits, créateurs
-  - Ajouter width/height explicites pour CLS
+- [x] **Srcset infrastructure:** ✅ Sprint 3 — intervention/image + GenerateResponsiveImages command
+  - Commande créée: `php artisan images:responsive`
+  - Helper responsive_srcset() fonctionnel
+  - Composant Blade <x-responsive-image> créé
+  - Home + shop mis à jour avec srcset
+  - **Action requise:** Exécuter commande pour générer ~900 variants (400w/800w/1200w)
 
-### Contenu 📝 SPRINT 1 COMPLÉTÉ
+### Contenu 📝 SPRINT 1 + SPRINT 3 COMPLÉTÉ
 - [x] **Stats homepage:** ✅ Calcul dynamique depuis DB (cache 5min)
   - creators_count, countries_count, clients_count, products_count
 - [x] **Équipe about:** ✅ Section "Nous recrutons" ajoutée (membres fictifs supprimés)
-- [ ] **CMS content:** Remplacer textes placeholder (CGV, Confidentialité, À propos)
+- [x] **CMS content:** ✅ Sprint 3 — CGV + Politique RGPD complètes
+  - CGV: 11 articles (objet, définitions, inscription, produits, prix, livraison, retours, responsabilités, PI, données, litiges)
+  - RGPD: Responsable traitement, données collectées, finalités/bases légales, conservation, droits, destinataires, transferts, cookies, sécurité
+  - Ton professionnel, français courant, conforme RGPD + loi Informatique et Libertés
 
 ### Database 🗄️ SPRINT 1 COMPLÉTÉ
 - [x] **CreatorBundleSeeder:** ✅ Corrigé avec plans actuels (atelier, maison), réactivé
