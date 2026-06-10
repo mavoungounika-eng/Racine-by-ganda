@@ -431,6 +431,7 @@
                 </a>
             </div>
             @endforeach
+            @endif
             @endforelse
         </div>
     </div>
