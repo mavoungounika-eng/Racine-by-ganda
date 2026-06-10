@@ -414,10 +414,12 @@
                         <i class="fas fa-calendar"></i>
                         {{ $featured['date'] ?? 'Mars 2024' }}
                     </span>
+                    @if(!empty($featured['photos_count']))
                     <span class="count">
                         <i class="fas fa-images"></i>
-                        {{ $featured['photos_count'] ?? 48 }} photos
+                        {{ $featured['photos_count'] }} photos
                     </span>
+                    @endif
                 </div>
                 <a href="{{ $featured['button_url'] ?? route('frontend.contact') }}" class="btn-album">
                     <i class="fas fa-eye"></i>
@@ -458,10 +460,12 @@
                             <i class="fas fa-calendar"></i>
                             {{ $album['date'] }}
                         </span>
+                        @if(!empty($album['photos_count']))
                         <span class="count">
                             <i class="fas fa-images"></i>
                             {{ $album['photos_count'] }} photos
                         </span>
+                        @endif
                     </div>
                 </div>
             </div>

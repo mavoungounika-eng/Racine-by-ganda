@@ -121,7 +121,7 @@
 
     <div class="footer">
         <p>
-            <strong>{{ config('app.company.name') }}</strong><br>
+            <strong>{{ config('company.name') }}</strong><br>
             Monitoring & Alerts System<br>
             This is an automated alert. Please do not reply to this email.
         </p>

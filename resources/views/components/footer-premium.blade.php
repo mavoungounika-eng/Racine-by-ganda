@@ -53,7 +53,7 @@
                         <li><a href="{{ route('frontend.portfolio') }}"><i class="fas fa-chevron-right"></i> Portfolio</a></li>
                         <li><a href="{{ route('frontend.albums') }}"><i class="fas fa-chevron-right"></i> Albums</a></li>
                         <li><a href="{{ route('frontend.events') }}"><i class="fas fa-chevron-right"></i> Événements</a></li>
-                        <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> {{ config('app.company.ceo') }}</a></li>
+                        <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> {{ config('company.ceo') }}</a></li>
                     </ul>
                 </div>
                 
@@ -97,7 +97,7 @@
                                 <i class="fas fa-phone-alt"></i>
                             </div>
                             <div class="contact-text">
-                                <span>{{ config('app.company.phone') }}</span>
+                                <span>{{ config('company.phone') }}</span>
                                 <span>Lun-Sam: 9h-18h</span>
                             </div>
                         </div>
@@ -106,7 +106,7 @@
                                 <i class="fas fa-envelope"></i>
                             </div>
                             <div class="contact-text">
-                                <span>{{ config('app.company.email') }}</span>
+                                <span>{{ config('company.email') }}</span>
                                 <span>support@racinebyganda.com</span>
                             </div>
                         </div>

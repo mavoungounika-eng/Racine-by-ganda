@@ -1,6 +1,6 @@
 @extends('layouts.frontend')
 
-@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Notre Histoire - ' . config('app.company.name'))
+@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Notre Histoire - ' . config('company.name'))
 
 @push('styles')
 <style nonce="{{ csp_nonce() }}">
@@ -466,7 +466,7 @@
                     {!! $heroData['title'] ?? "Célébrer la<br><span class=\"highlight\">Beauté</span><br>Africaine" !!}
                 </h1>
                 <p class="hero-description">
-                    {{ $heroData['description'] ?? config('app.company.name') . " est née d'une passion profonde pour l'artisanat africain et du désir de créer un pont entre les talents du continent et le monde entier." }}
+                    {{ $heroData['description'] ?? config('company.name') . " est née d'une passion profonde pour l'artisanat africain et du désir de créer un pont entre les talents du continent et le monde entier." }}
                 </p>
             </div>
             <div class="hero-image">
@@ -505,7 +505,7 @@
                         De cette rencontre est née l'envie de partager ces trésors avec le monde.
                     </p>
                     <p>
-                        Aujourd'hui, {{ config('app.company.name') }} collabore avec plus de 50 artisans et créateurs 
+                        Aujourd'hui, {{ config('company.name') }} collabore avec plus de 50 artisans et créateurs 
                         répartis dans 15 pays africains. Chaque pièce que vous achetez contribue directement 
                         à améliorer les conditions de vie de ces communautés talentueuses.
                     </p>
@@ -557,7 +557,7 @@
     <div class="container">
         <div class="team-header">
             <span class="section-tag">L'Équipe</span>
-            <h2 class="section-title">Les visages derrière {{ config('app.company.name') }}</h2>
+            <h2 class="section-title">Les visages derrière {{ config('company.name') }}</h2>
             <p>Une équipe passionnée, unie par l'amour de l'artisanat africain</p>
         </div>
         
@@ -567,9 +567,9 @@
                     <img src="{{ asset('storage/showroom/hero/showroom-hero-01.jpeg') }}" alt="Fondatrice">
                 </div>
                 <div class="team-info">
-                    <h3>{{ config('app.company.ceo') }}</h3>
+                    <h3>{{ config('company.ceo') }}</h3>
                     <span>Fondatrice & Directrice Créative</span>
-                    <p>Visionnaire passionnée, elle a créé {{ config('app.company.name') }} pour partager sa culture avec le monde.</p>
+                    <p>Visionnaire passionnée, elle a créé {{ config('company.name') }} pour partager sa culture avec le monde.</p>
                 </div>
             </div>
             {{-- Équipe étendue : à ajouter au fil du temps --}}
@@ -603,7 +603,7 @@
                 <div class="timeline-content">
                     <span class="timeline-year">2019</span>
                     <h3>La Naissance</h3>
-                    <p>Création de {{ config('app.company.name') }} à Paris, avec une première collection de 20 pièces.</p>
+                    <p>Création de {{ config('company.name') }} à Paris, avec une première collection de 20 pièces.</p>
                 </div>
             </div>
             <div class="timeline-item">
@@ -634,7 +634,7 @@
 <!-- CTA -->
 <section class="cta-section">
     <div class="container">
-        <h2>Rejoignez l'Aventure {{ config('app.company.name') }}</h2>
+        <h2>Rejoignez l'Aventure {{ config('company.name') }}</h2>
         <p>Découvrez nos créations uniques et participez à une mode plus responsable et authentique.</p>
         <a href="{{ route('frontend.shop') }}" class="btn-cta">
             <i class="fas fa-shopping-bag"></i>

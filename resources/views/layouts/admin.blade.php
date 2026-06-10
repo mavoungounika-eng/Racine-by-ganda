@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Tableau de Bord Admin - ' . config('app.company.name'))</title>
+    <title>@yield('title', 'Tableau de Bord Admin - ' . config('company.name'))</title>
 
     {{-- Fonts RACINE (Cormorant Garamond → Aleppo, Nunito → Coco Gothic, Aileron) --}}
     <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -373,7 +373,7 @@
         <div class="admin-sidebar-header">
             <div class="admin-sidebar-title">Espace Admin</div>
             <div class="admin-sidebar-subtitle">
-                {{ config('app.company.name') }}
+                {{ config('company.name') }}
             </div>
         </div>
 
@@ -524,7 +524,7 @@
         <header class="admin-topbar">
             <div class="admin-topbar-left">
                 <h1>@yield('page-title', 'Tableau de bord')</h1>
-                <span>@yield('page-subtitle', "Vue d'ensemble de l'activité " . config('app.company.name'))</span>
+                <span>@yield('page-subtitle', "Vue d'ensemble de l'activité " . config('company.name'))</span>
             </div>
             <div class="admin-topbar-right">
                 <div class="admin-badge-env">

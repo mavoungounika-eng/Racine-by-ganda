@@ -230,7 +230,7 @@
         <hr class="divider">
 
         <p class="help-text">
-            Des questions ? Écrivez-nous à <a href="mailto:{{ config('app.company.email', 'contact@racinebyganda.com') }}" style="color:#ED5F1E;">{{ config('app.company.email', 'contact@racinebyganda.com') }}</a>
+            Des questions ? Écrivez-nous à <a href="mailto:{{ config('company.email', 'contact@racinebyganda.com') }}" style="color:#ED5F1E;">{{ config('company.email', 'contact@racinebyganda.com') }}</a>
         </p>
 
     </div>

@@ -348,7 +348,7 @@
                     <div class="info-content">
                         <h3>Email</h3>
                         <p>Pour toute question générale</p>
-                        <a href="mailto:{{ config('app.company.email') }}">{{ config('app.company.email') }}</a>
+                        <a href="mailto:{{ config('company.email') }}">{{ config('company.email') }}</a>
                     </div>
                 </div>
                 
@@ -357,7 +357,7 @@
                     <div class="info-content">
                         <h3>Téléphone</h3>
                         <p>Du lundi au vendredi, 9h-18h</p>
-                        <a href="tel:{{ str_replace(' ', '', config('app.company.phone')) }}">{{ config('app.company.phone') }}</a>
+                        <a href="tel:{{ str_replace(' ', '', config('company.phone')) }}">{{ config('company.phone') }}</a>
                     </div>
                 </div>
                 

@@ -8,13 +8,13 @@
             <div class="icon me-2 d-flex justify-content-center align-items-center">
               <span class="icon-phone2"></span>
             </div>
-            <span class="text">{{ config('app.company.phone') }}</span>
+            <span class="text">{{ config('company.phone') }}</span>
           </div>
           <div class="col-md pe-4 d-flex topper align-items-center">
             <div class="icon me-2 d-flex justify-content-center align-items-center">
               <span class="icon-paper-plane"></span>
             </div>
-            <span class="text">{{ config('app.company.email') }}</span>
+            <span class="text">{{ config('company.email') }}</span>
           </div>
           <div class="col-md-5 pe-4 d-flex topper align-items-center text-lg-right">
             <span class="text">Livraison gratuite à Pointe-Noire &amp; Retours gratuits</span>

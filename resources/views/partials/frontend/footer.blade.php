@@ -58,8 +58,8 @@
           <div class="block-23 mb-3">
             <ul>
               <li><span class="icon icon-map-marker"></span><span class="text">Centre ville, Galerie NF, Pointe-Noire</span></li>
-              <li><a href="tel:{{ str_replace(' ', '', config('app.company.phone')) }}"><span class="icon icon-phone"></span><span class="text">{{ config('app.company.phone') }}</span></a></li>
-              <li><a href="mailto:{{ config('app.company.email') }}"><span class="icon icon-envelope"></span><span class="text">{{ config('app.company.email') }}</span></a></li>
+              <li><a href="tel:{{ str_replace(' ', '', config('company.phone')) }}"><span class="icon icon-phone"></span><span class="text">{{ config('company.phone') }}</span></a></li>
+              <li><a href="mailto:{{ config('company.email') }}"><span class="icon icon-envelope"></span><span class="text">{{ config('company.email') }}</span></a></li>
             </ul>
           </div>
         </div>

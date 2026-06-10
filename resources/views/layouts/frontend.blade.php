@@ -18,7 +18,7 @@
     <meta property="og:description" content="@yield('og-description', $__env->yieldContent('meta-description', 'RACINE BY GANDA - Mode africaine premium. Créations authentiques qui célèbrent l\'héritage africain avec une touche contemporaine.'))">
     <meta property="og:image" content="@yield('og-image', asset('images/og-image-racine.jpg'))">
     <meta property="og:url" content="@yield('canonical-url', url()->current())">
-    <meta property="og:site_name" content="{{ config('app.company.name') }}">
+    <meta property="og:site_name" content="{{ config('company.name') }}">
     <meta property="og:locale" content="fr_FR">
     
     {{-- Twitter Card Meta Tags --}}
@@ -467,7 +467,7 @@
                             Devenir créateur
                         </a>
 
-                        <a href="mailto:partenaires@racinebyganda.com?subject=Candidature%20Créateur%20RACINE"
+                        <a href="mailto:{{ config('company.email') }}?subject=Candidature%20Créateur%20RACINE"
                            class="cta-btn cta-btn-ghost">
                             Envoyer une candidature
                         </a>
@@ -546,7 +546,7 @@
                             <li><a href="{{ route('frontend.portfolio') }}"><i class="fas fa-chevron-right"></i> Portfolio</a></li>
                             <li><a href="{{ route('frontend.albums') }}"><i class="fas fa-chevron-right"></i> Albums</a></li>
                             <li><a href="{{ route('frontend.events') }}"><i class="fas fa-chevron-right"></i> Événements</a></li>
-                            <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> {{ config('app.company.ceo') }}</a></li>
+                            <li><a href="{{ route('frontend.ceo') }}"><i class="fas fa-chevron-right"></i> {{ config('company.ceo') }}</a></li>
                         </ul>
                     </div>
                     
@@ -607,7 +607,7 @@
                                     <i class="fas fa-phone-alt"></i>
                                 </div>
                                 <div class="contact-text">
-                                    <span>{{ config('app.company.phone') }}</span>
+                                    <span>{{ config('company.phone') }}</span>
                                     <span>Lun-Sam: 9h-18h</span>
                                 </div>
                             </div>
@@ -616,8 +616,8 @@
                                     <i class="fas fa-envelope"></i>
                                 </div>
                                 <div class="contact-text">
-                                    <span>{{ config('app.company.email') }}</span>
-                                    <span>support@racinebyganda.com</span>
+                                    <span>{{ config('company.email') }}</span>
+                                    <span>{{ config('company.support_email') }}</span>
                                 </div>
                             </div>
                         </div>

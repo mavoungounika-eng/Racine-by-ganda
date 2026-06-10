@@ -209,10 +209,12 @@
                     <h2><span class="number">1</span> Éditeur du site</h2>
                     <p>Le site www.racinebyganda.com est édité par RACINE BY GANDA.</p>
                     <ul>
-                        <li>Raison sociale : RACINE BY GANDA</li>
-                        <li>Siège social : Douala, Cameroun</li>
-                        <li>Email : contact@racinebyganda.com</li>
-                        <li>Directeur de la publication : Amira Ganda</li>
+                        <li>Raison sociale : {{ config('company.name') }}</li>
+                        @if(config('company.address'))
+                        <li>Siège social : {{ config('company.address') }}</li>
+                        @endif
+                        <li>Email : {{ config('company.email') }}</li>
+                        <li>Directeur de la publication : {{ config('company.ceo') }}</li>
                     </ul>
                 </div>
 
@@ -238,7 +240,7 @@
                     <h2><span class="number">4</span> Données personnelles</h2>
                     <p>Les données personnelles collectées sur ce site sont traitées conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi relative à l'informatique, aux fichiers et aux libertés.</p>
                     <p>Pour en savoir plus sur la gestion de vos données, consultez notre <a href="{{ route('frontend.privacy') }}">Politique de Confidentialité</a>.</p>
-                    <p>Vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données. Pour exercer ces droits, contactez-nous à : contact@racinebyganda.com.</p>
+                    <p>Vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données. Pour exercer ces droits, contactez-nous à : {{ config('company.email') }}.</p>
                 </div>
 
                 <div class="legal-section" id="article5">

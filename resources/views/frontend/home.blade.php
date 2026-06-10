@@ -14,7 +14,7 @@
   "foundingDate": "2020",
   "founder": {
     "@@type": "Person",
-    "name": "{{ config('app.company.ceo', 'Amira Ganda') }}"
+    "name": "{{ config('company.ceo', 'Amira Ganda') }}"
   },
   "address": {
     "@@type": "PostalAddress",
@@ -22,9 +22,9 @@
   },
   "contactPoint": {
     "@@type": "ContactPoint",
-    "telephone": "{{ config('app.company.phone', '+33-1-XX-XX-XX-XX') }}",
+    "telephone": "{{ config('company.phone', '+33-1-XX-XX-XX-XX') }}",
     "contactType": "Customer Service",
-    "email": "{{ config('app.company.email', 'contact@racinebyganda.com') }}",
+    "email": "{{ config('company.email', 'contact@racinebyganda.com') }}",
     "availableLanguage": ["French", "English"]
   },
   "sameAs": [
