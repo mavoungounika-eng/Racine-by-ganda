@@ -633,8 +633,8 @@
                     <div class="copyright">
                         <p>© {{ date('Y') }} <strong>RACINE BY GANDA</strong>. Tous droits réservés.</p>
                         <p class="dev-credit">
-                            Développé par <a href="#" class="dev-link"><strong>NIKA DIGITAL HUB</strong></a> 
-                            <span class="dev-separator">|</span> 
+                            Développé par <strong class="dev-link">NIKA DIGITAL HUB</strong>
+                            <span class="dev-separator">|</span>
                             <span class="dev-desc">Solutions Web & Communication</span>
                             <span class="dev-flag">🇨🇬</span>
                             <span class="dev-country">République du Congo</span>
