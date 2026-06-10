@@ -200,23 +200,26 @@
             <nav class="legal-nav">
                 <h3>Sommaire</h3>
                 <ul>
-                    <li><a href="#article1">1. Objet</a></li>
-                    <li><a href="#article2">2. Produits</a></li>
-                    <li><a href="#article3">3. Prix</a></li>
-                    <li><a href="#article4">4. Commande</a></li>
-                    <li><a href="#article5">5. Paiement</a></li>
+                    <li><a href="#article1">1. Objet et champ d'application</a></li>
+                    <li><a href="#article2">2. Définitions</a></li>
+                    <li><a href="#article3">3. Inscription et compte utilisateur</a></li>
+                    <li><a href="#article4">4. Produits et commandes</a></li>
+                    <li><a href="#article5">5. Prix et paiement</a></li>
                     <li><a href="#article6">6. Livraison</a></li>
-                    <li><a href="#article7">7. Retours</a></li>
-                    <li><a href="#article8">8. Garanties</a></li>
-                    <li><a href="#article9">9. Responsabilité</a></li>
+                    <li><a href="#article7">7. Droit de rétractation et retours</a></li>
+                    <li><a href="#article8">8. Responsabilités</a></li>
+                    <li><a href="#article9">9. Propriété intellectuelle</a></li>
                     <li><a href="#article10">10. Données personnelles</a></li>
+                    <li><a href="#article11">11. Litiges et droit applicable</a></li>
                 </ul>
             </nav>
             
             <!-- BODY -->
             <div class="legal-body">
+                <p class="update-date" style="text-align:right;margin-bottom:2rem;"><strong>Dernière mise à jour :</strong> Juin 2026</p>
+
                 <div class="legal-section" id="article1">
-                    <h2><span class="number">1</span> Objet</h2>
+                    <h2><span class="number">1</span> Objet et champ d'application</h2>
                     <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre {{ config('company.name') }}, société par actions simplifiée au capital de
                     @if(config('company.capital'))
                         {{ number_format(config('company.capital'), 0, ',', ' ') }} €
@@ -238,101 +241,202 @@
                         <!-- TODO PROD BLOQUANT: Renseigner RCS réel avant mise en ligne -->
                         <span class="todo-prod" style="display:none">[RCS_A_RENSEIGNER]</span><em>(à renseigner)</em>
                     @endif
-                    , et toute personne physique ou morale (le "Client") effectuant un achat sur le site www.racine-ganda.com.</p>
+                    , ci-après dénommée "la Plateforme", et toute personne physique ou morale effectuant un achat sur le site racinebyganda.com.</p>
+                    <p>{{ config('company.name') }} opère une marketplace de mode africaine contemporaine mettant en relation des créateurs indépendants avec des clients.</p>
                     <div class="highlight-box">
-                        <p>En passant commande, le Client accepte sans réserve les présentes CGV.</p>
+                        <p><strong>Acceptation :</strong> En passant commande, le Client reconnaît avoir pris connaissance des présentes CGV et les accepte sans réserve. L'acceptation des CGV est matérialisée par le clic sur le bouton de validation de commande.</p>
                     </div>
                 </div>
-                
+
                 <div class="legal-section" id="article2">
-                    <h2><span class="number">2</span> Produits</h2>
-                    <p>Les produits proposés à la vente sont ceux présentés sur le site au jour de la consultation. Les photographies et descriptions sont aussi fidèles que possible mais ne sauraient engager la responsabilité du Vendeur.</p>
-                    <h3>2.1 Disponibilité</h3>
-                    <p>Les offres de produits sont valables dans la limite des stocks disponibles. En cas d'indisponibilité d'un produit commandé, le Client en sera informé dans les plus brefs délais et pourra choisir entre un remboursement ou un échange.</p>
-                    <h3>2.2 Caractéristiques</h3>
-                    <p>Les produits RACINE BY GANDA sont des créations artisanales. De légères variations de couleur ou de motif peuvent exister entre les différentes pièces, faisant de chaque article une pièce unique.</p>
+                    <h2><span class="number">2</span> Définitions</h2>
+                    <p>Les termes suivants ont la signification indiquée ci-après :</p>
+                    <ul>
+                        <li><strong>Plateforme :</strong> {{ config('company.name') }}, éditeur et exploitant du site racinebyganda.com</li>
+                        <li><strong>Créateur :</strong> Artisan, styliste ou créateur indépendant proposant ses produits sur la Plateforme</li>
+                        <li><strong>Client :</strong> Toute personne physique ou morale procédant à un achat sur la Plateforme</li>
+                        <li><strong>Commande :</strong> Achat de produits effectué par le Client sur la Plateforme</li>
+                        <li><strong>Produit :</strong> Article de mode, accessoire ou création artisanale proposé à la vente</li>
+                        <li><strong>Compte utilisateur :</strong> Espace personnel accessible après inscription permettant de gérer ses commandes</li>
+                    </ul>
                 </div>
-                
+
                 <div class="legal-section" id="article3">
-                    <h2><span class="number">3</span> Prix</h2>
-                    <p>Les prix sont indiqués en euros, toutes taxes comprises (TTC). Ils ne comprennent pas les frais de livraison, qui sont facturés en supplément et indiqués avant la validation de la commande.</p>
-                    <p>RACINE BY GANDA se réserve le droit de modifier ses prix à tout moment. Les produits sont facturés sur la base des tarifs en vigueur au moment de la validation de la commande.</p>
+                    <h2><span class="number">3</span> Inscription et compte utilisateur</h2>
+                    <h3>3.1 Création de compte</h3>
+                    <p>L'achat sur la Plateforme nécessite la création d'un compte utilisateur. Le Client garantit l'exactitude des informations fournies lors de son inscription et s'engage à les mettre à jour en cas de modification.</p>
+                    <p>Les identifiants de connexion sont personnels et confidentiels. Le Client est responsable de leur conservation et de toute utilisation qui en serait faite.</p>
+                    <h3>3.2 Accès au compte</h3>
+                    <p>Le compte permet au Client de :</p>
+                    <ul>
+                        <li>Consulter l'historique de ses commandes</li>
+                        <li>Suivre l'état de ses livraisons</li>
+                        <li>Gérer ses adresses de livraison</li>
+                        <li>Modifier ses informations personnelles</li>
+                        <li>Initier des retours ou réclamations</li>
+                    </ul>
+                    <h3>3.3 Suppression de compte</h3>
+                    <p>Le Client peut demander la suppression de son compte à tout moment depuis son espace personnel ou en contactant {{ config('company.email') }}. Les données liées aux commandes passées seront conservées conformément aux obligations légales.</p>
                 </div>
-                
+
                 <div class="legal-section" id="article4">
-                    <h2><span class="number">4</span> Commande</h2>
+                    <h2><span class="number">4</span> Produits et commandes</h2>
+                    <h3>4.1 Nature des produits</h3>
+                    <p>Les produits proposés sur la Plateforme sont des créations artisanales réalisées par des créateurs indépendants basés en Afrique et dans la diaspora. Chaque pièce est unique et peut présenter de légères variations par rapport aux photographies présentées.</p>
+                    <p>Les descriptions, photographies et informations produits sont fournies par les Créateurs et validées par la Plateforme. Elles sont aussi précises que possible mais ne sauraient constituer un engagement contractuel sur des détails mineurs.</p>
+                    <h3>4.2 Disponibilité</h3>
+                    <p>Les offres sont valables dans la limite des stocks disponibles. En cas d'indisponibilité d'un article après validation de la commande, le Client en sera informé par email dans un délai de 48 heures et pourra choisir entre :</p>
+                    <ul>
+                        <li>Un remboursement intégral de l'article indisponible</li>
+                        <li>Un échange contre un produit équivalent (sous réserve d'acceptation)</li>
+                        <li>L'annulation totale de la commande si l'article était le seul commandé</li>
+                    </ul>
+                    <h3>4.3 Processus de commande</h3>
                     <p>Pour passer commande, le Client doit :</p>
-                    <ul>
+                    <ol>
                         <li>Sélectionner les produits souhaités et les ajouter au panier</li>
-                        <li>Valider le contenu de son panier</li>
-                        <li>Renseigner ses coordonnées de livraison et de facturation</li>
-                        <li>Choisir le mode de livraison</li>
-                        <li>Choisir le mode de paiement et régler la commande</li>
-                    </ul>
-                    <p>La commande n'est définitive qu'après confirmation du paiement. Un email de confirmation récapitulatif est envoyé au Client.</p>
+                        <li>Valider le contenu du panier et vérifier les quantités</li>
+                        <li>Renseigner ou confirmer l'adresse de livraison</li>
+                        <li>Choisir le mode de livraison parmi les options proposées</li>
+                        <li>Sélectionner le mode de paiement</li>
+                        <li>Vérifier le récapitulatif de la commande</li>
+                        <li>Accepter les CGV et valider la commande</li>
+                        <li>Procéder au paiement</li>
+                    </ol>
+                    <p>La commande est définitivement enregistrée après validation du paiement. Un email de confirmation est envoyé au Client récapitulant le détail de la commande, le montant total et l'adresse de livraison.</p>
                 </div>
-                
+
                 <div class="legal-section" id="article5">
-                    <h2><span class="number">5</span> Paiement</h2>
-                    <p>Le règlement des achats s'effectue par :</p>
+                    <h2><span class="number">5</span> Prix et paiement</h2>
+                    <h3>5.1 Prix</h3>
+                    <p>Les prix sont affichés en euros (EUR) ou en francs CFA (XAF) selon la localisation du Client, toutes taxes comprises (TTC). La TVA applicable est celle en vigueur au jour de la commande.</p>
+                    <p>Les frais de livraison sont indiqués distinctement avant la validation finale de la commande et s'ajoutent au montant total.</p>
+                    <p>La Plateforme se réserve le droit de modifier ses prix à tout moment, étant entendu que les produits seront facturés sur la base des tarifs en vigueur au moment de la validation de la commande.</p>
+                    <h3>5.2 Moyens de paiement</h3>
+                    <p>Le règlement des commandes s'effectue par :</p>
                     <ul>
-                        <li>Carte bancaire (Visa, Mastercard, American Express)</li>
-                        <li>PayPal</li>
-                        <li>Paiement en 3 ou 4 fois sans frais (via Alma, pour les commandes de 100€ à 2000€)</li>
+                        <li><strong>Carte bancaire :</strong> Visa, Mastercard, American Express (paiement sécurisé via Stripe)</li>
+                        <li><strong>Mobile Money :</strong> Pour les paiements en XAF (Orange Money, MTN Mobile Money, Moov Money)</li>
+                        <li><strong>PayPal :</strong> Paiement en ligne sécurisé</li>
                     </ul>
-                    <p>Les transactions sont sécurisées par le protocole SSL. Les données bancaires ne sont jamais stockées sur nos serveurs.</p>
+                    <p>Les transactions sont sécurisées par le protocole SSL. Les données bancaires ne sont jamais stockées sur les serveurs de la Plateforme et sont traitées uniquement par les prestataires de paiement certifiés PCI-DSS.</p>
+                    <h3>5.3 Validation du paiement</h3>
+                    <p>Le Client garantit à la Plateforme qu'il dispose des autorisations nécessaires pour utiliser le mode de paiement choisi. La Plateforme se réserve le droit de refuser ou d'annuler toute commande en cas de refus d'autorisation de paiement, de fraude avérée ou de litige relatif au paiement d'une commande antérieure.</p>
                 </div>
-                
+
                 <div class="legal-section" id="article6">
                     <h2><span class="number">6</span> Livraison</h2>
-                    <h3>6.1 Zones et délais</h3>
+                    <h3>6.1 Zones de livraison</h3>
+                    <p>{{ config('company.name') }} livre dans les zones géographiques suivantes :</p>
                     <ul>
-                        <li>France métropolitaine : 3-5 jours ouvrés</li>
-                        <li>DOM-TOM : 7-14 jours ouvrés</li>
-                        <li>Union Européenne : 5-10 jours ouvrés</li>
-                        <li>International : 10-21 jours ouvrés</li>
+                        <li>France métropolitaine</li>
+                        <li>Départements et régions d'outre-mer (DOM-ROM)</li>
+                        <li>Union Européenne</li>
+                        <li>Afrique (principales villes et capitales)</li>
+                        <li>International (sur demande)</li>
                     </ul>
-                    <h3>6.2 Frais de port</h3>
+                    <h3>6.2 Délais de livraison</h3>
+                    <p>Les délais de livraison sont donnés à titre indicatif et peuvent varier selon la localisation du Créateur et la destination :</p>
                     <ul>
-                        <li>France métropolitaine : Gratuit dès 100€, sinon 5,90€</li>
-                        <li>DOM-TOM : À partir de 12,90€</li>
+                        <li><strong>France métropolitaine :</strong> 5 à 10 jours ouvrés</li>
+                        <li><strong>DOM-ROM :</strong> 10 à 15 jours ouvrés</li>
+                        <li><strong>Union Européenne :</strong> 7 à 12 jours ouvrés</li>
+                        <li><strong>Afrique :</strong> 7 à 14 jours ouvrés</li>
+                        <li><strong>International :</strong> 10 à 21 jours ouvrés</li>
+                    </ul>
+                    <p>Ces délais courent à compter de la confirmation de la commande. Les retards de livraison ne peuvent donner lieu à l'annulation de la commande ou à l'octroi de dommages et intérêts.</p>
+                    <h3>6.3 Frais de livraison</h3>
+                    <p>Les frais de livraison varient selon la destination et le poids du colis :</p>
+                    <ul>
+                        <li>France métropolitaine : Gratuit dès 150€ d'achat, sinon à partir de 6,90€</li>
+                        <li>DOM-ROM : À partir de 12,90€</li>
                         <li>Union Européenne : À partir de 9,90€</li>
+                        <li>Afrique : À partir de 15€ / 10 000 XAF</li>
                         <li>International : Sur devis</li>
                     </ul>
+                    <h3>6.4 Réception de la commande</h3>
+                    <p>Le Client est tenu de vérifier l'état du colis en présence du transporteur. Toute anomalie apparente (colis endommagé, ouvert, mouillé) doit être signalée immédiatement au transporteur et faire l'objet de réserves écrites sur le bon de livraison.</p>
+                    <p>Le Client dispose ensuite de 48 heures pour signaler tout dommage ou non-conformité à {{ config('company.support_email') }}.</p>
                 </div>
-                
+
                 <div class="legal-section" id="article7">
-                    <h2><span class="number">7</span> Droit de Rétractation et Retours</h2>
-                    <p>Conformément à l'article L.221-18 du Code de la consommation, le Client dispose d'un délai de 14 jours à compter de la réception de sa commande pour exercer son droit de rétractation, sans avoir à justifier de motifs.</p>
+                    <h2><span class="number">7</span> Droit de rétractation et retours</h2>
+                    <h3>7.1 Droit de rétractation légal</h3>
+                    <p>Conformément aux articles L.221-18 et suivants du Code de la consommation, le Client dispose d'un délai de 14 jours à compter de la réception de sa commande pour exercer son droit de rétractation, sans avoir à justifier de motifs ni à payer de pénalité.</p>
                     <div class="highlight-box">
-                        <p>RACINE BY GANDA étend ce délai à 30 jours pour offrir plus de flexibilité à ses clients.</p>
+                        <p><strong>Garantie satisfaction :</strong> {{ config('company.name') }} étend ce délai à 30 jours pour offrir une plus grande flexibilité à ses clients.</p>
                     </div>
-                    <h3>7.1 Conditions de retour</h3>
+                    <h3>7.2 Conditions de retour</h3>
+                    <p>Pour être accepté, un retour doit respecter les conditions suivantes :</p>
                     <ul>
-                        <li>L'article doit être retourné dans son état d'origine, non porté, non lavé</li>
-                        <li>L'emballage d'origine doit être intact</li>
-                        <li>Les étiquettes doivent être attachées</li>
+                        <li>L'article doit être retourné dans son état d'origine, non porté, non lavé et non modifié</li>
+                        <li>Les étiquettes d'origine doivent être intactes et attachées</li>
+                        <li>L'emballage d'origine doit être présent et non détérioré</li>
+                        <li>La demande de retour doit être initiée avant l'expiration du délai de 30 jours</li>
                     </ul>
-                    <h3>7.2 Procédure</h3>
-                    <p>Le Client doit initier sa demande de retour depuis son espace client ou en contactant le service client. Une étiquette de retour prépayée sera fournie pour les retours en France métropolitaine.</p>
+                    <p>Les articles personnalisés ou sur-mesure ne peuvent faire l'objet d'une rétractation, sauf en cas de défaut de conformité ou vice caché.</p>
+                    <h3>7.3 Procédure de retour</h3>
+                    <p>Le Client doit initier sa demande de retour depuis son espace client ou en contactant {{ config('company.support_email') }}. Une étiquette de retour prépayée sera fournie pour les retours en France métropolitaine. Pour les autres destinations, les frais de retour sont à la charge du Client.</p>
+                    <p>Le remboursement interviendra dans un délai de 14 jours à compter de la réception du produit retourné, après vérification de sa conformité aux conditions de retour. Le remboursement sera effectué par le même moyen de paiement que celui utilisé pour la commande.</p>
                 </div>
-                
+
                 <div class="legal-section" id="article8">
-                    <h2><span class="number">8</span> Garanties</h2>
-                    <p>Tous les produits bénéficient de la garantie légale de conformité (articles L.217-4 et suivants du Code de la consommation) et de la garantie contre les vices cachés (articles 1641 et suivants du Code civil).</p>
+                    <h2><span class="number">8</span> Responsabilités</h2>
+                    <h3>8.1 Responsabilité de la Plateforme</h3>
+                    <p>{{ config('company.name') }} agit en qualité d'intermédiaire entre les Créateurs et les Clients. La Plateforme s'engage à :</p>
+                    <ul>
+                        <li>Sélectionner des Créateurs de qualité et vérifier leur conformité aux standards de la marque</li>
+                        <li>Assurer la sécurité des transactions et la protection des données personnelles</li>
+                        <li>Traiter les commandes et coordonner la logistique</li>
+                        <li>Fournir un service client réactif et accessible</li>
+                    </ul>
+                    <p>La Plateforme ne saurait être tenue responsable des retards de livraison dus à des cas de force majeure, à des informations de livraison erronées fournies par le Client, ou à l'absence du destinataire lors de la livraison.</p>
+                    <h3>8.2 Garantie légale de conformité</h3>
+                    <p>Tous les produits bénéficient de la garantie légale de conformité prévue aux articles L.217-4 et suivants du Code de la consommation, ainsi que de la garantie contre les vices cachés prévue aux articles 1641 et suivants du Code civil.</p>
+                    <p>En cas de défaut de conformité, le Client peut obtenir le remplacement ou la réparation du produit, ou à défaut, la réduction du prix ou la résolution du contrat.</p>
+                    <h3>8.3 Limitation de responsabilité</h3>
+                    <p>La Plateforme ne saurait être tenue responsable :</p>
+                    <ul>
+                        <li>Des dommages résultant d'une utilisation inappropriée des produits</li>
+                        <li>Des variations artisanales inhérentes à la fabrication manuelle</li>
+                        <li>Des retards d'acheminement imputables aux transporteurs ou aux autorités douanières</li>
+                        <li>De l'indisponibilité temporaire du site pour maintenance technique</li>
+                    </ul>
                 </div>
-                
+
                 <div class="legal-section" id="article9">
-                    <h2><span class="number">9</span> Responsabilité</h2>
-                    <p>RACINE BY GANDA ne saurait être tenue responsable des dommages résultant d'une mauvaise utilisation des produits achetés, ni des retards ou défaillances dus à des cas de force majeure.</p>
+                    <h2><span class="number">9</span> Propriété intellectuelle</h2>
+                    <p>L'ensemble des éléments du site racinebyganda.com (textes, images, photographies, logos, marques, chartes graphiques, vidéos, sons) sont protégés par le droit d'auteur, le droit des marques et le droit des bases de données.</p>
+                    <p>Toute reproduction, représentation, modification, publication ou adaptation, totale ou partielle, des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite sans l'autorisation écrite préalable de {{ config('company.name') }}.</p>
+                    <p>Les créations proposées par les Créateurs restent leur propriété intellectuelle. Toute utilisation commerciale non autorisée des visuels ou designs présents sur la Plateforme est passible de poursuites.</p>
                 </div>
-                
+
                 <div class="legal-section" id="article10">
-                    <h2><span class="number">10</span> Données Personnelles</h2>
-                    <p>Les données personnelles collectées sont traitées conformément à notre Politique de Confidentialité et au RGPD. Pour plus d'informations, consultez notre <a href="{{ route('frontend.privacy') }}">Politique de Confidentialité</a>.</p>
+                    <h2><span class="number">10</span> Données personnelles</h2>
+                    <p>Les données personnelles collectées lors de la commande sont nécessaires au traitement de celle-ci et à la gestion de la relation client. Elles sont traitées conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés.</p>
+                    <p>Le Client dispose d'un droit d'accès, de rectification, de suppression, de portabilité et d'opposition au traitement de ses données personnelles.</p>
+                    <p>Pour plus d'informations sur la collecte et l'utilisation de vos données, consultez notre <a href="{{ route('frontend.privacy') }}" style="color:#ED5F1E;text-decoration:underline;">Politique de Confidentialité</a>.</p>
                 </div>
-                
-                <p class="update-date">Ces CGV sont soumises au droit français. Tout litige sera de la compétence exclusive des tribunaux de Paris.</p>
+
+                <div class="legal-section" id="article11">
+                    <h2><span class="number">11</span> Litiges et droit applicable</h2>
+                    <h3>11.1 Droit applicable</h3>
+                    <p>Les présentes CGV sont soumises au droit français. Elles sont rédigées en langue française. Dans l'hypothèse d'une traduction en une ou plusieurs langues, seul le texte français ferait foi en cas de litige.</p>
+                    <h3>11.2 Règlement amiable des litiges</h3>
+                    <p>En cas de litige, le Client est invité à contacter en priorité le service client de {{ config('company.name') }} à l'adresse {{ config('company.support_email') }} afin de rechercher une solution amiable.</p>
+                    <h3>11.3 Médiation de la consommation</h3>
+                    <p>Conformément à l'article L.612-1 du Code de la consommation, le Client a le droit de recourir gratuitement à un service de médiation en cas de litige. Le médiateur de la consommation dont relève {{ config('company.name') }} peut être saisi sur demande.</p>
+                    <h3>11.4 Juridiction compétente</h3>
+                    <p>À défaut de résolution amiable, tout litige relatif à l'interprétation ou à l'exécution des présentes CGV sera soumis aux tribunaux compétents dans les conditions de droit commun.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top:3rem;text-align:center;">
+                    <p><strong>Pour toute question concernant nos Conditions Générales de Vente :</strong></p>
+                    <p>Email : <a href="mailto:{{ config('company.email') }}" style="color:#ED5F1E;">{{ config('company.email') }}</a></p>
+                    @if(config('company.phone'))
+                    <p>Téléphone : {{ config('company.phone') }}</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
