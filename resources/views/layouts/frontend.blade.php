@@ -499,21 +499,31 @@
                             Des créations uniques qui célèbrent l'héritage africain avec une touche contemporaine. Chaque pièce raconte une histoire.
                         </p>
                         <div class="social-links">
-                            <a href="#" class="social-link" aria-label="Facebook">
+                            @if(config('company.facebook'))
+                            <a href="{{ config('company.facebook') }}" class="social-link" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
-                            <a href="#" class="social-link" aria-label="Instagram">
+                            @endif
+                            @if(config('company.instagram'))
+                            <a href="{{ config('company.instagram') }}" class="social-link" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
                                 <i class="fab fa-instagram"></i>
                             </a>
-                            <a href="#" class="social-link" aria-label="Twitter">
+                            @endif
+                            @if(config('company.twitter'))
+                            <a href="{{ config('company.twitter') }}" class="social-link" aria-label="Twitter" target="_blank" rel="noopener noreferrer">
                                 <i class="fab fa-twitter"></i>
                             </a>
-                            <a href="#" class="social-link" aria-label="Pinterest">
+                            @endif
+                            @if(config('company.pinterest'))
+                            <a href="{{ config('company.pinterest') }}" class="social-link" aria-label="Pinterest" target="_blank" rel="noopener noreferrer">
                                 <i class="fab fa-pinterest-p"></i>
                             </a>
-                            <a href="#" class="social-link" aria-label="TikTok">
+                            @endif
+                            @if(config('company.tiktok'))
+                            <a href="{{ config('company.tiktok') }}" class="social-link" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
                                 <i class="fab fa-tiktok"></i>
                             </a>
+                            @endif
                         </div>
                     </div>
                     

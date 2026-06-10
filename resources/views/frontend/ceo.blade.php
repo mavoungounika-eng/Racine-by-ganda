@@ -453,10 +453,18 @@
                     {{ $heroData['quote'] ?? "La mode africaine n'est pas une tendance, c'est un héritage vivant que nous avons le devoir de préserver et de sublimer." }}
                 </p>
                 <div class="ceo-social">
-                    <a href="{{ cache('settings.social_instagram') ?: route('frontend.contact') }}" aria-label="Instagram" target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a href="{{ route('frontend.contact') }}" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="{{ cache('settings.social_twitter') ?: route('frontend.contact') }}" aria-label="Twitter" target="_blank"><i class="fab fa-twitter"></i></a>
-                    <a href="{{ cache('settings.social_facebook') ?: route('frontend.contact') }}" aria-label="Facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    @if(config('company.instagram'))
+                    <a href="{{ config('company.instagram') }}" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+                    @endif
+                    @if(config('company.linkedin'))
+                    <a href="{{ config('company.linkedin') }}" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
+                    @endif
+                    @if(config('company.twitter'))
+                    <a href="{{ config('company.twitter') }}" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                    @endif
+                    @if(config('company.facebook'))
+                    <a href="{{ config('company.facebook') }}" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+                    @endif
                 </div>
             </div>
         </div>

@@ -57,4 +57,21 @@ return [
     */
     'vat_number' => env('COMPANY_VAT_NUMBER', ''),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Social Media
+    |--------------------------------------------------------------------------
+    |
+    | Social media profile URLs for RACINE BY GANDA.
+    | Leave empty if not yet created. Links will not display if empty.
+    |
+    */
+
+    'instagram' => env('SOCIAL_INSTAGRAM', ''),
+    'facebook' => env('SOCIAL_FACEBOOK', ''),
+    'twitter' => env('SOCIAL_TWITTER', ''),
+    'tiktok' => env('SOCIAL_TIKTOK', ''),
+    'pinterest' => env('SOCIAL_PINTEREST', ''),
+    'linkedin' => env('SOCIAL_LINKEDIN', ''),
+
 ];
