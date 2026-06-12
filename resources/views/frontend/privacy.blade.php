@@ -207,7 +207,7 @@
                 <p>
                     Chez {{ config('company.name') }}, nous accordons une importance primordiale à la protection de vos données personnelles.
                     Cette politique de confidentialité vous informe sur la manière dont nous collectons, utilisons, stockons et protégeons
-                    vos informations conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés.
+                    vos informations conformément à la réglementation congolaise sur la protection des données personnelles ainsi qu'au Règlement Général sur la Protection des Données (RGPD) de l'Union Européenne, applicable à notre clientèle de la diaspora.
                 </p>
             </div>
 
@@ -320,7 +320,7 @@
 
             <div class="legal-section">
                 <h2><i class="fas fa-user-shield"></i> Vos droits</h2>
-                <p>Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des droits suivants sur vos données personnelles :</p>
+                <p>Conformément à la réglementation congolaise sur la protection des données et, pour la diaspora, au RGPD de l'Union Européenne, vous disposez des droits suivants sur vos données personnelles :</p>
 
                 <div class="rights-grid">
                     <div class="right-card">
@@ -381,7 +381,7 @@
                 <p>Vos données personnelles sont principalement stockées et traitées au sein de l'Union Européenne. Dans certains cas limités, elles peuvent être transférées vers des pays situés hors de l'UE, notamment :</p>
                 <ul>
                     <li>Prestataires de services cloud (garanties appropriées via clauses contractuelles types de la Commission Européenne)</li>
-                    <li>Outils d'analyse et de support client (soumis à des mécanismes de protection validés par la CNIL)</li>
+                    <li>Outils d'analyse et de support client (soumis à des mécanismes de protection conformes aux standards de l'ARPTC et du RGPD)</li>
                 </ul>
                 <p>Tout transfert hors UE est encadré par des garanties appropriées conformément au RGPD (clauses contractuelles types, décisions d'adéquation, Privacy Shield le cas échéant).</p>
             </div>
@@ -442,9 +442,9 @@
                         <span class="todo-prod" style="display:none">[ADRESSE_A_RENSEIGNER]</span><em>(à renseigner)</em>
                     @endif
                 </p>
-                <p style="margin-top:1rem;"><strong>Réclamation auprès de la CNIL :</strong><br>
-                Si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL) :<br>
-                <a href="https://www.cnil.fr" target="_blank" style="color:#FFB800;">www.cnil.fr</a> | 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07</p>
+                <p style="margin-top:1rem;"><strong>Réclamation auprès de l'autorité de régulation :</strong><br>
+                Si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de l'ARPTC (Agence de Régulation des Postes et des Communications Électroniques), autorité compétente en République du Congo.<br>
+                Les utilisateurs de la diaspora résidant dans l'Union Européenne conservent le droit de saisir leur autorité nationale de protection des données conformément au RGPD.</p>
             </div>
         </div>
     </div>

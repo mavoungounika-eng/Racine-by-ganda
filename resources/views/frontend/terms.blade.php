@@ -216,7 +216,7 @@
             
             <!-- BODY -->
             <div class="legal-body">
-                <p class="update-date" style="text-align:right;margin-bottom:2rem;"><strong>Dernière mise à jour :</strong> Juin 2026</p>
+                <p class="update-date" style="text-align:right;margin-bottom:2rem;"><strong>Pointe-Noire, juin 2026</strong></p>
 
                 <div class="legal-section" id="article1">
                     <h2><span class="number">1</span> Objet et champ d'application</h2>
@@ -234,12 +234,12 @@
                         <!-- TODO PROD BLOQUANT: Renseigner adresse siège social avant mise en ligne -->
                         <span class="todo-prod" style="display:none">[ADRESSE_A_RENSEIGNER]</span><em>(à renseigner)</em>
                     @endif
-                    , immatriculée au RCS sous le numéro
-                    @if(config('company.rcs'))
-                        {{ config('company.rcs') }}
+                    , immatriculée au RCCM sous le numéro
+                    @if(config('company.rccm'))
+                        {{ config('company.rccm') }}
                     @else
-                        <!-- TODO PROD BLOQUANT: Renseigner RCS réel avant mise en ligne -->
-                        <span class="todo-prod" style="display:none">[RCS_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                        <!-- TODO PROD BLOQUANT: Renseigner RCCM réel avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[RCCM_A_RENSEIGNER]</span><em>(à renseigner)</em>
                     @endif
                     , ci-après dénommée "la Plateforme", et toute personne physique ou morale effectuant un achat sur le site racinebyganda.com.</p>
                     <p>{{ config('company.name') }} opère une marketplace de mode africaine contemporaine mettant en relation des créateurs indépendants avec des clients.</p>
@@ -309,14 +309,14 @@
                 <div class="legal-section" id="article5">
                     <h2><span class="number">5</span> Prix et paiement</h2>
                     <h3>5.1 Prix</h3>
-                    <p>Les prix sont affichés en euros (EUR) ou en francs CFA (XAF) selon la localisation du Client, toutes taxes comprises (TTC). La TVA applicable est celle en vigueur au jour de la commande.</p>
+                    <p>Les prix sont affichés en francs CFA (XAF), devise principale de la Plateforme, ou en euros (EUR) pour la clientèle de la diaspora, selon la localisation du Client, toutes taxes comprises (TTC). La fiscalité applicable est celle en vigueur en République du Congo au jour de la commande.</p>
                     <p>Les frais de livraison sont indiqués distinctement avant la validation finale de la commande et s'ajoutent au montant total.</p>
                     <p>La Plateforme se réserve le droit de modifier ses prix à tout moment, étant entendu que les produits seront facturés sur la base des tarifs en vigueur au moment de la validation de la commande.</p>
                     <h3>5.2 Moyens de paiement</h3>
                     <p>Le règlement des commandes s'effectue par :</p>
                     <ul>
-                        <li><strong>Carte bancaire :</strong> Visa, Mastercard, American Express (paiement sécurisé via Stripe)</li>
-                        <li><strong>Mobile Money :</strong> Pour les paiements en XAF (Orange Money, MTN Mobile Money, Moov Money)</li>
+                        <li><strong>Mobile Money (XAF) :</strong> MTN Mobile Money Congo, Airtel Money Congo (moyens de paiement privilégiés en République du Congo)</li>
+                        <li><strong>Carte bancaire :</strong> Visa, Mastercard, American Express (paiement sécurisé via Stripe), notamment pour les règlements en EUR</li>
                         <li><strong>PayPal :</strong> Paiement en ligne sécurisé</li>
                     </ul>
                     <p>Les transactions sont sécurisées par le protocole SSL. Les données bancaires ne sont jamais stockées sur les serveurs de la Plateforme et sont traitées uniquement par les prestataires de paiement certifiés PCI-DSS.</p>
@@ -329,29 +329,29 @@
                     <h3>6.1 Zones de livraison</h3>
                     <p>{{ config('company.name') }} livre dans les zones géographiques suivantes :</p>
                     <ul>
-                        <li>France métropolitaine</li>
-                        <li>Départements et régions d'outre-mer (DOM-ROM)</li>
-                        <li>Union Européenne</li>
-                        <li>Afrique (principales villes et capitales)</li>
+                        <li>Congo-Brazzaville (Pointe-Noire, Brazzaville et principales villes)</li>
+                        <li>Afrique centrale (CEMAC : Gabon, Cameroun, Tchad, RCA, Guinée équatoriale)</li>
+                        <li>Reste de l'Afrique (principales villes et capitales)</li>
+                        <li>Diaspora — Union Européenne</li>
                         <li>International (sur demande)</li>
                     </ul>
                     <h3>6.2 Délais de livraison</h3>
                     <p>Les délais de livraison sont donnés à titre indicatif et peuvent varier selon la localisation du Créateur et la destination :</p>
                     <ul>
-                        <li><strong>France métropolitaine :</strong> 5 à 10 jours ouvrés</li>
-                        <li><strong>DOM-ROM :</strong> 10 à 15 jours ouvrés</li>
-                        <li><strong>Union Européenne :</strong> 7 à 12 jours ouvrés</li>
-                        <li><strong>Afrique :</strong> 7 à 14 jours ouvrés</li>
+                        <li><strong>Congo-Brazzaville :</strong> 2 à 7 jours ouvrés</li>
+                        <li><strong>Afrique centrale (CEMAC) :</strong> 5 à 12 jours ouvrés</li>
+                        <li><strong>Reste de l'Afrique :</strong> 7 à 14 jours ouvrés</li>
+                        <li><strong>Diaspora — Union Européenne :</strong> 7 à 15 jours ouvrés</li>
                         <li><strong>International :</strong> 10 à 21 jours ouvrés</li>
                     </ul>
                     <p>Ces délais courent à compter de la confirmation de la commande. Les retards de livraison ne peuvent donner lieu à l'annulation de la commande ou à l'octroi de dommages et intérêts.</p>
                     <h3>6.3 Frais de livraison</h3>
                     <p>Les frais de livraison varient selon la destination et le poids du colis :</p>
                     <ul>
-                        <li>France métropolitaine : Gratuit dès 150€ d'achat, sinon à partir de 6,90€</li>
-                        <li>DOM-ROM : À partir de 12,90€</li>
-                        <li>Union Européenne : À partir de 9,90€</li>
-                        <li>Afrique : À partir de 15€ / 10 000 XAF</li>
+                        <li>Congo-Brazzaville : Gratuit dès 100 000 XAF d'achat, sinon à partir de 2 000 XAF</li>
+                        <li>Afrique centrale (CEMAC) : À partir de 10 000 XAF</li>
+                        <li>Reste de l'Afrique : À partir de 15 000 XAF</li>
+                        <li>Diaspora — Union Européenne : À partir de 15€</li>
                         <li>International : Sur devis</li>
                     </ul>
                     <h3>6.4 Réception de la commande</h3>
@@ -413,7 +413,7 @@
 
                 <div class="legal-section" id="article10">
                     <h2><span class="number">10</span> Données personnelles</h2>
-                    <p>Les données personnelles collectées lors de la commande sont nécessaires au traitement de celle-ci et à la gestion de la relation client. Elles sont traitées conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés.</p>
+                    <p>Les données personnelles collectées lors de la commande sont nécessaires au traitement de celle-ci et à la gestion de la relation client. Elles sont traitées conformément à la réglementation congolaise sur la protection des données et, pour la clientèle de la diaspora, au Règlement Général sur la Protection des Données (RGPD) de l'Union Européenne.</p>
                     <p>Le Client dispose d'un droit d'accès, de rectification, de suppression, de portabilité et d'opposition au traitement de ses données personnelles.</p>
                     <p>Pour plus d'informations sur la collecte et l'utilisation de vos données, consultez notre <a href="{{ route('frontend.privacy') }}" style="color:#ED5F1E;text-decoration:underline;">Politique de Confidentialité</a>.</p>
                 </div>
@@ -421,13 +421,13 @@
                 <div class="legal-section" id="article11">
                     <h2><span class="number">11</span> Litiges et droit applicable</h2>
                     <h3>11.1 Droit applicable</h3>
-                    <p>Les présentes CGV sont soumises au droit français. Elles sont rédigées en langue française. Dans l'hypothèse d'une traduction en une ou plusieurs langues, seul le texte français ferait foi en cas de litige.</p>
+                    <p>Les présentes CGV sont soumises aux Actes Uniformes de l'OHADA et au droit congolais en vigueur. Elles sont rédigées en langue française. Dans l'hypothèse d'une traduction en une ou plusieurs langues, seul le texte français ferait foi en cas de litige.</p>
                     <h3>11.2 Règlement amiable des litiges</h3>
                     <p>En cas de litige, le Client est invité à contacter en priorité le service client de {{ config('company.name') }} à l'adresse {{ config('company.support_email') }} afin de rechercher une solution amiable.</p>
-                    <h3>11.3 Médiation de la consommation</h3>
-                    <p>Conformément à l'article L.612-1 du Code de la consommation, le Client a le droit de recourir gratuitement à un service de médiation en cas de litige. Le médiateur de la consommation dont relève {{ config('company.name') }} peut être saisi sur demande.</p>
+                    <h3>11.3 Médiation</h3>
+                    <p>Le Client a la possibilité de recourir à une médiation en cas de litige. Pour les litiges relatifs aux communications électroniques et au commerce en ligne, l'ARPTC (Agence de Régulation des Postes et des Communications Électroniques) peut être saisie. Le service client de {{ config('company.name') }} reste l'interlocuteur privilégié pour rechercher une solution amiable.</p>
                     <h3>11.4 Juridiction compétente</h3>
-                    <p>À défaut de résolution amiable, tout litige relatif à l'interprétation ou à l'exécution des présentes CGV sera soumis aux tribunaux compétents dans les conditions de droit commun.</p>
+                    <p>À défaut de résolution amiable, tout litige relatif à l'interprétation ou à l'exécution des présentes CGV sera soumis au Tribunal de Commerce de Pointe-Noire (République du Congo), conformément aux Actes Uniformes de l'OHADA et au droit congolais en vigueur.</p>
                 </div>
 
                 <div class="highlight-box" style="margin-top:3rem;text-align:center;">
