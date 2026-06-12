@@ -26,4 +26,11 @@ contextBridge.exposeInMainWorld('electron', {
     chrome: process.versions.chrome,
     node: process.versions.node,
   },
+  // ── Paiements externes (cf. electron/paymentWindows.js) ──────────────
+  // Ouvre une BrowserWindow main-process vers l'URL de paiement Monetbil
+  // et résout avec { status: 'success'|'failed'|'cancelled', monetbil_ref? }.
+  payments: {
+    openMonetbilWindow: (options) => ipcRenderer.invoke('payments:monetbil:open', options),
+    closeMonetbilWindow: () => ipcRenderer.invoke('payments:monetbil:close'),
+  },
 });

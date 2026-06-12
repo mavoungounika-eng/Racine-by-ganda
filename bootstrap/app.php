@@ -61,6 +61,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
             'pos.device' => \App\Http\Middleware\PosDeviceAuth::class,
             'pos.auth' => \App\Http\Middleware\PosDeviceAuth::class,
+
+            // POS Connect (Electron / Sanctum) — abonnement Signature requis
+            'signature.subscription' => \App\Http\Middleware\EnsureSignatureSubscription::class,
             
             // Legacy webhook guards (deprecated routes)
             'legacy.webhook.guard' => \App\Http\Middleware\LegacyWebhookGuard::class,

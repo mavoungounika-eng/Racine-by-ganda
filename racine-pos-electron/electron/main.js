@@ -4,6 +4,8 @@ const path = require('path');
 
 const isDev = !app.isPackaged;
 
+require('./paymentWindows'); // Fenêtre paiement Monetbil (handlers IPC auto-enregistrés)
+
 let splashWindow = null;
 let mainWindow = null;
 
@@ -95,6 +97,7 @@ function createWindow() {
 app.whenReady().then(() => {
   createSplash();
   createWindow();
+  require('./syncBootstrap').init(() => mainWindow); // sync offline : notifie le renderer (network:online) au boot + reconnexion
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
