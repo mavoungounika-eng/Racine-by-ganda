@@ -475,7 +475,7 @@
             </div>
             <div class="faq-item">
                 <h4><i class="fas fa-credit-card"></i> Quels moyens de paiement acceptez-vous ?</h4>
-                <p>Nous acceptons CB, Visa, Mastercard, PayPal et le paiement en 3x sans frais.</p>
+                <p>Nous acceptons CB, Visa, Mastercard, Mobile Money (MTN, Airtel) et Stripe.</p>
             </div>
             <div class="faq-item">
                 <h4><i class="fas fa-ruler"></i> Comment choisir ma taille ?</h4>

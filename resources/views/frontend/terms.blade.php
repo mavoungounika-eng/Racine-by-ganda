@@ -317,7 +317,7 @@
                     <ul>
                         <li><strong>Mobile Money (XAF) :</strong> MTN Mobile Money Congo, Airtel Money Congo (moyens de paiement privilégiés en République du Congo)</li>
                         <li><strong>Carte bancaire :</strong> Visa, Mastercard, American Express (paiement sécurisé via Stripe), notamment pour les règlements en EUR</li>
-                        <li><strong>PayPal :</strong> Paiement en ligne sécurisé</li>
+                        <li><strong>Mobile Money :</strong> MTN Mobile Money, Airtel Money (via Monetbil)</li>
                     </ul>
                     <p>Les transactions sont sécurisées par le protocole SSL. Les données bancaires ne sont jamais stockées sur les serveurs de la Plateforme et sont traitées uniquement par les prestataires de paiement certifiés PCI-DSS.</p>
                     <h3>5.3 Validation du paiement</h3>

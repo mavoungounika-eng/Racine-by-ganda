@@ -366,7 +366,7 @@
 
                 <h3>Prestataires externes</h3>
                 <ul>
-                    <li><strong>Paiement :</strong> Stripe, PayPal, Monetbil (paiements sécurisés certifiés PCI-DSS)</li>
+                    <li><strong>Paiement :</strong> Stripe, Monetbil (paiements sécurisés certifiés PCI-DSS)</li>
                     <li><strong>Livraison :</strong> Transporteurs partenaires (Colissimo, Chronopost, DHL)</li>
                     <li><strong>Emailing :</strong> Services d'envoi de newsletters (avec votre consentement)</li>
                     <li><strong>Hébergement :</strong> Hébergeurs certifiés en Europe pour garantir la sécurité de vos données</li>

@@ -469,7 +469,7 @@
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    Oui, la livraison est offerte en France métropolitaine pour toute commande supérieure à 100€. En dessous de ce montant, les frais de port sont de 5,90€.
+                    Oui, la livraison est offerte en France métropolitaine pour toute commande supérieure à 75 000 FCFA. En dessous de ce montant, les frais de port sont de 3 500 FCFA.
                 </div>
             </div>
             

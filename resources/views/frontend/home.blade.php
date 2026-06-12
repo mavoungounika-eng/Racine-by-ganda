@@ -142,14 +142,14 @@
                 <div class="feature-icon"><i class="fas fa-truck"></i></div>
                 <div class="feature-text">
                     <h4>Livraison Gratuite</h4>
-                    <span>Dès 100€ d'achat</span>
+                    <span>Dès 75 000 FCFA d'achat</span>
                 </div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
                 <div class="feature-text">
                     <h4>Paiement Sécurisé</h4>
-                    <span>CB, PayPal, Stripe</span>
+                    <span>CB, Mobile Money, Stripe</span>
                 </div>
             </div>
             <div class="feature-item">
