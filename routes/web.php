@@ -723,6 +723,20 @@ Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('po
 
 // Multi-devise
 Route::post('/currency/switch', [\App\Http\Controllers\CurrencyController::class, 'switch'])->name('currency.switch');
+Route::post('/shipping/calculate', function(\Illuminate\Http\Request $req) {
+    $service = app(\App\Services\ShippingService::class);
+    $zone    = $service->detectZone($req->input('country'));
+    $cost    = $service->cost($zone, (float) $req->input('subtotal', 0));
+    $config  = $service->zoneConfig($zone);
+    return response()->json([
+        'cost'      => $cost,
+        'formatted' => format_price($cost),
+        'zone'      => $zone,
+        'label'     => $config['label'],
+        'delay'     => $config['delay'],
+        'free_above'=> format_price($config['free_above']),
+    ]);
+})->name('shipping.calculate')->middleware('web');
 
 // Routes Front-end (Panier & Checkout) - Rate Limited: 120 req/min
 Route::middleware('throttle:120,1')->group(function () {

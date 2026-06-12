@@ -156,7 +156,7 @@
                                          data-city="{{ $addr->city }}"
                                          data-postal="{{ $addr->postal_code ?? '' }}"
                                          data-country="{{ $addr->country }}"
-                                         onclick="selectAddress(this)">
+                                         data-action="select-address">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
                                                 <strong style="font-size:0.85rem;">{{ $addr->first_name }} {{ $addr->last_name }}</strong>
@@ -170,7 +170,7 @@
                                 </div>
                                 @endforeach
                             </div>
-                            <button type="button" class="btn btn-sm btn-link ps-0 mt-2" onclick="toggleManualAddress()" id="toggle-manual-btn">
+                            <button type="button" class="btn btn-sm btn-link ps-0 mt-2" data-action="toggle-manual-address" id="toggle-manual-btn">
                                 <i class="fas fa-plus me-1"></i>Utiliser une autre adresse
                             </button>
                         </div>
@@ -267,7 +267,7 @@
                                    {{ old('shipping_method', 'home_delivery') === 'home_delivery' ? 'checked' : '' }}
                                    required>
                             <label class="form-check-label" for="shipping_home">
-                                <strong>Livraison à domicile</strong> – {{ format_price(2000) }}
+                                <strong>Livraison à domicile</strong> – <span id="shipping-label-price">{{ format_price($shipping_default) }}</span>
                             </label>
                         </div>
                         <div class="form-check mt-3">
@@ -722,4 +722,59 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 
+@push('scripts')
+<script nonce="{{ $cspNonce }}">
+(function () {
+    const countryInput  = document.getElementById('country');
+    const shippingRadio = document.getElementById('shipping_home');
+    const costDisplay   = document.getElementById('shipping-cost-display');
+    const labelPrice    = document.getElementById('shipping-label-price');
+    const csrfToken     = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    const subtotal      = parseFloat(document.getElementById('total-display')?.dataset?.subtotal ?? 0);
+    const calcUrl       = '{{ route("shipping.calculate") }}';
+    let timer = null;
+
+    function updateShipping() {
+        if (!shippingRadio?.checked) return;
+        fetch(calcUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: JSON.stringify({ country: countryInput?.value?.trim() ?? '', subtotal: subtotal }),
+        })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(function(data) {
+            if (costDisplay) costDisplay.textContent = data.formatted ?? '—';
+            if (labelPrice)  labelPrice.textContent  = data.formatted ?? '—';
+            let hint = document.getElementById('shipping-zone-hint');
+            if (!hint) {
+                hint = document.createElement('small');
+                hint.id = 'shipping-zone-hint';
+                hint.className = 'text-muted d-block mt-1';
+                document.getElementById('shipping_home')?.closest('.form-check')?.appendChild(hint);
+            }
+            hint.textContent = data.label ? 'Zone : ' + data.label + ' — ' + data.delay : '';
+        })
+        .catch(function(){});
+    }
+
+    countryInput?.addEventListener('input', function() {
+        clearTimeout(timer);
+        timer = setTimeout(updateShipping, 600);
+    });
+
+    document.querySelectorAll('input[name="shipping_method"]').forEach(function(r) {
+        r.addEventListener('change', function() {
+            if (this.value === 'showroom_pickup') {
+                if (costDisplay) costDisplay.textContent = 'Gratuit';
+                if (labelPrice)  labelPrice.textContent  = 'Gratuit';
+                const hint = document.getElementById('shipping-zone-hint');
+                if (hint) hint.textContent = '';
+            } else {
+                updateShipping();
+            }
+        });
+    });
+})();
+</script>
+@endpush
 @endsection

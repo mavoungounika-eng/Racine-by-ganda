@@ -233,7 +233,7 @@
     {{-- ANNOUNCEMENT BAR PREMIUM --}}
     <div class="announcement-bar" id="announcement-bar">
         <div class="container text-center">
-            <span class="announcement-text">{{ $cmsBlocks['announcement'] ?? '✦ Livraison offerte dès 150€ · Collection "Héritage" disponible ✦' }}</span>
+            <span class="announcement-text">{{ $cmsBlocks['announcement'] ?? '✦ Livraison offerte dès ' . format_price(config("shipping.zones.local.free_above"), "XAF") . ' · Collection "Héritage" disponible ✦' }}</span>
         </div>
     </div>
 
