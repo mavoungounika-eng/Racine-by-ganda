@@ -204,7 +204,7 @@
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endif
                             @endforeach
-                            <select name="sort" class="sort-select" onchange="this.form.submit()">
+                            <select name="sort" class="sort-select" data-auto-submit>
                                 <option value="latest" {{ request('sort') === 'latest' || !request('sort') ? 'selected' : '' }}>Trier par : Nouveautés</option>
                                 <option value="price_asc" {{ request('sort') === 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
                                 <option value="price_desc" {{ request('sort') === 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
@@ -248,7 +248,7 @@
                                         @php $creatorSlug = $product->creator?->creatorProfile?->slug; @endphp
                                         <span class="badge-brand"
                                             @if($creatorSlug)
-                                            onclick="event.preventDefault();event.stopPropagation();window.location='{{ route('frontend.creator.shop', $creatorSlug) }}';"
+                                            data-href="{{ route('frontend.creator.shop', $creatorSlug) }}"
                                             class="cursor-pointer"
                                             @endif
                                         >
@@ -320,69 +320,7 @@
                         </div>
                     </div>
                     @empty
-                    <!-- Demo products if no data -->
-                    @for($i = 0; $i < 9; $i++)
-                    <div class="product-card reveal-item">
-                        <a href="{{ route('frontend.product', $i + 1) }}" class="product-image-link">
-                            <div class="product-image">
-                                <div class="product-css-placeholder"><i class="fas fa-tshirt"></i></div>
-                                <div class="product-badges">
-                                    @if($i % 5 === 0)
-                                    <span class="badge-out-of-stock">Stock épuisé</span>
-                                    @else
-                                        @if($i % 3 === 0)
-                                        <span class="badge-new">Nouveau</span>
-                                        @endif
-                                        @if($i % 4 === 0)
-                                        <span class="badge-sale">-20%</span>
-                                        @endif
-                                    @endif
-                                </div>
-                                <div class="product-actions">
-                                    @auth
-                                    <form action="{{ route('profile.wishlist.toggle') }}" method="POST" class="wishlist-toggle-form d-inline">
-                                        @csrf
-                                        <input type="hidden" name="product_id" value="{{ $i + 1 }}">
-                                        <button type="submit" class="action-btn wishlist-btn" title="Favoris">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                    </form>
-                                    @endauth
-                                    <a href="{{ route('frontend.product', $i + 1) }}" class="action-btn" title="Aperçu"><i class="far fa-eye"></i></a>
-                                </div>
-                            </div>
-                        </a>
-                        <div class="product-info">
-                            <a href="{{ route('frontend.product', $i + 1) }}" class="product-info-link">
-                                <div class="product-category">Mode Africaine</div>
-                                <h3 class="product-name">Robe Wax Élégante Collection {{ $i + 1 }}</h3>
-                                <div class="product-price">
-                                    <span class="current-price">{{ 79 + ($i * 10) }},00 €</span>
-                                    @if($i % 4 === 0)
-                                    <span class="original-price">{{ 99 + ($i * 10) }},00 €</span>
-                                    @endif
-                                </div>
-                            </a>
-                            @if($i % 5 !== 0)
-                            <form action="{{ route('cart.add') }}" method="POST" class="quick-add-form">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $i + 1 }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <input type="hidden" name="redirect" value="shop">
-                                <button type="submit" class="quick-add">
-                                    <i class="fas fa-shopping-bag me-2"></i> Ajouter au panier
-                                </button>
-                            </form>
-                            @else
-                            <div class="quick-add-form">
-                                <button type="button" class="quick-add quick-add--disabled" disabled>
-                                    <i class="fas fa-ban me-2"></i> Stock épuisé
-                                </button>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                    @endfor
+                    <div class="no-products text-center py-5"><p>Aucun produit disponible pour le moment.</p></div>
                     @endforelse
                 </div>
                 

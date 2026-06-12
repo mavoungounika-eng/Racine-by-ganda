@@ -247,17 +247,17 @@
                     @endif
                     @if($product->created_at->isAfter(now()->subDays(30)))
                     <span class="product-badge">Nouveau</span>
-                    @endif
                     <div class="product-hover-cta">
                         <span><i class="fas fa-eye me-2"></i>Voir le produit</span>
                     </div>
                     @auth
                     <button class="product-wishlist"
                             data-product-id="{{ $product->id }}"
-                            onclick="event.preventDefault(); toggleWishlist({{ $product->id }});">
+                            data-action="wishlist">
                         <i class="far fa-heart" id="wishlist-icon-{{ $product->id }}"></i>
                     </button>
                     @endauth
+                    @endif
                 </div>
                 <div class="product-info">
                     <div class="product-category">{{ $product->category->name ?? 'Mode' }}</div>
@@ -270,7 +270,7 @@
             @endforeach
             
             {{-- TODO PROD: Supprimer fallback demo products en production --}}
-            @if((empty($featuredProducts) || count($featuredProducts ?? []) === 0) && app()->environment('local', 'testing'))
+            @if(false)
             @php
                 $demoProducts = [
                     ['title' => 'Robe Wax Premium', 'category' => 'Robes', 'price' => 45000.0, 'mod' => ''],
@@ -351,6 +351,7 @@
                         garantissant des conditions de travail équitables et la préservation des techniques traditionnelles.
                     </p>
                     {{-- TODO PROD: Remplacer stats hardcodées par vraies métriques depuis DB --}}
+                    @if(($stats['creators_count'] ?? 0) > 0)
                     <div class="about-stats">
                         <div class="stat-item">
                             <h3>{{ $stats['creators_count'] ?? '50+' }}</h3>
@@ -365,6 +366,7 @@
                             <span>Clients satisfaits</span>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -412,7 +414,7 @@
             </div>
             @empty
             {{-- TODO PROD: Supprimer fallback demo creators en production --}}
-            @if(app()->environment('local', 'testing'))
+            @if(false)
             @php
                 $demoCreators = [
                     ['initials' => 'A', 'name' => 'Amina Diallo', 'specialty' => 'Styliste · Dakar', 'bio' => 'Spécialiste du wax moderne, crée des pièces qui allient tradition et contemporanéité.'],

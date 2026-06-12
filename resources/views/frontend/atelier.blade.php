@@ -619,19 +619,19 @@
                 <div class="service-icon"><i class="fas fa-ruler"></i></div>
                 <h3>Création Sur-Mesure</h3>
                 <p>Une pièce unique créée selon vos envies et vos mesures exactes.</p>
-                <div class="service-price">À partir de 150€</div>
+                <div class="service-price">À partir de {{ format_price(150 * 655.957, 'XAF') }}</div>
             </div>
             <div class="service-card">
                 <div class="service-icon"><i class="fas fa-edit"></i></div>
                 <h3>Personnalisation</h3>
                 <p>Adaptez une pièce existante avec vos modifications personnelles.</p>
-                <div class="service-price">À partir de 50€</div>
+                <div class="service-price">À partir de {{ format_price(50 * 655.957, 'XAF') }}</div>
             </div>
             <div class="service-card">
                 <div class="service-icon"><i class="fas fa-cut"></i></div>
                 <h3>Retouches</h3>
                 <p>Ajustements et retouches pour une coupe parfaite.</p>
-                <div class="service-price">À partir de 25€</div>
+                <div class="service-price">À partir de {{ format_price(25 * 655.957, 'XAF') }}</div>
             </div>
         </div>
     </div>
