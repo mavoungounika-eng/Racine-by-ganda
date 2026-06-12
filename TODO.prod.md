@@ -28,24 +28,15 @@
 5. **Cleanup** : 9 fichiers parasites 0-octet supprimés (`hero-0*],`, `image,`, `video,`),
    `config/company.php` restauré (diff whitespace-only annulé).
 
-### ⚠️ TENU NON COMMITÉ — à valider/committer (hors périmètre mission CSP)
-Travail frontend pré-existant, intriqué, syntaxe valide (`php -l` OK, `view:cache` OK) mais
-complétude non vérifiable en mode autonome :
-- [ ] **resources/views/frontend/home.blade.php** — redesign + localisation prix XAF
-      **+ corrections CSP (wishlist → `data-action`)**
-- [ ] **resources/views/frontend/shop.blade.php** — redesign (−62 lignes) + **CSP (sort select
-      `data-auto-submit`, badge créateur `data-href`)**
-- [ ] **resources/views/frontend/atelier.blade.php** — localisation prix `format_price(... 'XAF')`
-- [ ] **public/css/frontend-home.css** (−1178) + **resources/css/frontend-home.css** (+295)
-      — refonte CSS (déplacement vers source Vite ?). **Gros diff CSS non validable sans rendu.**
-- [ ] **app/Http/Controllers/Auth/SocialAuthController.php** — retrait `->timeout(5)` sur
-      `Socialite::driver()` (méthode non standard). **OAuth = critique → faire valider.**
-
-> **Couplage CSP ↔ redesign** : les corrections CSP de `home`/`shop` sont entremêlées (mêmes
-> hunks) avec le redesign → impossibles à séparer sans staging interactif (indisponible).
-> Elles partiront avec le commit du redesign. Sur HEAD, `home`/`shop` gardent leurs anciens
-> handlers inline (déjà cassés sous le nonce middleware **pré-existant** — pas une régression
-> nouvelle, le fix est prêt en working tree).
+### ✅ Lot frontend tenu — désormais COMMITÉ (inspecté + validé)
+- [x] **`7d86f81a` fix(auth)** — retrait `->timeout(5)` sur `Socialite::driver()` (méthode
+      inexistante → `BadMethodCallException` cassait le callback OAuth en prod). Tests OAuth 19/19 PASS.
+- [x] **`9ed725f2` feat(frontend)** — `home`/`shop`/`atelier` : localisation prix XAF,
+      suppression blocs démo placeholder, **corrections CSP (wishlist/sort/badge → `data-*`)**.
+      Le couplage CSP↔redesign (hunks entremêlés) est ainsi résolu : `home`/`shop` n'ont plus
+      de handlers inline sur HEAD.
+- [x] **`f3c6117d` style(css)** — `public/css/frontend-home.css` régénéré depuis la source
+      `resources/css/frontend-home.css` (368 lignes, accolades équilibrées 160/160).
 
 ### Notes environnement (machine de cette session)
 - `vendor/` avait perdu ses deps dev → `composer install` exécuté (PHPUnit restauré).
