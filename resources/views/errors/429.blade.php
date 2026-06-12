@@ -24,7 +24,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ $cspNonce }}">
     (function () {
         var seconds = 60;
         var el = document.getElementById('countdown');

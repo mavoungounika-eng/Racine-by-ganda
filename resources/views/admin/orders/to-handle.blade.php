@@ -203,7 +203,7 @@ $statusColors = [
 .al-btn-return    { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d40; }
 </style>
 
-<script>
+<script nonce="{{ $cspNonce }}">
 function transitionItem(orderId, itemId, to, triggerBtn) {
   const actionsCell = document.getElementById('actions-' + itemId);
   const allBtns = actionsCell.querySelectorAll('button');

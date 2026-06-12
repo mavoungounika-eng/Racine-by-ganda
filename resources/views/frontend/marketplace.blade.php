@@ -490,7 +490,7 @@
                 </div>
                 
                 {{-- Filtre créateur --}}
-                <select name="creator" class="filter-select" onchange="this.form.submit()">
+                <select name="creator" class="filter-select" data-auto-submit>
                     <option value="">Tous les créateurs</option>
                     @foreach($creators as $creator)
                     <option value="{{ $creator->id }}" {{ request('creator') == $creator->id ? 'selected' : '' }}>
@@ -500,7 +500,7 @@
                 </select>
                 
                 {{-- Filtre catégorie --}}
-                <select name="category" class="filter-select" onchange="this.form.submit()">
+                <select name="category" class="filter-select" data-auto-submit>
                     <option value="">Toutes catégories</option>
                     @foreach($categories as $category)
                     <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
@@ -510,7 +510,7 @@
                 </select>
                 
                 {{-- Tri --}}
-                <select name="sort" class="filter-select" onchange="this.form.submit()">
+                <select name="sort" class="filter-select" data-auto-submit>
                     <option value="recent" {{ request('sort') == 'recent' ? 'selected' : '' }}>Plus récents</option>
                     <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Plus populaires</option>
                     <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>

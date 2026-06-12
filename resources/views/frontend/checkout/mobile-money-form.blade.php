@@ -90,7 +90,7 @@
 </div>
 @if(!empty($recaptchaSiteKey))
 @push('scripts')
-<script>
+<script nonce="{{ $cspNonce }}">
 document.getElementById('momo-form').addEventListener('submit', function(e) {
     e.preventDefault();
     var form = this;
