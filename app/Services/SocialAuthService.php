@@ -29,7 +29,7 @@ class SocialAuthService
     /**
      * Gère le callback OAuth et retourne l'utilisateur connecté
      * 
-     * @param string $provider Provider OAuth (google|apple|facebook)
+     * @param string $provider Provider OAuth (google)
      * @param ProviderUser $providerUser Utilisateur retourné par Socialite
      * @param string $requestedRole Rôle demandé (client|createur)
      * @param string $context Contexte (boutique)
@@ -47,8 +47,8 @@ class SocialAuthService
         $providerEmail = $providerUser->getEmail();
         $providerName = $providerUser->getName();
         
-        // Vérifier que l'email est disponible (sauf pour Apple qui peut masquer l'email)
-        if (!$providerEmail && $provider !== 'apple') {
+        // Vérifier que l'email est disponible
+        if (!$providerEmail) {
             throw new OAuthException(
                 "Impossible de récupérer votre adresse email depuis {$provider}."
             );
@@ -124,12 +124,9 @@ class SocialAuthService
                 'provider_email' => $providerEmail,
             ]);
             
-            // Pour Apple, l'email peut changer (private relay)
-            if ($oauthAccount->provider !== 'apple') {
-                throw new OAuthException(
-                    'Ce compte est déjà associé à un autre email. Contactez le support.'
-                );
-            }
+            throw new OAuthException(
+                'Ce compte est déjà associé à un autre email. Contactez le support.'
+            );
         }
 
         // Vérifier le rôle
@@ -241,14 +238,7 @@ class SocialAuthService
         string $requestedRole,
         string $context
     ): User {
-        // Pour Apple, si l'email est masqué, utiliser provider_user_id comme identifiant
         $email = $providerUser->getEmail();
-        if (!$email && $provider === 'apple') {
-            // Générer un email temporaire basé sur provider_user_id
-            // L'utilisateur devra compléter son profil plus tard
-            $email = 'apple_' . Str::slug($providerUser->getId()) . '@oauth.temp';
-        }
-
         if (!$email) {
             throw new OAuthException(
                 "Impossible de créer un compte sans email. Veuillez utiliser un autre moyen de connexion."

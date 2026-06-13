@@ -16,10 +16,10 @@ use Laravel\Socialite\Facades\Socialite;
 /**
  * Contrôleur générique pour l'authentification sociale multi-providers
  * 
- * Supporte : Google, Apple, Facebook
- * 
+ * Supporte : Google
+ *
  * Routes :
- * - GET /auth/{provider}/redirect?role=client|creator&context=boutique
+ * - GET /auth/{provider}/redirect?role=client|createur&context=boutique
  * - GET /auth/{provider}/callback
  * 
  * Module Social Auth v2 - Indépendant du module Google Auth v1
@@ -31,7 +31,7 @@ class SocialAuthController extends Controller
     protected SocialAuthService $socialAuthService;
 
     // Providers autorisés
-    protected const ALLOWED_PROVIDERS = ['google', 'apple', 'facebook'];
+    protected const ALLOWED_PROVIDERS = ['google'];
 
     public function __construct(SocialAuthService $socialAuthService)
     {
@@ -42,8 +42,8 @@ class SocialAuthController extends Controller
      * Redirige vers le provider OAuth
      * 
      * @param Request $request
-     * @param string $provider Provider OAuth (google|apple|facebook)
-     * @param string|null $role Rôle demandé : 'client' ou 'creator' (défaut: 'client')
+     * @param string $provider Provider OAuth (google)
+     * @param string|null $role Rôle demandé : 'client' ou 'createur' (défaut: 'client')
      * @return RedirectResponse
      */
     public function redirect(Request $request, string $provider, ?string $role = 'client'): RedirectResponse
@@ -55,7 +55,7 @@ class SocialAuthController extends Controller
         }
 
         // Valider et normaliser le rôle
-        if (!in_array($role, ['client', 'creator', 'createur'], true)) {
+        if (!in_array($role, ['client', 'createur'], true)) {
             $role = 'client';
         }
 
@@ -90,13 +90,8 @@ class SocialAuthController extends Controller
         }
 
         try {
-            // Configuration spécifique selon le provider
+            // Configuration du provider
             $socialite = Socialite::driver($provider);
-
-            // Apple nécessite des scopes spécifiques
-            if ($provider === 'apple') {
-                $socialite->scopes(['name', 'email']);
-            }
 
             // Ajouter le state CSRF
             return $socialite
