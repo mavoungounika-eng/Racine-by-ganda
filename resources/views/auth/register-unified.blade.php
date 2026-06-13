@@ -458,14 +458,6 @@
                         <i class="fab fa-google"></i>
                         <span>Google</span>
                     </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'createur']) }}" class="btn-oauth apple">
-                        <i class="fab fa-apple"></i>
-                        <span>Apple</span>
-                    </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'createur']) }}" class="btn-oauth facebook">
-                        <i class="fab fa-facebook-f"></i>
-                        <span>Facebook</span>
-                    </a>
                 </div>
                 
                 <div class="register-footer">
@@ -569,14 +561,6 @@
                     <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'client']) }}" class="btn-oauth google">
                         <i class="fab fa-google"></i>
                         <span>Google</span>
-                    </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'client']) }}" class="btn-oauth apple">
-                        <i class="fab fa-apple"></i>
-                        <span>Apple</span>
-                    </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'client']) }}" class="btn-oauth facebook">
-                        <i class="fab fa-facebook-f"></i>
-                        <span>Facebook</span>
                     </a>
                 </div>
                 

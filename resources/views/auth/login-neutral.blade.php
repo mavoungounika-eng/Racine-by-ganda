@@ -269,20 +269,6 @@
             </a>
             @endif
 
-            @if(config('services.apple.client_id'))
-            <a class="btn-social btn-apple"
-               href="{{ route('auth.social.redirect', ['provider'=>'apple','role'=>'client']) }}?context=boutique">
-                <i class="fab fa-apple"></i> Continuer avec Apple
-            </a>
-            @endif
-
-            @if(config('services.facebook.client_id'))
-            <a class="btn-social btn-facebook"
-               href="{{ route('auth.social.redirect', ['provider'=>'facebook','role'=>'client']) }}?context=boutique">
-                <i class="fab fa-facebook-f"></i> Continuer avec Facebook
-            </a>
-            @endif
-
         </div>
 
         {{-- FOOTER --}}
