@@ -55,7 +55,7 @@ class SocialAuthController extends Controller
         }
 
         // Valider et normaliser le rôle
-        if (!in_array($role, ['client', 'creator'], true)) {
+        if (!in_array($role, ['client', 'creator', 'createur'], true)) {
             $role = 'client';
         }
 
@@ -161,7 +161,7 @@ class SocialAuthController extends Controller
         session()->forget(['social_login_context', 'oauth_role']);
 
         // Normaliser le rôle
-        $requestedRoleSlug = $requestedRole === 'creator' ? 'createur' : 'client';
+        $requestedRoleSlug = in_array($requestedRole, ['creator', 'createur']) ? 'createur' : 'client';
 
         // Refuser l'espace équipe
         if ($context === 'equipe') {
