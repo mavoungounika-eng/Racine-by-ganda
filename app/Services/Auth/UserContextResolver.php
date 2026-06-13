@@ -109,7 +109,7 @@ class UserContextResolver
     private function resolveCreatorStatus(User $user, string $role): ?string
     {
         // Only resolve for creators
-        if (!in_array($role, ['createur', 'creator'], true)) {
+        if ($role !== 'createur') {
             return null;
         }
 
@@ -135,7 +135,7 @@ class UserContextResolver
      */
     private function resolveActiveCreator(User $user, string $role): array
     {
-        if (!in_array($role, ['createur', 'creator'], true)) {
+        if ($role !== 'createur') {
             return [null, null];
         }
 

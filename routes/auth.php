@@ -88,7 +88,7 @@ Route::post('/logout', [LoginController::class, 'logout'])
 // Module Social Auth v2 - Indépendant du module Google Auth v1
 Route::get('/auth/{provider}/redirect/{role?}', [SocialAuthController::class, 'redirect'])
     ->where('provider', 'google')
-    ->where('role', 'client|creator|createur')
+    ->where('role', 'client|createur')
     ->name('auth.social.redirect');
 
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])

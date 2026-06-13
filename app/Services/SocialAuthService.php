@@ -357,14 +357,14 @@ class SocialAuthService
             }
         }
 
-        // Normaliser les rôles pour comparaison
-        $currentRoleNormalized = $currentRoleSlug === 'createur' ? 'creator' : ($currentRoleSlug === 'creator' ? 'creator' : 'client');
-        $requestedRoleNormalized = $requestedRole === 'createur' ? 'creator' : 'client';
-        
-        if ($currentRoleNormalized !== $requestedRoleNormalized) {
+        // Slug créateur canonique unique : 'createur'. Tout le reste = 'client'.
+        $currentIsCreator = $currentRoleSlug === 'createur';
+        $requestedIsCreator = $requestedRole === 'createur';
+
+        if ($currentIsCreator !== $requestedIsCreator) {
             // Conflit de rôle → refus avec message explicite
-            $currentRoleLabel = in_array($currentRoleSlug, ['createur', 'creator']) ? 'créateur' : 'client';
-            $requestedRoleLabel = $requestedRole === 'createur' ? 'créateur' : 'client';
+            $currentRoleLabel = $currentIsCreator ? 'créateur' : 'client';
+            $requestedRoleLabel = $requestedIsCreator ? 'créateur' : 'client';
             
             $exception = new OAuthException(
                 "Un compte existe déjà avec cet email avec le rôle {$currentRoleLabel}. " .
