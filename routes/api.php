@@ -290,3 +290,30 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 });
 
+// ==========================================
+// POS Creator API (Sanctum + Signature subscription)
+// Login does NOT require subscription middleware (auth happens first)
+// ==========================================
+Route::prefix('pos')->group(function () {
+    Route::post('/login', [\App\Http\Controllers\Api\Pos\PosAuthController::class, 'login'])
+        ->name('api.pos.creator.login');
+
+    // All other POS Creator routes require auth + active Signature subscription
+    Route::middleware(['auth:sanctum', 'pos.subscription'])->group(function () {
+        Route::post('/logout', [\App\Http\Controllers\Api\Pos\PosAuthController::class, 'logout'])
+            ->name('api.pos.creator.logout');
+
+        Route::get('/products', [\App\Http\Controllers\Api\Pos\PosProductController::class, 'index'])
+            ->name('api.pos.creator.products');
+
+        Route::post('/orders', [\App\Http\Controllers\Api\Pos\PosOrderController::class, 'store'])
+            ->name('api.pos.creator.orders.store');
+        Route::get('/orders', [\App\Http\Controllers\Api\Pos\PosOrderController::class, 'index'])
+            ->name('api.pos.creator.orders.index');
+
+        Route::post('/sync', [\App\Http\Controllers\Api\Pos\PosSyncController::class, 'sync'])
+            ->middleware('throttle:10,1')
+            ->name('api.pos.creator.sync');
+    });
+});
+

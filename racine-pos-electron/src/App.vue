@@ -1,5 +1,20 @@
 <template>
   <div class="app">
+    <!-- Auto-update notification -->
+    <div v-if="updateStatus === 'available'" class="update-banner">
+      <span>Mise à jour v{{ updateVersion }} disponible</span>
+      <button class="update-btn" @click="downloadUpdate">Télécharger</button>
+      <button class="update-dismiss" @click="updateStatus = ''">&#10005;</button>
+    </div>
+    <div v-else-if="updateStatus === 'downloading'" class="update-banner">
+      <span>Téléchargement en cours… {{ updatePercent }}%</span>
+    </div>
+    <div v-else-if="updateStatus === 'ready'" class="update-banner update-banner--ready">
+      <span>Mise à jour prête</span>
+      <button class="update-btn" @click="installUpdate">Installer et redémarrer</button>
+      <button class="update-dismiss" @click="updateStatus = ''">&#10005;</button>
+    </div>
+
     <OfflineBanner />
     <div class="app-content">
       <ErrorBoundary>
@@ -10,21 +25,49 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import OfflineBanner from './components/OfflineBanner.vue';
 import ErrorBoundary from './components/ErrorBoundary.vue';
 import { useOfflineStore } from './stores/offline';
 
 const offline = useOfflineStore();
 
+const updateStatus = ref('');
+const updateVersion = ref('');
+const updatePercent = ref(0);
+
+const downloadUpdate = async () => {
+  updateStatus.value = 'downloading';
+  try {
+    await window.electron?.updater?.download();
+  } catch {
+    updateStatus.value = '';
+  }
+};
+
+const installUpdate = () => {
+  window.electron?.updater?.install();
+};
+
 onMounted(() => {
-  // Kick off offline system init (local DB counters + connectivity monitor).
-  // Fire-and-forget: init is async but shouldn't block the UI. Any failure
-  // during counter load is non-fatal; connectivity monitor is resilient.
   offline.init().catch((err) => {
     // eslint-disable-next-line no-console
     console.warn('offline.init() failed:', err);
   });
+
+  // Listen for auto-update events from main process
+  if (window.electron?.updater) {
+    window.electron.updater.onAvailable((info) => {
+      updateVersion.value = info.version;
+      updateStatus.value = 'available';
+    });
+    window.electron.updater.onProgress((p) => {
+      updatePercent.value = p.percent;
+    });
+    window.electron.updater.onDownloaded(() => {
+      updateStatus.value = 'ready';
+    });
+  }
 });
 </script>
 
@@ -112,6 +155,49 @@ select {
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* ── Auto-update banner ────────────────────────────────────── */
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--surface-high);
+  border-bottom: 1px solid var(--outline-variant);
+  font-size: 13px;
+  color: var(--on-surface);
+  flex-shrink: 0;
+}
+
+.update-banner--ready {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.update-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.update-btn:hover {
+  opacity: 0.9;
+}
+
+.update-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--on-surface-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
 }
 </style>
 

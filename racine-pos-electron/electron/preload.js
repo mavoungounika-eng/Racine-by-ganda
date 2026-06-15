@@ -33,4 +33,50 @@ contextBridge.exposeInMainWorld('electron', {
     openMonetbilWindow: (options) => ipcRenderer.invoke('payments:monetbil:open', options),
     closeMonetbilWindow: () => ipcRenderer.invoke('payments:monetbil:close'),
   },
+
+  // ── Offline SQLite Store (better-sqlite3, main process) ──────────────
+  //
+  // Each method maps to an ipcMain.handle() registered in main.js.
+  // The renderer calls these via window.electron.offlineDb.<method>().
+  offlineDb: {
+    save: (payload) => ipcRenderer.invoke('offlineDb:save', payload),
+    getPending: () => ipcRenderer.invoke('offlineDb:getPending'),
+    markSynced: (offlineIds) => ipcRenderer.invoke('offlineDb:markSynced', offlineIds),
+    stats: () => ipcRenderer.invoke('offlineDb:stats'),
+    cleanup: (olderThanDays) => ipcRenderer.invoke('offlineDb:cleanup', olderThanDays),
+  },
+
+  // ── Network ────────────────────────────────────────────────────────
+  //
+  // isOnline() queries Electron's net.isOnline() via the main process.
+  // This is a quick OS-level check (does the machine have a network
+  // interface up?), NOT a proof that the Laravel backend is reachable.
+  // For backend reachability, use the /api/pos/offline/status ping.
+  isOnline: () => ipcRenderer.invoke('network:is-online'),
+
+  // ── Printing ──────────────────────────────────────────────────────
+  //
+  // Silent thermal print via a hidden BrowserWindow in main process.
+  // Falls back to browser print dialog if silent printing fails.
+  printer: {
+    getPrinters: () => ipcRenderer.invoke('printer:get-printers'),
+    printReceipt: (opts) => ipcRenderer.invoke('printer:print-receipt', opts),
+  },
+
+  // ── Auto-update (electron-updater) ──────────────────────────────
+  updater: {
+    download: () => ipcRenderer.invoke('update:download'),
+    install: () => ipcRenderer.invoke('update:install'),
+    onAvailable: (cb) => ipcRenderer.on('update:available', (_e, info) => cb(info)),
+    onProgress: (cb) => ipcRenderer.on('update:progress', (_e, p) => cb(p)),
+    onDownloaded: (cb) => ipcRenderer.on('update:downloaded', () => cb()),
+  },
+
+  // ── Sync events (main → renderer) ───────────────────────────────────
+  onSyncComplete: (callback) => {
+    ipcRenderer.on('sync:complete', (_event, data) => callback(data));
+  },
+  onOnlineStatusChanged: (callback) => {
+    ipcRenderer.on('network:status-changed', (_event, isOnline) => callback(isOnline));
+  },
 });

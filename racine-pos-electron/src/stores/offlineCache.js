@@ -17,12 +17,25 @@ function serializable(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+/**
+ * Derive a SHA-256 hash from email + password.
+ * Uses Web Crypto API (available in Electron renderer).
+ */
+async function hashCredentials(email, password) {
+  const encoded = new TextEncoder().encode(email + ':' + password);
+  const digest = await crypto.subtle.digest('SHA-256', encoded);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 /* ── Auth ─────────────────────────────────────────────────── */
 export async function saveOfflineAuth(email, password, operator, operatorToken, deviceToken) {
   const d = await db();
+  const hash = await hashCredentials(email, password);
   await d.put('auth', {
     email,
-    hash: btoa(email + ':' + password),
+    hash,
     operator: serializable(operator),
     operatorToken: serializable(operatorToken),
     deviceToken,
@@ -37,7 +50,8 @@ export async function loadOfflineAuth() {
 export async function verifyOfflineAuth(email, password) {
   const cached = await loadOfflineAuth();
   if (!cached) return null;
-  if (cached.email === email && cached.hash === btoa(email + ':' + password)) {
+  const hash = await hashCredentials(email, password);
+  if (cached.email === email && cached.hash === hash) {
     return { operator: cached.operator, token: cached.operatorToken, deviceToken: cached.deviceToken };
   }
   return null;

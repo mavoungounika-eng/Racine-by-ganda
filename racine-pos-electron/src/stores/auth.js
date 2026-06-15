@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { PosApiClient } from '../api/posClient';
+import { createApiService } from '../services/apiService';
 import { refreshEchoAuth } from '../plugins/echo.js';
 import { saveOfflineAuth, verifyOfflineAuth, clearOfflineAuth } from './offlineCache.js';
 
@@ -42,7 +43,32 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
     offline: false,
   }),
+  getters: {
+    /**
+     * Operator / creator info from the login response.
+     * Exposes id, name, email, shop_name when available.
+     */
+    creatorInfo: (state) => {
+      if (!state.operator) return null;
+      return {
+        id: state.operator.id ?? null,
+        name: state.operator.name ?? null,
+        email: state.operator.email ?? null,
+        shop_name: state.operator.shop_name ?? state.operator.boutique ?? null,
+      };
+    },
+    /** True when both device and operator tokens are present. */
+    isFullyAuthenticated: (state) => !!state.token && !!state.operatorToken,
+  },
   actions: {
+    /**
+     * Return a high-level ApiService instance bound to this auth store.
+     * Prefer this over client() for new code — apiService() provides
+     * named methods instead of raw HTTP verbs.
+     */
+    apiService() {
+      return createApiService(this);
+    },
     client() {
       return new PosApiClient(
         () => this.token,
