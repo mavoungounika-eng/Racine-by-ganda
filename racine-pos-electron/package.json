@@ -17,6 +17,7 @@
   "author": "RACINE BY GANDA",
   "license": "MIT",
   "dependencies": {
+    "@stripe/stripe-js": "^5.10.0",
     "axios": "^1.13.6",
     "idb": "^8.0.3",
     "laravel-echo": "^2.3.1",

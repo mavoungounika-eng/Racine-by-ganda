@@ -419,7 +419,7 @@
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
-    <button class="lightbox-close" onclick="closeLightbox()">
+    <button class="lightbox-close" data-action="close-lightbox">
         <i class="fas fa-times"></i>
     </button>
     <div class="lightbox-content">

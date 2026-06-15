@@ -24,6 +24,8 @@ class Order extends Model
         'status',
         'payment_status',
         'payment_method',
+        'source',
+        'offline_id',
         'total_amount',
         'original_total',
         'cancellation_type',

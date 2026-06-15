@@ -741,9 +741,9 @@
                         </div>
                         <div class="quantity-selector">
                             <div class="qty-control">
-                                <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
-                                <input type="number" class="qty-input" value="1" min="1" max="{{ $product->stock ?? 1 }}" id="qtyInput" onchange="syncCartQty()">
-                                <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+                                <button type="button" class="qty-btn" data-qty-delta="-1">−</button>
+                                <input type="number" class="qty-input" value="1" min="1" max="{{ $product->stock ?? 1 }}" id="qtyInput">
+                                <button type="button" class="qty-btn" data-qty-delta="1">+</button>
                             </div>
                             <span class="product-stock-info">
                                 {{ ($product->stock ?? 0) }} disponible{{ ($product->stock ?? 0) > 1 ? 's' : '' }}
@@ -773,7 +773,7 @@
                 <div class="product-extras">
                     <div class="extra-item">
                         <i class="fas fa-truck"></i>
-                        <span>Livraison gratuite dès 100€</span>
+                        <span>Livraison gratuite dès 75 000 FCFA</span>
                     </div>
                     <div class="extra-item">
                         <i class="fas fa-rotate-left"></i>
@@ -840,7 +840,7 @@
             
             <div class="tab-content" id="shipping">
                 <h3>Informations de livraison</h3>
-                <p><strong>France métropolitaine :</strong> Livraison gratuite dès 100€ d'achat. Sinon 5,90€.</p>
+                <p><strong>France métropolitaine :</strong> Livraison gratuite dès 75 000 FCFA d'achat. Sinon 3 500 FCFA.</p>
                 <br>
                 <p><strong>DOM-TOM :</strong> À partir de 12,90€.</p>
                 <br>

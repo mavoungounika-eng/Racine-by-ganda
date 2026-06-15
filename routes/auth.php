@@ -87,12 +87,12 @@ Route::post('/logout', [LoginController::class, 'logout'])
 // Routes génériques pour Google, Apple, Facebook
 // Module Social Auth v2 - Indépendant du module Google Auth v1
 Route::get('/auth/{provider}/redirect/{role?}', [SocialAuthController::class, 'redirect'])
-    ->where('provider', 'google|apple|facebook')
-    ->where('role', 'client|creator')
+    ->where('provider', 'google')
+    ->where('role', 'client|createur')
     ->name('auth.social.redirect');
 
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])
-    ->where('provider', 'google|apple|facebook')
+    ->where('provider', 'google')
     ->name('auth.social.callback');
 
 

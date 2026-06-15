@@ -47,7 +47,7 @@ class UserContext
 
     public function isCreator(): bool
     {
-        return $this->hasAnyRole(['createur', 'creator']);
+        return $this->hasAnyRole(['createur']);
     }
 
     public function isClient(): bool

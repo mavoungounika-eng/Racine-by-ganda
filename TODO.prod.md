@@ -5,6 +5,51 @@
 - ✅ Sprint 1 — SEO+Performance+Contenu (4 commits, 8 P1 résolus)
 - ✅ Sprint 2 — OG Image JPG + Srcset (2 commits, documentation complète)
 - ✅ Sprint 3 — P0 Légal + Srcset + CMS RGPD (3 commits, production-ready)
+- ✅ Sprint 6 — Durcissement CSP nonce + cleanup (12 juin 2026)
+
+---
+
+## SPRINT 6 — CSP NONCE + CLEANUP (12 juin 2026)
+
+**Commits:** `ddad3e77` fix(security) CSP nonce, `2aa7acd4` feat(shipping)
+
+### Réalisé
+1. **CSP nonce restauré** dans `SecurityHeaders` (script-src/style-src). Avec un nonce,
+   `'unsafe-inline'` est ignoré par les navigateurs CSP3 → tout script/handler inline
+   sans nonce serait bloqué.
+2. **Scripts inline → nonce** (10 vues standalone) : errors/429, admin/orders/to-handle,
+   profile/orders, checkout/mobile-money-form.
+3. **Handlers inline `on*` → `data-*` + délégateur global nonce'd** dans le layout
+   (`document` delegation : `data-action`, `data-href`, `data-qty-delta`, `data-auto-submit`,
+   `data-slide-index`, `img[data-hide-on-error]`).
+4. **Font Awesome** : chargement async `onload="this.media='all'"` → chargement standard
+   (CSP-safe, sans handler inline). Voir P2 ligne « subset/SVG inline » ci-dessous pour
+   ré-optimiser la perf si besoin (préload + nonce'd swap).
+5. **Cleanup** : 9 fichiers parasites 0-octet supprimés (`hero-0*],`, `image,`, `video,`),
+   `config/company.php` restauré (diff whitespace-only annulé).
+
+### ✅ Lot frontend tenu — désormais COMMITÉ (inspecté + validé)
+- [x] **`7d86f81a` fix(auth)** — retrait `->timeout(5)` sur `Socialite::driver()` (méthode
+      inexistante → `BadMethodCallException` cassait le callback OAuth en prod). Tests OAuth 19/19 PASS.
+- [x] **`9ed725f2` feat(frontend)** — `home`/`shop`/`atelier` : localisation prix XAF,
+      suppression blocs démo placeholder, **corrections CSP (wishlist/sort/badge → `data-*`)**.
+      Le couplage CSP↔redesign (hunks entremêlés) est ainsi résolu : `home`/`shop` n'ont plus
+      de handlers inline sur HEAD.
+- [x] **`f3c6117d` style(css)** — `public/css/frontend-home.css` régénéré depuis la source
+      `resources/css/frontend-home.css` (368 lignes, accolades équilibrées 160/160).
+
+### Notes environnement (machine de cette session)
+- `vendor/` avait perdu ses deps dev → `composer install` exécuté (PHPUnit restauré).
+- Base MySQL `racine_testing` **absente** → créée + `GRANT` à `laravel` (via debian-sys-maint).
+  À refaire si la machine est réprovisionnée.
+- **phpunit.xml** : le bloc sqlite (lignes 56-59) est un **fallback commenté** (`<!-- ... -->`),
+  pas une config morte active. Aucune action requise (audit initial corrigé).
+
+### Tests flaky pré-existants (fichiers PROTÉGÉS — ne pas modifier)
+Suite : **992 tests, 0-1 failure flaky, 8 skipped**. La failure tourne entre
+`LogoutTest::test_creator_logout` et `HealthCheckTest::test_health_check_service_logic`
+selon l'ordre (fuite d'état intra-suite). Passent en isolation `--filter`. Conforme à la
+baseline CLAUDE.md (« Flaky: 0-1 par run »).
 
 ---
 

@@ -146,6 +146,41 @@ Route::prefix('cms')->group(function () {
     Route::post('banners/{id}/click', [\App\Http\Controllers\Api\Admin\BannerController::class, 'click'])->name('api.cms.banners.click');
 });
 
+// ==========================================
+// POS Connect API (Electron — Sanctum + abonnement Signature)
+// ------------------------------------------
+// Groupe principal sous /api/pos/v1 : la baseURL Electron doit pointer ici
+// (ex: https://domaine.com/api/pos/v1). Le préfixe nu /api/pos est partagé
+// avec l'API device JWT historique (routes/api_pos.php, chargée APRÈS ce
+// fichier) : GET /api/pos/products y est déjà pris par le flux device —
+// seuls login/orders/sync sont donc aussi aliasés sans /v1.
+// ==========================================
+$posConnectRoutes = function (bool $named) {
+    $name = fn (string $suffix) => $named ? "api.pos.connect.{$suffix}" : "api.pos.connect.legacy.{$suffix}";
+
+    Route::post('/login', [\App\Http\Controllers\Api\Pos\PosAuthController::class, 'login'])
+        ->middleware('throttle:pos_operator_login')
+        ->name($name('login'));
+
+    Route::middleware(['auth:sanctum', 'signature.subscription'])->group(function () use ($name, $named) {
+        if ($named) {
+            // GET /products uniquement sous /v1 (le chemin nu appartient à l'API device JWT)
+            Route::get('/products', [\App\Http\Controllers\Api\Pos\PosProductController::class, 'index'])
+                ->name($name('products'));
+        }
+
+        Route::post('/orders', [\App\Http\Controllers\Api\Pos\PosOrderController::class, 'store'])
+            ->name($name('orders.store'));
+        Route::get('/orders', [\App\Http\Controllers\Api\Pos\PosOrderController::class, 'index'])
+            ->name($name('orders.index'));
+        Route::post('/sync', [\App\Http\Controllers\Api\Pos\PosSyncController::class, 'sync'])
+            ->name($name('sync'));
+    });
+};
+
+Route::prefix('pos/v1')->group(fn () => $posConnectRoutes(true));
+Route::prefix('pos')->group(fn () => $posConnectRoutes(false));
+
 // Multi-devise API
 Route::get('/currency/rates', [\App\Http\Controllers\CurrencyController::class, 'rates']);
 Route::post('/currency/convert', [\App\Http\Controllers\CurrencyController::class, 'convert']);

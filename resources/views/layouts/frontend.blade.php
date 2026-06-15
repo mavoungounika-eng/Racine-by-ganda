@@ -59,9 +59,8 @@
         <link rel="stylesheet" href="{{ asset('css/frontend-shop.css') }}">
     @endif
     
-    {{-- Font Awesome (chargement async pour performance) --}}
-    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}"></noscript>
+    {{-- Font Awesome (chargement standard — CSP-safe, sans handler inline onload) --}}
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     
     <style nonce="{{ csp_nonce() }}">
         :root {
@@ -234,7 +233,7 @@
     {{-- ANNOUNCEMENT BAR PREMIUM --}}
     <div class="announcement-bar" id="announcement-bar">
         <div class="container text-center">
-            <span class="announcement-text">{{ $cmsBlocks['announcement'] ?? '✦ Livraison offerte dès 150€ · Collection "Héritage" disponible ✦' }}</span>
+            <span class="announcement-text">{{ $cmsBlocks['announcement'] ?? '✦ Livraison offerte dès ' . format_price(config("shipping.zones.local.free_above"), "XAF") . ' · Collection "Héritage" disponible ✦' }}</span>
         </div>
     </div>
 
@@ -491,7 +490,7 @@
                     {{-- Colonne 1: Brand --}}
                     <div class="footer-brand">
                         <div class="brand-logo">
-                            <img src="{{ asset('images/logo-racine.png') }}" alt="RACINE BY GANDA" onerror="this.style.display='none'">
+                            <img src="{{ asset('images/logo-racine.png') }}" alt="RACINE BY GANDA" data-hide-on-error>
                             <span>RACINE BY GANDA</span>
                         </div>
                         <p class="brand-tagline">Mode Africaine Premium</p>
@@ -743,6 +742,74 @@
             }
         }
     });
+    </script>
+
+    {{-- Délégateur global CSP-safe : remplace les handlers inline (onclick/onchange/onerror)
+         retirés des vues pour respecter la CSP nonce. Chaque data-action ne s'affiche
+         que sur la page où sa fonction globale correspondante est définie. --}}
+    <script nonce="{{ csp_nonce() }}">
+    (function () {
+        // Clics délégués
+        document.addEventListener('click', function (e) {
+            var el = e.target.closest('[data-action], [data-href], [data-qty-delta]');
+            if (!el) return;
+
+            if (el.hasAttribute('data-qty-delta')) {
+                if (typeof window.changeQty === 'function') {
+                    window.changeQty(parseInt(el.getAttribute('data-qty-delta'), 10));
+                }
+                return;
+            }
+
+            if (el.hasAttribute('data-href')) {
+                e.preventDefault();
+                var href = el.getAttribute('data-href');
+                if (href) window.location = href;
+                return;
+            }
+
+            switch (el.getAttribute('data-action')) {
+                case 'wishlist':
+                    e.preventDefault();
+                    if (typeof window.toggleWishlist === 'function') {
+                        window.toggleWishlist(parseInt(el.getAttribute('data-product-id'), 10));
+                    }
+                    break;
+                case 'close-lightbox':
+                    if (typeof window.closeLightbox === 'function') window.closeLightbox();
+                    break;
+                case 'select-address':
+                    if (typeof window.selectAddress === 'function') window.selectAddress(el);
+                    break;
+                case 'toggle-manual-address':
+                    if (typeof window.toggleManualAddress === 'function') window.toggleManualAddress();
+                    break;
+                case 'check-status':
+                    if (typeof window.checkStatus === 'function') window.checkStatus();
+                    break;
+                case 'carousel-thumb':
+                    var idx = el.getAttribute('data-slide-index');
+                    var slide = document.querySelector('[data-bs-slide-to="' + idx + '"]');
+                    if (slide) slide.click();
+                    break;
+            }
+        });
+
+        // Changements délégués
+        document.addEventListener('change', function (e) {
+            var el = e.target;
+            if (el.matches('[data-auto-submit]') && el.form) {
+                el.form.submit();
+            } else if (el.matches('[data-action="sync-qty"]') && typeof window.syncCartQty === 'function') {
+                window.syncCartQty();
+            }
+        });
+
+        // Masquage d'image en cas d'erreur de chargement (l'évènement 'error' ne bulle pas)
+        document.querySelectorAll('img[data-hide-on-error]').forEach(function (img) {
+            img.addEventListener('error', function () { this.style.display = 'none'; });
+        });
+    })();
     </script>
 
     @stack('scripts')

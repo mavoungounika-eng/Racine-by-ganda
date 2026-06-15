@@ -435,7 +435,7 @@
     <div class="container">
         <div class="albums-grid">
             @foreach($albumItems as $album)
-            <div class="album-card" @if(!empty($album['album_url']) && $album['album_url'] !== '#') onclick="window.location='{{ $album['album_url'] }}'" @endif>
+            <div class="album-card" @if(!empty($album['album_url']) && $album['album_url'] !== '#') data-href="{{ $album['album_url'] }}" @endif>
                 <div class="album-cover">
                     <img src="{{ asset('storage/' . $album['cover_image']) }}"
                          alt="{{ $album['title'] }}"

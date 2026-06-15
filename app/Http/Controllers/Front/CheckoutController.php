@@ -16,6 +16,7 @@ use App\Services\StockValidationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Services\ShippingService;
 
 class CheckoutController extends Controller
 {
@@ -84,7 +85,6 @@ class CheckoutController extends Controller
 
         $items = $cartService->getItems();
         $subtotal = $cartService->total();
-        $shipping_default = 2000; // 2000 FCFA par défaut pour livraison à domicile
 
         if ($items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
@@ -102,6 +102,11 @@ class CheckoutController extends Controller
 
         // Charger les adresses du client
         $addresses = Address::where('user_id', $user->id)->get();
+        $shippingService     = app(ShippingService::class);
+        $addrForShipping     = $addresses->where("is_default", true)->first() ?? $addresses->first();
+        $detectedZone        = $shippingService->detectZone($addrForShipping?->country);
+        $shipping_default    = (int) $shippingService->cost($detectedZone, $subtotal);
+        $shipping_zone_config = $shippingService->zoneConfig($detectedZone);
         $defaultAddress = $addresses->where('is_default', true)->first() ?? $addresses->first();
 
         // ✅ Module 8 - Protection double soumission : Générer token unique
@@ -112,7 +117,7 @@ class CheckoutController extends Controller
             'checkout_idempotency_key' => $idempotencyKey,
         ]);
 
-        return view('frontend.checkout.index', compact('items', 'subtotal', 'shipping_default', 'addresses', 'defaultAddress', 'user', 'checkoutToken', 'idempotencyKey'));
+        return view('frontend.checkout.index', compact('items', 'subtotal', 'shipping_default', 'shipping_zone_config', 'addresses', 'defaultAddress', 'user', 'checkoutToken', 'idempotencyKey'));
     }
 
     /**

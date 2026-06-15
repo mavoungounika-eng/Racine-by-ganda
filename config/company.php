@@ -16,11 +16,17 @@ return [
     'name' => env('COMPANY_NAME', 'RACINE BY GANDA'),
 
     /*
-    | RCS Number (Registre du Commerce et des Sociétés)
-    | Format: RCS [Ville] XXX XXX XXX
-    | Example: RCS Paris 123 456 789
+    | Pays et ville du siège social (juridiction OHADA)
     */
-    'rcs' => env('COMPANY_RCS', ''),
+    'country' => env('COMPANY_COUNTRY', 'République du Congo'),
+    'city' => env('COMPANY_CITY', 'Pointe-Noire'),
+
+    /*
+    | RCCM Number (Registre du Commerce et du Crédit Mobilier — OHADA)
+    | Format: RCCM CG-PNR-XX-XXXX-XX-XXXXX (République du Congo)
+    | Example: RCCM CG-PNR-01-2026-B12-00001
+    */
+    'rccm' => env('COMPANY_RCCM', ''),
 
     /*
     | Legal address (siège social)
@@ -58,6 +64,12 @@ return [
     'vat_number' => env('COMPANY_VAT_NUMBER', ''),
 
     /*
+    | Devises — XAF (FCFA) principale, EUR secondaire (diaspora)
+    */
+    'currency_main' => 'XAF',
+    'currency_secondary' => 'EUR',
+
+    /*
     |--------------------------------------------------------------------------
     | Social Media
     |--------------------------------------------------------------------------
@@ -68,10 +80,10 @@ return [
     */
 
     'instagram' => env('SOCIAL_INSTAGRAM', ''),
-    'facebook' => env('SOCIAL_FACEBOOK', ''),
-    'twitter' => env('SOCIAL_TWITTER', ''),
-    'tiktok' => env('SOCIAL_TIKTOK', ''),
+    'facebook'  => env('SOCIAL_FACEBOOK', ''),
+    'twitter'   => env('SOCIAL_TWITTER', ''),
+    'tiktok'    => env('SOCIAL_TIKTOK', ''),
     'pinterest' => env('SOCIAL_PINTEREST', ''),
-    'linkedin' => env('SOCIAL_LINKEDIN', ''),
-
+    'youtube'   => env('SOCIAL_YOUTUBE', ''),
+    'linkedin'  => env('SOCIAL_LINKEDIN', ''),
 ];

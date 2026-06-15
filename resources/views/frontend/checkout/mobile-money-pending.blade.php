@@ -77,7 +77,7 @@
                                 </a>
                             </div>
                             <div class="col-md-4 mb-2">
-                                <button type="button" onclick="checkStatus()" class="btn btn-outline-primary btn-block" id="check-status-btn">
+                                <button type="button" data-action="check-status" class="btn btn-outline-primary btn-block" id="check-status-btn">
                                     <i class="fas fa-sync-alt me-2"></i>
                                     Vérifier
                                 </button>

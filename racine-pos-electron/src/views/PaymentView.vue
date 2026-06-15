@@ -21,14 +21,20 @@
             v-for="m in methods"
             :key="m.value"
             class="method-tile"
-            :class="{ active: method === m.value }"
-            @click="method = m.value"
+            :class="{ active: method === m.value, 'tile-disabled': isMethodDisabled(m) }"
+            :disabled="isMethodDisabled(m)"
+            :title="isMethodDisabled(m) ? t('payment.offlineOnlyCash') : ''"
+            @click="selectMethod(m)"
           >
             <span class="tile-icon">{{ m.icon }}</span>
             <span class="tile-label">{{ m.label }}</span>
             <span v-if="method === m.value" class="tile-check">✓</span>
+            <span v-if="isMethodDisabled(m)" class="tile-offline">{{ t('offline.status') }}</span>
           </button>
         </div>
+        <p v-if="offline.isOffline" class="offline-note">
+          ⚠ {{ t('payment.offlineOnlyCash') }}
+        </p>
       </div>
 
       <!-- Formulaire contextuel -->
@@ -154,6 +160,23 @@
           <p class="hint">MTN Mobile Money · Orange Money · Airtel Money</p>
         </div>
 
+        <!-- MONETBIL (fenêtre de paiement dédiée) -->
+        <div v-if="method === 'monetbil'" class="detail-fields">
+          <label class="field-label">{{ t('payment.monetbilPhoneLabel') }}</label>
+          <input
+            v-model="phoneNumber"
+            class="text-input"
+            placeholder="+237 6XX XXX XXX"
+            type="tel"
+          />
+          <p class="hint">{{ t('payment.monetbilHint') }}</p>
+        </div>
+
+        <!-- STRIPE (modale Stripe Elements) -->
+        <div v-if="method === 'stripe'" class="detail-fields">
+          <p class="hint">{{ t('payment.stripeHint') }}</p>
+        </div>
+
         <!-- Feedback -->
         <div v-if="status" class="feedback feedback-success">
           <span>✓</span> {{ status }}
@@ -185,56 +208,42 @@
           <button class="modal-close" @click="showReceiptModal = false">✕</button>
         </div>
         <div class="modal-body">
-          <div v-if="cart.lastSale" class="receipt">
-            <div class="receipt-header">
-              <p class="receipt-brand">RACINE BY GANDA</p>
-              <p class="receipt-sub">Point de Vente</p>
-              <p class="receipt-sep">- - - - - - - - - - - - - -</p>
-            </div>
-            <div class="receipt-row"><span>N° vente</span><span>#{{ cart.lastSale.id }}</span></div>
-            <div class="receipt-row"><span>Date</span><span>{{ new Date(cart.lastSale.created_at).toLocaleString('fr-FR') }}</span></div>
-            <p class="receipt-sep">- - - - - - - - - - - - - -</p>
-            <div v-for="item in (cart.lastSale.items || [])" :key="item.id" class="receipt-row">
-              <span>{{ item.product_name }} ×{{ item.quantity }}</span>
-              <span>{{ formatAmount(item.subtotal) }}</span>
-            </div>
-            <p class="receipt-sep">= = = = = = = = = = = = = =</p>
-            <div v-if="discount_percent > 0" class="receipt-row">
-              <span>Remise ({{ discount_percent }}%)</span>
-              <span>−{{ formatAmount(discountAmount) }}</span>
-            </div>
-            <div v-if="cart.coupon_code" class="receipt-row">
-              <span>Code promo ({{ cart.coupon_code }})</span>
-              <span>−{{ formatAmount(cart.coupon_discount) }}</span>
-            </div>
-            <div class="receipt-total"><span>TOTAL</span><span>{{ formatAmount(totalAfterDiscount) }}</span></div>
-            <div class="receipt-row"><span>Mode</span><span>{{ labelPaymentMethod(method) }}</span></div>
-            <div v-if="method === 'cash'" class="receipt-row">
-              <span>Rendu monnaie</span>
-              <span>{{ formatAmount(changeDue) }}</span>
-            </div>
-            <p class="receipt-sep">- - - - - - - - - - - - - -</p>
-            <p class="receipt-footer">Merci pour votre confiance</p>
-            <p class="receipt-footer">www.racinebyganda.com</p>
-          </div>
+          <ReceiptPrint v-if="receiptData" ref="receiptRef" :sale="receiptData" />
         </div>
         <div class="modal-footer">
-          <button class="btn-action" @click="printReceipt">🖨 Imprimer</button>
-          <button class="btn-action btn-action--primary" @click="newSale">+ Nouvelle vente</button>
+          <button class="btn-action" @click="printReceipt">🖨 {{ t('receipt.print') }}</button>
+          <button class="btn-action btn-action--primary" @click="newSale">+ {{ t('receipt.newSale') }}</button>
         </div>
       </div>
     </div>
+
+    <!-- MODALE STRIPE ELEMENTS -->
+    <StripeCardModal
+      v-if="showStripeModal"
+      :amount="totalAfterDiscount"
+      currency="xaf"
+      @success="onStripeSuccess"
+      @close="showStripeModal = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCartStore } from '../stores/cart';
+import { useAuthStore } from '../stores/auth';
+import { useOfflineStore } from '../stores/offline';
 import { useRouter } from 'vue-router';
+import ApiService from '../services/api.js';
+import OfflineStore from '../services/offlineStore.js';
+import ReceiptPrint from '../components/ReceiptPrint.vue';
+import StripeCardModal from '../components/StripeCardModal.vue';
 
 const { t } = useI18n();
 const cart = useCartStore();
+const auth = useAuthStore();
+const offline = useOfflineStore();
 const router = useRouter();
 
 const method = ref('cash');
@@ -252,18 +261,45 @@ const status = ref('');
 const error = ref('');
 const processing = ref(false);
 const showReceiptModal = ref(false);
+const showStripeModal = ref(false);
+const receiptData = ref(null);
+const receiptRef = ref(null);
 
 const methods = [
   { value: 'cash',         icon: '💵', label: 'Espèces' },
   { value: 'card',         icon: '💳', label: 'Carte bancaire' },
   { value: 'mobile_money', icon: '📱', label: 'Mobile Money' },
+  { value: 'monetbil',     icon: '📲', label: 'Monetbil',       onlineOnly: true },
+  { value: 'stripe',       icon: '🌐', label: 'Carte (Stripe)', onlineOnly: true },
 ];
+
+// Monetbil / Stripe nécessitent le réseau : tuiles désactivées hors-ligne.
+const isMethodDisabled = (m) => !!m.onlineOnly && offline.isOffline;
+
+const selectMethod = (m) => {
+  if (isMethodDisabled(m)) return;
+  method.value = m.value;
+};
+
+// Si la connexion tombe pendant la sélection → retour forcé sur Espèces.
+watch(() => offline.isOffline, (isOff) => {
+  if (isOff && methods.find((m) => m.value === method.value)?.onlineOnly) {
+    method.value = 'cash';
+    showStripeModal.value = false;
+  }
+});
 
 const formatAmount = (value) =>
   new Intl.NumberFormat('fr-FR').format(Math.round(Number(value || 0))) + ' FCFA';
 
 const labelPaymentMethod = (m) => {
-  const methods = { cash: 'Espèces', card: 'Carte bancaire', mobile_money: 'Mobile Money' };
+  const methods = {
+    cash: 'Espèces',
+    card: 'Carte bancaire',
+    mobile_money: 'Mobile Money',
+    monetbil: 'Monetbil',
+    stripe: 'Carte (Stripe)',
+  };
   return methods[m] || m || '—';
 };
 
@@ -294,6 +330,8 @@ const canConfirm = computed(() => {
   if (method.value === 'cash') return Number(receivedAmount.value) >= totalAfterDiscount.value;
   if (method.value === 'card') return transactionId.value.trim().length > 0;
   if (method.value === 'mobile_money') return phoneNumber.value.trim().length >= 8;
+  if (method.value === 'monetbil') return !offline.isOffline;
+  if (method.value === 'stripe') return !offline.isOffline;
   return false;
 });
 
@@ -320,6 +358,148 @@ onMounted(() => {
   return () => window.removeEventListener('keydown', handleEscape);
 });
 
+// ── Helpers commande (contrat ApiService / OfflineStore) ─────────────────
+// Payload contrat : { items: [{product_id, quantity, unit_price}],
+//   payment_method, total, monetbil_ref?, stripe_ref?, offline_id? }
+const buildOrderPayload = (paymentMethod, extra = {}) => ({
+  items: cart.items.map((i) => ({
+    product_id: i.product_id,
+    quantity: i.quantity,
+    unit_price: Number(i.price),
+  })),
+  payment_method: paymentMethod,
+  total: Math.round(Number(totalAfterDiscount.value || 0)),
+  ...extra,
+});
+
+// Snapshot du panier pour le reçu (le panier est vidé après la vente).
+const snapshotReceipt = (paymentMethod, reference, change = null) => ({
+  creatorName: ApiService.auth?.creator?.name || auth.operator?.name || null,
+  items: cart.items.map((i) => ({
+    name: i.name,
+    quantity: i.quantity,
+    unit_price: Number(i.price),
+    subtotal: Number(i.price) * i.quantity,
+  })),
+  total: Math.round(Number(totalAfterDiscount.value || 0)),
+  methodLabel: labelPaymentMethod(paymentMethod),
+  date: new Date().toISOString(),
+  reference: reference || null,
+  change,
+  discountLabel:
+    discount_percent.value > 0
+      ? `Remise (${discount_percent.value}%)`
+      : (cart.coupon_code ? `Code promo (${cart.coupon_code})` : null),
+  discountAmount:
+    discount_percent.value > 0
+      ? discountAmount.value
+      : (cart.coupon_code ? Number(cart.coupon_discount || 0) : null),
+});
+
+const openReceipt = (paymentMethod, reference, change = null) => {
+  receiptData.value = snapshotReceipt(paymentMethod, reference, change);
+  cart.clearCart();
+  showReceiptModal.value = true;
+};
+
+/**
+ * Crée la commande côté backend via le contrat ApiService.createOrder().
+ * Retourne la référence de vente, ou lève une erreur message-utilisateur.
+ */
+const submitOrder = async (payload) => {
+  const res = await ApiService.createOrder(payload);
+  if (!res?.success) {
+    if (res?.offline) {
+      // Le réseau est tombé entre-temps → bascule offline.
+      const offlineId = await OfflineStore.savePendingOrder({ ...payload });
+      return { offline: true, reference: offlineId };
+    }
+    throw new Error(res?.message || t('payment.orderFailed'));
+  }
+  const d = res.data || {};
+  const reference = d.order?.id ?? d.sale?.id ?? d.id ?? d.reference ?? null;
+  return { offline: false, reference: reference != null ? `#${reference}` : null };
+};
+
+// ── Flux MONETBIL : fenêtre main-process via IPC (contextBridge) ─────────
+const payWithMonetbil = async () => {
+  const bridge = window.electron?.payments;
+  if (!bridge?.openMonetbilWindow) {
+    throw new Error(t('payment.monetbilUnavailable'));
+  }
+
+  status.value = t('payment.monetbilWaiting');
+
+  // 1. Init backend : récupère l'URL de paiement si l'endpoint existe.
+  //    ⚠ DÉPENDANCE BACKEND : POST /api/pos/payments/monetbil/init
+  //      body { amount, currency, phone? } → { payment_url, return_url }.
+  //    Absent à ce jour (cf. routes/api_pos.php) → fallback : le main
+  //    process construit l'URL widget Monetbil v2.1 lui-même.
+  let openOpts = null;
+  try {
+    const initRes = await ApiService.client.post('/payments/monetbil/init', {
+      amount: Math.round(Number(totalAfterDiscount.value || 0)),
+      currency: 'XAF',
+      phone: phoneNumber.value || null,
+    });
+    const d = initRes?.data?.data || initRes?.data || {};
+    if (d.payment_url) {
+      openOpts = { paymentUrl: d.payment_url, returnUrl: d.return_url || undefined };
+    }
+  } catch {
+    // Endpoint absent / erreur — on passe au fallback widget.
+  }
+
+  if (!openOpts) {
+    openOpts = {
+      serviceKey: import.meta.env.VITE_MONETBIL_SERVICE_KEY || null,
+      amount: Math.round(Number(totalAfterDiscount.value || 0)),
+      currency: 'XAF',
+      phone: phoneNumber.value || null,
+      paymentRef: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    };
+  }
+
+  // 2. Fenêtre de paiement (bloque jusqu'à retour / fermeture).
+  const result = await bridge.openMonetbilWindow(openOpts);
+
+  if (result?.status === 'cancelled') {
+    status.value = '';
+    error.value = t('payment.monetbilCancelled');
+    return;
+  }
+  if (result?.status !== 'success' || !result?.monetbil_ref) {
+    status.value = '';
+    error.value = t('payment.monetbilFailed');
+    return;
+  }
+
+  // 3. Enregistrer la vente avec la référence Monetbil.
+  const order = await submitOrder(
+    buildOrderPayload('monetbil', { monetbil_ref: result.monetbil_ref }),
+  );
+  status.value = t('payment.success');
+  openReceipt('monetbil', order.reference || result.monetbil_ref);
+};
+
+// ── Flux STRIPE : succès renvoyé par la modale Stripe Elements ───────────
+const onStripeSuccess = async ({ paymentIntentId }) => {
+  showStripeModal.value = false;
+  processing.value = true;
+  error.value = '';
+  try {
+    const order = await submitOrder(
+      buildOrderPayload('stripe', { stripe_ref: paymentIntentId }),
+    );
+    status.value = t('payment.success');
+    openReceipt('stripe', order.reference || paymentIntentId);
+  } catch (e) {
+    error.value = e.message || t('payment.orderFailed');
+  } finally {
+    processing.value = false;
+  }
+};
+
 const confirm = async () => {
   error.value = '';
   status.value = '';
@@ -335,6 +515,46 @@ const confirm = async () => {
     cart.customer_name = customer_name.value || null;
     cart.customer_phone = customer_phone.value || null;
 
+    // ── ESPÈCES : contrat ApiService.createOrder / OfflineStore ──────────
+    if (method.value === 'cash') {
+      const payload = buildOrderPayload('cash');
+      const change = changeDue.value;
+
+      if (offline.isOffline) {
+        const offlineId = await OfflineStore.savePendingOrder(payload);
+        status.value = t('offline.savedOffline') + ' — ' + t('offline.autoSync');
+        openReceipt('cash', offlineId, change);
+        return;
+      }
+
+      const order = await submitOrder(payload);
+      if (order.offline) {
+        status.value = t('offline.savedOffline') + ' — ' + t('offline.autoSync');
+        openReceipt('cash', order.reference, change);
+        return;
+      }
+
+      status.value = `Paiement validé. Rendu monnaie : ${formatAmount(change)}`;
+      openReceipt('cash', order.reference, change);
+      return;
+    }
+
+    // ── MONETBIL : fenêtre de paiement dédiée (main process) ─────────────
+    if (method.value === 'monetbil') {
+      if (offline.isOffline) throw new Error(t('payment.offlineOnlyCash'));
+      await payWithMonetbil();
+      return;
+    }
+
+    // ── STRIPE : ouvre la modale Stripe Elements (suite dans onStripeSuccess)
+    if (method.value === 'stripe') {
+      if (offline.isOffline) throw new Error(t('payment.offlineOnlyCash'));
+      showStripeModal.value = true;
+      return;
+    }
+
+    // ── Flux existants (carte manuelle / mobile money) — inchangés ───────
+    const pendingReceipt = snapshotReceipt(method.value, null, null);
     const saleRes = await cart.createSale(method.value);
 
     if (saleRes.offline) {
@@ -344,17 +564,12 @@ const confirm = async () => {
     }
 
     const paymentId = saleRes.sale?.payment?.id;
-    const lastSale = saleRes.sale;
-
-    if (method.value === 'cash') {
-      status.value = `Paiement validé. Rendu monnaie : ${formatAmount(changeDue.value)}`;
-      showReceiptModal.value = true;
-      return;
-    }
+    pendingReceipt.reference = saleRes.sale?.id != null ? `#${saleRes.sale.id}` : null;
 
     if (method.value === 'card') {
       status.value = 'En attente de confirmation carte…';
       await cart.confirmCardPayment(paymentId, transactionId.value, receiptNumber.value);
+      receiptData.value = pendingReceipt;
       showReceiptModal.value = true;
       return;
     }
@@ -362,13 +577,14 @@ const confirm = async () => {
     if (method.value === 'mobile_money') {
       status.value = 'En attente de confirmation mobile…';
       await cart.pollPaymentStatus(paymentId, 20, 3000);
+      receiptData.value = pendingReceipt;
       showReceiptModal.value = true;
     }
   } catch (e) {
     if (e.message === 'MONTANT_INSUFFISANT') {
       error.value = 'Le montant reçu est inférieur au total du panier.';
     } else {
-      error.value = e.response?.data?.error?.message || 'Échec du paiement';
+      error.value = e.response?.data?.error?.message || e.message || 'Échec du paiement';
     }
   } finally {
     processing.value = false;
@@ -376,7 +592,11 @@ const confirm = async () => {
 };
 
 const printReceipt = () => {
-  window.print();
+  if (receiptRef.value?.print) {
+    receiptRef.value.print();
+  } else {
+    window.print();
+  }
 };
 
 const newSale = () => {
@@ -884,6 +1104,36 @@ const removeCoupon = () => {
   font-size: 14px;
   font-weight: 900;
   color: var(--primary);
+}
+
+/* Tuile désactivée hors-ligne (Monetbil / Stripe) */
+.method-tile.tile-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.method-tile.tile-disabled:hover {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.tile-offline {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #FFB800; /* jaune charte */
+}
+
+.offline-note {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFB800; /* jaune charte */
+  background: rgba(255, 184, 0, 0.1);
+  border: 1px solid rgba(255, 184, 0, 0.3);
 }
 
 /* ── Détail formulaire ────────────────────────────────────── */
