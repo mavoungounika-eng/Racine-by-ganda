@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { PosApiClient } from '../api/posClient';
 import { createApiService } from '../services/apiService';
 import { refreshEchoAuth } from '../plugins/echo.js';
 import { saveOfflineAuth, verifyOfflineAuth, clearOfflineAuth } from './offlineCache.js';
@@ -9,6 +8,7 @@ const STORAGE_DEVICE = 'pos_device';
 const STORAGE_OPERATOR = 'pos_operator';
 const STORAGE_OPERATOR_TOKEN = 'pos_operator_token';
 const STORAGE_MACHINE_ID = 'pos_machine_id';
+const STORAGE_DEVICE_INFO = 'pos_device_info';
 
 function generateMachineId() {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -42,12 +42,9 @@ export const useAuthStore = defineStore('auth', {
     operatorToken: null,
     isAuthenticated: false,
     offline: false,
+    deviceInfo: null,
   }),
   getters: {
-    /**
-     * Operator / creator info from the login response.
-     * Exposes id, name, email, shop_name when available.
-     */
     creatorInfo: (state) => {
       if (!state.operator) return null;
       return {
@@ -57,35 +54,23 @@ export const useAuthStore = defineStore('auth', {
         shop_name: state.operator.shop_name ?? state.operator.boutique ?? null,
       };
     },
-    /** True when both device and operator tokens are present. */
     isFullyAuthenticated: (state) => !!state.token && !!state.operatorToken,
   },
   actions: {
-    /**
-     * Return a high-level ApiService instance bound to this auth store.
-     * Prefer this over client() for new code — apiService() provides
-     * named methods instead of raw HTTP verbs.
-     */
     apiService() {
       return createApiService(this);
-    },
-    client() {
-      return new PosApiClient(
-        () => this.token,
-        (t) => { this.token = t; this.isAuthenticated = !!t; this.persist(); },
-        (offline) => { this.offline = offline; },
-        () => this.operatorToken
-      );
     },
     loadFromStorage() {
       const token = localStorage.getItem(STORAGE_TOKEN);
       const device = localStorage.getItem(STORAGE_DEVICE);
       const operator = localStorage.getItem(STORAGE_OPERATOR);
       const operatorToken = localStorage.getItem(STORAGE_OPERATOR_TOKEN);
+      const deviceInfo = localStorage.getItem(STORAGE_DEVICE_INFO);
       this.token = token || null;
       this.device = device ? JSON.parse(device) : null;
       this.operator = operator ? JSON.parse(operator) : null;
       this.operatorToken = operatorToken || null;
+      this.deviceInfo = deviceInfo ? JSON.parse(deviceInfo) : null;
       this.isAuthenticated = !!this.token;
     },
     persist() {
@@ -97,12 +82,13 @@ export const useAuthStore = defineStore('auth', {
       else localStorage.removeItem(STORAGE_OPERATOR);
       if (this.operatorToken) localStorage.setItem(STORAGE_OPERATOR_TOKEN, this.operatorToken);
       else localStorage.removeItem(STORAGE_OPERATOR_TOKEN);
+      if (this.deviceInfo) localStorage.setItem(STORAGE_DEVICE_INFO, JSON.stringify(this.deviceInfo));
+      else localStorage.removeItem(STORAGE_DEVICE_INFO);
     },
     async register(machineId, name) {
-      const res = await this.client().post('/api/pos/register', { machine_id: machineId, name });
-      this.token = res.data?.token || res.token;
-      this.device = res.data?.device || res.device || { machine_id: machineId, name };
-      this.isAuthenticated = !!this.token;
+      const api = this.apiService();
+      const res = await api.registerDevice(machineId, name);
+      this.deviceInfo = { name, machine_id: machineId, status: 'registered' };
       this.persist();
       return res;
     },
@@ -122,14 +108,12 @@ export const useAuthStore = defineStore('auth', {
           return { success: true, offline: true, data: cached };
         }
 
-        const res = await this.client().post('/api/pos/auth/operator/login', { email, password });
+        const api = this.apiService();
+        const res = await api.login(email, password);
 
         if (res?.success && res?.data?.operator && res?.data?.token) {
-          this.operator = res.data.operator;
-          this.operatorToken = res.data.token;
           this.offline = false;
           this.persist();
-          // Mise en cache pour usage offline
           await saveOfflineAuth(email, password, res.data.operator, res.data.token, this.token);
           try {
             refreshEchoAuth();
@@ -138,7 +122,6 @@ export const useAuthStore = defineStore('auth', {
         }
         throw new Error(res?.error?.message || 'Login failed');
       } catch (e) {
-        // Fallback offline si backend inaccessible ou rate-limité
         const isNetworkError = !e.response || e.response?.status === 429 || e.response?.status >= 500;
         if (isNetworkError) {
           const cached = await verifyOfflineAuth(email, password);
@@ -157,27 +140,31 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     async logout() {
-      if (this.operatorToken) {
-        try {
-          await this.client().post('/api/pos/auth/operator/logout');
-        } catch (e) {
-          console.warn('Logout API failed:', e);
-        }
-      }
+      const api = this.apiService();
+      await api.logout();
 
-      this.token = null;
-      this.device = null;
-      this.operator = null;
-      this.operatorToken = null;
-      this.isAuthenticated = false;
-      localStorage.removeItem(STORAGE_TOKEN);
-      localStorage.removeItem(STORAGE_DEVICE);
-      localStorage.removeItem(STORAGE_OPERATOR);
-      localStorage.removeItem(STORAGE_OPERATOR_TOKEN);
+      this.deviceInfo = null;
+      localStorage.removeItem(STORAGE_DEVICE_INFO);
       await clearOfflineAuth();
     },
     async refreshToken() {
-      return this.client().refreshToken();
+      // ApiService delegates to PosApiClient.refreshToken() internally.
+      // Direct refresh is handled by PosApiClient's 401 retry logic.
+      // This action is kept for backward compatibility with callers.
+      try {
+        const api = this.apiService();
+        const res = await api.getOfflineStatus();
+        return !!res;
+      } catch (e) {
+        if (e.response?.status === 401 || e.response?.status === 403) {
+          this.token = null;
+          this.isAuthenticated = false;
+          this.persist();
+          return false;
+        }
+        // Network error — token may still be valid
+        return !!this.token;
+      }
     },
     async ensureTerminalRegistered(options = {}) {
       if (options.isOffline) {
@@ -186,10 +173,8 @@ export const useAuthStore = defineStore('auth', {
       }
 
       if (this.token && this.device) {
-        // Valider que le token est encore accepté par le backend
-        const valid = await this.client().refreshToken();
-        if (valid || this.token) return this.device; // valide ou erreur réseau (offline)
-        // Token révoqué (401) → forcer re-registration
+        const valid = await this.refreshToken();
+        if (valid || this.token) return this.device;
         this.device = null;
         localStorage.removeItem(STORAGE_DEVICE);
       }

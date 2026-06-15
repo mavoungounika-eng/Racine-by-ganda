@@ -223,8 +223,8 @@ const loadProducts = async () => {
 const loadCategories = async () => {
   loadingCategories.value = true;
   try {
-    const client = auth.client();
-    const res = await client.get('/api/pos/categories');
+    const api = auth.apiService();
+    const res = await api._client.get('/api/pos/categories');
     categories.value = res?.data?.categories || res?.categories || [];
   } catch (e) {
     console.warn('Failed to load categories', e);
@@ -274,8 +274,8 @@ const loadHistory = async () => {
   try {
     const sessionId = session.currentSession?.id;
     if (!sessionId) { salesHistory.value = []; return; }
-    const client = auth.client();
-    const res = await client.get(`/api/pos/sessions/${sessionId}/sales`);
+    const api = auth.apiService();
+    const res = await api._client.get(`/api/pos/sessions/${sessionId}/sales`);
     salesHistory.value = res?.data?.sales || res?.sales || [];
     if (salesHistory.value.length) lastSale.value = salesHistory.value[0];
   } catch (e) {
