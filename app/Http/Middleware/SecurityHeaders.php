@@ -33,8 +33,11 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
         // Headers modernes (Isolation)
-        $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
-        $response->headers->set('Cross-Origin-Resource-Policy', 'same-origin');
+        // API routes need cross-origin access (POS Electron, mobile apps).
+        // CORP same-origin blocks fetch() from different origins even when CORS allows *.
+        $isApiRoute = str_starts_with($request->path(), 'api/');
+        $response->headers->set('Cross-Origin-Opener-Policy', $isApiRoute ? 'unsafe-none' : 'same-origin');
+        $response->headers->set('Cross-Origin-Resource-Policy', $isApiRoute ? 'cross-origin' : 'same-origin');
         // Cross-Origin-Embedder-Policy désactivé : 'require-corp' bloque les iframes
         // externes comme Google Maps. À réactiver uniquement si SharedArrayBuffer est requis.
         // $response->headers->set('Cross-Origin-Embedder-Policy', 'require-corp');
