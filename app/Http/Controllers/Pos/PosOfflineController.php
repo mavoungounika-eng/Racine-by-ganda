@@ -17,8 +17,13 @@ class PosOfflineController extends PosApiController
     public function status(Request $request): JsonResponse
     {
         $machineId = $request->machineId ?? $request->input('machine_id');
+
+        // No machine_id → simple connectivity ping (public route, no auth).
         if (!$machineId) {
-            return $this->error('INVALID_MACHINE_ID', 'machine_id is required');
+            return $this->success([
+                'status' => 'online',
+                'timestamp' => now()->toISOString(),
+            ]);
         }
 
         $status = $this->offlineService->getOfflineStatus($machineId);
