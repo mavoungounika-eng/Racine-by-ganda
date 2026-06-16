@@ -224,7 +224,7 @@ const loadCategories = async () => {
   loadingCategories.value = true;
   try {
     const api = auth.apiService();
-    const res = await api._client.get('/api/pos/categories');
+    const res = await api.getCategories();
     categories.value = res?.data?.categories || res?.categories || [];
   } catch (e) {
     console.warn('Failed to load categories', e);
@@ -275,7 +275,7 @@ const loadHistory = async () => {
     const sessionId = session.currentSession?.id;
     if (!sessionId) { salesHistory.value = []; return; }
     const api = auth.apiService();
-    const res = await api._client.get(`/api/pos/sessions/${sessionId}/sales`);
+    const res = await api.getSessionSales(sessionId);
     salesHistory.value = res?.data?.sales || res?.sales || [];
     if (salesHistory.value.length) lastSale.value = salesHistory.value[0];
   } catch (e) {

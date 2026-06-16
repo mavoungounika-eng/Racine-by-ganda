@@ -15,6 +15,11 @@ use Illuminate\Support\Facades\Route;
 // POS Terminal Registration (no auth required)
 Route::post('/register', [PosAuthController::class, 'registerTerminal']);
 
+// Connectivity ping (no auth required — used by POS to detect online/offline).
+// Must remain public: the POS pings this BEFORE registration/login.
+Route::get('/offline/status', [PosOfflineController::class, 'status']);
+Route::get('/offline-status', [PosOfflineStatusController::class, 'index']);
+
 // POS Operator Auth (no device JWT required).
 // Throttling via named limiter `pos_operator_login` (cf. RateLimitServiceProvider)
 // pour retourner une réponse JSON structurée et un header Retry-After exploitable
@@ -30,12 +35,8 @@ Route::middleware(['pos.auth', 'throttle:pos_device'])->group(function () {
     Route::post('/auth/operator/logout', [PosAuthController::class, 'logout']);
     Route::get('/auth/operator/me', [PosAuthController::class, 'me']);
 
-    // Offline status
-    Route::get('/offline-status', [PosOfflineStatusController::class, 'index']);
-
-    // Offline queue management
+    // Offline queue management (status moved outside auth above)
     Route::prefix('offline')->group(function () {
-        Route::get('/status', [PosOfflineController::class, 'status']);
         Route::get('/queue', [PosOfflineController::class, 'queue']);
         Route::post('/queue/flush', [PosOfflineController::class, 'flush']);
         Route::post('/queue/{item}/submit', [PosOfflineController::class, 'submit']);
