@@ -4,8 +4,7 @@ import OfflineStore from './offlineStore';
  * SyncService — synchronisation des ventes offline vers le backend.
  *
  * Vit côté RENDERER (comme toute la logique métier du POS — cf. commentaire
- * de electron/preload.js). Contrat avec ApiService (src/services/api.js,
- * fourni par ailleurs) :
+ * de electron/preload.js). Contrat avec apiService.js via useAuthStore() :
  *
  *   ApiService.syncOfflineOrders(orders)
  *     → POST /api/pos/sync
@@ -150,8 +149,9 @@ class SyncService {
    * éviter tout couplage de chargement ; supporte export nommé ou default.
    */
   async _resolveApi() {
-    const mod = await import('./api.js');
-    const api = mod.ApiService ?? mod.default;
+    const { useAuthStore } = await import('../stores/auth');
+    const auth = useAuthStore();
+    const api = auth.apiService();
     if (!api || typeof api.syncOfflineOrders !== 'function') {
       throw new Error('ApiService.syncOfflineOrders indisponible');
     }

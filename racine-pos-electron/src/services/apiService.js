@@ -385,6 +385,44 @@ class ApiService {
   }
 
   // ────────────────────────────────────────────────────────────
+  // Monetbil
+  // ────────────────────────────────────────────────────────────
+
+  /**
+   * Initialise un paiement Monetbil et récupère l'URL de paiement.
+   *
+   * @param {number} amount
+   * @param {string} currency
+   * @param {string} [phone]
+   * @returns {Promise<object>}
+   */
+  async initMonetbil(amount, currency = 'XAF', phone = null) {
+    return this._client.post('/api/pos/payments/monetbil/init', {
+      amount,
+      currency,
+      phone,
+    });
+  }
+  // ----------------------------------------------------------
+  // Stripe
+  // ----------------------------------------------------------
+
+  /**
+   * Cree un PaymentIntent Stripe cote backend.
+   *
+   * @param {number} amount
+   * @param {string} currency
+   * @returns {Promise<object>}
+   */
+  async createStripeIntent(amount, currency = 'XAF') {
+    return this._client.post('/api/pos/payments/stripe-intent', {
+      amount,
+      currency,
+    });
+  }
+
+
+  // ────────────────────────────────────────────────────────────
   // Coupons
   // ────────────────────────────────────────────────────────────
 

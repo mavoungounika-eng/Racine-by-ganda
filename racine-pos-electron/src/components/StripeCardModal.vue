@@ -51,9 +51,10 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { loadStripe } from '@stripe/stripe-js';
-import ApiService from '../services/api.js';
+import { useAuthStore } from '../stores/auth';
 
 const { t } = useI18n();
+const auth = useAuthStore();
 
 const props = defineProps({
   /** Montant TOTAL dans la devise d'affichage (FCFA — unité entière, le XAF n'a pas de décimales). */
@@ -97,7 +98,6 @@ onMounted(async () => {
   try {
     // 1. Clé publique : contrat ApiService (reçue au login) puis fallback env.
     const publishableKey =
-      ApiService.getStripePublishableKey() ||
       import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
       null;
 
@@ -152,12 +152,10 @@ onBeforeUnmount(() => {
  * il est documenté comme dépendance dans le rapport de l'agent.
  */
 async function fetchClientSecret() {
-  const res = await ApiService.client.post('/payments/stripe-intent', {
-    amount: Math.round(props.amount),
-    currency: props.currency,
-  });
+  const api = auth.apiService();
+  const res = await api.createStripeIntent(Math.round(props.amount), props.currency);
   const body = res?.data || {};
-  return body?.data?.client_secret || body?.client_secret || null;
+  return body?.client_secret || null;
 }
 
 const pay = async () => {

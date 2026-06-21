@@ -235,7 +235,7 @@ import { useCartStore } from '../stores/cart';
 import { useAuthStore } from '../stores/auth';
 import { useOfflineStore } from '../stores/offline';
 import { useRouter } from 'vue-router';
-import ApiService from '../services/api.js';
+// ApiService instance creee via auth.apiService()
 import OfflineStore from '../services/offlineStore.js';
 import ReceiptPrint from '../components/ReceiptPrint.vue';
 import StripeCardModal from '../components/StripeCardModal.vue';
@@ -374,7 +374,7 @@ const buildOrderPayload = (paymentMethod, extra = {}) => ({
 
 // Snapshot du panier pour le reçu (le panier est vidé après la vente).
 const snapshotReceipt = (paymentMethod, reference, change = null) => ({
-  creatorName: ApiService.auth?.creator?.name || auth.operator?.name || null,
+  creatorName: auth.creatorInfo?.name || auth.operator?.name || null,
   items: cart.items.map((i) => ({
     name: i.name,
     quantity: i.quantity,
@@ -407,7 +407,8 @@ const openReceipt = (paymentMethod, reference, change = null) => {
  * Retourne la référence de vente, ou lève une erreur message-utilisateur.
  */
 const submitOrder = async (payload) => {
-  const res = await ApiService.createOrder(payload);
+  const api = auth.apiService();
+  const res = await api.createOrder(payload);
   if (!res?.success) {
     if (res?.offline) {
       // Le réseau est tombé entre-temps → bascule offline.
@@ -437,11 +438,12 @@ const payWithMonetbil = async () => {
   //    process construit l'URL widget Monetbil v2.1 lui-même.
   let openOpts = null;
   try {
-    const initRes = await ApiService.client.post('/payments/monetbil/init', {
-      amount: Math.round(Number(totalAfterDiscount.value || 0)),
-      currency: 'XAF',
-      phone: phoneNumber.value || null,
-    });
+    const api2 = auth.apiService();
+    const initRes = await api2.initMonetbil(
+      Math.round(Number(totalAfterDiscount.value || 0)),
+      'XAF',
+      phoneNumber.value || null,
+    );
     const d = initRes?.data?.data || initRes?.data || {};
     if (d.payment_url) {
       openOpts = { paymentUrl: d.payment_url, returnUrl: d.return_url || undefined };
