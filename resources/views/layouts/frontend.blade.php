@@ -228,6 +228,7 @@
 
     @stack('styles')
     @stack('structured-data')
+    <link rel="stylesheet" href="{{ asset('css/loading.css') }}">
 </head>
 <body class="racine-frontend-layout">
     {{-- ANNOUNCEMENT BAR PREMIUM --}}
@@ -671,6 +672,7 @@
     <script src="{{ asset('js/layout-navigation.js') }}"></script>
     
     {{-- RACINE Core JavaScript (AXE E - namespace Racine.*) --}}
+    <script src="{{ asset('js/core/loading.js') }}" defer></script>
     <script src="{{ asset('js/core/utilities.js') }}" defer></script>
     <script src="{{ asset('js/core/ajax.js') }}" defer></script>
     

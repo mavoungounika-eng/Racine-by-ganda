@@ -11,6 +11,7 @@
     {{-- Bootstrap 5 chargé via Vite (app.scss) — Bootstrap 4 legacy supprimé --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin-enhanced.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/loading.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     <style nonce="{{ csp_nonce() }}">
@@ -575,6 +576,8 @@ function adminSidebarToggle() {
 }
 </script>
 
+    <script src="{{ asset('js/core/loading.js') }}"></script>
+    <script src="{{ asset('js/core/utilities.js') }}"></script>
 @stack('scripts')
 </body>
 </html>
