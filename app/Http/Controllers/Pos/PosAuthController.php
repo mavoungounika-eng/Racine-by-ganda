@@ -81,8 +81,8 @@ class PosAuthController extends Controller
             return PosApiResponse::unauthorized('Invalid credentials');
         }
 
-        // Check if user is allowed to access POS
-        if (!$user->isTeamMember()) {
+        // Check if user is allowed to access POS (internal team, or creator with a POS-capable subscription)
+        if (!$user->canAccessPos()) {
             return PosApiResponse::error('FORBIDDEN', 'Role not allowed for POS', [], 403);
         }
 

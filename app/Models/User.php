@@ -335,6 +335,30 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if this creator has an active subscription whose plan includes POS access.
+     */
+    public function hasActivePosCapableSubscription(): bool
+    {
+        if (!$this->isCreator()) {
+            return false;
+        }
+
+        $subscription = $this->activeSubscription();
+
+        return $subscription !== null && (bool) $subscription->plan?->has_pos;
+    }
+
+    /**
+     * Check if the user can access the POS application.
+     * Internal team (super_admin, admin, staff) always has access.
+     * Creators have access only with an active subscription whose plan includes POS (e.g. Signature).
+     */
+    public function canAccessPos(): bool
+    {
+        return $this->isTeamMember() || $this->hasActivePosCapableSubscription();
+    }
+
+    /**
      * Vérifier si l'utilisateur a une permission
      * 
      * @param string $permission Slug de la permission (ex: 'view-stock-analytics')

@@ -190,6 +190,10 @@ const login = async () => {
       startCooldown(retryAfter);
       return;
     }
+    if (e.response?.data?.error?.code === 'FORBIDDEN') {
+      loginError.value = 'Acces POS reserve a l\'equipe interne ou aux createurs avec un abonnement Signature actif.';
+      return;
+    }
     loginError.value = e.response?.data?.error?.message || e.message || 'Login failed';
   } finally {
     isLoading.value = false;
