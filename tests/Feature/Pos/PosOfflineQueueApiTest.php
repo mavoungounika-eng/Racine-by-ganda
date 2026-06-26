@@ -70,7 +70,7 @@ class PosOfflineQueueApiTest extends TestCase
         $user = User::factory()->create();
         $device = $this->createActiveDeviceWithUser($user);
 
-        $response = $this->getJson('/api/pos/offline/status', $this->authHeaderForDevice($device));
+        $response = $this->getJson('/api/pos/offline/status?machine_id=' . $device->machine_id, $this->authHeaderForDevice($device));
         $response->assertStatus(200);
         $response->assertJsonPath('data.machine_id', $device->machine_id);
     }
@@ -83,7 +83,7 @@ class PosOfflineQueueApiTest extends TestCase
         $this->createQueuedItem($device->machine_id);
         $this->createQueuedItem($device->machine_id);
 
-        $response = $this->getJson('/api/pos/offline/status', $this->authHeaderForDevice($device));
+        $response = $this->getJson('/api/pos/offline/status?machine_id=' . $device->machine_id, $this->authHeaderForDevice($device));
         $response->assertStatus(200);
         $response->assertJsonPath('data.queue_count', 2);
     }
@@ -195,10 +195,11 @@ class PosOfflineQueueApiTest extends TestCase
         $this->assertEquals(1, PosOfflineQueue::where('machine_id', $device->machine_id)->count());
     }
 
-    public function test_unauthenticated_request_returns_401(): void
+    public function test_unauthenticated_request_returns_200_ping(): void
     {
+        // Route publique intentionnelle — le POS ping AVANT auth/registration
         $response = $this->getJson('/api/pos/offline/status');
-        $response->assertStatus(401);
-        $response->assertJsonPath('error.code', 'UNAUTHORIZED');
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.status', 'online');
     }
 }

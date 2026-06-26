@@ -13,6 +13,7 @@ use App\Models\PosPayment;
 use App\Models\PosCashMovement;
 use Illuminate\Support\Str;
 use Tests\Traits\SeedsAccounting;
+use Tests\Traits\CreatesPosDevice;
 
 /**
  * Tests Complets POS — Session Lifecycle
@@ -25,11 +26,13 @@ use Tests\Traits\SeedsAccounting;
  */
 class PosSessionLifecycleTest extends TestCase
 {
-    use RefreshDatabase, SeedsAccounting;
+    use RefreshDatabase, SeedsAccounting, CreatesPosDevice;
 
     protected User $user;
     protected PosSession $session;
     protected string $machineId;
+    protected \Modules\POSSync\Models\PosDevice $device;
+    protected array $deviceHeader;
 
     protected function setUp(): void
     {
@@ -38,13 +41,14 @@ class PosSessionLifecycleTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'AccountingBootstrapSeeder']);
 
         $this->user = User::factory()->create();
-        $this->actingAs($this->user);
         $this->machineId = Str::uuid()->toString();
+        $this->device = $this->createActiveDevice($this->user, $this->machineId);
+        $this->deviceHeader = $this->deviceAuthHeader($this->device);
     }
     #[Test]
     public function session_opens_with_opening_cash()
     {
-        $response = $this->postIdempotentJson('/pos/sessions/open', [
+        $response = $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -64,13 +68,13 @@ class PosSessionLifecycleTest extends TestCase
     public function session_rejects_duplicate_open()
     {
         // Première ouverture
-        $this->postIdempotentJson('/pos/sessions/open', [
+        $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ])->assertStatus(201);
 
         // Deuxième tentative
-        $response = $this->postIdempotentJson('/pos/sessions/open', [
+        $response = $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -82,7 +86,7 @@ class PosSessionLifecycleTest extends TestCase
     public function session_closes_with_cash_difference_calculated()
     {
         // Ouverture
-        $this->postIdempotentJson('/pos/sessions/open', [
+        $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -106,7 +110,7 @@ class PosSessionLifecycleTest extends TestCase
 
         // Expected cash = opening (5000) + ventes (300) = 5300
         // Actual count: 5300 (exact match)
-        $response = $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
+        $response = $this->postIdempotentJson("/api/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5300.00,
             'notes' => 'Session normale',
         ]);
@@ -119,7 +123,7 @@ class PosSessionLifecycleTest extends TestCase
     public function session_detects_cash_discrepancy()
     {
         // Ouverture
-        $this->postIdempotentJson('/pos/sessions/open', [
+        $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -141,7 +145,7 @@ class PosSessionLifecycleTest extends TestCase
         }
 
         // Expected: 5300 | Actual: 5400 (100â‚¬ de trop)
-        $response = $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
+        $response = $this->postIdempotentJson("/api/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5400.00,
             'notes' => 'Cash surplus 100â‚¬',
         ]);
@@ -159,7 +163,7 @@ class PosSessionLifecycleTest extends TestCase
     public function session_prevents_double_closure()
     {
         // Ouverture
-        $this->postIdempotentJson('/pos/sessions/open', [
+        $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -167,12 +171,12 @@ class PosSessionLifecycleTest extends TestCase
         $session = PosSession::where('machine_id', $this->machineId)->first();
 
         // Première clôture
-        $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
+        $this->postIdempotentJson("/api/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ])->assertStatus(200);
 
         // Deuxième tentative
-        $response = $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
+        $response = $this->postIdempotentJson("/api/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ]);
 
@@ -183,7 +187,7 @@ class PosSessionLifecycleTest extends TestCase
     public function z_report_available_only_after_closure()
     {
         // Ouverture
-        $this->postIdempotentJson('/pos/sessions/open', [
+        $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -191,16 +195,16 @@ class PosSessionLifecycleTest extends TestCase
         $session = PosSession::where('machine_id', $this->machineId)->first();
 
         // Z-Report avant clôture
-        $response = $this->getJson("/pos/sessions/{$session->id}/z-report");
+        $response = $this->getJson("/api/pos/sessions/{$session->id}/z-report", $this->deviceHeader);
         $response->assertStatus(400);
 
         // Clôturer
-        $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
+        $this->postIdempotentJson("/api/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ]);
 
         // Z-Report après clôture
-        $response = $this->getJson("/pos/sessions/{$session->id}/z-report");
+        $response = $this->getJson("/api/pos/sessions/{$session->id}/z-report", $this->deviceHeader);
         $response->assertStatus(200);
         $response->assertJsonPath('data.z_report.session_id', $session->id);
     }
@@ -208,7 +212,7 @@ class PosSessionLifecycleTest extends TestCase
     public function session_tracks_cash_movements()
     {
         // Ouverture
-        $this->postIdempotentJson('/pos/sessions/open', [
+        $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -223,7 +227,7 @@ class PosSessionLifecycleTest extends TestCase
         ]);
 
         // Clôturer
-        $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
+        $this->postIdempotentJson("/api/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
         ]);
 
@@ -238,7 +242,7 @@ class PosSessionLifecycleTest extends TestCase
     public function session_requires_authorization_after_incident()
     {
         // Ouverture
-        $this->postIdempotentJson('/pos/sessions/open', [
+        $this->postIdempotentJson('/api/pos/sessions/open', [
             'machine_id' => $this->machineId,
             'opening_cash' => 5000.00,
         ]);
@@ -246,7 +250,7 @@ class PosSessionLifecycleTest extends TestCase
         $session = PosSession::where('machine_id', $this->machineId)->first();
 
         // Clôture avec incident
-        $response = $this->postIdempotentJson("/pos/sessions/{$session->id}/close", [
+        $response = $this->postIdempotentJson("/api/pos/sessions/{$session->id}/close", [
             'closing_cash' => 5000.00,
             'notes' => '[INCIDENT] Redis down 14:32',
         ]);
@@ -262,9 +266,9 @@ class PosSessionLifecycleTest extends TestCase
 
     private function postIdempotentJson(string $uri, array $data = [])
     {
-        return $this->postJson($uri, $data, [
+        return $this->postJson($uri, $data, array_merge([
             'X-Idempotency-Key' => (string) Str::uuid(),
-        ]);
+        ], $this->deviceHeader ?? []));
     }
 }
 

@@ -7,6 +7,7 @@ use App\Models\PosCashMovement;
 use App\Models\User;
 use App\Events\PosSessionClosed;
 use App\Traits\AuditsPosOperations;
+use App\Services\Financial\AccountingBootstrapService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -206,6 +207,9 @@ class PosSessionService
             if (!in_array($session->status, [PosSession::STATUS_OPEN, PosSession::STATUS_CLOSING], true)) {
                 throw new \DomainException("Session already closed (status: {$session->status})");
             }
+
+            // 🔒 VÉRIFICATION BOOTSTRAP COMPTABLE
+            app(AccountingBootstrapService::class)->assertReadyForPosSettlement();
 
             // Calculer expected_cash si nécessaire
             $expectedCash = $session->expected_cash ?? $session->calculateExpectedCash();

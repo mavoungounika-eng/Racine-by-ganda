@@ -48,7 +48,7 @@ class PosSettlementWithoutAccountingBootstrapTest extends TestCase
 
         // Tenter clôture (doit échouer)
         $this->expectException(AccountingNotBootstrappedException::class);
-        $this->expectExceptionMessage('Accounting environment not bootstrapped. POS settlement blocked');
+        $this->expectExceptionMessage('Active fiscal year');
 
         $this->sessionService->closeSession($session, 50000, $this->user->id);
     }

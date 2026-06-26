@@ -14,10 +14,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 class PosAuditTrailTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $operator;
     protected string $machineId;
@@ -27,6 +28,10 @@ class PosAuditTrailTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        
+        // Seed accounting data (required for bootstrap check in closeSession)
+        $this->seedAccounting();
+        $this->artisan('db:seed', ['--class' => 'AccountingBootstrapSeeder']);
         
         $this->operator = User::factory()->create();
         // Optionnel : s'assurer que c'est un user autorisé (si nécessaire dans l'avenir)

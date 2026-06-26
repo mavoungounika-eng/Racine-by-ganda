@@ -43,6 +43,9 @@ class PosInvariantsTest extends TestCase
     {
         parent::setUp();
 
+        // Force the queue to execute queued POS listeners immediately in tests.
+        config(['queue.default' => 'sync']);
+
         // Seed accounting data (required for bootstrap check)
         $this->seedAccounting();
         $this->artisan('db:seed', ['--class' => 'AccountingBootstrapSeeder']);

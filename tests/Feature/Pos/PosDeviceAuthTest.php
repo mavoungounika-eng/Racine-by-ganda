@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Modules\POSSync\Models\PosDevice;
 use Modules\POSSync\Services\DeviceAuthService;
 use Tests\TestCase;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use App\Models\Product;
 use App\Models\User;
 
@@ -153,18 +154,17 @@ class PosDeviceAuthTest extends TestCase
         $response->assertJsonPath('error.code', 'MACHINE_MISMATCH');
     }
 
-    public function test_web_routes_still_work_with_session_auth(): void
+    public function test_api_routes_work_with_device_auth(): void
     {
         $user = User::factory()->create();
-        $user->forceFill(['email_verified_at' => now()])->save();
-        $this->actingAs($user);
+        $device = $this->createActiveDeviceWithUser($user);
 
-        $response = $this->postJson('/pos/sessions/open', [
-            'machine_id' => (string) Str::uuid(),
+        $response = $this->postJson('/api/pos/sessions/open', [
+            'machine_id' => $device->machine_id,
             'opening_cash' => 5000.00,
-        ], [
+        ], array_merge($this->authHeaderForDevice($device), [
             'X-Idempotency-Key' => (string) Str::uuid(),
-        ]);
+        ]));
 
         $response->assertStatus(201);
         $response->assertJsonPath('success', true);

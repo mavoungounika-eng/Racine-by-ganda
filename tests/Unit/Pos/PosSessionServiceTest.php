@@ -15,10 +15,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 class PosSessionServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected PosSessionService $service;
 
@@ -26,6 +27,11 @@ class PosSessionServiceTest extends TestCase
     {
         parent::setUp();
         Event::fake();
+        
+        // Seed accounting data (required for bootstrap check in closeSession)
+        $this->seedAccounting();
+        $this->artisan('db:seed', ['--class' => 'AccountingBootstrapSeeder']);
+        
         $this->service = app(PosSessionService::class);
     }
 
