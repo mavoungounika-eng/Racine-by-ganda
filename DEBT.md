@@ -18,3 +18,5 @@
 > ⚠️ Note : les compteurs de référence dans `CLAUDE.md` (« 977 tests, 0 failures ») et
 > `.claude/rules/tests.md` (« 926 tests, 2 failures ») sont désynchronisés de l'environnement
 > réel (988 tests). À resynchroniser lors d'un prochain passage de stabilisation.
+- [ ] racine_testing DB: migrations incohérentes / deadlock MySQL au reset, bloque PosDeviceAuthTest et probablement d'autres. Pré-existant, pas lié au correctif device/verify (2026-06-26).
+- [ ] POS PaymentView : formulaire de paiement reste visible/cliquable en transparence derrière la modal du reçu post-vente (bouton 'Confirmer le paiement' visible en arrière-plan). Non bloquant fonctionnellement (garde-fou cart.items.length===0 empêche la double soumission), mais cosmétique à nettoyer — masquer .payment-shell pendant confirmationStage==='success'|'receipt'. (2026-06-28)

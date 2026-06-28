@@ -31,6 +31,10 @@ Route::prefix('auth')->middleware(['throttle:pos_operator_login'])->group(functi
 });
 
 Route::middleware(['pos.auth', 'throttle:pos_device'])->group(function () {
+    // Device token verification. Protected by pos.auth so invalid/expired
+    // tokens return 401/403 before reaching the controller.
+    Route::get('/device/verify', [PosAuthController::class, 'verifyDevice']);
+
     // Operator endpoints protected by device JWT + X-Operator-Token
     Route::post('/auth/operator/logout', [PosAuthController::class, 'logout']);
     Route::get('/auth/operator/me', [PosAuthController::class, 'me']);

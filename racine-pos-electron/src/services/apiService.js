@@ -258,6 +258,17 @@ class ApiService {
   }
 
   /**
+   * Validate the stored device JWT against the current backend.
+   * Uses no automatic 401 refresh so callers can distinguish invalid tokens
+   * from network/offline failures.
+   *
+   * @returns {Promise<object>}
+   */
+  async verifyDeviceToken() {
+    return this._client.request('get', '/api/pos/device/verify', null, null, false);
+  }
+
+  /**
    * Flush the server-side offline queue.
    *
    * @returns {Promise<object>}

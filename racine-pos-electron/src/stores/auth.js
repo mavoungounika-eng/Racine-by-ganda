@@ -148,12 +148,13 @@ export const useAuthStore = defineStore('auth', {
       await clearOfflineAuth();
     },
     async refreshToken() {
-      // ApiService delegates to PosApiClient.refreshToken() internally.
-      // Direct refresh is handled by PosApiClient's 401 retry logic.
-      // This action is kept for backward compatibility with callers.
       try {
         const api = this.apiService();
-        const res = await api.getOfflineStatus();
+        const res = await api.verifyDeviceToken();
+        const device = res?.data?.device || res?.device;
+        if (device) this.device = device;
+        this.isAuthenticated = !!this.token;
+        this.persist();
         return !!res;
       } catch (e) {
         if (e.response?.status === 401 || e.response?.status === 403) {

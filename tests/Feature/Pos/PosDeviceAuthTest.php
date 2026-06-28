@@ -101,6 +101,75 @@ class PosDeviceAuthTest extends TestCase
         $response->assertJsonPath('error.code', 'UNAUTHORIZED');
     }
 
+    public function test_device_verify_accepts_valid_device_token(): void
+    {
+        $user = User::factory()->create();
+        $device = $this->createActiveDeviceWithUser($user);
+
+        $response = $this->getJson('/api/pos/device/verify', $this->authHeaderForDevice($device));
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('data.device.machine_id', $device->machine_id);
+        $response->assertJsonPath('data.device.status', 'active');
+    }
+
+    public function test_device_verify_rejects_invalid_device_token(): void
+    {
+        $response = $this->getJson('/api/pos/device/verify', [
+            'Authorization' => 'Bearer invalid.token.here',
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('error.code', 'UNAUTHORIZED');
+    }
+
+    public function test_device_verify_rejects_token_signed_by_another_secret(): void
+    {
+        $user = User::factory()->create();
+        $device = $this->createActiveDeviceWithUser($user);
+
+        $payload = [
+            'iss' => config('app.name'),
+            'sub' => $device->machine_id,
+            'iat' => time(),
+            'exp' => time() + 3600,
+        ];
+        $token = JWT::encode($payload, 'another-backend-secret', config('jwt.algo', 'HS256'));
+
+        $response = $this->getJson('/api/pos/device/verify', [
+            'Authorization' => "Bearer {$token}",
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('error.code', 'UNAUTHORIZED');
+    }
+
+    public function test_device_verify_rejects_expired_device_token(): void
+    {
+        $user = User::factory()->create();
+        $device = $this->createActiveDeviceWithUser($user);
+        $secret = config('jwt.secret');
+
+        $payload = [
+            'iss' => config('app.name'),
+            'sub' => $device->machine_id,
+            'iat' => time() - 3600,
+            'exp' => time() - 10,
+        ];
+        $token = JWT::encode($payload, $secret, config('jwt.algo', 'HS256'));
+
+        $response = $this->getJson('/api/pos/device/verify', [
+            'Authorization' => "Bearer {$token}",
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('error.code', 'UNAUTHORIZED');
+    }
+
     public function test_expired_token_returns_401(): void
     {
         $user = User::factory()->create();

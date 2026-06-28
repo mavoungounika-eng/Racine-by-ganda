@@ -76,16 +76,30 @@ const openSession = async () => {
 <style scoped>
 .session-shell {
   height: 100%;
+  min-height: 0;
+  min-width: 0;
   display: grid;
   place-items: center;
   background:
     radial-gradient(circle at 20% 20%, rgba(237, 95, 30, 0.1) 0%, transparent 40%),
     var(--background);
   padding: 24px;
+  overflow-y: auto;
+}
+
+/* App-shell fix: this view has no inner list, so the shell itself scrolls
+   if the centered card exceeds the available height. */
+.session-canvas {
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  place-items: center;
 }
 
 .session-card {
   width: min(480px, 100%);
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--outline-variant);
   border-radius: 20px;
@@ -121,6 +135,7 @@ const openSession = async () => {
 .session-form {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 12px;
 }
 
@@ -135,6 +150,7 @@ const openSession = async () => {
 .amount-row {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 10px;
 }
 

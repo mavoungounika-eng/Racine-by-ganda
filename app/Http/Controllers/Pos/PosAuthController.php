@@ -168,6 +168,31 @@ class PosAuthController extends Controller
     }
 
     /**
+     * Verify the current device JWT against the active backend.
+     *
+     * The pos.auth middleware performs the actual JWT validation and returns
+     * 401/403 before this action when the token is invalid, expired, signed by
+     * another secret, or attached to an inactive device.
+     */
+    public function verifyDevice(Request $request): JsonResponse
+    {
+        $device = $request->attributes->get('pos_device') ?? $request->posDevice;
+
+        if (!$device) {
+            return PosApiResponse::unauthorized('Invalid token');
+        }
+
+        return PosApiResponse::success([
+            'device' => [
+                'id' => $device->id,
+                'machine_id' => $device->machine_id,
+                'name' => $device->name,
+                'status' => $device->status,
+            ],
+        ], 'Device token verified');
+    }
+
+    /**
      * Operator logout (revokes token).
      */
     public function logout(Request $request): JsonResponse

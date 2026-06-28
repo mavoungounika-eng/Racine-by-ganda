@@ -1,5 +1,5 @@
 ﻿<template>
-  <div>
+  <div class="error-boundary-wrapper">
     <div v-if="error" class="error-boundary">
       <h3>{{ errorTitle }}</h3>
       <p>{{ errorMessage }}</p>
@@ -31,6 +31,12 @@ const onErrorCaptured = (err) => {
 </script>
 
 <style scoped>
+.error-boundary-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 .error-boundary { padding: 16px; background: #fee2e2; border-radius: 10px; }
 button { background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 8px; }
 </style>

@@ -151,10 +151,13 @@ const printReport = () => window.print();
 
 <style scoped>
 /* ── Shell ────────────────────────────────────────────────── */
+/* App-shell fix: close-scroll and fullscreen-body are the vertical scrollers;
+   the surrounding flex items must shrink instead of being clipped by #app. */
 .close-shell {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
   background: var(--background);
 }
@@ -196,6 +199,8 @@ const printReport = () => window.print();
 /* ── Scroll body ──────────────────────────────────────────── */
 .close-scroll {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   padding: 32px 24px;
   background:
@@ -208,6 +213,7 @@ const printReport = () => window.print();
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 24px;
   padding-bottom: 40px;
 }
@@ -220,6 +226,7 @@ const printReport = () => window.print();
   padding: clamp(20px, 3vw, 32px);
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 16px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
 }
@@ -254,7 +261,7 @@ const printReport = () => window.print();
 .summary-label { font-size: 13px; color: var(--on-surface-muted); }
 .summary-value { font-size: 20px; font-weight: 900; color: var(--accent, #f59e0b); font-feature-settings: "tnum"; }
 
-.field-group { display: flex; flex-direction: column; gap: 10px; }
+.field-group { display: flex; flex-direction: column; min-width: 0; gap: 10px; }
 
 .field-label {
   font-size: 12px;
@@ -264,7 +271,7 @@ const printReport = () => window.print();
   color: var(--on-surface-muted);
 }
 
-.amount-row { display: flex; align-items: center; gap: 10px; }
+.amount-row { display: flex; align-items: center; min-width: 0; gap: 10px; }
 
 .amount-input {
   flex: 1;
@@ -318,7 +325,7 @@ const printReport = () => window.print();
 }
 
 /* ── Z-Report ─────────────────────────────────────────────── */
-.zreport-container { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.zreport-container { display: flex; flex-direction: column; align-items: center; min-width: 0; gap: 14px; }
 
 .zreport-actions { display: flex; gap: 10px; }
 
@@ -355,6 +362,8 @@ const printReport = () => window.print();
   border: 1px solid var(--outline-variant);
   border-radius: 20px;
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -383,6 +392,8 @@ const printReport = () => window.print();
 
 .fullscreen-body {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   padding: 32px;
   display: flex;

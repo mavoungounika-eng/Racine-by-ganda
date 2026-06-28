@@ -218,8 +218,11 @@ function onAnnulerFantome() {
 
 <style scoped>
 /* ── Shell ────────────────────────────────────────────────── */
+/* App-shell fix: the root keeps overflow hidden, so the canvas scrolls when
+   status/error messages make the login card taller than the viewport. */
 .login-shell {
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--background);
@@ -236,6 +239,7 @@ function onAnnulerFantome() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
   background: rgba(13, 9, 7, 0.92);
   border-bottom: 1px solid var(--outline-variant);
   backdrop-filter: blur(8px);
@@ -245,6 +249,7 @@ function onAnnulerFantome() {
 .brand {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 10px;
 }
 
@@ -326,10 +331,12 @@ function onAnnulerFantome() {
 .canvas {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: grid;
   place-items: center;
   padding: 24px 20px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -384,6 +391,7 @@ function onAnnulerFantome() {
   position: relative;
   z-index: 1;
   width: min(520px, 100%);
+  min-width: 0;
   background: rgba(22, 13, 12, 0.85);
   border: 1px solid rgba(237, 95, 30, 0.2);
   border-radius: 20px;
@@ -454,6 +462,7 @@ h1 {
 .form {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 14px;
 }
 
@@ -572,6 +581,7 @@ input:focus {
 /* ── Footer minimal ───────────────────────────────────────── */
 .footer {
   flex-shrink: 0;
+  min-width: 0;
   height: 36px;
   padding: 0 20px;
   display: flex;

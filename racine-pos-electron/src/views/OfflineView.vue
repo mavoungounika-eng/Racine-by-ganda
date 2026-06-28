@@ -135,12 +135,16 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* App-shell fix: offline-page is the vertical scroller inside #app; min sizes
+   keep wrapped rows/lists from forcing invisible overflow. */
 .offline-page {
   padding: 24px;
   max-width: 840px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  min-width: 0;
   gap: 20px;
   overflow-y: auto;
   height: 100%;
@@ -151,6 +155,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -199,6 +204,7 @@ onUnmounted(() => {
 /* ── Actions ─────────────────────────────────────────────── */
 .actions-bar {
   display: flex;
+  min-width: 0;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -247,6 +253,7 @@ onUnmounted(() => {
   border: 1px solid var(--outline-variant);
   border-radius: 14px;
   padding: 20px;
+  min-width: 0;
 }
 
 .card-header {
@@ -290,6 +297,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-width: 0;
   padding: 12px 0;
   border-bottom: 1px solid var(--border);
 }
@@ -299,6 +307,7 @@ onUnmounted(() => {
 .sale-info {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 12px;
   font-size: 14px;
   color: var(--on-surface);

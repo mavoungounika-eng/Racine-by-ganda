@@ -13,6 +13,8 @@
     </div>
 
     <div class="payment-body">
+      <div class="payment-body-inner">
+      <div v-if="confirmationStage==='form'" class="form-stage">
       <!-- Sélection méthode — tuiles tactiles -->
       <div class="method-section">
         <p class="section-label">Mode de paiement</p>
@@ -185,6 +187,19 @@
           <span>✗</span> {{ error }}
         </div>
       </div>
+      </div>
+
+      <div v-if="confirmationStage==='success'" class="success-stage">
+        <div class="success-icon">✓</div>
+        <p class="success-title">Paiement validé</p>
+        <p class="success-amount">{{ formatAmount(totalAfterDiscount) }}</p>
+        <p v-if="successData?.change > 0" class="success-change">
+          Rendu monnaie : {{ formatAmount(successData.change) }}
+        </p>
+        <p class="success-method">{{ methods.find(m => m.value === successData?.method)?.label }}</p>
+        <p class="success-hint">Génération du reçu…</p>
+      </div>
+    </div>
     </div>
 
     <!-- Bouton confirmer -->
@@ -201,14 +216,16 @@
     </div>
 
     <!-- MODAL REÇU POST-PAIEMENT -->
-    <div v-if="showReceiptModal" class="modal-overlay" @click.self="showReceiptModal = false">
+    <div v-if="showReceiptModal" class="modal-overlay" @click.self="newSale">
       <div class="modal-card modal-card--narrow">
         <div class="modal-header">
           <h3 class="modal-title">🧾 Reçu de vente</h3>
-          <button class="modal-close" @click="showReceiptModal = false">✕</button>
+          <button class="modal-close" @click="newSale">✕</button>
         </div>
         <div class="modal-body">
-          <ReceiptPrint v-if="receiptData" ref="receiptRef" :sale="receiptData" />
+          <div v-if="receiptData" class="receipt-card-screen">
+            <ReceiptPrint ref="receiptRef" :sale="receiptData" />
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn-action" @click="printReceipt">🖨 {{ t('receipt.print') }}</button>
@@ -260,6 +277,9 @@ const customer_phone = ref('');
 const status = ref('');
 const error = ref('');
 const processing = ref(false);
+const confirmationStage = ref('form'); // 'form' | 'success' | 'receipt'
+const successData = ref(null); // { method, reference, change }
+const successTimer = ref(null);
 const showReceiptModal = ref(false);
 const showStripeModal = ref(false);
 const receiptData = ref(null);
@@ -347,15 +367,18 @@ onMounted(() => {
   couponError.value = '';
   receivedAmount.value = Number(totalAfterDiscount.value || 0);
   
-  // Raccourci Escape pour revenir
-  const handleEscape = (e) => {
-    if (e.key === 'Escape' && !showReceiptModal.value) {
+  // Raccourci Escape / Enter pour interagir
+  const handleKey = (e) => {
+    if (e.key === 'Escape' && confirmationStage.value === 'form' && !showReceiptModal.value) {
       router.push('/terminal');
     }
+    if (e.key === 'Enter' && confirmationStage.value === 'success') {
+      proceedFromSuccess();
+    }
   };
-  window.addEventListener('keydown', handleEscape);
+  window.addEventListener('keydown', handleKey);
   
-  return () => window.removeEventListener('keydown', handleEscape);
+  return () => window.removeEventListener('keydown', handleKey);
 });
 
 // ── Helpers commande (contrat ApiService / OfflineStore) ─────────────────
@@ -396,10 +419,34 @@ const snapshotReceipt = (paymentMethod, reference, change = null) => ({
       : (cart.coupon_code ? Number(cart.coupon_discount || 0) : null),
 });
 
-const openReceipt = (paymentMethod, reference, change = null) => {
-  receiptData.value = snapshotReceipt(paymentMethod, reference, change);
+const enterReceiptStage = (paymentMethod, reference, change = null, snapshot = null) => {
+  if (!receiptData.value) {
+    receiptData.value = snapshot || snapshotReceipt(paymentMethod, reference, change);
+  }
   cart.clearCart();
+  confirmationStage.value = 'receipt';
   showReceiptModal.value = true;
+  if (successTimer.value) { clearTimeout(successTimer.value); successTimer.value = null; }
+};
+
+const enterSuccessStage = (paymentMethod, reference, change = null, snapshot = null) => {
+  successData.value = { method: paymentMethod, reference, change };
+  if (snapshot) receiptData.value = snapshot;
+  confirmationStage.value = 'success';
+  if (successTimer.value) clearTimeout(successTimer.value);
+  successTimer.value = setTimeout(() => {
+    enterReceiptStage(paymentMethod, reference, change, snapshot);
+  }, 1000);
+};
+
+// Backwards-compatible alias
+const openReceipt = (...args) => enterReceiptStage(...args);
+
+const proceedFromSuccess = () => {
+  if (!successData.value) return;
+  const { method, reference, change } = successData.value;
+  if (successTimer.value) { clearTimeout(successTimer.value); successTimer.value = null; }
+  enterReceiptStage(method, reference, change, receiptData.value || null);
 };
 
 /**
@@ -481,7 +528,7 @@ const payWithMonetbil = async () => {
     buildOrderPayload('monetbil', { monetbil_ref: result.monetbil_ref }),
   );
   status.value = t('payment.success');
-  openReceipt('monetbil', order.reference || result.monetbil_ref);
+  enterSuccessStage('monetbil', order.reference || result.monetbil_ref);
 };
 
 // ── Flux STRIPE : succès renvoyé par la modale Stripe Elements ───────────
@@ -494,7 +541,7 @@ const onStripeSuccess = async ({ paymentIntentId }) => {
       buildOrderPayload('stripe', { stripe_ref: paymentIntentId }),
     );
     status.value = t('payment.success');
-    openReceipt('stripe', order.reference || paymentIntentId);
+    enterSuccessStage('stripe', order.reference || paymentIntentId);
   } catch (e) {
     error.value = e.message || t('payment.orderFailed');
   } finally {
@@ -503,6 +550,10 @@ const onStripeSuccess = async ({ paymentIntentId }) => {
 };
 
 const confirm = async () => {
+  if (cart.items.length === 0) {
+    router.push('/terminal');
+    return;
+  }
   error.value = '';
   status.value = '';
   processing.value = true;
@@ -525,19 +576,19 @@ const confirm = async () => {
       if (offline.isOffline) {
         const offlineId = await OfflineStore.savePendingOrder(payload);
         status.value = t('offline.savedOffline') + ' — ' + t('offline.autoSync');
-        openReceipt('cash', offlineId, change);
+        enterSuccessStage('cash', offlineId, change);
         return;
       }
 
       const order = await submitOrder(payload);
       if (order.offline) {
         status.value = t('offline.savedOffline') + ' — ' + t('offline.autoSync');
-        openReceipt('cash', order.reference, change);
+        enterSuccessStage('cash', order.reference, change);
         return;
       }
 
       status.value = `Paiement validé. Rendu monnaie : ${formatAmount(change)}`;
-      openReceipt('cash', order.reference, change);
+      enterSuccessStage('cash', order.reference, change);
       return;
     }
 
@@ -571,16 +622,14 @@ const confirm = async () => {
     if (method.value === 'card') {
       status.value = 'En attente de confirmation carte…';
       await cart.confirmCardPayment(paymentId, transactionId.value, receiptNumber.value);
-      receiptData.value = pendingReceipt;
-      showReceiptModal.value = true;
+      enterSuccessStage('card', pendingReceipt.reference, null, pendingReceipt);
       return;
     }
 
     if (method.value === 'mobile_money') {
       status.value = 'En attente de confirmation mobile…';
       await cart.pollPaymentStatus(paymentId, 20, 3000);
-      receiptData.value = pendingReceipt;
-      showReceiptModal.value = true;
+      enterSuccessStage('mobile_money', pendingReceipt.reference, null, pendingReceipt);
     }
   } catch (e) {
     if (e.message === 'MONTANT_INSUFFISANT') {
@@ -639,8 +688,11 @@ const removeCoupon = () => {
 
 <style scoped>
 /* ── Shell ────────────────────────────────────────────────── */
+/* App-shell fix: payment-body and modal-body are the vertical scrollers,
+   so their flex ancestors need min-height:0 to avoid root clipping. */
 .payment-shell {
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--background);
@@ -841,6 +893,7 @@ const removeCoupon = () => {
   border-radius: 20px;
   width: min(420px, 100%);
   max-height: 90vh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
@@ -887,6 +940,8 @@ const removeCoupon = () => {
 
 .modal-body {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   padding: 16px 20px;
 }
@@ -981,6 +1036,7 @@ const removeCoupon = () => {
 .payment-header {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 16px;
   padding: 14px 20px;
   background: var(--surface);
@@ -1007,6 +1063,7 @@ const removeCoupon = () => {
 
 .payment-title {
   flex: 1;
+  min-width: 0;
   margin: 0;
   font-size: 16px;
   font-weight: 800;
@@ -1038,7 +1095,12 @@ const removeCoupon = () => {
 /* ── Body ────────────────────────────────────────────────── */
 .payment-body {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   overflow-y: auto;
+  width: 100%;
+}
+.payment-body-inner {
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -1061,6 +1123,7 @@ const removeCoupon = () => {
 .method-tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  min-width: 0;
   gap: 12px;
 }
 
@@ -1146,6 +1209,7 @@ const removeCoupon = () => {
   padding: 20px;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 14px;
 }
 
@@ -1297,6 +1361,7 @@ const removeCoupon = () => {
   border-top: 1px solid var(--outline-variant);
   background: var(--surface);
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .btn-confirm {
@@ -1339,4 +1404,101 @@ const removeCoupon = () => {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1300px) {
+  .payment-body-inner {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .payment-header {
+    gap: 12px;
+    padding-inline: 16px;
+  }
+
+  .header-total-amount {
+    font-size: 19px;
+  }
+
+  .method-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-height: 760px) {
+  .modal-overlay {
+    padding: 16px;
+  }
+
+  .modal-card {
+    max-height: calc(100vh - 32px);
+  }
+}
+.success-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 40px 24px;
+  animation: success-fade-in 0.3s ease-out;
+}
+.success-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--success, #34D399);
+  color: #FFFFFF;
+  font-size: 36px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  animation: success-scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.success-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--on-surface);
+  margin: 0;
+}
+.success-amount {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--success, #34D399);
+  margin: 0;
+}
+.success-change {
+  font-size: 15px;
+  color: var(--accent);
+  margin: 4px 0 0;
+}
+.success-method {
+  font-size: 13px;
+  color: var(--on-surface-muted);
+  margin: 4px 0 0;
+}
+.success-hint {
+  font-size: 12px;
+  color: var(--on-surface-faint);
+  margin-top: 16px;
+}
+@keyframes success-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes success-scale-in {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+.receipt-card-screen {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
 </style>

@@ -112,7 +112,7 @@ defineExpose({ print });
   font-family: 'Courier New', monospace;
   font-size: 11px;
   line-height: 1.6;
-  color: var(--on-surface, #FFFFFF);
+  color: #160D0C;
 }
 
 .rp-header {

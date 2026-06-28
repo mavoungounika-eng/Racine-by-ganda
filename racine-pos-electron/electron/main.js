@@ -72,6 +72,9 @@ function createWindow() {
     icon: path.join(__dirname, '../build/icon.png'),
     width: 1280,
     height: 800,
+    // Keep the POS layout inside its tested responsive range.
+    minWidth: 1024,
+    minHeight: 700,
     resizable: true,
     show: false,
     backgroundColor: '#160D0C',
