@@ -18,25 +18,24 @@
   "author": "RACINE BY GANDA",
   "license": "MIT",
   "dependencies": {
-    "@stripe/stripe-js": "^5.10.0",
+    "@stripe/stripe-js": "^5.5.0",
     "axios": "^1.13.6",
     "better-sqlite3": "^11.7.0",
+    "electron-updater": "^6.3.9",
     "idb": "^8.0.3",
     "laravel-echo": "^2.3.1",
     "pinia": "^3.0.4",
     "pusher-js": "^8.4.0",
     "vue": "^3.5.30",
-    "vue-router": "^4.6.4",
     "vue-i18n": "^11.3.0",
-    "@stripe/stripe-js": "^5.5.0",
-    "electron-updater": "^6.3.9"
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.5",
     "concurrently": "^9.2.1",
-    "electron": "^28.0.0",
-    "electron-builder": "^24.13.3",
-    "electron-rebuild": "^3.2.9",
+    "electron": "28.3.3",
+    "electron-builder": "24.13.3",
+    "electron-rebuild": "3.2.9",
     "fake-indexeddb": "^6.2.5",
     "vitest": "^4.1.4"
   },
