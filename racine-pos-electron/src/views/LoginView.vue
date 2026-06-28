@@ -85,7 +85,7 @@
       v-if="showFantomeModal && fantomeSession"
       :visible="showFantomeModal"
       :session="fantomeSession"
-      :operateur-id="auth.user?.id"
+      :operateur-id="auth.operator?.id"
       :machine-id="auth.device?.uuid || auth.device?.id || 'unknown'"
       :machine-name="auth.device?.name || ''"
       @reprendre="onReprendre"
@@ -171,7 +171,7 @@ const login = async () => {
     // Vérifier session fantôme avant navigation
     const machineId = auth.device?.uuid || auth.device?.id || 'unknown';
     const machineName = auth.device?.name || window.navigator.userAgent.slice(0, 40);
-    const check = await sessionStore.checkFantomeSession(auth.user?.id, machineId, machineName);
+    const check = await sessionStore.checkFantomeSession(auth.operator?.id, machineId, machineName);
     if (check?.has_session) {
       fantomeSession.value = check.session;
       showFantomeModal.value = true;
