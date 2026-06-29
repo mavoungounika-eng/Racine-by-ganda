@@ -19,12 +19,12 @@
   -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self';
+    script-src 'self' https://js.stripe.com;
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: blob: https://racinebyganda.com http://127.0.0.1:8000 http://localhost:8000;
     font-src 'self' data:;
-    connect-src 'self' https://racinebyganda.com wss://racinebyganda.com http://127.0.0.1:8000 http://localhost:8000 ws://localhost:5173 ws://127.0.0.1:5173 https://*.pusher.com wss://*.pusher.com;
-    frame-src 'none';
+    connect-src 'self' https://racinebyganda.com wss://racinebyganda.com http://127.0.0.1:8000 http://localhost:8000 ws://localhost:5173 ws://127.0.0.1:5173 https://*.pusher.com wss://*.pusher.com https://api.stripe.com https://hooks.stripe.com;
+    frame-src 'none' https://js.stripe.com https://m.stripe.com https://m.stripe.network;
     object-src 'none';
     base-uri 'self';
   " />
