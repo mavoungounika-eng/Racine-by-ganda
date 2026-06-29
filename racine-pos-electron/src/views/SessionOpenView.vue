@@ -8,6 +8,7 @@
 
         <form class="session-form" @submit.prevent="openSession">
           <label class="field-label" for="opening-cash">Fond de caisse d'ouverture (FCFA)</label>
+          <p v-if="autoFilled" class="autofill-hint">✓ Récupéré automatiquement depuis la dernière clôture</p>
           <div class="amount-row">
             <input
               id="opening-cash"
@@ -40,12 +41,14 @@
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useSessionStore } from '../stores/session';
+import ApiService from '../services/apiService';
 import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
 const session = useSessionStore();
 const router = useRouter();
 const openingCash = ref(0);
+const autoFilled = ref(false);
 const error = ref('');
 const submitting = ref(false);
 
@@ -56,6 +59,14 @@ onMounted(async () => {
   } catch (_) {
     // Pas de session ouverte — on reste sur cet écran.
   }
+  // Récupérer automatiquement le fond de la session précédente
+  try {
+    const res = await ApiService.getLastClosingCash();
+    if (res?.data?.closing_cash !== null && res?.data?.closing_cash !== undefined) {
+      openingCash.value = Number(res.data.closing_cash);
+      autoFilled.value = true;
+    }
+  } catch (_) { /* première session — fond = 0 */ }
 });
 
 const openSession = async () => {
@@ -210,6 +221,13 @@ const openSession = async () => {
 }
 
 .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.autofill-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+}
 
 .error-msg {
   margin: 0;

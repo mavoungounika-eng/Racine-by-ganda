@@ -311,6 +311,10 @@ class ApiService {
    *
    * @returns {Promise<object>}
    */
+  async getLastClosingCash() {
+    return this._client.get('/api/pos/sessions/last-closing-cash');
+  }
+
   async getCurrentSession() {
     return this._client.get('/api/pos/sessions/current');
   }
