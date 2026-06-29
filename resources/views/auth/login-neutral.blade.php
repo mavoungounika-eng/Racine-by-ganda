@@ -276,6 +276,14 @@
             Pas de compte ?
             <a href="{{ route('register') }}">Créer un compte</a>
         </div>
+        <div class="login-footer" style="margin-top: 0.75rem;">
+            Vous êtes créateur ?
+            @if(config('services.google.client_id'))
+            <a href="{{ route('auth.social.redirect', ['provider'=>'google','role'=>'createur']) }}?context=boutique">Connectez-vous avec Google</a>
+            @else
+            <a href="{{ route('creator.register') }}">Créez votre compte créateur</a>
+            @endif
+        </div>
 
     </div> {{-- login-card --}}
 </div> {{-- container --}}
