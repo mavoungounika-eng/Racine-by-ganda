@@ -125,6 +125,11 @@ jobs:
           php artisan db:seed --class=CreatorPlanSeeder --env=testing
           php artisan db:seed --class=PlanCapabilitySeeder --env=testing
 
+      - name: Create fake Vite manifest
+        run: |
+          mkdir -p public/build
+          echo '{"resources/js/app.js":{"file":"assets/app.js","src":"resources/js/app.js","isEntry":true},"resources/css/app.css":{"file":"assets/app.css","src":"resources/css/app.css","isEntry":true}}' > public/build/manifest.json
+
       # ============================================
       # 7. EXECUTE AUTH TESTS (CRITIQUE)
       # ============================================
