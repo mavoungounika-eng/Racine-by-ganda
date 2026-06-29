@@ -62,7 +62,7 @@ class LogoutTest extends TestCase
 
         $response = $this->actingAs($user)->post('/admin/logout');
 
-        $response->assertRedirect('/login');
+        $response->assertRedirect('/admin/login');
         $this->assertGuest();
     }
 
@@ -75,7 +75,7 @@ class LogoutTest extends TestCase
 
         $response = $this->actingAs($user)->post('/admin/logout');
 
-        $response->assertRedirect('/login');
+        $response->assertRedirect('/admin/login');
         $this->assertGuest();
     }
 
