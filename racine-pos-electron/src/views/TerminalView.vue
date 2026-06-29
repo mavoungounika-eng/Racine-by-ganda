@@ -22,6 +22,10 @@
           <span class="action-icon">🔒</span>
           <span class="action-label">Clôture</span>
         </button>
+        <button class="action-btn" @click="logoutOperator" title="Déconnecter l'opérateur">
+          <span class="action-icon">🚪</span>
+          <span class="action-label">Quitter</span>
+        </button>
       </nav>
       <div class="topbar-session">
         <span class="session-operator">{{ auth.operator?.name || 'Opérateur' }}</span>
@@ -259,6 +263,10 @@ const onSearch = () => {
 const addToCart = (product) => cart.addItem(product);
 const goToPayment = () => router.push('/payment');
 const goCloseSession = () => router.push('/session/close');
+const logoutOperator = async () => {
+  await auth.logout();
+  router.push('/login');
+};
 
 const syncNow = async () => {
   syncing.value = true;
