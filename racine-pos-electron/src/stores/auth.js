@@ -3,8 +3,8 @@ import { createApiService } from '../services/apiService';
 import { refreshEchoAuth } from '../plugins/echo.js';
 import { saveOfflineAuth, verifyOfflineAuth, clearOfflineAuth } from './offlineCache.js';
 
-const STORAGE_TOKEN = 'pos_token';
-const STORAGE_DEVICE = 'pos_device';
+const STORAGE_TOKEN = 'pos_device_jwt';
+const STORAGE_DEVICE = 'pos_device_id';
 const STORAGE_OPERATOR = 'pos_operator';
 const STORAGE_OPERATOR_TOKEN = 'pos_operator_token';
 const STORAGE_MACHINE_ID = 'pos_machine_id';
@@ -88,6 +88,11 @@ export const useAuthStore = defineStore('auth', {
     async register(machineId, name) {
       const api = this.apiService();
       const res = await api.registerDevice(machineId, name);
+      // Synchroniser token depuis ApiService → auth store
+      const jwt = localStorage.getItem('pos_device_jwt');
+      if (jwt) this.token = jwt;
+      this.isAuthenticated = !!this.token;
+      this.device = { id: localStorage.getItem('pos_device_id'), machine_id: machineId };
       this.deviceInfo = { name, machine_id: machineId, status: 'registered' };
       this.persist();
       return res;

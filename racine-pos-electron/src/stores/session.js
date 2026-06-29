@@ -98,11 +98,7 @@ export const useSessionStore = defineStore('session', {
 
     async checkFantomeSession(operateurId, machineId, machineName) {
       try {
-        const res = await ApiService.checkPhantomSession( {
-          operateur_id: operateurId,
-          machine_id: machineId,
-          machine_name: machineName,
-        });
+        const res = await ApiService.checkPhantomSession(operateurId, machineId, machineName);
         return res.data;
       } catch (e) {
         console.warn('[POS] Vérification session fantôme échouée:', e);
