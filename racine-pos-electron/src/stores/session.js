@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { useAuthStore } from './auth';
-import { PosApiClient } from '../api/posClient';
+import ApiService from '../services/apiService';
 import LocalDb from '../services/localDb';
 import { saveOfflineSession, loadOfflineSession } from './offlineCache.js';
 
@@ -20,23 +20,12 @@ export const useSessionStore = defineStore('session', {
   },
   actions: {
     client() {
-      const auth = useAuthStore();
-      return new PosApiClient(
-        () => auth.token,
-        (t) => {
-          auth.token = t;
-          auth.isAuthenticated = !!t;
-        },
-        (offline) => {
-          auth.offline = offline;
-        },
-        () => auth.operatorToken,
-      );
+      return ApiService;
     },
     async openSession(openingCash) {
       this.status = 'loading';
       const key = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-      const res = await this.client().post('/api/pos/sessions/open', { opening_cash: openingCash }, key);
+      const res = await ApiService.openSession(openingCash);
       this.currentSession = res.data?.session || res.data;
       this.status = 'open';
       await saveOfflineSession(this.currentSession);
@@ -44,12 +33,17 @@ export const useSessionStore = defineStore('session', {
     },
     async getCurrentSession() {
       try {
-        const res = await this.client().get('/api/pos/sessions/current');
+        const res = await ApiService.getCurrentSession();
         this.currentSession = res.data?.session || null;
         if (this.currentSession) await saveOfflineSession(this.currentSession);
         return res;
       } catch (e) {
-        // Fallback offline — charger depuis cache
+        // 404 = pas de session ouverte — ne pas charger le cache
+        if (e.response?.status === 404) {
+          this.currentSession = null;
+          return { data: { session: null } };
+        }
+        // Autre erreur (réseau) — fallback offline
         const cached = await loadOfflineSession();
         if (cached) {
           this.currentSession = cached;
@@ -61,17 +55,17 @@ export const useSessionStore = defineStore('session', {
       }
     },
     async prepareClose(sessionId) {
-      const res = await this.client().get(`/api/pos/sessions/${sessionId}/prepare-close`);
+      const res = await ApiService.prepareClose(sessionId);
       this.summary = res.data || null;
       await this.buildLocalZReport(sessionId);
       return res;
     },
     async closeSession(sessionId, closingCash, notes = null) {
       const key = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-      return this.client().post(`/api/pos/sessions/${sessionId}/close`, { closing_cash: closingCash, notes }, key);
+      return ApiService.closeSession(sessionId, closingCash, notes);
     },
     async getZReport(sessionId) {
-      const res = await this.client().get(`/api/pos/sessions/${sessionId}/z-report`);
+      const res = await ApiService.getZReport(sessionId);
       this.zReportData = res.data?.z_report || res.data || null;
       return res;
     },
@@ -104,7 +98,7 @@ export const useSessionStore = defineStore('session', {
 
     async checkFantomeSession(operateurId, machineId, machineName) {
       try {
-        const res = await this.client().post('/api/pos/session/check', {
+        const res = await ApiService.checkPhantomSession( {
           operateur_id: operateurId,
           machine_id: machineId,
           machine_name: machineName,
@@ -117,12 +111,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     async resumeFantomeSession(sessionId, operateurId, machineId, machineName) {
-      const res = await this.client().post('/api/pos/session/resume', {
-        session_id: sessionId,
-        operateur_id: operateurId,
-        machine_id: machineId,
-        machine_name: machineName,
-      });
+      const res = await ApiService.resumePhantomSession(sessionId, operateurId, machineId, machineName);
       const payload = res.data?.resume;
       this.currentSession = payload;
       this.status = 'open';
@@ -132,13 +121,7 @@ export const useSessionStore = defineStore('session', {
 
     async forceCloseAndNewSession(sessionId, operateurId, machineId, machineName, openingCash) {
       const key = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-      const res = await this.client().post('/api/pos/session/force-close', {
-        session_id: sessionId,
-        operateur_id: operateurId,
-        machine_id: machineId,
-        machine_name: machineName,
-        opening_cash: openingCash,
-      });
+      const res = await ApiService.forceCloseAndNewSession(sessionId, operateurId, machineId, machineName, openingCash);
       const newSession = res.data?.new_session;
       this.currentSession = newSession;
       this.status = 'open';
@@ -151,12 +134,7 @@ export const useSessionStore = defineStore('session', {
       this._heartbeatInterval = setInterval(async () => {
         try {
           const cartStore = (await import('./cart')).useCartStore();
-          await this.client().post('/api/pos/session/heartbeat', {
-            session_id: sessionId,
-            total_ventes: this.currentSession?.total_ventes ?? 0,
-            nombre_tickets: this.currentSession?.nombre_tickets ?? 0,
-            panier_snapshot: cartStore?.items ?? [],
-          });
+          await ApiService.sendHeartbeat(sessionId, this.currentSession?.total_ventes ?? 0, this.currentSession?.nombre_tickets ?? 0, cartStore?.items ?? []);
         } catch (e) {
           console.warn('[POS] Heartbeat échoué:', e);
         }

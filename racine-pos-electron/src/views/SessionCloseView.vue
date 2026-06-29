@@ -94,6 +94,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useSessionStore } from '../stores/session';
+import ApiService from '../services/apiService';
 import { useRouter } from 'vue-router';
 import ZReport from '../components/ZReport.vue';
 
@@ -136,8 +137,10 @@ const closeSession = async () => {
     // Utiliser session.client() qui gère automatiquement les headers Bearer + X-Operator-Token
     const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
     const client = session.client();
-    await client.post(`/api/pos/sessions/${session.currentSession.id}/close`, { closing_cash: closingCash.value }, idempotencyKey);
+    await ApiService.closeSession(session.currentSession.id, closingCash.value);
     await session.getZReport(session.currentSession.id);
+    session.currentSession = null;
+    setTimeout(() => router.push('/login'), 3000);
   } catch (e) {
     try { await session.buildLocalZReport(session.currentSession.id); } catch { /**/ }
     error.value = e.response?.data?.error?.message || 'Échec de la clôture';
