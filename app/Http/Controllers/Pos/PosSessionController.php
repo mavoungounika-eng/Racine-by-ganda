@@ -35,16 +35,24 @@ class PosSessionController extends PosApiController
         if (!$machineId) {
             $validated = $request->validate([
                 'machine_id' => 'required|uuid',
-                'opening_cash' => 'required|numeric|min:0',
+                'opening_cash' => 'nullable|numeric|min:0',
             ]);
             $machineId = $validated['machine_id'];
         } else {
             $request->validate([
-                'opening_cash' => 'required|numeric|min:0',
+                'opening_cash' => 'nullable|numeric|min:0',
             ]);
             if (!Str::isUuid($machineId)) {
                 return $this->error('INVALID_MACHINE_ID', 'machine_id must be a valid UUID');
             }
+        }
+        // Auto-récupérer le closing_cash de la dernière session clôturée si non fourni
+        if (!$request->has('opening_cash') || $request->input('opening_cash') === null) {
+            $lastSession = \App\Models\PosSession::where('machine_id', $machineId)
+                ->whereNotNull('closing_cash')
+                ->orderBy('closed_at', 'desc')
+                ->first();
+            $request->merge(['opening_cash' => $lastSession?->closing_cash ?? 0]);
         }
 
         if (!$userId) {
@@ -77,6 +85,20 @@ class PosSessionController extends PosApiController
      * 
      * GET /pos/sessions/current?machine_id={uuid}
      */
+    public function lastClosingCash(Request $request): JsonResponse
+    {
+        $machineId = $request->machineId ?? $request->input('machine_id');
+        $last = \App\Models\PosSession::where('machine_id', $machineId)
+            ->whereNotNull('closing_cash')
+            ->orderBy('closed_at', 'desc')
+            ->first();
+        return $this->success([
+            'closing_cash' => $last?->closing_cash ?? 0,
+            'session_id'   => $last?->id ?? null,
+            'closed_at'    => $last?->closed_at?->toIso8601String() ?? null,
+        ]);
+    }
+
     public function current(Request $request): JsonResponse
     {
         $machineId = $request->machineId ?? $request->input('machine_id');

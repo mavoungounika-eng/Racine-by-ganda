@@ -53,6 +53,7 @@ Route::middleware(['pos.auth', 'throttle:pos_device'])->group(function () {
 
     // Sessions
     Route::prefix('sessions')->group(function () {
+        Route::get('/last-closing-cash', [PosSessionController::class, 'lastClosingCash']);
         Route::post('/open', [PosSessionController::class, 'open']);
         Route::get('/current', [PosSessionController::class, 'current']);
         Route::get('/{session}/prepare-close', [PosSessionController::class, 'prepareClose']);
