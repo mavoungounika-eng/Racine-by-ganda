@@ -453,6 +453,9 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::get('{creator}/audit', [\App\Http\Controllers\Admin\CreatorSubscriptionController::class, 'audit'])->name('audit');
     });
 
+    // Déconnexion accessible à tous les rôles de l'espace admin (admin, super_admin, staff)
+    Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout')->middleware('auth');
+
     // Routes protégées par le middleware "ensure:admin,super_admin" + "2fa" (sécurité production)
     // PHASE 3: Migration vers EnsureAuthenticated middleware
     Route::middleware(['ensure:admin,super_admin', '2fa'])->group(function () {
@@ -489,7 +492,6 @@ Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(func
         Route::post('dashboard/refresh', [AdminDashboardController::class, 'refresh'])->name('dashboard.refresh');
         Route::get('dashboard/kpis', [AdminDashboardController::class, 'kpis'])->name('dashboard.kpis');
         Route::get('dashboard/chart', [AdminDashboardController::class, 'chartData'])->name('dashboard.chart');
-        Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
         // Gestion des utilisateurs
         Route::get('users/export/csv', [\App\Http\Controllers\Admin\AdminUserController::class, 'exportCsv'])->name('users.export.csv');
