@@ -74,7 +74,7 @@ describe('auth store — device token verification', () => {
 
     expect(auth.token).toBeNull();
     expect(auth.isAuthenticated).toBe(false);
-    expect(localStorage.removeItem).toHaveBeenCalledWith('pos_token');
+    expect(localStorage.removeItem).toHaveBeenCalledWith('pos_device_jwt');
   });
 
   it('keeps the existing token on network errors to preserve offline mode', async () => {

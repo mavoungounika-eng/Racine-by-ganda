@@ -40,6 +40,20 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: racine_testing
+          MYSQL_USER: laravel
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
       redis:
         image: redis:7
         ports:

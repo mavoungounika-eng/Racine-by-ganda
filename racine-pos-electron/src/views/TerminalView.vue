@@ -22,7 +22,7 @@
           <span class="action-icon">🔒</span>
           <span class="action-label">Clôture</span>
         </button>
-        <button class="action-btn" @click="logoutOperator" title="Déconnecter l'opérateur">
+        <button class="action-btn" @click="showLogoutModal = true" title="Déconnecter l'opérateur">
           <span class="action-icon">🚪</span>
           <span class="action-label">Quitter</span>
         </button>
@@ -173,6 +173,30 @@
         </div>
       </div>
     </div>
+
+    <!-- MODAL QUITTER -->
+    <div v-if="showLogoutModal" class="modal-overlay" @click.self="showLogoutModal = false">
+      <div class="modal-card modal-card--narrow">
+        <div class="modal-header">
+          <h3 class="modal-title">🚪 Quitter la session</h3>
+          <button class="modal-close" @click="showLogoutModal = false">✕</button>
+        </div>
+        <div class="modal-body" style="gap: 16px; padding: 24px 20px;">
+          <p style="margin: 0; font-size: 14px; color: var(--on-surface-muted); text-align: center; margin-bottom: 8px;">
+            Que souhaitez-vous faire ?
+          </p>
+          <button class="btn-checkout" style="height: 48px; font-size: 14px;" @click="showLogoutModal = false; goCloseSession()">
+            <span class="checkout-icon">🔒</span>
+            Clôturer la caisse
+          </button>
+          <button class="btn-print" style="height: 48px; border-color: var(--border); font-size: 14px;" @click="showLogoutModal = false; logoutOperator()">
+            <span class="action-icon" style="margin-right: 8px;">⏸</span>
+            Pause / Changer d'opérateur
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -198,6 +222,7 @@ const search = ref('');
 const syncing = ref(false);
 const showHistory = ref(false);
 const showReceipt = ref(false);
+const showLogoutModal = ref(false);
 const salesHistory = ref([]);
 const loadingHistory = ref(false);
 const lastSale = ref(null);
@@ -319,6 +344,7 @@ const handleKeydown = (e) => {
     e.preventDefault();
     showHistory.value = false;
     showReceipt.value = false;
+    showLogoutModal.value = false;
   }
   // Ctrl+D → vider le panier avec confirmation
   if (e.ctrlKey && e.key === 'd') {
