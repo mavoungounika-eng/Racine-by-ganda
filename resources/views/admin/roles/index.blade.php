@@ -8,7 +8,7 @@
 @endphp
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -83,7 +83,7 @@
 <div class="max-w-7xl mx-auto space-y-6">
     <div class="flex justify-between items-center">
         <h2 class="text-2xl font-bold text-white" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-user-tag text-racine-orange mr-2"></i>
+            <i class="fas fa-user-tag text-racine-orange me-2"></i>
             Gestion des Rôles
         </h2>
         <a href="{{ route('admin.roles.create') }}"
@@ -137,7 +137,7 @@
                         <th>Description</th>
                         <th>Utilisateurs</th>
                         <th>Statut</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -198,7 +198,7 @@
 
         @if($roles->hasPages())
         <div class="px-6 py-4 border-t border-slate-700">
-            {{ $roles->links() }}
+            {{ $roles->links('vendor.pagination.bootstrap-5') }}
         </div>
         @endif
     </div>
@@ -209,7 +209,7 @@
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeDeleteModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-[#160D0C] border border-slate-700 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="inline-block align-bottom bg-[#160D0C] border border-slate-700 rounded-xl text-start overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <form id="deleteForm" method="POST" action="">
                 @csrf
                 @method('DELETE')
@@ -218,7 +218,7 @@
                         <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20 sm:mx-0 sm:h-10 sm:w-10">
                             <i class="fas fa-exclamation-triangle text-red-400"></i>
                         </div>
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <div class="mt-3 text-center sm:mt-0 sm:ms-4 sm:text-start">
                             <h3 class="text-lg leading-6 font-bold text-white" id="modal-title">
                                 Confirmer la suppression
                             </h3>
@@ -236,12 +236,12 @@
                 <div class="bg-[#120806] px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse border-t border-slate-700">
                     <button type="submit"
                             id="deleteButton"
-                            class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition">
+                            class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ms-3 sm:w-auto sm:text-sm transition">
                         Supprimer
                     </button>
                     <button type="button"
                             onclick="closeDeleteModal()"
-                            class="mt-3 w-full inline-flex justify-center rounded-xl border border-slate-700 shadow-sm px-4 py-2 bg-slate-800 text-base font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
+                            class="mt-3 w-full inline-flex justify-center rounded-xl border border-slate-700 shadow-sm px-4 py-2 bg-slate-800 text-base font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 sm:mt-0 sm:ms-3 sm:w-auto sm:text-sm transition">
                         Annuler
                     </button>
                 </div>
@@ -251,7 +251,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     function openDeleteModal(roleId, roleName, usersCount) {
         document.getElementById('roleName').textContent = roleName;
         document.getElementById('deleteForm').action = '{{ route('admin.roles.destroy', ':id') }}'.replace(':id', roleId);

@@ -12,6 +12,51 @@ use Illuminate\View\View;
 class AdminCreatorController extends Controller
 {
     /**
+     * Endpoint JSON paginé pour la liste des créateurs (vanilla JS).
+     */
+    public function dataCreators(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $query = CreatorProfile::with('user:id,name,email,created_at')
+            ->withCount('documents');
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->whereHas('user', function ($uq) use ($s) {
+                    $uq->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%");
+                })->orWhere('brand_name', 'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+        if ($request->filled('is_verified')) {
+            $query->where('is_verified', $request->boolean('is_verified'));
+        }
+        $query->orderBy('created_at', 'desc');
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    /**
+     * Bulk — vérifier des créateurs.
+     */
+    public function bulkVerify(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = CreatorProfile::whereIn('id', $ids)->update(['is_verified' => true, 'status' => 'active']);
+        return response()->json(['success' => true, 'message' => $count.' créateur(s) vérifié(s)']);
+    }
+
+    /**
+     * Bulk — suspendre des créateurs.
+     */
+    public function bulkSuspend(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = CreatorProfile::whereIn('id', $ids)->update(['status' => 'suspended']);
+        return response()->json(['success' => true, 'message' => $count.' créateur(s) suspendu(s)']);
+    }
+
+    /**
      * Afficher la liste des créateurs avec filtres.
      */
     public function index(Request $request): View

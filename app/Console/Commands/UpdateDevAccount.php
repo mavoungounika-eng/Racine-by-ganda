@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Hash;
 
 class UpdateDevAccount extends Command
 {
-    protected $signature = 'dev:account {--email=dev@racine.com} {--password=dev123} {--name=Developer}';
+    protected $signature = 'dev:account {--email=dev@racine.com} {--password=} {--name=Developer}';
 
     protected $description = 'Créer ou mettre à jour le compte développeur passe-partout';
 
     public function handle()
     {
         $email = $this->option('email');
-        $password = $this->option('password');
+        $password = $this->option('password') ?: $this->secret('Password pour le compte dev');
         $name = $this->option('name');
 
         $this->info("🔧 Mise à jour du compte développeur...");

@@ -34,4 +34,14 @@ class ErpPurchase extends Model
     {
         return $this->hasMany(ErpPurchaseItem::class, 'purchase_id');
     }
+
+    public function receptions(): HasMany
+    {
+        return $this->hasMany(ErpPurchaseReception::class, 'purchase_id');
+    }
+
+    public function isOrderable(): bool
+    {
+        return $this->status === 'ordered';
+    }
 }

@@ -5,6 +5,7 @@
 /storage/app/*
 /storage/framework/*
 /storage/logs/*
+/storage/backups/
 !.env.example
 
 # Environment files
@@ -12,13 +13,16 @@
 .env.backup
 .env.local
 .env.*.local
+.env.production
 
 # Node / Front
 /node_modules/
+/racine-pos-electron/node_modules/
 /public/hot
 /public/storage
 /public/build
 /public/mix-manifest.json
+/cypress/screenshots/
 
 # IDE / OS
 .vscode/
@@ -39,3 +43,47 @@ yarn-debug.log*
 yarn-error.log*
 # Legacy frontend (excluded from Laravel backend)
 Racine by GANDA/
+
+# POS Electron build artifacts
+/racine-pos-electron/dist/
+/racine-pos-electron/release/
+/racine-pos-electron/.vite/
+/racine-pos-electron/*.log
+
+# Ajouté automatiquement
+.env.production.local
+tests_backup_*/
+
+# Legacy archivés (sortis de public/ le 2026-04-18)
+/archive/legacy-public-files/
+
+# Claude Code / OMX local state (ne pas versionner)
+.omx/
+.claude/worktrees/
+.claire/
+/CLAUDE.md.backup
+*.backup
+NUL
+-
+id,
+true]
+"Erreur lors de la connexion. Veuillez contacter le support.],"
+"Votre compte est inactif ou suspendu.],"
+
+# Windows metadata files (ne pas versionner)
+*.Zone.Identifier
+Thumbs.db:encryptable
+
+# Fichiers d'analyse / planification (travail local, hors repo)
+DATABASE_MIGRATION_REPORT.md
+ACTION_PLAN_FOR_CLAUDE.md
+PROMPT-integration-images.md
+racine-audit.txt
+rename-assets.sh
+reset-db.php
+reset-db-socket.php
+"claude designe contexte de progression.md"
+"assset racine by ganda/"
+assset racine by ganda/
+.claude/backups/
+.claude/logs/

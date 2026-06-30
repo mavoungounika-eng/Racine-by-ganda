@@ -151,6 +151,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Channel dédié POS Audit
+        'pos' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/pos/pos-audit.log'),
+            'level' => 'info',
+            'days' => 90,
+            'replace_placeholders' => true,
+        ],
+
         // ✅ Module 8 : Canaux dédiés pour observabilité
         'webhooks' => [
             'driver' => 'daily',
@@ -168,6 +177,18 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Canal dédié aux écritures comptables (FinancialIntent, bootstrap,
+        // règlement POS). Séparé de 'payments' car le cycle de rétention et
+        // le niveau d audit diffèrent: on veut tracer chaque intent committed
+        // et chaque blocage de bootstrap pour reconstituer la piste d audit.
+        'accounting' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/accounting.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_ACCOUNTING_DAYS', 365), // Rétention longue pour audit fiscal
+            'replace_placeholders' => true,
+        ],
+
         'queue' => [
             'driver' => 'daily',
             'path' => storage_path('logs/queue.log'),
@@ -181,6 +202,15 @@ return [
             'path' => storage_path('logs/errors.log'),
             'level' => 'error', // Uniquement errors et critical
             'days' => env('LOG_ERRORS_DAYS', 90), // Conserver 90 jours pour diagnostic
+            'replace_placeholders' => true,
+        ],
+
+        // ── ERP : Anomalies de stock ──────────────────────────────────────────
+        'erp_stock' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/erp/stock-anomaly.log'),
+            'level'  => 'warning',
+            'days'   => 90,
             'replace_placeholders' => true,
         ],
 

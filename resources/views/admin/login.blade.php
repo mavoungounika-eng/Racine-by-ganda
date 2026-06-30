@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Console - RACINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    <style nonce="{{ csp_nonce() }}">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -187,7 +187,7 @@
         .alert-error {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.3);
-            border-left: 3px solid #EF4444;
+            border-start: 3px solid #EF4444;
             color: #FCA5A5;
             padding: 1rem;
             border-radius: 8px;
@@ -345,7 +345,7 @@
                     </div>
                 @endif
                 
-                <form method="POST" action="{{ route('login.post') }}">
+                <form method="POST" action="{{ route('admin.login.post') }}">
                     @csrf
                     <div class="form-group">
                         <label><i class="fas fa-chevron-right"></i> email</label>
@@ -382,7 +382,7 @@
         </div>
     </div>
     
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         // Matrix rain effect
         const matrix = document.getElementById('matrix');
         const chars = '01アイウエオカキクケコサシスセソタチツテト';

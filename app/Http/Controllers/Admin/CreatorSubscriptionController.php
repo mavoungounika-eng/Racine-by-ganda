@@ -31,6 +31,8 @@ class CreatorSubscriptionController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', CreatorSubscription::class);
+
         $query = User::whereHas('roleRelation', function ($q) {
             $q->whereIn('slug', ['createur', 'creator']);
         })->with(['creatorProfile', 'activeSubscription.plan']);
@@ -80,6 +82,8 @@ class CreatorSubscriptionController extends Controller
      */
     public function show(User $creator): View
     {
+        $this->authorize('view', $creator);
+
         $creator->load(['creatorProfile', 'activeSubscription.plan', 'activeSubscription.plan.capabilities']);
         $subscription = $creator->activeSubscription();
         $plan = $creator->activePlan();
@@ -100,6 +104,8 @@ class CreatorSubscriptionController extends Controller
      */
     public function updatePlan(Request $request, User $creator): RedirectResponse
     {
+        $this->authorize('update', $creator);
+
         $request->validate([
             'plan_id' => 'required|exists:creator_plans,id',
         ]);
@@ -132,6 +138,8 @@ class CreatorSubscriptionController extends Controller
      */
     public function audit(User $creator): View
     {
+        $this->authorize('audit', $creator);
+
         $plan = $creator->activePlan();
         $capabilities = $plan->capabilities ?? collect();
         $activeCapabilities = $creator->capabilities();

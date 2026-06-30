@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Http\Controllers\Api\WebhookController;
 use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\Payments\CardPaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Stripe\Exception\SignatureVerificationException;
-use Symfony\Component\HttpFoundation\Response;
-use UnexpectedValueException;
 
 /**
  * Contrôleur pour les paiements par carte bancaire via Stripe
@@ -39,8 +38,7 @@ class CardPaymentController extends Controller
             // Charger la commande
             $order = Order::findOrFail($orderId);
 
-            // Utiliser OrderPolicy pour vérifier l'accès
-            $this->authorize('view', $order);
+            abort_unless($order->user_id === auth()->id(), 403);
 
             // Protection contre double paiement
             if ($order->payment_status === 'paid') {
@@ -87,8 +85,7 @@ class CardPaymentController extends Controller
      */
     public function success(Request $request, Order $order): View
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         $sessionId = $request->query('session_id');
 
@@ -107,8 +104,7 @@ class CardPaymentController extends Controller
      */
     public function cancel(Request $request, Order $order): View
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         return view('frontend.checkout.card-cancel', [
             'order' => $order,
@@ -116,82 +112,11 @@ class CardPaymentController extends Controller
     }
 
     /**
-     * Webhook Stripe pour les notifications de paiement
-     *
-     * @param Request $request
-     * @param CardPaymentService $cardPaymentService
-     * @return Response
+     * Webhook Stripe legacy (compatibility shim)
+     * Forwards processing to the unified Payments Hub webhook controller.
      */
-    /**
-     * Webhook Stripe pour les notifications de paiement
-     * 
-     * RBG-P0-010 : Signature obligatoire en production
-     *
-     * @param Request $request
-     * @param CardPaymentService $cardPaymentService
-     * @return Response
-     */
-    public function webhook(Request $request, CardPaymentService $cardPaymentService): Response
+    public function webhook(Request $request, WebhookController $webhookController): JsonResponse
     {
-        // Récupérer le payload brut (important pour la vérification de signature)
-        $payload = $request->getContent();
-        $signature = $request->header('Stripe-Signature');
-        $ip = $request->ip();
-        $route = $request->fullUrl();
-        $userAgent = $request->userAgent();
-
-        try {
-            $result = $cardPaymentService->handleWebhook($payload, $signature);
-            
-            if ($result === null) {
-                \Log::warning('Stripe webhook: Processing failed', [
-                    'ip' => $ip,
-                    'route' => $route,
-                    'user_agent' => $userAgent,
-                    'reason' => 'processing_failed',
-                ]);
-                return response()->json(['message' => 'Webhook processing failed'], 400);
-            }
-            
-            \Log::info('Stripe webhook: Successfully processed', [
-                'ip' => $ip,
-                'route' => $route,
-                'user_agent' => $userAgent,
-                'payment_id' => $result->id ?? null,
-            ]);
-            
-            return response()->json(['status' => 'success'], 200);
-        } catch (SignatureVerificationException $e) {
-            // RBG-P0-010 : Signature invalide ou manquante → 401
-            \Log::error('Stripe webhook: Signature verification failed', [
-                'ip' => $ip,
-                'route' => $route,
-                'user_agent' => $userAgent,
-                'reason' => 'invalid_signature',
-                'error' => $e->getMessage(),
-            ]);
-            return response()->json(['message' => 'Invalid signature'], 401);
-        } catch (UnexpectedValueException $e) {
-            // Payload invalide → 400
-            \Log::error('Stripe webhook: Invalid payload', [
-                'ip' => $ip,
-                'route' => $route,
-                'user_agent' => $userAgent,
-                'reason' => 'invalid_payload',
-                'error' => $e->getMessage(),
-            ]);
-            return response()->json(['message' => 'Invalid payload'], 400);
-        } catch (\Throwable $e) {
-            // Fallback pour toutes les autres exceptions → 500
-            \Log::error('Stripe webhook: Webhook processing failed', [
-                'ip' => $ip,
-                'route' => $route,
-                'user_agent' => $userAgent,
-                'reason' => 'unexpected_error',
-                'error' => $e->getMessage(),
-                'exception_class' => get_class($e),
-            ]);
-            return response()->json(['message' => 'Webhook processing failed'], 500);
-        }
+        return $webhookController->stripe($request);
     }
 }

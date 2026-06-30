@@ -5,6 +5,9 @@ namespace App\Providers;
 use App\Services\Cart\DatabaseCartService;
 use App\Services\Cart\SessionCartService;
 use Illuminate\Support\Facades\Auth;
+use App\Http\View\Composers\CmsPageComposer;
+use App\Http\View\Composers\CmsViewComposer;
+use App\Http\View\Composers\HomeComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,14 +26,15 @@ class ViewComposerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Partager le compteur de panier avec toutes les vues
-        View::composer('*', function ($view) {
-            $cartService = Auth::check() 
-                ? new DatabaseCartService() 
-                : new SessionCartService();
-            
-            $cartCount = $cartService->count();
-            
+        // Partager le compteur de panier uniquement avec les layouts principaux qui ont besoin du panier (store)
+        View::composer(['layouts.store'], function ($view) {
+            static $cartCount = null;
+            if ($cartCount === null) {
+                $cartService = Auth::check() 
+                    ? new DatabaseCartService() 
+                    : new SessionCartService();
+                $cartCount = $cartService->count();
+            }
             $view->with('cartCount', $cartCount);
         });
         
@@ -43,5 +47,23 @@ class ViewComposerServiceProvider extends ServiceProvider
                 Auth::user()->loadMissing('creatorProfile');
             }
         });
+
+        // CMS global — layout principal
+        View::composer(
+            'layouts.frontend',
+            CmsViewComposer::class
+        );
+
+        // CMS page — injecter $cmsPage dans toutes les vues frontend
+        View::composer(
+            'frontend.*',
+            CmsPageComposer::class
+        );
+
+        // CMS homepage
+        View::composer(
+            ['frontend.home', 'home', 'welcome'],
+            HomeComposer::class
+        );
     }
 }

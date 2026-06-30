@@ -22,7 +22,7 @@
                     {{-- Message de confirmation --}}
                     <div class="alert alert-success">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle fa-2x mr-3"></i>
+                            <i class="fas fa-check-circle fa-2x me-3"></i>
                             <div>
                                 <strong>Paiement confirmé</strong>
                                 <p class="mb-0">Votre commande a été confirmée et sera traitée dans les plus brefs délais.</p>
@@ -34,7 +34,7 @@
                     <div class="card bg-light mb-4">
                         <div class="card-body">
                             <h6 class="font-weight-bold mb-3">
-                                <i class="fas fa-info-circle mr-2"></i>
+                                <i class="fas fa-info-circle me-2"></i>
                                 Détails du paiement
                             </h6>
                             <div class="row">
@@ -44,7 +44,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <p class="text-muted mb-1">Montant</p>
-                                    <p class="font-weight-bold text-success mb-0">{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</p>
+                                    <p class="font-weight-bold text-success mb-0">{{ format_price($payment->amount) }}</p>
                                 </div>
                             </div>
                             <hr>
@@ -73,14 +73,14 @@
                         <div class="row">
                             <div class="col-md-6 mb-2">
                                 <a href="{{ route('frontend.shop') }}" class="btn btn-primary btn-block">
-                                    <i class="fas fa-shopping-bag mr-2"></i>
+                                    <i class="fas fa-shopping-bag me-2"></i>
                                     Continuer mes achats
                                 </a>
                             </div>
                             @auth
                             <div class="col-md-6 mb-2">
                                 <a href="{{ route('profile.orders') }}" class="btn btn-outline-dark btn-block">
-                                    <i class="fas fa-list mr-2"></i>
+                                    <i class="fas fa-list me-2"></i>
                                     Voir mes commandes
                                 </a>
                             </div>

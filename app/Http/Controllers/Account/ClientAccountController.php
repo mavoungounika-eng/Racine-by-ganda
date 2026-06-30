@@ -43,32 +43,41 @@ class ClientAccountController extends Controller
 
         // Statistiques du client
         $stats = [
-            'my_orders_total' => Order::where('user_id', $user->id)->count(),
+            'my_orders_total' => Order::where('user_id', $user->id)
+                ->whereNotIn('status', ['cancelled', 'archived'])
+                ->count(),
             'my_orders_pending' => Order::where('user_id', $user->id)
-                ->whereIn('status', ['pending', 'processing', 'paid'])
+                ->whereIn('status', ['pending', 'processing'])
                 ->count(),
             'my_orders_completed' => Order::where('user_id', $user->id)
                 ->whereIn('status', ['completed', 'delivered'])
                 ->count(),
             'total_spent' => Order::where('user_id', $user->id)
-                ->where('payment_status', 'paid')
+                ->whereIn('payment_status', ['paid'])
+                ->whereIn('status', ['completed', 'processing', 'pending', 'paid'])
                 ->sum('total_amount'),
         ];
 
-        // 5 dernières commandes
+        // 5 dernières commandes actives (hors cancelled/archived)
         $my_orders = Order::where('user_id', $user->id)
+            ->whereNotIn('status', ['cancelled', 'archived'])
             ->with(['items.product'])
             ->latest()
             ->take(5)
             ->get();
 
+        // Commandes dormantes (annulées restaurables)
+        $dormant_orders = Order::where('user_id', $user->id)
+            ->where('status', 'cancelled')
+            ->latest()
+            ->take(3)
+            ->get();
+
         // Points de fidélité (si le modèle existe)
         $loyalty = null;
         if (class_exists(\App\Models\LoyaltyPoint::class)) {
-            $loyalty = \App\Models\LoyaltyPoint::firstOrCreate(
-                ['user_id' => $user->id],
-                ['points' => 0, 'tier' => 'bronze']
-            );
+            $balance = \App\Models\LoyaltyPoint::getBalanceFor($user->id);
+            $loyalty = (object) ['points' => $balance];
         }
 
         // Compteur de notifications non lues
@@ -79,7 +88,7 @@ class ClientAccountController extends Controller
                 ->count();
         }
 
-        return view('account.dashboard', compact('stats', 'my_orders', 'loyalty', 'user', 'unreadCount'));
+        return view('account.dashboard', compact('stats', 'my_orders', 'dormant_orders', 'loyalty', 'user', 'unreadCount'));
     }
 }
 

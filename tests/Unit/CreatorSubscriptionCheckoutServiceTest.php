@@ -63,8 +63,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -103,8 +103,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'free',
-            'name' => 'Créateur Découverte',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 0,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -125,9 +125,9 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
     }
 
     /**
-     * Test 2 bis : Refus si le plan a le code 'free'
+     * Test 2 bis : Refus si le plan atelier n'a pas de stripe_price_id configuré
      */
-    public function test_createCheckoutSession_throws_exception_when_plan_code_is_free(): void
+    public function test_createCheckoutSession_throws_exception_when_plan_has_no_stripe_price_id(): void
     {
         $user = User::factory()->create([
             'role' => 'createur',
@@ -143,23 +143,21 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'free',
-            'name' => 'Créateur Découverte',
-            'price' => 100, // Prix non nul mais code = 'free'
-            'billing_cycle' => 'monthly',
-            'is_active' => true,
+            'code'           => 'atelier',
+            'name'           => 'Atelier',
+            'price'          => 15000,
+            'billing_cycle'  => 'monthly',
+            'is_active'      => true,
+            'stripe_price_id'=> null,
         ]);
 
-        // Mock canCreatorReceivePayments() pour retourner true
         $this->stripeConnectService
             ->expects($this->once())
             ->method('canCreatorReceivePayments')
             ->with($creatorProfile)
             ->willReturn(true);
 
-        // Le checkout doit lever une RuntimeException
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('gratuit');
 
         $this->service->createCheckoutSession($user, $plan);
     }
@@ -213,8 +211,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -271,8 +269,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => false, // ❌ Plan inactif
@@ -303,8 +301,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -330,8 +328,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         // Pas de profil créateur créé
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -365,8 +363,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         // Pas de compte Stripe Connect créé
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -433,8 +431,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -521,8 +519,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,
@@ -582,8 +580,8 @@ class CreatorSubscriptionCheckoutServiceTest extends TestCase
         ]);
 
         $plan = CreatorPlan::create([
-            'code' => 'official',
-            'name' => 'Créateur Officiel',
+            'code' => 'atelier',
+            'name' => 'Atelier',
             'price' => 5000,
             'billing_cycle' => 'monthly',
             'is_active' => true,

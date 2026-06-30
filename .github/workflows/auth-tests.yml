@@ -1,0 +1,156 @@
+name: Auth Tests (Anti-Régression)
+
+# ============================================
+# OBJECTIF : Bloquer toute régression AUTH
+# ============================================
+# Ce workflow exécute UNIQUEMENT les tests auth
+# et bloque tout merge si un seul test échoue.
+#
+# Tests couverts :
+# - LoginRedirectTest (7 tests)
+# - LogoutTest (5 tests)
+# - DashboardAccessTest (8 tests)
+# - AuthEdgeCasesTest (2 tests)
+# Total : 22 tests / 64 assertions
+#
+# Garantie : Toute modification de PostLoginDecisionEngine,
+# routes, middlewares auth casse au moins 1 test.
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'fix/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+# Annuler workflows en cours si nouveau push
+concurrency:
+  group: auth-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auth-tests:
+    name: Tests Auth (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: racine_testing
+          MYSQL_USER: laravel
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    # Stratégie : Tester sur version PHP projet uniquement
+    strategy:
+      fail-fast: true  # CRITIQUE : Arrêter immédiatement si échec
+      matrix:
+        php: ['8.3']
+
+    steps:
+      # ============================================
+      # 1. CHECKOUT CODE
+      # ============================================
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ============================================
+      # 2. SETUP PHP
+      # ============================================
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none  # Pas de coverage, focus vitesse
+
+      # ============================================
+      # 3. CACHE COMPOSER
+      # ============================================
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      # ============================================
+      # 4. INSTALL DEPENDENCIES
+      # ============================================
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      # ============================================
+      # 5. PREPARE ENVIRONMENT
+      # ============================================
+      - name: Generate application key
+        run: php artisan key:generate --env=testing
+
+      - name: Create SQLite database
+        run: touch database/database.sqlite
+
+      # ============================================
+      # 6. RUN MIGRATIONS & SEEDERS
+      # ============================================
+      - name: Run migrations
+        run: php artisan migrate --env=testing --force
+
+      - name: Seed test data
+        run: |
+          php artisan db:seed --class=RolesTableSeeder --env=testing
+          php artisan db:seed --class=TestUsersSeeder --env=testing
+          php artisan db:seed --class=CreatorPlanSeeder --env=testing
+          php artisan db:seed --class=PlanCapabilitySeeder --env=testing
+
+      - name: Create fake Vite manifest
+        run: |
+          mkdir -p public/build
+          echo '{"resources/js/app.js":{"file":"assets/app.js","src":"resources/js/app.js","isEntry":true},"resources/css/app.css":{"file":"assets/app.css","src":"resources/css/app.css","isEntry":true}}' > public/build/manifest.json
+
+      # ============================================
+      # 7. EXECUTE AUTH TESTS (CRITIQUE)
+      # ============================================
+      - name: Execute Auth Tests
+        run: |
+          php artisan test tests/Feature/Auth/LoginRedirectTest.php \
+                           tests/Feature/Auth/LogoutTest.php \
+                           tests/Feature/Auth/DashboardAccessTest.php \
+                           tests/Feature/Auth/AuthEdgeCasesTest.php \
+                           --stop-on-failure
+
+      # ============================================
+      # 8. REPORT (SI ÉCHEC)
+      # ============================================
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "❌ ÉCHEC TESTS AUTH - MERGE BLOQUÉ"
+          echo "Au moins un test auth a échoué."
+          echo "Vérifier les modifications sur :"
+          echo "  - app/Services/Auth/PostLoginDecisionEngine.php"
+          echo "  - routes/web.php (routes dashboards)"
+          echo "  - Middlewares auth (ensure, auth, etc.)"
+          exit 1

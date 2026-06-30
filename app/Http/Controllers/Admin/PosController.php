@@ -34,6 +34,172 @@ class PosController extends Controller
     /**
      * Rechercher un produit par code-barres, SKU ou ID
      */
+
+    /**
+     * Gestion des sessions POS (admin)
+     */
+    public function sessions(\Illuminate\Http\Request $request): \Illuminate\View\View
+    {
+        $operateurs = \App\Models\User::whereIn('id',
+                \App\Models\PosSession::distinct()->pluck('opened_by')
+            )->select('id', 'name', 'email')->orderBy('name')->get();
+
+        return view('admin.pos.sessions', compact('operateurs'));
+    }
+
+
+    /**
+     * Export CSV des ventes d'une session
+     */
+    public function exportSessionCsv(int $id): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $session = \App\Models\PosSession::with(['opener', 'sales.payments'])->findOrFail($id);
+
+        $filename = 'session_'.$id.'_'.($session->opened_at?->format('Ymd_Hi') ?? 'export').'.csv';
+
+        return response()->streamDownload(function () use ($session) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
+
+            fputcsv($out, ['Session ID', 'Opérateur', 'Ouverture', 'Statut', 'Fond de caisse', 'Total ventes', 'Nb tickets'], ';');
+            fputcsv($out, [
+                $session->id,
+                $session->opener?->name ?? '-',
+                $session->opened_at?->format('d/m/Y H:i'),
+                $session->status,
+                number_format($session->opening_cash, 2, ',', ' '),
+                number_format($session->total_ventes ?? 0, 2, ',', ' '),
+                $session->nombre_tickets ?? 0,
+            ], ';');
+
+            fputcsv($out, [], ';');
+            fputcsv($out, ['#', 'Date', 'Référence', 'Montant', 'Moyen paiement', 'Statut', 'Client'], ';');
+
+            foreach ($session->sales as $sale) {
+                fputcsv($out, [
+                    $sale->id,
+                    $sale->created_at?->format('d/m/Y H:i:s'),
+                    $sale->reference ?? $sale->idempotency_key ?? '-',
+                    number_format($sale->total_amount ?? 0, 2, ',', ' '),
+                    $sale->payments->pluck('method')->join(', ') ?: '-',
+                    $sale->status ?? '-',
+                    $sale->customer_id ?? 'Anonyme',
+                ], ';');
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-cache',
+        ]);
+    }
+
+
+    /**
+     * API web sessions (auth session Laravel, pour dashboard admin)
+     */
+    public function apiSessions(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $query = \App\Models\PosSession::with(['opener:id,name,email', 'closer:id,name'])
+            ->orderBy('opened_at', 'desc');
+
+        if ($request->filled('status') && $request->status !== 'fantomes') {
+            $query->where('status', $request->status);
+        }
+        if ($request->boolean('fantomes_only')) {
+            $query->fantome(24);
+        }
+        if ($request->filled('operateur_id')) {
+            $query->where('opened_by', $request->operateur_id);
+        }
+        if ($request->filled('date_debut')) {
+            $query->where('opened_at', '>=', $request->date_debut);
+        }
+        if ($request->filled('date_fin')) {
+            $query->where('opened_at', '<=', $request->date_fin.' 23:59:59');
+        }
+
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    /**
+     * Force-close admin (auth session Laravel)
+     */
+    public function apiForceClose(\Illuminate\Http\Request $request, int $id): \Illuminate\Http\JsonResponse
+    {
+        $session = \App\Models\PosSession::whereIn('status', ['open', 'closing'])->findOrFail($id);
+        $session->update([
+            'status'    => 'closed',
+            'closed_at' => now(),
+            'closed_by' => $request->user()->id,
+            'is_active' => null,
+            'notes'     => trim(($session->notes ?? '')."\n[Clôturée par admin ".$request->user()->name." le ".now()->format('d/m/Y H:i')."]"),
+        ]);
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Bulk close multiple sessions (auth session Laravel)
+     */
+    public function bulkClose(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $ids = $request->validate([
+            'ids'   => 'required|array|min:1|max:100',
+            'ids.*' => 'integer',
+        ])['ids'];
+
+        $note = "\n[Clôturée (bulk) par admin ".$request->user()->name." le ".now()->format('d/m/Y H:i')."]";
+
+        $sessions = \App\Models\PosSession::whereIn('id', $ids)
+            ->whereIn('status', ['open', 'closing'])
+            ->get();
+
+        $closed = 0;
+        foreach ($sessions as $session) {
+            $session->update([
+                'status'    => 'closed',
+                'closed_at' => now(),
+                'closed_by' => $request->user()->id,
+                'is_active' => null,
+                'notes'     => trim(($session->notes ?? '').$note),
+            ]);
+            $closed++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $closed.' session(s) clôturée(s)',
+            'closed'  => $closed,
+        ]);
+    }
+
+    /**
+     * Ventes d'une session (auth session Laravel)
+     */
+    public function apiSessionSales(\Illuminate\Http\Request $request, int $id): \Illuminate\Http\JsonResponse
+    {
+        $session = \App\Models\PosSession::findOrFail($id);
+        $sales = $session->sales()->with('payments:id,pos_sale_id,method,amount,status')
+            ->orderBy('created_at', 'desc')
+            ->paginate($request->integer('per_page', 50));
+        return response()->json($sales);
+    }
+
+
+    /**
+     * Page détail d'une session POS
+     */
+    public function showSession(int $id): \Illuminate\View\View
+    {
+        $session = \App\Models\PosSession::with([
+            'opener:id,name,email',
+            'closer:id,name',
+            'sales.payments:id,pos_sale_id,method,amount,status',
+        ])->findOrFail($id);
+
+        return view('admin.pos.session-detail', compact('session'));
+    }
+
     public function searchProduct(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Product::class);
@@ -44,15 +210,16 @@ class PosController extends Controller
 
         $code = trim($request->code);
 
-        // Rechercher par code-barres
-        $product = Product::whereHas('erpDetails', function ($query) use ($code) {
-            $query->where('barcode', $code)
-                  ->orWhere('sku', $code);
-        })->with('erpDetails', 'category')->first();
+        // Rechercher par code-barres (Restreint aux produits BRAND)
+        $product = Product::brand()
+            ->whereHas('erpDetails', function ($query) use ($code) {
+                $query->where('barcode', $code)
+                    ->orWhere('sku', $code);
+            })->with('erpDetails', 'category')->first();
 
-        // Si pas trouvé, essayer par ID
+        // Si pas trouvé, essayer par ID (Restreint aux produits BRAND)
         if (!$product && is_numeric($code)) {
-            $product = Product::with('erpDetails', 'category')->find($code);
+            $product = Product::brand()->with('erpDetails', 'category')->find($code);
         }
 
         if (!$product) {
@@ -121,6 +288,16 @@ class PosController extends Controller
 
             foreach ($request->items as $itemData) {
                 $product = Product::findOrFail($itemData['product_id']);
+                
+                // ✅ SAAS PUR : Le POS est réservé aux produits de la marque (RACINE)
+                if (!$product->isBrand()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Le produit {$product->title} n'est pas autorisé pour la vente directe POS (Produit Marketplace).",
+                    ], 403);
+                }
+
                 $quantity = $itemData['quantity'];
 
                 // Vérifier le stock
@@ -160,6 +337,7 @@ class PosController extends Controller
                 'user_id' => null, // Pas de user_id pour les commandes POS (évite double décrémentation)
                 'status' => $orderStatus,
                 'payment_status' => $paymentStatus,
+                'payment_method' => $paymentMethod,
                 'total_amount' => $total,
                 'customer_name' => $request->customer_name ?? 'Client boutique',
                 'customer_email' => $request->customer_email,
@@ -459,7 +637,7 @@ class PosController extends Controller
 
                 // Attribuer des points de fidélité
                 try {
-                    $loyaltyService = app(\App\Services\LoyaltyService::class);
+                    $loyaltyService = app(\App\Services\Crm\LoyaltyService::class);
                     $loyaltyService->awardPointsForOrder($order);
 
                     // Notifier le client
@@ -578,6 +756,114 @@ class PosController extends Controller
                 'message' => 'Erreur lors de la confirmation: ' . $e->getMessage(),
             ], 500);
         }
+    }
+    /**
+     * Valider physiquement le retrait d'une commande (Analytique)
+     * 
+     * Appelé lorsqu'un client vient chercher une commande payée d'un créateur.
+     */
+    public function validatePickup(Request $request, Order $order): JsonResponse
+    {
+        $this->authorize('update', $order);
+
+        if ($order->payment_status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Impossible de remettre une commande non payée.',
+            ], 400);
+        }
+
+        if ($order->status === 'completed' || $order->status === 'fulfilled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette commande a déjà été récupérée.',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Si c'est une commande créateur, enregistrer l'événement analytique
+            if ($order->creator_id) {
+                $orderEventService = app(\App\Services\CreatorOrderEventService::class);
+                $orderEventService->recordFulfilledByPos($order, Auth::id());
+            }
+
+            // Marquer la commande comme traitée (fulfilled)
+            $order->update([
+                'status' => 'fulfilled',
+                'fulfilled_at' => now(),
+                'fulfilled_by' => Auth::id(),
+            ]);
+
+            // Mouvements de stock (ERP)
+            foreach ($order->items as $item) {
+                \Modules\ERP\Models\ErpStockMovement::create([
+                    'stockable_type' => Product::class,
+                    'stockable_id' => $item->product_id,
+                    'type' => 'out',
+                    'quantity' => $item->quantity,
+                    'reason' => 'Retrait POS (Validation physique)',
+                    'reference_type' => Order::class,
+                    'reference_id' => $order->id,
+                    'user_id' => Auth::id(),
+                    'from_location' => 'Boutique (Hébergement)',
+                    'to_location' => 'Client',
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Retrait validé avec succès (Analytique enregistrée).',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la validation du retrait : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function exportAllCsv(\Illuminate\Http\Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $query = \App\Models\PosSession::with(['opener', 'sales.payments'])
+            ->orderByDesc('opened_at');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $sessions = $query->get();
+        $filename = 'pos_sessions_export_' . now()->format('Ymd_Hi') . '.csv';
+
+        return response()->streamDownload(function () use ($sessions) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($out, ['Session ID', 'Opérateur', 'Ouverture', 'Clôture', 'Statut', 'Fond de caisse', 'Total ventes', 'Nb tickets'], ';');
+
+            foreach ($sessions as $session) {
+                fputcsv($out, [
+                    $session->id,
+                    $session->opener?->name ?? '-',
+                    $session->opened_at?->format('d/m/Y H:i'),
+                    $session->closed_at?->format('d/m/Y H:i') ?? 'En cours',
+                    $session->status,
+                    number_format($session->opening_cash ?? 0, 0, ',', ' '),
+                    number_format($session->total_ventes ?? 0, 0, ',', ' '),
+                    $session->nombre_tickets ?? 0,
+                ], ';');
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-cache',
+        ]);
     }
 }
 

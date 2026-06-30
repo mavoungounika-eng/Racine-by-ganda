@@ -8,73 +8,59 @@ use Illuminate\Database\Seeder;
 
 class PlanCapabilitySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     * 
-     * Injecte exactement le mapping Plan → Capability validé.
-     * Aucune logique conditionnelle, juste des données pures.
-     */
     public function run(): void
     {
-        $freePlan = CreatorPlan::where('code', 'free')->first();
-        $officialPlan = CreatorPlan::where('code', 'official')->first();
-        $premiumPlan = CreatorPlan::where('code', 'premium')->first();
+        $atelierPlan   = CreatorPlan::where('code', 'atelier')->first();
+        $maisonPlan    = CreatorPlan::where('code', 'maison')->first();
+        $signaturePlan = CreatorPlan::where('code', 'signature')->first();
 
-        if (!$freePlan || !$officialPlan || !$premiumPlan) {
-            $this->command->error('Les plans doivent être créés avant les capabilities. Exécutez CreatorPlanSeeder d\'abord.');
+        if (! $atelierPlan || ! $maisonPlan || ! $signaturePlan) {
+            $this->command->error('Plans atelier/maison/signature introuvables. Exécuter CreatorPlanSeeder d\'abord.');
             return;
         }
 
-        // Mapping des capabilities par plan
         $capabilities = [
-            // FREE PLAN
-            'free' => [
-                'can_add_products' => ['bool' => true],
-                'max_products' => ['int' => 5],
+            'atelier' => [
+                'can_add_products'       => ['bool' => true],
+                'max_products'           => ['int' => 80],
                 'can_manage_collections' => ['bool' => false],
-                'can_view_advanced_stats' => ['bool' => false],
-                'can_view_analytics' => ['bool' => false],
-                'can_export_data' => ['bool' => false],
-                'dashboard_layout' => ['string' => 'basic'],
-                'can_use_api' => ['bool' => false],
-                'max_collections' => ['int' => 0],
-                'support_level' => ['string' => 'community'],
+                'can_view_advanced_stats'=> ['bool' => false],
+                'can_view_analytics'     => ['bool' => false],
+                'can_export_data'        => ['bool' => false],
+                'dashboard_layout'       => ['string' => 'basic'],
+                'can_use_pos'            => ['bool' => false],
+                'can_use_api'            => ['bool' => false],
+                'support_level'          => ['string' => 'community'],
             ],
-            
-            // OFFICIAL PLAN
-            'official' => [
-                'can_add_products' => ['bool' => true],
-                'max_products' => ['int' => -1], // -1 = illimité
+            'maison' => [
+                'can_add_products'       => ['bool' => true],
+                'max_products'           => ['int' => 250],
                 'can_manage_collections' => ['bool' => true],
-                'can_view_advanced_stats' => ['bool' => true],
-                'can_view_analytics' => ['bool' => true],
-                'can_export_data' => ['bool' => true],
-                'dashboard_layout' => ['string' => 'advanced'],
-                'can_use_api' => ['bool' => false],
-                'max_collections' => ['int' => 10],
-                'support_level' => ['string' => 'priority'],
+                'can_view_advanced_stats'=> ['bool' => true],
+                'can_view_analytics'     => ['bool' => true],
+                'can_export_data'        => ['bool' => true],
+                'dashboard_layout'       => ['string' => 'advanced'],
+                'can_use_pos'            => ['bool' => false],
+                'can_use_api'            => ['bool' => false],
+                'support_level'          => ['string' => 'priority'],
             ],
-            
-            // PREMIUM PLAN
-            'premium' => [
-                'can_add_products' => ['bool' => true],
-                'max_products' => ['int' => -1], // -1 = illimité
+            'signature' => [
+                'can_add_products'       => ['bool' => true],
+                'max_products'           => ['int' => -1],
                 'can_manage_collections' => ['bool' => true],
-                'can_view_advanced_stats' => ['bool' => true],
-                'can_view_analytics' => ['bool' => true],
-                'can_export_data' => ['bool' => true],
-                'dashboard_layout' => ['string' => 'premium'],
-                'can_use_api' => ['bool' => true],
-                'max_collections' => ['int' => -1], // -1 = illimité
-                'support_level' => ['string' => 'dedicated'],
+                'can_view_advanced_stats'=> ['bool' => true],
+                'can_view_analytics'     => ['bool' => true],
+                'can_export_data'        => ['bool' => true],
+                'dashboard_layout'       => ['string' => 'premium'],
+                'can_use_pos'            => ['bool' => true],
+                'can_use_api'            => ['bool' => true],
+                'support_level'          => ['string' => 'dedicated'],
             ],
         ];
 
-        // Injecter les capabilities pour chaque plan
         foreach ($capabilities as $planCode => $planCaps) {
             $plan = CreatorPlan::where('code', $planCode)->first();
-            
-            if (!$plan) {
+            if (! $plan) {
                 continue;
             }
 
@@ -82,11 +68,9 @@ class PlanCapabilitySeeder extends Seeder
                 PlanCapability::updateOrCreate(
                     [
                         'creator_plan_id' => $plan->id,
-                        'capability_key' => $capabilityKey,
+                        'capability_key'  => $capabilityKey,
                     ],
-                    [
-                        'value' => $value,
-                    ]
+                    ['value' => $value]
                 );
             }
         }

@@ -12,7 +12,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-2 font-semibold">Total Produits</p>
-                    <p class="text-3xl font-bold text-[#2C1810]" style="font-family: 'Playfair Display', serif;">{{ $stats['total'] }}</p>
+                    <p class="text-3xl font-bold text-[#160D0C]" style="font-family: 'Playfair Display', serif;">{{ $stats['total'] }}</p>
                 </div>
                 <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A574] to-[#8B5A2B] flex items-center justify-center shadow-lg">
                     <i class="fas fa-box text-white text-2xl"></i>
@@ -94,7 +94,7 @@
                         <th>Prix</th>
                         <th>Stock</th>
                         <th>Statut</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,7 +112,7 @@
                             </div>
                         </td>
                         <td>
-                            <p class="font-bold text-[#2C1810] mb-1">{{ $product->title }}</p>
+                            <p class="font-bold text-[#160D0C] mb-1">{{ $product->title }}</p>
                             @if($product->description)
                                 <p class="text-sm text-[#8B7355] line-clamp-1">{{ Str::limit($product->description, 50) }}</p>
                             @endif
@@ -178,10 +178,10 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 
-                                            onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce produit ?')" 
+                                            onclick="return confirm('Supprimer définitivement ce produit ? Cette action est irréversible.')"
                                             class="creator-action-btn"
                                             style="background: rgba(239, 68, 68, 0.1); color: #EF4444; border-color: rgba(239, 68, 68, 0.2);"
-                                            title="Désactiver">
+                                            title="Supprimer définitivement">
                                         <i class="fas fa-trash text-sm"></i>
                                     </button>
                                 </form>
@@ -193,7 +193,7 @@
                         <td colspan="7" class="py-12">
                             <div class="creator-empty-state">
                                 <i class="fas fa-box-open text-5xl text-[#8B7355] mb-4"></i>
-                                <p class="text-xl font-bold text-[#2C1810] mb-2">Aucun produit trouvé</p>
+                                <p class="text-xl font-bold text-[#160D0C] mb-2">Aucun produit trouvé</p>
                                 <p class="text-[#8B7355] mb-4">Commencez par créer votre premier produit</p>
                                 <a href="{{ route('creator.products.create') }}" class="creator-btn">
                                     <i class="fas fa-plus"></i>

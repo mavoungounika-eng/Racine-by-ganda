@@ -9,6 +9,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Jobs\Middleware\CircuitBreakerJob;
+use App\Jobs\Middleware\RateLimitedJob;
+use App\Services\Queue\QueueCircuitBreaker;
+use App\Services\Queue\QueueMonitor;
+use App\Services\Queue\QueueRateLimiter;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -22,10 +27,27 @@ class CleanupPendingMobileMoneyPayments implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 3;
+    public int $timeout = 120;
+    public array $backoff = [30, 60, 120];
+
     /**
      * Timeout en minutes pour considérer un paiement comme abandonné
      */
     protected const TIMEOUT_MINUTES = 30;
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware(): array
+    {
+        return [
+            new CircuitBreakerJob(app(QueueCircuitBreaker::class), app(QueueMonitor::class)),
+            new RateLimitedJob(app(QueueRateLimiter::class)),
+        ];
+    }
 
     /**
      * Exécuter le job

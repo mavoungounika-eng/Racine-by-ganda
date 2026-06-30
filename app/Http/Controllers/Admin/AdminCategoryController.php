@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -40,6 +41,72 @@ class AdminCategoryController extends AdminController
         $categories = $query->paginate(15)->withQueryString();
 
         return view('admin.categories.index', compact('categories'));
+    }
+
+    public function dataCategories(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Category::class);
+        $query = Category::with('parent:id,name')->withCount(['children', 'products']);
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")->orWhere('slug', 'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('is_active') && $request->get('is_active') !== '') {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+        $query->orderBy('name');
+
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    public function bulkActivate(Request $request): JsonResponse
+    {
+        $this->authorize('update', new Category());
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = Category::whereIn('id', $ids)->update(['is_active' => true]);
+
+        return response()->json(['success' => true, 'message' => $count.' catégorie(s) activée(s)']);
+    }
+
+    public function bulkDeactivate(Request $request): JsonResponse
+    {
+        $this->authorize('update', new Category());
+        $ids = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = Category::whereIn('id', $ids)->update(['is_active' => false]);
+
+        return response()->json(['success' => true, 'message' => $count.' catégorie(s) désactivée(s)']);
+    }
+
+    public function exportCsv(Request $request): \Illuminate\Http\Response
+    {
+        $this->authorize('viewAny', Category::class);
+        $query = Category::with('parent:id,name');
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) { $q->where('name','like',"%{$s}%")->orWhere('slug','like',"%{$s}%"); });
+        }
+        if ($request->filled('is_active') && $request->get('is_active') !== '') {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+        $rows = $query->orderBy('name')->get();
+        $csv  = "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
+        $csv .= "ID,Nom,Slug,Parent,Produits,Statut\n";
+        foreach ($rows as $r) {
+            $csv .= implode(',', [
+                $r->id,
+                '"'.str_replace('"','""',$r->name).'"',
+                '"'.str_replace('"','""',$r->slug).'"',
+                '"'.str_replace('"','""',$r->parent?$r->parent->name:'').'"',
+                $r->products_count ?? '',
+                $r->is_active ? 'active' : 'inactive',
+            ])."\n";
+        }
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="categories_'.now()->format('Y-m-d').'.csv"',
+        ]);
     }
 
     /**
@@ -97,7 +164,11 @@ class AdminCategoryController extends AdminController
                 ->with('error', 'Impossible de supprimer cette catégorie car elle contient des sous-catégories.');
         }
 
-        // TODO: Vérifier s'il y a des produits liés quand le module Produit sera là
+        if ($category->products()->count() > 0) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('error', 'Impossible de supprimer cette catégorie car elle contient des produits.');
+        }
 
         $category->delete();
 

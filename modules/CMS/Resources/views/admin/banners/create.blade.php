@@ -40,21 +40,21 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="link_url" class="form-label">URL du lien</label>
-                            <input type="url" class="form-control @error('link_url') is-invalid @enderror" 
-                                   id="link_url" name="link_url" value="{{ old('link_url') }}"
+                            <label for="cta_link" class="form-label">URL du lien</label>
+                            <input type="url" class="form-control @error('cta_link') is-invalid @enderror" 
+                                   id="cta_link" name="cta_link" value="{{ old('cta_link') }}"
                                    placeholder="https://...">
-                            @error('link_url')
+                            @error('cta_link')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
-                            <label for="link_text" class="form-label">Texte du lien</label>
-                            <input type="text" class="form-control @error('link_text') is-invalid @enderror" 
-                                   id="link_text" name="link_text" value="{{ old('link_text') }}"
+                            <label for="cta_text" class="form-label">Texte du lien</label>
+                            <input type="text" class="form-control @error('cta_text') is-invalid @enderror" 
+                                   id="cta_text" name="cta_text" value="{{ old('cta_text') }}"
                                    placeholder="En savoir plus">
-                            @error('link_text')
+                            @error('cta_text')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

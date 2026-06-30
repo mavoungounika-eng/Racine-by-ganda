@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests d'idempotence pour les webhooks Stripe
@@ -18,6 +19,7 @@ use Tests\TestCase;
 class StripeWebhookIdempotencyTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAccounting;
 
     protected User $user;
     protected Product $product;
@@ -32,6 +34,9 @@ class StripeWebhookIdempotencyTest extends TestCase
             'role' => 'client',
             'status' => 'active',
         ]);
+
+        $this->actingAs($this->user);
+        $this->seedAccounting();
 
         $this->product = Product::factory()->create([
             'stock' => 10,
@@ -85,7 +90,6 @@ class StripeWebhookIdempotencyTest extends TestCase
             ],
         ]);
     }
-
     #[Test]
     public function test_webhook_is_idempotent_for_same_event_id(): void
     {
@@ -101,7 +105,7 @@ class StripeWebhookIdempotencyTest extends TestCase
         $signature = $this->generateStripeSignature($payload, 'whsec_test_secret');
 
         // Premier appel
-        $response1 = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response1 = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);
@@ -122,7 +126,7 @@ class StripeWebhookIdempotencyTest extends TestCase
         Event::fake();
         
         // Deuxième appel avec le même event_id (idempotence)
-        $response2 = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response2 = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);
@@ -141,7 +145,6 @@ class StripeWebhookIdempotencyTest extends TestCase
         $this->assertEquals('processed', $webhookEvent->status);
         $this->assertNotNull($webhookEvent->processed_at);
     }
-
     #[Test]
     public function test_webhook_handles_duplicate_key_gracefully(): void
     {
@@ -166,7 +169,7 @@ class StripeWebhookIdempotencyTest extends TestCase
         ]);
 
         // Appel avec event_id déjà existant
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);
@@ -177,7 +180,6 @@ class StripeWebhookIdempotencyTest extends TestCase
         // Vérifier qu'il n'y a toujours qu'un seul événement
         $this->assertEquals(1, StripeWebhookEvent::where('event_id', $eventId)->count());
     }
-
     #[Test]
     public function test_webhook_prevents_double_payment_with_lock(): void
     {
@@ -196,20 +198,25 @@ class StripeWebhookIdempotencyTest extends TestCase
         $this->payment->update(['status' => 'paid']);
 
         // Appel webhook
-        $response = $this->call('POST', '/payment/card/webhook', [], [], [], [
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $signature,
         ], $payload);
 
         $response->assertStatus(200);
 
-        // Vérifier que l'événement est marqué comme ignoré (déjà payé)
+        // Le paiement étant déjà au statut final, l'événement est traité idempotemment.
         $webhookEvent = StripeWebhookEvent::where('event_id', $eventId)->first();
         $this->assertNotNull($webhookEvent);
-        $this->assertEquals('ignored', $webhookEvent->status);
+        $this->assertEquals('processed', $webhookEvent->status);
         $this->assertEquals($this->payment->id, $webhookEvent->payment_id);
     }
 }
+
+
+
+
+
 
 
 

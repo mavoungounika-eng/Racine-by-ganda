@@ -43,7 +43,7 @@ class BiMetricsGlobalTest extends TestCase
         // Créer des abonnements de test
         $plan = CreatorPlan::factory()->create([
             'price' => 10000,
-            'code' => 'premium',
+            'code' => 'signature',
         ]);
         
         $creator = CreatorProfile::factory()->create();
@@ -72,7 +72,7 @@ class BiMetricsGlobalTest extends TestCase
         // Créer des abonnements de test
         $plan = CreatorPlan::factory()->create([
             'price' => 10000,
-            'code' => 'premium',
+            'code' => 'signature',
         ]);
         
         $creator1 = CreatorProfile::factory()->create();
@@ -196,7 +196,7 @@ class BiMetricsGlobalTest extends TestCase
         // Créer un plan gratuit
         $freePlan = CreatorPlan::factory()->create([
             'price' => 0,
-            'code' => 'free',
+            'code' => 'atelier',
         ]);
         
         $creator = CreatorProfile::factory()->create();
@@ -222,7 +222,7 @@ class BiMetricsGlobalTest extends TestCase
         // Créer un plan payant
         $plan = CreatorPlan::factory()->create([
             'price' => 10000,
-            'code' => 'premium',
+            'code' => 'signature',
         ]);
         
         $creator = CreatorProfile::factory()->create();
@@ -242,6 +242,11 @@ class BiMetricsGlobalTest extends TestCase
         $this->assertEquals(0, $mrr, "MRR devrait être 0 avec uniquement des abonnements expirés");
     }
 }
+
+
+
+
+
 
 
 

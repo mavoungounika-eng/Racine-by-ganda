@@ -33,9 +33,8 @@ class ReviewController extends Controller
      */
     public function create(Order $order): View
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
-        
+        abort_unless($order->user_id === Auth::id(), 403);
+
         $user = Auth::user();
 
         // Charger les produits de la commande qui n'ont pas encore d'avis
@@ -85,8 +84,7 @@ class ReviewController extends Controller
         // Vérifier que l'utilisateur a acheté le produit (si order_id fourni)
         if ($validated['order_id']) {
             $order = Order::find($validated['order_id']);
-            // Utiliser OrderPolicy pour vérifier l'accès
-            $this->authorize('view', $order);
+            abort_unless($order->user_id === $user->id, 403);
             
             $hasProduct = $order->items()->where('product_id', $validated['product_id'])->exists();
             if (!$hasProduct) {
@@ -94,14 +92,16 @@ class ReviewController extends Controller
             }
         }
 
+        $isVerified = !empty($validated['order_id']);
+
         Review::create([
             'product_id' => $validated['product_id'],
             'user_id' => $user->id,
             'order_id' => $validated['order_id'] ?? null,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
-            'is_verified_purchase' => !empty($validated['order_id']),
-            'is_approved' => true, // Auto-approuver pour l'instant
+            'is_verified_purchase' => $isVerified,
+            'is_approved' => $isVerified, // Seuls les achats vérifiés sont publiés immédiatement
         ]);
 
         return redirect()->route('profile.reviews')

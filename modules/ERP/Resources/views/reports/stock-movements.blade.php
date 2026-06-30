@@ -27,7 +27,7 @@
                     <a href="{{ route('erp.reports.stock-movements', ['period' => $period, 'format' => 'json']) }}" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-download me-1"></i> Export JSON
                     </a>
-                    <button onclick="window.print()" class="btn btn-primary btn-sm">
+                    <button type="button" class="btn btn-primary btn-sm btn-print-trigger">
                         <i class="fas fa-print me-1"></i> Imprimer
                     </button>
                 </div>
@@ -176,7 +176,7 @@
                     <a href="{{ route('erp.reports.stock-movements', ['period' => $period, 'format' => 'json']) }}" class="btn btn-outline-primary">
                         <i class="fas fa-download me-1"></i> Export JSON
                     </a>
-                    <button onclick="window.print()" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary btn-print-trigger">
                         <i class="fas fa-print me-1"></i> Imprimer / PDF
                     </button>
                 </div>
@@ -186,13 +186,19 @@
 </div>
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     @media print {
-        .btn, .card-header .btn {
-            display: none !important;
-        }
+        .btn, .card-header .btn { display: none !important; }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+document.querySelectorAll('.btn-print-trigger').forEach(function (btn) {
+    btn.addEventListener('click', function () { window.print(); });
+});
+</script>
 @endpush
 @endsection
 

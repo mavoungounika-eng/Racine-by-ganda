@@ -101,16 +101,40 @@
                                     <label for="cover_image" class="form-label">Image de couverture</label>
                                     @if($album->cover_image)
                                         <div class="mb-2">
-                                            <img src="{{ asset('storage/' . $album->cover_image) }}" 
+                                            <img src="{{ asset('storage/' . $album->cover_image) }}"
                                                  alt="Image actuelle" class="img-thumbnail" style="max-height: 100px;">
                                         </div>
                                     @endif
-                                    <input type="file" class="form-control @error('cover_image') is-invalid @enderror" 
+                                    <input type="file" class="form-control @error('cover_image') is-invalid @enderror"
                                            id="cover_image" name="cover_image" accept="image/*">
                                     @error('cover_image')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="mb-3">
+                                    <label for="photos" class="form-label">Ajouter des photos</label>
+                                    <input type="file" class="form-control @error('photos.*') is-invalid @enderror"
+                                           id="photos" name="photos[]" accept="image/*" multiple>
+                                    <small class="form-text text-muted">Les nouvelles photos s'ajoutent aux existantes</small>
+                                    @error('photos.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                @if(!empty($album->photos))
+                                <div class="mb-3">
+                                    <label class="form-label">Photos existantes ({{ $album->photo_count }})</label>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach($album->photos as $photo)
+                                            <img src="{{ asset('storage/' . $photo['path']) }}"
+                                                 alt="{{ $photo['caption'] ?? '' }}"
+                                                 class="img-thumbnail"
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>

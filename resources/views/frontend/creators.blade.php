@@ -3,10 +3,10 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Nos Créateurs - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creators-hero {
         min-height: 60vh;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         display: flex;
         align-items: center;
         position: relative;
@@ -22,7 +22,7 @@
         right: -20%;
         width: 80%;
         height: 200%;
-        background: radial-gradient(ellipse, rgba(212, 165, 116, 0.1) 0%, transparent 60%);
+        background: radial-gradient(ellipse, rgba(237, 95, 30, 0.08) 0%, transparent 60%);
     }
     
     .hero-content {
@@ -38,14 +38,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(212, 165, 116, 0.15);
-        border: 1px solid rgba(212, 165, 116, 0.3);
+        background: rgba(237, 95, 30, 0.08);
+        border: 1px solid rgba(255, 184, 0, 0.3);
         padding: 0.5rem 1.25rem;
         border-radius: 30px;
         font-size: 0.8rem;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: #D4A574;
+        color: #FFB800;
         margin-bottom: 1.5rem;
     }
     
@@ -59,7 +59,7 @@
     }
     
     .hero-title .highlight {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .hero-description {
@@ -72,7 +72,7 @@
     
     /* STATS */
     .stats-bar {
-        background: #D4A574;
+        background: #FFB800;
         padding: 2rem 0;
     }
     
@@ -99,7 +99,7 @@
     /* FEATURED CREATOR */
     .featured-section {
         padding: 6rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .featured-grid {
@@ -125,7 +125,7 @@
         position: absolute;
         top: 2rem;
         left: 2rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         padding: 0.5rem 1.25rem;
         border-radius: 30px;
@@ -135,8 +135,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -150,13 +150,13 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
         line-height: 1.2;
     }
     
     .featured-content p {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-size: 1.1rem;
         line-height: 1.9;
         margin-bottom: 1.5rem;
@@ -167,7 +167,7 @@
         gap: 2rem;
         margin-top: 2rem;
         padding-top: 2rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .meta-item {
@@ -177,12 +177,12 @@
     }
     
     .meta-item i {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 1.25rem;
     }
     
     .meta-item span {
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
     }
     
     .btn-view-collection {
@@ -190,7 +190,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -201,7 +201,7 @@
     
     .btn-view-collection:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(44, 24, 16, 0.3);
+        box-shadow: 0 15px 40px rgba(22,13,12, 0.3);
         color: white;
     }
     
@@ -226,18 +226,18 @@
     
     .filter-btn {
         padding: 0.6rem 1.5rem;
-        border: 2px solid #E5DDD3;
+        border: 2px solid rgba(22,13,12,0.1);
         background: white;
         border-radius: 30px;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-weight: 500;
         cursor: pointer;
         transition: all 0.3s;
     }
     
     .filter-btn:hover, .filter-btn.active {
-        background: #2C1810;
-        border-color: #2C1810;
+        background: #160D0C;
+        border-color: #160D0C;
         color: white;
     }
     
@@ -248,7 +248,7 @@
     }
     
     .creator-card {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 24px;
         overflow: hidden;
         transition: all 0.4s;
@@ -285,7 +285,7 @@
         border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 500;
-        color: #2C1810;
+        color: #160D0C;
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -300,19 +300,19 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .creator-specialty {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 0.9rem;
         font-weight: 500;
         margin-bottom: 1rem;
     }
     
     .creator-bio {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
         margin-bottom: 1.5rem;
@@ -323,7 +323,7 @@
         justify-content: center;
         gap: 2rem;
         padding-top: 1rem;
-        border-top: 1px solid #E5DDD3;
+        border-top: 1px solid rgba(22,13,12,0.1);
     }
     
     .creator-stats div {
@@ -333,18 +333,18 @@
     .creator-stats strong {
         display: block;
         font-size: 1.25rem;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .creator-stats span {
         font-size: 0.8rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     /* CTA */
     .cta-section {
         padding: 6rem 0;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         text-align: center;
     }
     
@@ -367,7 +367,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2.5rem;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -415,11 +415,10 @@
             
             {{-- CTA Marketplace --}}
             <div class="mt-4">
-                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg" 
-                   style="background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%); color: white; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem; font-weight: 600;">
+                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg btn-cta-gradient">
                     <i class="fas fa-shopping-bag"></i>
                     Voir tous les produits au Marketplace
-                    <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.85rem;">{{ $totalProducts }} produits</span>
+                    <span class="btn-cta-count">{{ $totalProducts }} produits</span>
                 </a>
             </div>
         </div>
@@ -453,41 +452,61 @@
 <!-- FEATURED -->
 <section class="featured-section">
     <div class="container">
+        @if ($featuredCreator)
         <div class="featured-grid">
             <div class="featured-image">
-                <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=800" alt="Créatrice vedette" class="featured-img">
-                <span class="featured-badge">⭐ Créatrice du mois</span>
+                @if($featuredCreator->avatar_path)
+                    <img src="{{ asset('storage/' . $featuredCreator->avatar_path) }}" 
+                         alt="{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}" 
+                         class="featured-img" loading="lazy">
+                @elseif($featuredCreator->banner_path)
+                    <img src="{{ asset('storage/' . $featuredCreator->banner_path) }}" 
+                         alt="{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}" 
+                         class="featured-img">
+                @else
+                    <img src="{{ asset('storage/showroom/hero/showroom-hero-02.jpeg') }}"
+                         alt="Créatrice vedette" class="featured-img" loading="lazy">
+                @endif
+                <span class="featured-badge">⭐ Créateur vedette</span>
             </div>
             <div class="featured-content">
                 <span class="section-tag">À la Une</span>
-                <h2 class="section-title">Amina Diallo</h2>
-                <p>
-                    Originaire de Dakar, Amina perpétue un savoir-faire familial vieux de trois générations. 
-                    Ses créations en wax mêlent tradition et modernité avec une maîtrise exceptionnelle.
-                </p>
-                <p>
-                    "Chaque pièce que je crée raconte une histoire. Mon objectif est de sublimer notre 
-                    patrimoine textile tout en le rendant accessible au monde entier."
-                </p>
+                <h2 class="section-title">{{ $featuredCreator->brand_name ?? $featuredCreator->user->name }}</h2>
+                @if ($featuredCreator->bio)
+                    <p>{{ $featuredCreator->bio }}</p>
+                @endif
                 <div class="featured-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Dakar, Sénégal</span>
-                    </div>
+                    @if ($featuredCreator->location)
+                        <div class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ $featuredCreator->location }}
+                                @if ($featuredCreator->user->country)
+                                    , {{ $featuredCreator->user->country }}
+                                @endif
+                            </span>
+                        </div>
+                    @endif
                     <div class="meta-item">
                         <i class="fas fa-calendar"></i>
-                        <span>Depuis 2019</span>
+                        <span>
+                            @if ($featuredCreator->created_at)
+                                Depuis {{ $featuredCreator->created_at->format('Y') }}
+                            @else
+                                Membres actifs
+                            @endif
+                        </span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-box"></i>
-                        <span>85 créations</span>
+                        <span>{{ $featuredCreator->products_count ?? 0 }} créations</span>
                     </div>
                 </div>
-                <a href="{{ route('frontend.shop') }}" class="btn-view-collection">
+                <a href="{{ route('frontend.creator.shop', $featuredCreator->slug) }}" class="btn-view-collection">
                     <i class="fas fa-eye"></i> Voir sa collection
                 </a>
             </div>
         </div>
+        @endif
     </div>
 </section>
 
@@ -509,102 +528,46 @@
         </div>
         
         <div class="creators-grid">
+            @forelse ($creators as $creator)
             <div class="creator-card">
                 <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500" alt="Amina Diallo">
-                    <span class="creator-country">🇸🇳 Sénégal</span>
+                    @if($creator->avatar_path)
+                        <img src="{{ asset('storage/' . $creator->avatar_path) }}"
+                             alt="{{ $creator->brand_name ?? $creator->user->name }}" loading="lazy">
+                    @else
+                        <div class="creator-avatar-initials">
+                            {{ strtoupper(substr($creator->brand_name ?? $creator->user->name ?? 'C', 0, 1)) }}
+                        </div>
+                    @endif
+                    @if($creator->user->country ?? false)
+                        <span class="creator-country">{{ $creator->user->country }}</span>
+                    @endif
                 </div>
                 <div class="creator-info">
-                    <h3>Amina Diallo</h3>
-                    <p class="creator-specialty">Styliste Wax</p>
-                    <p class="creator-bio">Créatrice passionnée, elle sublime le wax avec une touche contemporaine unique.</p>
+                    <h3>{{ $creator->brand_name ?? $creator->user->name }}</h3>
+                    @if($creator->bio)
+                        <p class="creator-bio">{{ Str::limit($creator->bio, 100) }}</p>
+                    @endif
                     <div class="creator-stats">
-                        <div><strong>85</strong><span>Créations</span></div>
-                        <div><strong>4.9</strong><span>Note</span></div>
+                        <div>
+                            <strong>{{ $creator->products_count ?? 0 }}</strong>
+                            <span>Créations</span>
+                        </div>
                     </div>
+                    <a href="{{ route('frontend.creator.shop', $creator->slug) }}" class="btn btn-sm mt-2 btn-creator-dark">
+                        Voir la boutique
+                    </a>
                 </div>
             </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500" alt="Kwame Asante">
-                    <span class="creator-country">🇬🇭 Ghana</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Kwame Asante</h3>
-                    <p class="creator-specialty">Maître Kente</p>
-                    <p class="creator-bio">Expert en tissage kente, il perpétue une tradition familiale de 3 générations.</p>
-                    <div class="creator-stats">
-                        <div><strong>62</strong><span>Créations</span></div>
-                        <div><strong>4.8</strong><span>Note</span></div>
-                    </div>
-                </div>
+            @empty
+            <div class="col-12 text-center py-5 creators-empty-state">
+                <p class="creators-empty-text">Aucun créateur actif pour le moment.</p>
+                <a href="{{ route('frontend.marketplace') }}" class="btn btn-lg mt-3 btn-cta-gradient">Découvrir le marketplace</a>
             </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500" alt="Fatou Ndiaye">
-                    <span class="creator-country">🇨🇮 Côte d'Ivoire</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Fatou Ndiaye</h3>
-                    <p class="creator-specialty">Accessoiriste</p>
-                    <p class="creator-bio">Créatrice de bijoux et accessoires inspirés des motifs traditionnels.</p>
-                    <div class="creator-stats">
-                        <div><strong>124</strong><span>Créations</span></div>
-                        <div><strong>4.9</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500" alt="Moussa Keita">
-                    <span class="creator-country">🇲🇱 Mali</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Moussa Keita</h3>
-                    <p class="creator-specialty">Teinturier Bogolan</p>
-                    <p class="creator-bio">Artisan spécialisé dans le bogolan, technique ancestrale malienne.</p>
-                    <div class="creator-stats">
-                        <div><strong>45</strong><span>Créations</span></div>
-                        <div><strong>4.7</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500" alt="Aïcha Camara">
-                    <span class="creator-country">🇨🇲 Cameroun</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Aïcha Camara</h3>
-                    <p class="creator-specialty">Créatrice Haute Couture</p>
-                    <p class="creator-bio">Elle fusionne les tissus africains avec des coupes haute couture.</p>
-                    <div class="creator-stats">
-                        <div><strong>38</strong><span>Créations</span></div>
-                        <div><strong>5.0</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="creator-card">
-                <div class="creator-image">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500" alt="Ibrahim Sow">
-                    <span class="creator-country">🇸🇳 Sénégal</span>
-                </div>
-                <div class="creator-info">
-                    <h3>Ibrahim Sow</h3>
-                    <p class="creator-specialty">Couturier Homme</p>
-                    <p class="creator-bio">Spécialiste de la mode masculine africaine contemporaine.</p>
-                    <div class="creator-stats">
-                        <div><strong>56</strong><span>Créations</span></div>
-                        <div><strong>4.8</strong><span>Note</span></div>
-                    </div>
-                </div>
-            </div>
+            @endforelse
         </div>
+
+        {{ $creators->links() }}
     </div>
 </section>
 

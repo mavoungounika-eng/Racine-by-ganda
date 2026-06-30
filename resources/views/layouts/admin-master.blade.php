@@ -10,12 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     {{-- TinyMCE --}}
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin" nonce="{{ $cspNonce ?? '' }}"></script>
     
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         body {
             font-family: 'Aileron', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: #F5F2EC;
@@ -327,6 +327,10 @@
                 <i class="fas fa-exclamation-triangle"></i>
                 <span>Alertes stock</span>
             </a>
+            <a href="{{ route('admin.promo-codes.index') }}" class="admin-nav-link {{ request()->routeIs('admin.promo-codes.*') ? 'active' : '' }}">
+                <i class="fas fa-tags"></i>
+                <span>Codes promo</span>
+            </a>
 
             <div class="admin-nav-section-title">Modules Business</div>
             <a href="{{ route('erp.dashboard') }}" class="admin-nav-link {{ request()->routeIs('erp.*') ? 'active' : '' }}">
@@ -345,7 +349,7 @@
             </a>
 
             <div class="admin-nav-section-title">Outils</div>
-            <a href="{{ route('admin.pos.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+            <a href="{{ route('pos.interface.index') }}" class="admin-nav-link {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
                 <i class="fas fa-cash-register"></i>
                 <span>Point de Vente (POS)</span>
             </a>
@@ -425,9 +429,28 @@
 <script src="{{ asset('racine/js/jquery.min.js') }}"></script>
 <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
 
-{{-- CHATBOT AMIRA --}}
-@include('assistant::chat')
+{{-- CHATBOT AMIRA — désactivé sur interface admin (widget client uniquement) --}}
+{{-- @include('assistant::chat') --}}
 
 @stack('scripts')
+<script nonce="{{ $cspNonce ?? '' }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation avant soumission de formulaire
+    document.querySelectorAll('form[data-confirm]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            if (!confirm(form.getAttribute('data-confirm'))) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Boutons d'impression
+    document.querySelectorAll('.btn-print-trigger').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            window.print();
+        });
+    });
+});
+</script>
 </body>
 </html>

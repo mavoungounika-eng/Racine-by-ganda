@@ -7,7 +7,6 @@ use App\Models\Order;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Response;
 
 class InvoiceController extends Controller
 {
@@ -24,7 +23,7 @@ class InvoiceController extends Controller
     public function show(Order $order)
     {
         // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === Auth::id(), 403);
 
         $order->load(['items.product', 'address', 'user']);
         
@@ -35,36 +34,28 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Télécharge la facture en HTML
+     * Télécharge la facture en PDF
      */
     public function download(Order $order)
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === Auth::id(), 403);
 
-        $html = $this->invoiceService->generateInvoiceHtml($order);
         $invoiceNumber = $this->invoiceService->generateInvoiceNumber($order);
-        $filename = "facture-{$invoiceNumber}.html";
+        $filename = "facture-{$invoiceNumber}.pdf";
 
-        return Response::make($html, 200, [
-            'Content-Type' => 'text/html; charset=utf-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ]);
+        return $this->invoiceService->generatePdf($order)->download($filename);
     }
 
     /**
-     * Imprime la facture (version imprimable)
+     * Affiche la facture PDF dans le navigateur
      */
     public function print(Order $order)
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === Auth::id(), 403);
 
-        $order->load(['items.product', 'address', 'user']);
-        
         $invoiceNumber = $this->invoiceService->generateInvoiceNumber($order);
-        $invoiceDate = now();
+        $filename = "facture-{$invoiceNumber}.pdf";
 
-        return view('invoices.invoice', compact('order', 'invoiceNumber', 'invoiceDate'));
+        return $this->invoiceService->generatePdf($order)->stream($filename);
     }
 }

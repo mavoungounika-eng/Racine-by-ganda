@@ -24,8 +24,10 @@ class CartMergerService
         }
 
         foreach ($sessionItems as $item) {
-            $product = Product::find($item['product_id']);
-            if ($product) {
+            $product = Product::where('id', $item['product_id'])
+                ->where('is_active', true)
+                ->first();
+            if ($product && $product->stock > 0) {
                 $this->databaseCart->add($product, $item['quantity']);
             }
         }

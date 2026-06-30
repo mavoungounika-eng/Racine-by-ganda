@@ -2,9 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\AuthHubController;
 use App\Http\Controllers\Auth\PublicAuthController;
-use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\SocialAuthController;
 
 /*
@@ -21,7 +19,11 @@ use App\Http\Controllers\Auth\SocialAuthController;
 // ============================================
 // HUB D'AUTHENTIFICATION
 // ============================================
-Route::get('/auth', [AuthHubController::class, 'index'])->name('auth.hub');
+// PHASE 1 SÉCURITÉ : Le hub redirige maintenant vers /login directement
+// La carte "Espace Équipe" a été masquée pour réduire la surface d'attaque
+Route::get('/auth', function () {
+    return redirect()->route('login');
+})->name('auth.hub');
 
 // ============================================
 // CONNEXION UNIFIÉE
@@ -62,6 +64,17 @@ Route::middleware('guest')->group(function () {
 });
 
 // ============================================
+// CONNEXION ADMIN/ÉQUIPE (PHASE 1 SÉCURITÉ)
+// ============================================
+// Route dédiée pour l'espace équipe, non exposée publiquement
+Route::prefix('admin')->name('admin.')->middleware('guest')->group(function () {
+    Route::get('/login', [App\Http\Controllers\Auth\AdminLoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Auth\AdminLoginController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('login.post');
+});
+
+// ============================================
 // DÉCONNEXION
 // ============================================
 Route::post('/logout', [LoginController::class, 'logout'])
@@ -69,27 +82,48 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth');
 
 // ============================================
-// CONNEXION GOOGLE (Social Login) - Module v1
-// ============================================
-// PHASE 2.1 : Route avec paramètre role optionnel (client|creator)
-Route::get('/auth/google/redirect/{role?}', [GoogleAuthController::class, 'redirect'])
-    ->where('role', 'client|creator')
-    ->name('auth.google.redirect');
-
-Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
-    ->name('auth.google.callback');
-
-// ============================================
 // CONNEXION SOCIALE MULTI-PROVIDERS (Social Auth v2)
 // ============================================
 // Routes génériques pour Google, Apple, Facebook
 // Module Social Auth v2 - Indépendant du module Google Auth v1
 Route::get('/auth/{provider}/redirect/{role?}', [SocialAuthController::class, 'redirect'])
-    ->where('provider', 'google|apple|facebook')
-    ->where('role', 'client|creator')
+    ->where('provider', 'google')
+    ->where('role', 'client|createur')
     ->name('auth.social.redirect');
 
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])
-    ->where('provider', 'google|apple|facebook')
+    ->where('provider', 'google')
     ->name('auth.social.callback');
 
+
+// ============================================
+// CGU - Acceptation obligatoire
+// ============================================
+Route::middleware('auth')->group(function () {
+    Route::get('/terms/accept', [\App\Http\Controllers\Auth\TermsController::class, 'show'])->name('terms.accept');
+    Route::post('/terms/accept', [\App\Http\Controllers\Auth\TermsController::class, 'accept'])->name('terms.accept.post');
+});
+
+// ============================================
+// VÉRIFICATION EMAIL
+// ============================================
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'resend'])->middleware('throttle:6,1')->name('verification.send');
+});
+
+// ============================================
+// CHANGEMENT EMAIL SÉCURISÉ
+// ============================================
+Route::middleware('auth')->group(function () {
+    Route::post('/profile/email/change', [\App\Http\Controllers\Auth\EmailChangeController::class, 'requestChange'])
+        ->middleware('throttle:3,60')
+        ->name('profile.email.change');
+});
+
+// Routes de vérification (sans auth pour permettre clics depuis email)
+Route::get('/profile/email/verify-old/{token}', [\App\Http\Controllers\Auth\EmailChangeController::class, 'verifyOldEmail'])
+    ->name('profile.email.verify-old');
+Route::get('/profile/email/verify-new/{token}', [\App\Http\Controllers\Auth\EmailChangeController::class, 'verifyNewEmail'])
+    ->name('profile.email.verify-new');

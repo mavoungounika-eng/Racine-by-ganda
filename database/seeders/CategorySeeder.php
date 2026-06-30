@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
@@ -13,6 +14,12 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
+        // Idempotent : skip si les catégories existent déjà
+        if (Category::count() > 0) {
+            $this->command->info('Catégories déjà présentes (' . Category::count() . '), skip.');
+            return;
+        }
+
         // Clear existing categories
         Category::query()->delete();
 
@@ -61,7 +68,7 @@ class CategorySeeder extends Seeder
                     'Ensemble veste + pantalon',
                     'Ensemble jupe',
                     'Tailleur pagne',
-                    'Ensembles 2 pièces casual',
+                    'Ensembles 2 pieces casual',
                     'Ensemble crop + jupe',
                 ]
             ],
@@ -73,23 +80,24 @@ class CategorySeeder extends Seeder
                     'Bombers',
                     'Kimonos pagne',
                     'Manteaux',
-                    'Gilets habillés',
+                    'Gilets habilles',
                 ]
             ],
             [
-                'name' => 'Femme - Tenues de cérémonie',
+                'name' => 'Femme - Tenues de ceremonie',
                 'children' => [
-                    'Robe invitée mariage',
+                    'Robe invitee mariage',
                     'Tenue tradi-chic',
-                    'Tenue gala/soirée',
+                    'Tenue gala/soiree',
                     'Tenue officielle',
+                    'Boubou',
                 ]
             ],
             [
                 'name' => 'Femme - Loungewear & Maison',
                 'children' => [
                     'Pyjamas',
-                    'Tenues d\'intérieur confort',
+                    "Tenues d'interieur confort",
                     'Ensembles cocooning',
                     'Peignoirs',
                 ]
@@ -109,38 +117,57 @@ class CategorySeeder extends Seeder
                 'children' => [
                     'Foulards & turbans',
                     'Ceintures pagne',
-                    'Écharpes',
+                    'Echarpes',
                     'Bandeaux cheveux',
                     'Mitaines',
                 ]
             ],
         ];
 
+        $now = now();
         $displayOrder = 1;
         foreach ($femmeCategories as $categoryData) {
-            $parent = Category::create([
-                'name' => $categoryData['name'],
-                'slug' => Str::slug($categoryData['name']),
-                'gender' => 'femme',
-                'display_order' => $displayOrder++,
-                'is_active' => true,
+            $parentSlug = Str::slug($categoryData['name']);
+            DB::table('categories')->insertOrIgnore([
+                'name'          => $categoryData['name'],
+                'slug'          => $parentSlug,
+                'gender'        => 'femme',
+                'display_order' => $displayOrder,
+                'is_active'     => true,
+                'level'         => 0,
+                'path'          => null,
+                'created_at'    => $now,
+                'updated_at'    => $now,
             ]);
+            $parent = Category::where('slug', $parentSlug)->first();
+            DB::table('categories')->where('id', $parent->id)->update(['path' => (string)$parent->id]);
+            $displayOrder++;
 
             $childOrder = 1;
             foreach ($categoryData['children'] as $childName) {
-                Category::create([
-                    'name' => $childName,
-                    'slug' => Str::slug($parent->slug . '-' . $childName), // Prefix with parent slug
-                    'gender' => 'femme',
-                    'parent_id' => $parent->id,
-                    'display_order' => $childOrder++,
-                    'is_active' => true,
+                $childSlug = Str::slug($parentSlug . '-' . $childName);
+                DB::table('categories')->insertOrIgnore([
+                    'name'          => $childName,
+                    'slug'          => $childSlug,
+                    'gender'        => 'femme',
+                    'parent_id'     => $parent->id,
+                    'display_order' => $childOrder,
+                    'is_active'     => true,
+                    'level'         => 1,
+                    'path'          => null,
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
                 ]);
+                $child = Category::where('slug', $childSlug)->first();
+                if ($child) {
+                    DB::table('categories')->where('id', $child->id)->update(['path' => $parent->id . '/' . $child->id]);
+                }
+                $childOrder++;
             }
         }
 
         // ========================================
-        // CATÉGORIES HOMME
+        // CATEGORIES HOMME
         // ========================================
 
         $hommeCategories = [
@@ -150,7 +177,7 @@ class CategorySeeder extends Seeder
                     'T-shirts',
                     'T-shirts pagne',
                     'Chemises pagne',
-                    'Chemises habillées',
+                    'Chemises habillees',
                     'Polos',
                     'Sweatshirts',
                     'Hoodies',
@@ -159,7 +186,7 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Homme - Bas',
                 'children' => [
-                    'Pantalons habillés',
+                    'Pantalons habilles',
                     'Pantalons pagne',
                     'Jeans',
                     'Chinos',
@@ -169,8 +196,8 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Homme - Ensembles & Costumes',
                 'children' => [
-                    'Costumes 2 pièces',
-                    'Costumes 3 pièces',
+                    'Costumes 2 pieces',
+                    'Costumes 3 pieces',
                     'Ensembles pagne (veste + pantalon)',
                     'Ensembles tunique + pantalon',
                 ]
@@ -181,31 +208,32 @@ class CategorySeeder extends Seeder
                     'Blazers',
                     'Blazers pagne',
                     'Bombers',
-                    'Vestes légères',
+                    'Vestes legeres',
                     'Manteaux',
                 ]
             ],
             [
-                'name' => 'Homme - Tenues tradi & cérémonie',
+                'name' => 'Homme - Tenues tradi & ceremonie',
                 'children' => [
                     'Boubou moderne',
                     'Tuniques pagne',
                     'Tenues tradi-chic',
-                    'Tenues cérémonie',
+                    'Tenues ceremonie',
+                    'Abacost',
                 ]
             ],
             [
                 'name' => 'Homme - Loungewear & Maison',
                 'children' => [
                     'Pyjamas',
-                    'Tenues d\'intérieur',
+                    "Tenues d'interieur",
                     'Ensembles relax',
                 ]
             ],
             [
                 'name' => 'Homme - Sport & Streetwear',
                 'children' => [
-                    'Survêtements',
+                    'Survetements',
                     'Jogging',
                     'T-shirts street',
                     'Shorts sport',
@@ -216,40 +244,113 @@ class CategorySeeder extends Seeder
                 'name' => 'Homme - Accessoires textile',
                 'children' => [
                     'Cravates',
-                    'Nœuds papillon',
+                    'Noeuds papillon',
                     'Foulards',
                     'Ceintures textile',
-                    'Écharpes',
+                    'Echarpes',
                 ]
             ],
         ];
 
         foreach ($hommeCategories as $categoryData) {
-            $parent = Category::create([
-                'name' => $categoryData['name'],
-                'slug' => Str::slug($categoryData['name']),
-                'gender' => 'homme',
-                'display_order' => $displayOrder++,
-                'is_active' => true,
+            $parentSlug = Str::slug($categoryData['name']);
+            DB::table('categories')->insertOrIgnore([
+                'name'          => $categoryData['name'],
+                'slug'          => $parentSlug,
+                'gender'        => 'homme',
+                'display_order' => $displayOrder,
+                'is_active'     => true,
+                'level'         => 0,
+                'path'          => null,
+                'created_at'    => $now,
+                'updated_at'    => $now,
             ]);
+            $parent = Category::where('slug', $parentSlug)->first();
+            DB::table('categories')->where('id', $parent->id)->update(['path' => (string)$parent->id]);
+            $displayOrder++;
 
             $childOrder = 1;
             foreach ($categoryData['children'] as $childName) {
-                Category::create([
-                    'name' => $childName,
-                    'slug' => Str::slug($parent->slug . '-' . $childName), // Prefix with parent slug
-                    'gender' => 'homme',
-                    'parent_id' => $parent->id,
-                    'display_order' => $childOrder++,
-                    'is_active' => true,
+                $childSlug = Str::slug($parentSlug . '-' . $childName);
+                DB::table('categories')->insertOrIgnore([
+                    'name'          => $childName,
+                    'slug'          => $childSlug,
+                    'gender'        => 'homme',
+                    'parent_id'     => $parent->id,
+                    'display_order' => $childOrder,
+                    'is_active'     => true,
+                    'level'         => 1,
+                    'path'          => null,
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
                 ]);
+                $child = Category::where('slug', $childSlug)->first();
+                if ($child) {
+                    DB::table('categories')->where('id', $child->id)->update(['path' => $parent->id . '/' . $child->id]);
+                }
+                $childOrder++;
             }
         }
 
-        $this->command->info('✅ ' . Category::count() . ' catégories créées avec succès !');
-        $this->command->info('   - Catégories parentes : ' . Category::whereNull('parent_id')->count());
-        $this->command->info('   - Sous-catégories : ' . Category::whereNotNull('parent_id')->count());
+        // ========================================
+        // CATEGORIES ENFANT
+        // ========================================
+
+        $enfantCategories = [
+            [
+                'name' => 'Enfant - Tenues scolaires',
+                'children' => [
+                    'Robe scolaire',
+                    'Ensemble scolaire',
+                ]
+            ],
+        ];
+
+        foreach ($enfantCategories as $categoryData) {
+            $parentSlug = Str::slug($categoryData['name']);
+            DB::table('categories')->insertOrIgnore([
+                'name'          => $categoryData['name'],
+                'slug'          => $parentSlug,
+                'gender'        => 'enfant',
+                'display_order' => $displayOrder,
+                'is_active'     => true,
+                'level'         => 0,
+                'path'          => null,
+                'created_at'    => $now,
+                'updated_at'    => $now,
+            ]);
+            $parent = Category::where('slug', $parentSlug)->first();
+            DB::table('categories')->where('id', $parent->id)->update(['path' => (string)$parent->id]);
+            $displayOrder++;
+
+            $childOrder = 1;
+            foreach ($categoryData['children'] as $childName) {
+                $childSlug = Str::slug($parentSlug . '-' . $childName);
+                DB::table('categories')->insertOrIgnore([
+                    'name'          => $childName,
+                    'slug'          => $childSlug,
+                    'gender'        => 'enfant',
+                    'parent_id'     => $parent->id,
+                    'display_order' => $childOrder,
+                    'is_active'     => true,
+                    'level'         => 1,
+                    'path'          => null,
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
+                ]);
+                $child = Category::where('slug', $childSlug)->first();
+                if ($child) {
+                    DB::table('categories')->where('id', $child->id)->update(['path' => $parent->id . '/' . $child->id]);
+                }
+                $childOrder++;
+            }
+        }
+
+        $this->command->info(Category::count() . ' categories creees avec succes !');
+        $this->command->info('   - Categories parentes : ' . Category::whereNull('parent_id')->count());
+        $this->command->info('   - Sous-categories : ' . Category::whereNotNull('parent_id')->count());
         $this->command->info('   - Femme : ' . Category::where('gender', 'femme')->count());
         $this->command->info('   - Homme : ' . Category::where('gender', 'homme')->count());
+        $this->command->info('   - Enfant : ' . Category::where('gender', 'enfant')->count());
     }
 }

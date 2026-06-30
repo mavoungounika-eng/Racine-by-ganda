@@ -24,6 +24,21 @@ class StripeWebhookRetryAndOrderTest extends TestCase
     {
         parent::setUp();
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
+
+        CreatorPlan::firstOrCreate(
+            ['code' => 'FREE'],
+            [
+                'name' => 'Free Plan',
+                'description' => 'Default free plan',
+                'price' => 0,
+                'currency' => 'XAF',
+                'interval' => 'month',
+                'stripe_product_id' => 'prod_test_123',
+                'stripe_price_id' => 'price_test_123',
+                'features' => [],
+                'is_active' => true,
+            ]
+        );
     }
 
     /**
@@ -35,7 +50,11 @@ class StripeWebhookRetryAndOrderTest extends TestCase
      */
     public function test_webhook_retry_after_failure_creates_subscription(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $roleCreator = \App\Models\Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur', 'description' => '']);
+        $user = User::factory()->create([
+            'role' => 'createur',
+            'role_id' => $roleCreator->id
+        ]);
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -74,12 +93,21 @@ class StripeWebhookRetryAndOrderTest extends TestCase
             ],
         ];
 
-        $signature = $this->generateStripeSignature(json_encode($payload), 'whsec_test_secret');
+        $payloadString = json_encode($payload);
+        $signature = $this->generateStripeSignature($payloadString, 'whsec_test_secret');
+
+        \Illuminate\Support\Facades\DB::enableQueryLog();
 
         // Premier appel (simule un échec puis retry)
-        $response1 = $this->postJson('/api/webhooks/stripe/billing', $payload, [
-            'Stripe-Signature' => $signature,
-        ]);
+        $response1 = $this->call('POST', '/api/webhooks/stripe/billing', [], [], [], [
+            'HTTP_Stripe-Signature' => $signature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payloadString);
+        
+        $response1->dump();
+        $response1->dumpHeaders();
+
+        \Illuminate\Support\Facades\Log::info('Query Log: ', \Illuminate\Support\Facades\DB::getQueryLog());
 
         $response1->assertStatus(200);
 
@@ -89,9 +117,10 @@ class StripeWebhookRetryAndOrderTest extends TestCase
         ]);
 
         // Deuxième appel (retry avec le même event_id)
-        $response2 = $this->postJson('/api/webhooks/stripe/billing', $payload, [
-            'Stripe-Signature' => $signature,
-        ]);
+        $response2 = $this->call('POST', '/api/webhooks/stripe/billing', [], [], [], [
+            'HTTP_Stripe-Signature' => $signature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payloadString);
 
         $response2->assertStatus(200);
 
@@ -109,8 +138,10 @@ class StripeWebhookRetryAndOrderTest extends TestCase
      */
     public function test_callback_before_webhook_handles_gracefully(): void
     {
+        $roleCreator = \App\Models\Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur', 'description' => '']);
         $user = User::factory()->create([
             'role' => 'createur',
+            'role_id' => $roleCreator->id,
             'status' => 'active',
         ]);
 
@@ -181,11 +212,13 @@ class StripeWebhookRetryAndOrderTest extends TestCase
             ],
         ];
 
-        $signature = $this->generateStripeSignature(json_encode($payload), 'whsec_test_secret');
+        $payloadString = json_encode($payload);
+        $signature = $this->generateStripeSignature($payloadString, 'whsec_test_secret');
 
-        $webhookResponse = $this->postJson('/api/webhooks/stripe/billing', $payload, [
-            'Stripe-Signature' => $signature,
-        ]);
+        $webhookResponse = $this->call('POST', '/api/webhooks/stripe/billing', [], [], [], [
+            'HTTP_Stripe-Signature' => $signature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payloadString);
 
         $webhookResponse->assertStatus(200);
 

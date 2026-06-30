@@ -4,7 +4,7 @@
 @section('page-title', 'Détail Commande #' . str_pad($order->id, 6, '0', STR_PAD_LEFT))
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -107,7 +107,7 @@
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-white" style="font-family: 'Libre Baskerville', serif;">
-            <i class="fas fa-shopping-bag text-racine-orange mr-2"></i>
+            <i class="fas fa-shopping-bag text-racine-orange me-2"></i>
             Commande #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
         </h2>
         <a href="{{ route('admin.orders.index') }}"
@@ -123,21 +123,42 @@
             <!-- Articles -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-box text-racine-orange mr-2"></i>
+                    <i class="fas fa-box text-racine-orange me-2"></i>
                     Articles commandés
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="premium-table">
+                        @php
+                            $adminStatuses = ['confirmed', 'shipped', 'delivered', 'refunded'];
+                            $statusLabels = [
+                                'active'           => 'Actif',
+                                'confirmed'        => 'Confirmé',
+                                'shipped'          => 'Expédié',
+                                'delivered'        => 'Livré',
+                                'cancelled'        => 'Annulé',
+                                'restored'         => 'Restauré',
+                                'disputed'         => 'Litige',
+                                'return_requested' => 'Retour demandé',
+                                'refunded'         => 'Remboursé',
+                            ];
+                        @endphp
                         <thead>
                             <tr>
                                 <th>Produit</th>
                                 <th>Prix unitaire</th>
                                 <th>Quantité</th>
-                                <th class="text-right">Total</th>
+                                <th>Statut</th>
+                                <th class="text-end">Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($order->items as $item)
+                            @php
+                                $allowed = array_intersect(
+                                    \App\Models\OrderItem::TRANSITIONS[$item->status] ?? [],
+                                    $adminStatuses
+                                );
+                            @endphp
                             <tr>
                                 <td>
                                     <div class="flex items-center gap-4">
@@ -156,18 +177,47 @@
                                 </td>
                                 <td class="text-slate-300">{{ number_format($item->price, 0, ',', ' ') }} F</td>
                                 <td class="text-slate-300 font-semibold">{{ $item->quantity }}</td>
-                                <td class="text-right">
+                                <td>
+                                    @if(count($allowed) > 0)
+                                        <select
+                                            id="status-select-{{ $item->id }}"
+                                            data-transition-url="{{ route('admin.orders.items.transition', [$order, $item]) }}"
+                                            data-item-id="{{ $item->id }}"
+                                            onchange="adminTransitionItem(this)"
+                                            class="premium-select"
+                                            style="padding:.4rem .7rem;font-size:.8rem;border-radius:8px;min-width:140px;">
+                                            <option value="">{{ $statusLabels[$item->status] ?? $item->status }}</option>
+                                            @foreach($allowed as $to)
+                                                <option value="{{ $to }}">→ {{ $statusLabels[$to] ?? $to }}</option>
+                                            @endforeach
+                                        </select>
+                                    @else
+                                        <span id="status-badge-{{ $item->id }}"
+                                              style="display:inline-block;padding:.25rem .6rem;border-radius:99px;font-size:.75rem;font-weight:600;background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2);">
+                                            {{ $statusLabels[$item->status] ?? $item->status }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-end">
                                     <p class="font-bold text-racine-orange">{{ number_format($item->price * $item->quantity, 0, ',', ' ') }} F</p>
                                 </td>
                             </tr>
                             @endforeach
+                            @if($order->items->isEmpty())
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500">
+                                    <i class="fas fa-box-open mb-2" style="font-size:1.5rem;display:block;"></i>
+                                    Aucun article dans cette commande
+                                </td>
+                            </tr>
+                            @endif
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-racine-orange/20">
-                                <td colspan="3" class="py-4 text-right font-bold text-white text-lg">
+                                <td colspan="4" class="py-4 text-end font-bold text-white text-lg">
                                     Total
                                 </td>
-                                <td class="py-4 text-right">
+                                <td class="py-4 text-end">
                                     <p class="text-2xl font-bold text-racine-orange" style="font-family: 'Playfair Display', serif;">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} F</p>
                                 </td>
                             </tr>
@@ -182,23 +232,35 @@
             <!-- Statut -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-sync-alt text-racine-orange mr-2"></i>
+                    <i class="fas fa-sync-alt text-racine-orange me-2"></i>
                     Statut de la commande
                 </h3>
-                <form action="{{ route('admin.orders.update', $order) }}" method="POST">
+                <form id="admin-order-status-form" action="{{ route('admin.orders.update', $order) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="mb-4">
-                        <select name="status" id="status"
-                                class="premium-select w-full">
-                            <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>En attente</option>
-                            <option value="paid" {{ $order->status === 'paid' ? 'selected' : '' }}>Payée</option>
-                            <option value="shipped" {{ $order->status === 'shipped' ? 'selected' : '' }}>Expédiée</option>
+                        <select name="status" id="status" class="premium-select w-full">
+                            <option value="pending"   {{ $order->status === 'pending'   ? 'selected' : '' }}>En attente</option>
+                            <option value="paid"      {{ $order->status === 'paid'      ? 'selected' : '' }}>Payée</option>
+                            <option value="shipped"   {{ $order->status === 'shipped'   ? 'selected' : '' }}>Expédiée</option>
                             <option value="completed" {{ $order->status === 'completed' ? 'selected' : '' }}>Terminée</option>
                             <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Annulée</option>
                         </select>
                     </div>
-                    <button type="submit" class="premium-btn w-full">
+                    <button type="button" class="premium-btn w-full"
+                        onclick="(function(){
+                            var sel = document.getElementById('status');
+                            var label = sel.options[sel.selectedIndex].text;
+                            var isCritical = ['cancelled','completed'].includes(sel.value);
+                            ConfirmModal.show({
+                                title: 'Changer le statut ?',
+                                message: 'La commande #{{ $order->id }} passera au statut : ' + label,
+                                consequence: isCritical ? 'Action critique — notifie le client automatiquement.' : null,
+                                confirmText: 'Confirmer',
+                                confirmClass: isCritical ? 'btn-danger' : 'btn-primary',
+                                onConfirm: function() { document.getElementById('admin-order-status-form').submit(); }
+                            });
+                        })()">
                         <i class="fas fa-save"></i>
                         Mettre à jour
                     </button>
@@ -209,7 +271,7 @@
             @if($order->payments && $order->payments->count() > 0)
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-credit-card text-green-400 mr-2"></i>
+                    <i class="fas fa-credit-card text-green-400 me-2"></i>
                     Paiements
                 </h3>
                 <div class="space-y-4">
@@ -219,12 +281,12 @@
                             <div class="flex items-center gap-2">
                                 @if($payment->channel === 'card')
                                     <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-semibold">
-                                        <i class="fas fa-credit-card mr-1"></i>
+                                        <i class="fas fa-credit-card me-1"></i>
                                         CB - {{ ucfirst($payment->provider) }}
                                     </span>
                                 @elseif($payment->channel === 'mobile_money')
                                     <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">
-                                        <i class="fas fa-mobile-alt mr-1"></i>
+                                        <i class="fas fa-mobile-alt me-1"></i>
                                         Mobile Money
                                     </span>
                                 @else
@@ -277,7 +339,7 @@
             <!-- Infos Client -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-user text-racine-orange mr-2"></i>
+                    <i class="fas fa-user text-racine-orange me-2"></i>
                     Informations Client
                 </h3>
                 <dl class="space-y-4">
@@ -315,7 +377,7 @@
             <!-- QR Code -->
             <div class="premium-card">
                 <h3 class="text-xl font-bold text-white mb-6" style="font-family: 'Libre Baskerville', serif;">
-                    <i class="fas fa-qrcode text-racine-orange mr-2"></i>
+                    <i class="fas fa-qrcode text-racine-orange me-2"></i>
                     QR Code de la commande
                 </h3>
                 <div class="flex flex-col items-center">
@@ -332,4 +394,69 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+(function() {
+    const statusLabels = {
+        active: 'Actif', confirmed: 'Confirmé', shipped: 'Expédié', delivered: 'Livré',
+        cancelled: 'Annulé', restored: 'Restauré', disputed: 'Litige',
+        return_requested: 'Retour demandé', refunded: 'Remboursé',
+    };
+
+    function showFlash(msg, ok) {
+        let el = document.getElementById('admin-show-flash');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'admin-show-flash';
+            el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;padding:.75rem 1.25rem;border-radius:10px;font-size:.875rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:opacity .3s;';
+            document.body.appendChild(el);
+        }
+        el.style.background = ok ? '#15803d' : '#b91c1c';
+        el.style.color      = 'white';
+        el.style.opacity    = '1';
+        el.textContent      = msg;
+        clearTimeout(el._t);
+        el._t = setTimeout(function() { el.style.opacity = '0'; }, 3000);
+    }
+
+    window.adminTransitionItem = function(select) {
+        var to = select.value;
+        if (!to) return;
+        var url = select.dataset.transitionUrl;
+        select.disabled = true;
+        var csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+
+        fetch(url, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: JSON.stringify({ to: to }),
+        })
+        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                select.value = '';
+                select.disabled = false;
+                showFlash(result.data.message || 'Erreur lors de la transition.', false);
+                return;
+            }
+            var newStatus = result.data.status;
+            var label = statusLabels[newStatus] || newStatus;
+            showFlash('Statut mis à jour : ' + label, true);
+            // Replace select with a static option (no more transitions from this status in admin)
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = label;
+            while (select.options.length > 0) { select.remove(0); }
+            select.appendChild(opt);
+            select.disabled = false;
+        })
+        .catch(function() {
+            select.value = '';
+            select.disabled = false;
+            showFlash('Erreur réseau. Réessayez.', false);
+        });
+    };
+})();
+</script>
+@endpush
 @endsection

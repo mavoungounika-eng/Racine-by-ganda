@@ -18,7 +18,7 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             @if($address->is_default)
-                            <span class="badge badge-primary mb-2">Par défaut</span>
+                            <span class="badge bg-primary mb-2">Par défaut</span>
                             @endif
                             <h6>{{ $address->full_name }}</h6>
                             <p class="mb-1">{{ $address->full_address }}</p>
@@ -98,7 +98,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary" class="btn-racine-primary">
-                        <i class="icon-check mr-2"></i>
+                        <i class="icon-check me-2"></i>
                         Enregistrer l'adresse
                     </button>
                 </form>

@@ -1,0 +1,75 @@
+{
+  "name": "racine-pos",
+  "version": "1.0.0",
+  "description": "POS Desktop App - Racine by GANDA",
+  "main": "electron/main.js",
+  "homepage": "http://localhost:8000",
+  "scripts": {
+    "start": "npm run electron:dev",
+    "dev": "vite",
+    "electron:dev": "concurrently \"vite\" \"electron .\"",
+    "build": "vite build",
+    "electron:build": "vite build && electron-builder",
+    "electron:build:win": "vite build && electron-builder --win nsis",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
+  },
+  "author": "RACINE BY GANDA",
+  "license": "MIT",
+  "dependencies": {
+    "@stripe/stripe-js": "^5.5.0",
+    "axios": "^1.13.6",
+    "better-sqlite3": "^11.7.0",
+    "electron-updater": "^6.3.9",
+    "idb": "^8.0.3",
+    "laravel-echo": "^2.3.1",
+    "pinia": "^3.0.4",
+    "pusher-js": "^8.4.0",
+    "vue": "^3.5.30",
+    "vue-i18n": "^11.3.0",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.5",
+    "concurrently": "^9.2.1",
+    "electron": "28.3.3",
+    "electron-builder": "24.13.3",
+    "electron-rebuild": "3.2.9",
+    "fake-indexeddb": "^6.2.5",
+    "vitest": "^4.1.4"
+  },
+  "build": {
+    "appId": "com.racinebyganda.pos",
+    "productName": "Racine POS",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**"
+    ],
+    "publish": {
+      "provider": "generic",
+      "url": "https://racinebyganda.com/updates/pos"
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        "nsis"
+      ],
+      "forceCodeSigning": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Racine POS"
+    }
+  }
+}

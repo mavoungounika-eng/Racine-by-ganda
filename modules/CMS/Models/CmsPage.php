@@ -8,19 +8,20 @@ use App\Models\User;
 
 class CmsPage extends Model
 {
+    protected $table = 'pages';
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content', 'featured_image',
-        'template', 'meta', 'status', 'order', 'author_id', 'published_at'
+        'template', 'status', 'order', 'created_by', 'published_at',
+        'meta_title', 'meta_description', 'seo_title', 'seo_description',
     ];
 
     protected $casts = [
-        'meta' => 'array',
         'published_at' => 'datetime',
     ];
 
     public function author(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'author_id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function scopePublished($query)
@@ -34,6 +35,6 @@ class CmsPage extends Model
 
     public function getUrlAttribute(): string
     {
-        return route('page.show', $this->slug);
+        return route('cms.page.show', $this->slug);
     }
 }

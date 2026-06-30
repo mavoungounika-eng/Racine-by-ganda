@@ -1,0 +1,149 @@
+/*
+ * RACINE BY GANDA — Loading States CSS v1.0
+ */
+
+@keyframes racine-spin {
+    to { transform: rotate(360deg); }
+}
+@keyframes racine-shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position:  600px 0; }
+}
+@keyframes racine-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40%            { transform: scale(1);   opacity: 1;   }
+}
+@keyframes racine-shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-5px); }
+    60%       { transform: translateX(5px); }
+    80%       { transform: translateX(-3px); }
+}
+
+#racine-progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 0%;
+    height: 3px;
+    background: var(--racine-orange, #ED5F1E);
+    z-index: 99999;
+    pointer-events: none;
+    transition: width 0.2s ease-out;
+}
+#racine-progress-bar.racine-bar--active {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(237, 95, 30, 0.6);
+}
+#racine-progress-bar.racine-bar--done {
+    transition: width 0.15s ease-out, opacity 0.4s ease;
+    opacity: 0;
+}
+
+.racine-btn-spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: racine-spin 0.65s linear infinite;
+    vertical-align: -2px;
+    margin-right: 7px;
+    flex-shrink: 0;
+}
+.racine-btn--loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.82;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.racine-skeleton {
+    display: block;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f0ede8 25%, #e8e4de 50%, #f0ede8 75%);
+    background-size: 1200px 100%;
+    animation: racine-shimmer 1.6s infinite;
+}
+.racine-skeleton--title  { height: 20px; width: 55%; margin-bottom: 14px; }
+.racine-skeleton--text   { height: 13px; margin-bottom: 9px; }
+.racine-skeleton--avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
+.racine-skeleton--btn    { height: 38px; border-radius: 8px; width: 110px; }
+.racine-skeleton--image  { height: 200px; border-radius: 12px; margin-bottom: 14px; }
+
+#racine-overlay {
+    position: fixed; inset: 0;
+    background: rgba(22,13,12,0.52);
+    z-index: 99990;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+#racine-overlay.racine-overlay--visible {
+    opacity: 1;
+    pointer-events: all;
+}
+.racine-overlay__box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    min-width: 180px;
+    box-shadow: 0 20px 60px rgba(22,13,12,0.3);
+}
+.racine-overlay__spinner {
+    width: 44px; height: 44px;
+    border: 3.5px solid rgba(237,95,30,0.2);
+    border-top-color: var(--racine-orange, #ED5F1E);
+    border-radius: 50%;
+    animation: racine-spin 0.8s linear infinite;
+}
+.racine-overlay__text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--racine-black, #160D0C);
+    font-weight: 500;
+    text-align: center;
+}
+
+.racine-dots { display: inline-flex; align-items: center; gap: 5px; }
+.racine-dots__dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--racine-orange, #ED5F1E);
+    animation: racine-bounce 1.2s ease-in-out infinite;
+}
+.racine-dots__dot:nth-child(2) { animation-delay: 0.18s; }
+.racine-dots__dot:nth-child(3) { animation-delay: 0.36s; }
+.racine-dots--sm .racine-dots__dot  { width: 5px; height: 5px; }
+.racine-dots--chat .racine-dots__dot { background: rgba(22,13,12,0.45); }
+
+.racine-btn--success {
+    background: #1a7a4a !important;
+    border-color: #1a7a4a !important;
+    color: #fff !important;
+    pointer-events: none;
+}
+.racine-btn--error {
+    background: #c0392b !important;
+    border-color: #c0392b !important;
+    color: #fff !important;
+    animation: racine-shake 0.35s ease;
+}
+
+.racine-inline-loader { display: inline-flex; align-items: center; gap: 8px; font-size: 0.875rem; color: rgba(22,13,12,0.7); }
+.racine-inline-loader__spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(237,95,30,0.25);
+    border-top-color: var(--racine-orange, #ED5F1E);
+    border-radius: 50%;
+    animation: racine-spin 0.7s linear infinite;
+    flex-shrink: 0;
+}

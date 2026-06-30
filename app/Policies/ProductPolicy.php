@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Product;
+use App\Models\Role;
 use App\Models\User;
 
 class ProductPolicy
@@ -12,7 +13,6 @@ class ProductPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Tous les utilisateurs authentifiés peuvent voir les produits
         return true;
     }
 
@@ -21,7 +21,6 @@ class ProductPolicy
      */
     public function view(User $user, Product $product): bool
     {
-        // Tous les utilisateurs authentifiés peuvent voir un produit
         return true;
     }
 
@@ -30,9 +29,12 @@ class ProductPolicy
      */
     public function create(User $user): bool
     {
-        // Admins, modérateurs et créateurs peuvent créer
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'moderator', 'super_admin', 'createur', 'creator']);
+        // Les créateurs peuvent toujours créer leurs propres produits
+        if ($user->isCreator()) {
+            return true;
+        }
+
+        return $user->hasPermission('create-products');
     }
 
     /**
@@ -40,14 +42,12 @@ class ProductPolicy
      */
     public function update(User $user, Product $product): bool
     {
-        // Admin/Modo peuvent tout modifier
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['admin', 'moderator', 'super_admin'])) {
+        // Propriétaire du produit
+        if ($user->id === $product->user_id) {
             return true;
         }
 
-        // Créateur peut modifier ses propres produits
-        return in_array($roleSlug, ['createur', 'creator']) && $user->id === $product->user_id;
+        return $user->hasPermission('edit-products');
     }
 
     /**
@@ -55,14 +55,12 @@ class ProductPolicy
      */
     public function delete(User $user, Product $product): bool
     {
-        // Admin peut tout supprimer
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['admin', 'super_admin'])) {
+        // Propriétaire du produit
+        if ($user->id === $product->user_id) {
             return true;
         }
 
-        // Créateur peut supprimer ses propres produits
-        return in_array($roleSlug, ['createur', 'creator']) && $user->id === $product->user_id;
+        return $user->hasPermission('delete-products');
     }
 
     /**
@@ -70,9 +68,7 @@ class ProductPolicy
      */
     public function restore(User $user, Product $product): bool
     {
-        // Seul admin peut restaurer
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'super_admin']);
+        return $user->hasPermission('access-system-config');
     }
 
     /**
@@ -80,8 +76,6 @@ class ProductPolicy
      */
     public function forceDelete(User $user, Product $product): bool
     {
-        // Seul admin peut supprimer définitivement
-        $roleSlug = $user->getRoleSlug();
-        return in_array($roleSlug, ['admin', 'super_admin']);
+        return $user->hasPermission('access-system-config');
     }
 }

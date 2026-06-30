@@ -57,12 +57,16 @@ class AdminFinancialDashboardService
     public function getSubscriptionMetrics(): array
     {
         return [
-            'active' => $this->countSubscriptionsByStatus('active'),
-            'trialing' => $this->countSubscriptionsByStatus('trialing'),
-            'past_due' => $this->countSubscriptionsByStatus('past_due'),
-            'unpaid' => $this->countSubscriptionsByStatus('unpaid'),
-            'canceled' => $this->countSubscriptionsByStatus('canceled'),
-            'total' => CreatorSubscription::count(),
+            'active'              => $this->countSubscriptionsByStatus('active'),
+            'trialing'            => $this->countSubscriptionsByStatus('trialing'),
+            'past_due'            => $this->countSubscriptionsByStatus('past_due'),
+            'unpaid'              => $this->countSubscriptionsByStatus('unpaid'),
+            'canceled'            => $this->countSubscriptionsByStatus('canceled'),
+            'canceled_this_month' => CreatorSubscription::where('status', 'canceled')
+                ->whereMonth('updated_at', now()->month)
+                ->whereYear('updated_at', now()->year)
+                ->count(),
+            'total'               => CreatorSubscription::count(),
         ];
     }
 
@@ -330,6 +334,11 @@ class AdminFinancialDashboardService
         })->count();
     }
 }
+
+
+
+
+
 
 
 

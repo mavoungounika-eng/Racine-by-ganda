@@ -2,6 +2,12 @@
 
 @section('title', 'Paiement Mobile Money - RACINE BY GANDA')
 
+@if(!empty($recaptchaSiteKey))
+@push('head')
+<script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaSiteKey }}" defer></script>
+@endpush
+@endif
+
 @section('content')
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -13,7 +19,7 @@
                     <h3 class="h4 mb-2">Paiement Mobile Money</h3>
                     <p class="mb-0">
                         Commande #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }} - 
-                        <strong>{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</strong>
+                        <strong>{{ format_price($order->total_amount) }}</strong>
                     </p>
                 </div>
 
@@ -21,16 +27,15 @@
                 <div class="card-body p-4">
                     @if(session('error'))
                     <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <i class="fas fa-exclamation-circle me-2"></i>
                         {{ session('error') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     @endif
 
-                    <form action="{{ route('checkout.mobile-money.pay', $order) }}" method="POST">
+                    <form action="{{ route('checkout.mobile-money.pay', $order) }}" method="POST" id="momo-form">
                         @csrf
+                        <input type="hidden" name="recaptcha_token" id="recaptcha_token" value="">
                         
                         {{-- Opérateur --}}
                         <div class="form-group">
@@ -64,7 +69,7 @@
                         {{-- Instructions --}}
                         <div class="alert alert-info">
                             <h6 class="font-weight-bold">
-                                <i class="fas fa-info-circle mr-2"></i>
+                                <i class="fas fa-info-circle me-2"></i>
                                 Instructions
                             </h6>
                             <p class="mb-0">Après validation, vous recevrez une demande de paiement sur votre téléphone. Suivez les instructions pour confirmer le paiement.</p>
@@ -73,7 +78,7 @@
                         {{-- Bouton submit --}}
                         <div class="form-group mb-0">
                             <button type="submit" class="btn btn-primary btn-lg btn-block">
-                                <i class="fas fa-mobile-alt mr-2"></i>
+                                <i class="fas fa-mobile-alt me-2"></i>
                                 Confirmer le paiement
                             </button>
                         </div>
@@ -83,4 +88,21 @@
         </div>
     </div>
 </div>
+@if(!empty($recaptchaSiteKey))
+@push('scripts')
+<script nonce="{{ $cspNonce }}">
+document.getElementById('momo-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    grecaptcha.ready(function() {
+        grecaptcha.execute('{{ $recaptchaSiteKey }}', {action: 'mobile_money_pay'}).then(function(token) {
+            document.getElementById('recaptcha_token').value = token;
+            form.submit();
+        });
+    });
+});
+</script>
+@endpush
+@endif
+
 @endsection

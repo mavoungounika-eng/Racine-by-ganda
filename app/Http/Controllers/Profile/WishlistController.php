@@ -40,6 +40,13 @@ class WishlistController extends Controller
         $user = Auth::user();
         $productId = $request->product_id;
 
+        if (!Product::where('id', $productId)->where('is_active', true)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ce produit n\'est plus disponible.',
+            ], 404);
+        }
+
         // Vérifier si déjà en favoris
         $exists = Wishlist::where('user_id', $user->id)
             ->where('product_id', $productId)
@@ -129,6 +136,12 @@ class WishlistController extends Controller
             $isInWishlist = false;
             $message = 'Produit retiré des favoris';
         } else {
+            if (!Product::where('id', $productId)->where('is_active', true)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce produit n\'est plus disponible.',
+                ], 404);
+            }
             Wishlist::create([
                 'user_id' => $user->id,
                 'product_id' => $productId,

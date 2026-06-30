@@ -5,7 +5,7 @@
 
 /* ===== BLOC CTA BAS DE PAGE ===== */
 #cta-racine {
-    background: #f4e2cf;         /* beige doux */
+    background: rgba(22,13,12,0.05);         /* beige doux */
     padding: 60px 0 50px;
     margin-bottom: 40px;       /* Espacement avec le footer */
     width: 100% !important;
@@ -26,13 +26,13 @@
     font-size: 2.2rem;
     line-height: 1.2;
     font-weight: 700;
-    color: #2b120d;
+    color: #160D0C;
     margin-bottom: 10px;
 }
 
 #cta-racine .cta-subtitle {
     font-size: 0.95rem;
-    color: #5c4035;
+    color: rgba(22,13,12,0.6);
     max-width: 650px;
     margin: 0 auto 30px;
 }
@@ -55,12 +55,12 @@
 }
 
 #cta-racine .cta-card-contact {
-    background: #c8a27d;        /* beige racine */
+    background: #FFB800;        /* beige racine */
     color: #fff;
 }
 
 #cta-racine .cta-card-creator {
-    background: #ed5f1e;        /* orange racine */
+    background: #ED5F1E;        /* orange racine */
     color: #fff;
 }
 
@@ -89,7 +89,7 @@
 }
 
 #cta-racine .cta-btn-dark {
-    background: #160d0c;
+    background: #160D0C;
     color: #fff;
 }
 
@@ -99,15 +99,15 @@
 
 #cta-racine .cta-btn-light {
     background: #fff;
-    color: #ed5f1e;
+    color: #ED5F1E;
 }
 
 #cta-racine .cta-btn-light:hover {
-    background: #ffe8dd;
+    background: rgba(237, 95, 30, 0.1);
 }
 
 #cta-racine .cta-btn-ghost {
-    border: 1px solid #ffe1cf;
+    border: 1px solid rgba(237, 95, 30, 0.15);
     color: #fff;
     background: transparent;
 }
@@ -132,7 +132,7 @@
 
 /* ===== FOOTER PREMIUM STYLES ===== */
 .footer-premium {
-    background: linear-gradient(180deg, #1a0f09 0%, #0d0806 100%);
+    background: linear-gradient(180deg, #160D0C 0%, #160D0C 100%);
     color: white;
     font-family: 'Cormorant Garamond', serif;
     width: 100% !important;
@@ -196,8 +196,8 @@
 }
 
 .social-link {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;

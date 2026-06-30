@@ -139,9 +139,6 @@ class SubscriptionOptimizationService
      */
     protected function logSubscriptionEvent(CreatorSubscription $subscription, string $eventType, array $metadata = []): void
     {
-        // TODO: Créer la table creator_subscription_events si elle n'existe pas
-        // Pour l'instant, on log dans les logs Laravel
-
         Log::info("Événement abonnement: {$eventType}", [
             'subscription_id' => $subscription->id,
             'creator_id' => $subscription->creator_id,
@@ -150,17 +147,14 @@ class SubscriptionOptimizationService
             'metadata' => $metadata,
         ]);
 
-        // Si la table existe, créer l'enregistrement
-        if (\Illuminate\Support\Facades\Schema::hasTable('creator_subscription_events')) {
-            \Illuminate\Support\Facades\DB::table('creator_subscription_events')->insert([
-                'creator_subscription_id' => $subscription->id,
-                'creator_id' => $subscription->creator_id,
-                'event_type' => $eventType,
-                'metadata' => json_encode($metadata),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        \Illuminate\Support\Facades\DB::table('creator_subscription_events')->insert([
+            'creator_subscription_id' => $subscription->id,
+            'creator_id' => $subscription->creator_id,
+            'event_type' => $eventType,
+            'metadata' => json_encode($metadata),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**

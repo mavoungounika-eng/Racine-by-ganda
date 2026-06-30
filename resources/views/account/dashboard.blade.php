@@ -3,9 +3,9 @@
 @section('title', 'Mon Compte - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .dashboard-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 3rem 0;
         margin-top: -70px;
         padding-top: calc(3rem + 70px);
@@ -20,7 +20,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4A574' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFB800' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         opacity: 0.3;
     }
     
@@ -39,7 +39,7 @@
         justify-content: center;
         box-shadow: 0 8px 24px rgba(237, 95, 30, 0.4);
         transition: transform 0.3s;
-        border: 3px solid rgba(212, 165, 116, 0.3);
+        border: 3px solid rgba(255, 184, 0, 0.3);
     }
     
     .user-avatar-lg:hover {
@@ -50,12 +50,12 @@
         color: white;
         font-size: 2.75rem;
         font-weight: 700;
-        font-family: 'Playfair Display', serif;
+        font-family: var(--font-heading, 'Cormorant Garamond', 'Aileron', serif);
     }
     
     .dashboard-content {
         padding: 3rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 60vh;
     }
     
@@ -113,16 +113,16 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     
-    .stat-card.orders { --stat-color-1: #ED5F1E; --stat-color-2: #c44b12; }
-    .stat-card.pending { --stat-color-1: #FFB800; --stat-color-2: #d99a00; }
+    .stat-card.orders { --stat-color-1: #ED5F1E; --stat-color-2: #ED5F1E; }
+    .stat-card.pending { --stat-color-1: #FFB800; --stat-color-2: #FFB800; }
     .stat-card.completed { --stat-color-1: #22C55E; --stat-color-2: #15803D; }
-    .stat-card.spent { --stat-color-1: #8B5A2B; --stat-color-2: #6B4423; }
+    .stat-card.spent { --stat-color-1: #ED5F1E; --stat-color-2: #160D0C; }
     
     .stat-label {
         font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-weight: 600;
         margin-bottom: 0.5rem;
     }
@@ -130,14 +130,14 @@
     .stat-value {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #2C1810;
+        color: #160D0C;
         line-height: 1;
         margin-bottom: 0.25rem;
     }
     
     .stat-subtitle {
         font-size: 0.9rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         margin-top: 0.5rem;
     }
     
@@ -159,7 +159,7 @@
     
     .section-header {
         padding: 1.75rem 2rem;
-        border-bottom: 2px solid #f0f0f0;
+        border-bottom: 2px solid rgba(22,13,12,0.1);
         background: white;
         display: flex;
         justify-content: space-between;
@@ -169,7 +169,7 @@
     .section-title {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin: 0;
         display: flex;
         align-items: center;
@@ -193,7 +193,7 @@
     }
     
     .section-link:hover {
-        color: #c44b12;
+        color: #ED5F1E;
         gap: 0.75rem;
     }
     
@@ -202,22 +202,22 @@
     }
     
     .orders-table thead {
-        background: #f8f9fa;
+        background: rgba(22,13,12,0.05);
     }
     
     .orders-table th {
         padding: 1.25rem 2rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         font-size: 0.9rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-bottom: 2px solid #e9ecef;
+        border-bottom: 2px solid rgba(22,13,12,0.1);
     }
     
     .orders-table td {
         padding: 1.25rem 2rem;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
         vertical-align: middle;
     }
     
@@ -226,22 +226,22 @@
     }
     
     .orders-table tbody tr:hover {
-        background: #f8f9fa;
+        background: rgba(22,13,12,0.05);
     }
     
     .order-id {
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         font-size: 1rem;
     }
     
     .order-date {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
     .order-items-count {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
@@ -291,10 +291,10 @@
     
     /* LOYALTY CARD */
     .loyalty-card {
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #160D0C 100%);
         border-radius: 20px;
         padding: 2rem;
-        box-shadow: 0 8px 24px rgba(212, 165, 116, 0.3);
+        box-shadow: 0 8px 24px rgba(255, 184, 0, 0.3);
         color: white;
         position: relative;
         overflow: hidden;
@@ -357,7 +357,7 @@
     .loyalty-btn {
         width: 100%;
         background: white;
-        color: #8B5A2B;
+        color: #160D0C;
         border: none;
         border-radius: 12px;
         padding: 1rem;
@@ -373,7 +373,7 @@
     .loyalty-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        color: #6B4423;
+        color: #160D0C;
     }
     
     /* QUICK ACTIONS */
@@ -393,7 +393,7 @@
         text-decoration: none;
         color: inherit;
         transition: all 0.3s;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid rgba(22,13,12,0.1);
     }
     
     .quick-action-item:last-child {
@@ -401,7 +401,7 @@
     }
     
     .quick-action-item:hover {
-        background: #f8f9fa;
+        background: rgba(22,13,12,0.05);
         transform: translateX(4px);
     }
     
@@ -424,19 +424,19 @@
     
     .quick-action-icon.shop { background: linear-gradient(135deg, #ED5F1E, #c44b12); }
     .quick-action-icon.cart { background: linear-gradient(135deg, #FFB800, #d99a00); }
-    .quick-action-icon.profile { background: linear-gradient(135deg, #8B5A2B, #6B4423); }
+    .quick-action-icon.profile { background: linear-gradient(135deg, #ED5F1E, #160D0C); }
     .quick-action-icon.addresses { background: linear-gradient(135deg, #22C55E, #15803D); }
-    .quick-action-icon.orders { background: linear-gradient(135deg, #8B5A2B, #6B4423); }
-    .quick-action-icon.loyalty { background: linear-gradient(135deg, #D4A574, #8B5A2B); }
+    .quick-action-icon.orders { background: linear-gradient(135deg, #ED5F1E, #160D0C); }
+    .quick-action-icon.loyalty { background: linear-gradient(135deg, #FFB800, #ED5F1E); }
     
     .quick-action-text {
         font-weight: 500;
-        color: #2C1810;
+        color: #160D0C;
         font-size: 0.95rem;
     }
     
     .quick-action-arrow {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         transition: transform 0.3s;
     }
@@ -461,12 +461,12 @@
     .empty-state-title {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .empty-state-text {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         margin-bottom: 2rem;
     }
     
@@ -485,7 +485,7 @@
     }
     
     .empty-state-btn:hover {
-        background: #c44b12;
+        background: #ED5F1E;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);
         color: white;
@@ -667,21 +667,22 @@
                                         <span class="order-items-count">{{ $order->items->count() }} article(s)</span>
                                     </td>
                                     <td>
-                                        <span class="order-amount">{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</span>
+                                        @php $displayAmount = ($order->cancellation_type === 'global' && $order->original_total) ? $order->original_total : $order->total_amount; @endphp
+                                        <span class="order-amount">{{ number_format($displayAmount ?? 0, 0, ',', ' ') }} FCFA</span>
                                     </td>
                                     <td>
                                         @php
                                             $statusConfig = [
                                                 'pending' => ['label' => 'En attente', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.1)'],
                                                 'processing' => ['label' => 'En traitement', 'color' => '#FFB800', 'bg' => 'rgba(255, 184, 0, 0.1)'],
-                                                'paid' => ['label' => 'Payée', 'color' => '#0EA5E9', 'bg' => 'rgba(14, 165, 233, 0.1)'],
-                                                'shipped' => ['label' => 'Expédiée', 'color' => '#0EA5E9', 'bg' => 'rgba(14, 165, 233, 0.1)'],
+                                                'paid' => ['label' => 'Payée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.1)'],
+                                                'shipped' => ['label' => 'Expédiée', 'color' => '#ED5F1E', 'bg' => 'rgba(237, 95, 30, 0.1)'],
                                                 'completed' => ['label' => 'Complétée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.1)'],
                                                 'delivered' => ['label' => 'Livrée', 'color' => '#22C55E', 'bg' => 'rgba(34, 197, 94, 0.1)'],
                                                 'cancelled' => ['label' => 'Annulée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.1)'],
                                                 'failed' => ['label' => 'Échouée', 'color' => '#DC2626', 'bg' => 'rgba(220, 38, 38, 0.1)'],
                                             ];
-                                            $status = $statusConfig[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.1)'];
+                                            $status = $statusConfig[$order->status] ?? ['label' => ucfirst($order->status), 'color' => '#160D0C', 'bg' => 'rgba(22,13,12,0.1)'];
                                         @endphp
                                         <span class="status-badge" style="background: {{ $status['bg'] }}; color: {{ $status['color'] }}; border-color: {{ $status['color'] }}40;">
                                             {{ $status['label'] }}
@@ -726,9 +727,9 @@
                         <div class="loyalty-label">Points de fidélité</div>
                         @php
                             $tierColors = [
-                                'bronze' => '#cd7f32',
-                                'silver' => '#c0c0c0',
-                                'gold' => '#ffd700',
+                                'bronze' => '#ED5F1E',
+                                'silver' => 'rgba(22,13,12,0.3)',
+                                'gold' => '#FFB800',
                             ];
                             $tierNames = [
                                 'bronze' => 'Bronze',
@@ -807,7 +808,7 @@
 
                         <a href="{{ route('messages.index') }}" class="quick-action-item">
                             <div class="quick-action-left">
-                                <div class="quick-action-icon" style="background: rgba(75, 29, 242, 0.1); color: #4B1DF2;">
+                                <div class="quick-action-icon" style="background: rgba(237, 95, 30, 0.1); color: #ED5F1E;">
                                     <i class="fas fa-comments"></i>
                                 </div>
                                 <span class="quick-action-text">Messagerie</span>
@@ -815,7 +816,7 @@
                                     $unreadCount = app(\App\Services\ConversationService::class)->getUnreadConversationsCount(auth()->id());
                                 @endphp
                                 @if($unreadCount > 0)
-                                    <span class="badge badge-primary ml-2">{{ $unreadCount }}</span>
+                                    <span class="badge ms-2" style="background: #ED5F1E; color: white;">{{ $unreadCount }}</span>
                                 @endif
                             </div>
                             <i class="fas fa-chevron-right quick-action-arrow"></i>
@@ -845,7 +846,7 @@
 
                         <a href="{{ route('notifications.index') }}" class="quick-action-item">
                             <div class="quick-action-left">
-                                <div class="quick-action-icon" style="background: linear-gradient(135deg, #0EA5E9, #0369A1);">
+                                <div class="quick-action-icon" style="background: linear-gradient(135deg, #ED5F1E, #160D0C);">
                                     <i class="fas fa-bell"></i>
                                 </div>
                                 <span class="quick-action-text">Mes notifications</span>
@@ -871,8 +872,67 @@
                 </div>
             </div>
         </div>
+
+        {{-- COMMANDES SUSPENDUES --}}
+        @if(isset($dormant_orders) && $dormant_orders->count() > 0)
+        <div style="background:rgba(237,95,30,0.05);border:1px solid rgba(237,95,30,0.18);border-radius:16px;padding:1.5rem 2rem;margin-top:2rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+                <h3 style="font-size:1.1rem;font-weight:700;color:#ED5F1E;margin:0;display:flex;align-items:center;gap:0.5rem;">
+                    <i class="fas fa-pause-circle"></i> Commandes suspendues
+                </h3>
+                <a href="{{ route('profile.orders', ['status' => 'annulees']) }}" style="font-size:0.85rem;color:#ED5F1E;font-weight:500;text-decoration:none;">
+                    Voir toutes <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                @foreach($dormant_orders as $dormant)
+                <div style="background:white;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;border:1px solid rgba(237,95,30,0.12);">
+                    <div>
+                        <strong style="color:#160D0C;">#{{ $dormant->id }}</strong>
+                        <span style="color:rgba(22,13,12,0.4);font-size:0.82rem;margin-left:0.5rem;">{{ $dormant->created_at->format('d/m/Y') }}</span>
+                        <div style="font-size:0.85rem;color:#ED5F1E;font-weight:600;margin-top:0.2rem;">
+                            {{ number_format($dormant->original_total ?? $dormant->total_amount ?? 0, 0, ',', ' ') }} FCFA
+                        </div>
+                    </div>
+                    <form action="{{ route('orders.restore', $dormant) }}" method="POST" class="d-inline">
+                        @csrf @method('PATCH')
+                        <button type="submit" style="background:rgba(237,95,30,0.1);color:#ED5F1E;border:1px solid rgba(237,95,30,0.25);border-radius:8px;padding:0.4rem 1rem;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-undo me-1"></i> Restaurer
+                        </button>
+                    </form>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
     </div>
 </section>
+
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+document.addEventListener('DOMContentLoaded', function () {
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry, i) {
+            if (entry.isIntersecting) {
+                setTimeout(function () {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, i * 80);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.stat-card, .orders-section, .loyalty-card, .quick-actions-card').forEach(function (el, i) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(el);
+    });
+});
+</script>
+@endpush
 
 @include('components.navigation-breadcrumb', [
     'items' => [

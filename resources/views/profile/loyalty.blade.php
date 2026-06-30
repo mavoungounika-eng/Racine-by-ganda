@@ -15,9 +15,9 @@
                 
                 @php
                     $tierColors = [
-                        'bronze' => '#cd7f32',
-                        'silver' => '#c0c0c0',
-                        'gold' => '#ffd700',
+                        'bronze' => '#ED5F1E',
+                        'silver' => 'rgba(22,13,12,0.3)',
+                        'gold' => '#FFB800',
                     ];
                     $tierNames = [
                         'bronze' => 'Bronze',
@@ -48,15 +48,15 @@
                 <h6 class="card-title">Comment gagner des points ?</h6>
                 <ul class="list-unstyled">
                     <li class="mb-2">
-                        <i class="icon-check text-success mr-2"></i>
+                        <i class="icon-check text-success me-2"></i>
                         <strong>1%</strong> du montant de chaque commande payée
                     </li>
                     <li class="mb-2">
-                        <i class="icon-check text-success mr-2"></i>
+                        <i class="icon-check text-success me-2"></i>
                         Points convertibles en réductions
                     </li>
                     <li>
-                        <i class="icon-check text-success mr-2"></i>
+                        <i class="icon-check text-success me-2"></i>
                         Niveaux : Bronze → Silver → Gold
                     </li>
                 </ul>
@@ -102,11 +102,11 @@
                                 </td>
                                 <td>
                                     @if($transaction->type === 'earned')
-                                        <span class="badge badge-success">Gagné</span>
+                                        <span class="badge bg-success">Gagné</span>
                                     @elseif($transaction->type === 'spent')
-                                        <span class="badge badge-warning">Dépensé</span>
+                                        <span class="badge bg-warning">Dépensé</span>
                                     @else
-                                        <span class="badge badge-secondary">Expiré</span>
+                                        <span class="badge bg-secondary">Expiré</span>
                                     @endif
                                 </td>
                             </tr>

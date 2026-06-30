@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\OrderItem;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -17,9 +22,12 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user();
+        // Charge commandes et adresses en une seule passe — évite la double requête
+        // avec orders() qui recharge les mêmes données pour le même utilisateur
         $orders = Order::where('user_id', $user->id)
+            ->whereNotIn('status', ['cancelled', 'archived'])
             ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
+            ->latest()
             ->paginate(10);
         $addresses = Address::where('user_id', $user->id)->get();
         return view('profile.index', compact('user', 'orders', 'addresses'));
@@ -47,11 +55,17 @@ class ProfileController extends Controller
         
         // Appliquer le filtre selon le statut
         if ($statusFilter === 'en-cours') {
-            $query->whereIn('status', ['pending', 'processing', 'paid']);
+            $query->whereIn('status', ['pending', 'processing', 'restored']);
         } elseif ($statusFilter === 'terminees') {
             $query->whereIn('status', ['completed', 'delivered']);
+        } elseif ($statusFilter === 'annulees') {
+            $query->where('status', 'cancelled');
         }
-        // Si 'toutes' ou autre valeur, on affiche tout
+        // Si 'toutes' → exclure annulées et archivées
+        if ($statusFilter === 'toutes') {
+            $query->whereNotIn('status', ['cancelled', 'archived']);
+        }
+        // Si autre valeur non reconnue, on affiche tout
         
         // Pagination avec préservation des query strings
         $orders = $query->paginate(15)->withQueryString();
@@ -66,11 +80,9 @@ class ProfileController extends Controller
      */
     public function showOrder(Order $order)
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
-        // Charger les relations nécessaires
-        $order->load(['items.product', 'address']);
+        $order->load(['items.product', 'address', 'promoCode']);
 
         return view('profile.order-detail', compact('order'));
     }
@@ -141,7 +153,7 @@ class ProfileController extends Controller
         
         // Pour les créateurs, charger le profil créateur
         $creatorProfile = null;
-        if ($user->isCreator()) {
+        if ($user->hasRole('createur')) {
             $creatorProfile = $user->creatorProfile;
         }
         
@@ -208,7 +220,7 @@ class ProfileController extends Controller
         $user->update($updateData);
 
         // Mise à jour du profil créateur si applicable
-        if ($user->isCreator() && $user->creatorProfile) {
+        if ($user->hasRole('createur') && $user->creatorProfile) {
             $creatorRules = [
                 'brand_name' => 'required|string|max:255',
                 'bio' => 'nullable|string|max:5000',
@@ -281,7 +293,7 @@ class ProfileController extends Controller
     public function loyalty()
     {
         $user = Auth::user();
-        $loyaltyPoint = $user->loyaltyPoints;
+        $loyaltyPoint = $user->loyaltyPoints()->first();
         $transactions = $user->loyaltyTransactions()->latest()->paginate(20);
         
         return view('profile.loyalty', compact('loyaltyPoint', 'transactions'));
@@ -298,13 +310,257 @@ class ProfileController extends Controller
             return back()->withErrors(['professional_email' => 'Aucun email professionnel configuré.']);
         }
 
-        // TODO: Envoyer un email de vérification avec un token
-        // Pour l'instant, on simule la vérification
-        // Dans un vrai système, vous enverriez un email avec un lien de vérification
+        if ($user->professional_email_verified) {
+            return back()->with('info', 'Cet email est déjà vérifié.');
+        }
 
-        $user->verifyProfessionalEmail();
+        $token = \Illuminate\Support\Str::random(64);
 
-        return back()->with('success', 'Email professionnel vérifié avec succès !');
+        $user->update(['professional_email_token' => hash('sha256', $token)]);
+
+        $user->notify(new \App\Notifications\ProfessionalEmailVerification(
+            $token,
+            $user->professional_email
+        ));
+
+        return back()->with('success', 'Un email de vérification a été envoyé à ' . $user->professional_email . '.');
+    }
+
+    public function restoreItem(Order $order, OrderItem $item, Request $request): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        if ($order->status !== 'pending') {
+            abort(403, 'Restauration impossible : commande non en attente.');
+        }
+
+        if ($item->order_id !== $order->id) {
+            abort(404);
+        }
+
+        try {
+            $item->restore();
+        } catch (\App\Exceptions\InvalidOrderItemTransitionException $e) {
+            return back()->with('error', 'Cet article ne peut pas être restauré (statut actuel : ' . $item->status . ').');
+        }
+
+        $order->recalculateTotal();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Article restauré.']);
+        }
+
+        return back()->with('success', 'Article restauré dans la commande.');
+    }
+
+    public function cancelItem(Order $order, OrderItem $item, Request $request)
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        if ($order->status !== 'pending') {
+            abort(403, 'Impossible de modifier une commande déjà traitée.');
+        }
+
+        if ($item->order_id !== $order->id) {
+            abort(404);
+        }
+
+        $item->cancel();
+        $order->recalculateTotal();
+
+        if ($order->items()->active()->count() === 0) {
+            $order->update(['status' => 'cancelled']);
+        }
+
+        $message = 'Article retiré de la commande.';
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    public function cancelOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+        if (! in_array($order->status, ['pending', 'processing'])) {
+            return back()->with('error', 'Seules les commandes en attente ou en traitement peuvent être annulées.');
+        }
+        $order->cancelGlobally();
+        \Log::channel('security')->info('Order cancelled by client', [
+            'order_id'          => $order->id,
+            'user_id'           => Auth::id(),
+            'cancellation_type' => 'global',
+        ]);
+        return redirect()->route('profile.orders', ['status' => 'annulees'])
+            ->with('success', 'Commande #' . $order->id . ' annulée. Vous pouvez la restaurer à tout moment.');
+    }
+
+
+    public function updateOrderItemQuantity(Order $order, OrderItem $item, Request $request): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Impossible de modifier une commande déjà traitée.');
+        }
+        $request->validate(['quantity' => 'required|integer|min:1|max:100']);
+        $item->update(['quantity' => $request->integer('quantity')]);
+        $order->recalculateTotal();
+        return back()->with('success', 'Quantité mise à jour.');
+    }
+    public function requestReturn(Order $order, Request $request): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+        if (! in_array($order->status, ['completed', 'delivered'])) {
+            return back()->with('error', 'Seules les commandes livrées peuvent faire l\'objet d\'un retour.');
+        }
+
+        $request->validate(['reason' => 'required|string|min:20|max:1000']);
+
+        $conversation = \App\Models\Conversation::create([
+            'type'             => \App\Models\Conversation::TYPE_ORDER_THREAD,
+            'subject'          => 'Retour produit — Commande #' . $order->id,
+            'related_order_id' => $order->id,
+            'created_by'       => Auth::id(),
+            'last_message_at'  => now(),
+        ]);
+
+        $conversation->participants()->create(['user_id' => Auth::id(), 'role' => 'client']);
+
+        \App\Models\Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id'       => Auth::id(),
+            'content'         => 'Demande de retour :\n\n' . $request->string('reason'),
+            'type'            => 'text',
+        ]);
+
+        return redirect()->route('messages.show', $conversation)
+            ->with('success', 'Votre demande de retour a été envoyée au support.');
+    }
+
+    public function confirmProfessionalEmail(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'email' => 'required|email',
+        ]);
+
+        $user = \App\Models\User::where('professional_email', $request->email)
+            ->whereNotNull('professional_email_token')
+            ->first();
+
+        if (!$user || !hash_equals($user->professional_email_token, hash('sha256', $request->token))) {
+            return redirect()->route('profile.edit')
+                ->with('error', 'Lien de vérification invalide ou expiré.');
+        }
+
+        $user->update([
+            'professional_email_verified'    => true,
+            'professional_email_verified_at' => now(),
+            'professional_email_token'       => null,
+        ]);
+
+        return redirect()->route('profile.edit')
+            ->with('success', 'Email professionnel vérifié avec succès !');
+    }
+
+    public function restoreOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+        abort_unless($order->status === 'cancelled', 422);
+        $order->restore();
+        return redirect()->route('client.orders.relaunch', $order)
+            ->with('success', 'Commande #' . $order->id . ' restaurée. Vérifiez les quantités avant de relancer.');
+    }
+    public function archiveOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+        abort_unless($order->status === 'cancelled', 422);
+        $order->archivePermanently();
+        return redirect()->route('profile.orders')
+            ->with('success', 'Commande #' . $order->id . ' supprimée définitivement.');
+    }
+
+    public function reorderFromOrder(Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        $order->load(['items.product', 'address', 'promoCode']);
+
+        $cartService = app(\App\Services\Cart\DatabaseCartService::class);
+        $cartService->clear();
+
+        $warnings = [];
+        foreach ($order->items as $item) {
+            $product = $item->product;
+            if (!$product || !$product->is_active) {
+                $warnings[] = ($product->title ?? 'Article #' . $item->product_id) . ' — produit indisponible';
+                continue;
+            }
+            if ($product->stock <= 0) {
+                $warnings[] = $product->title . ' — en rupture de stock';
+                continue;
+            }
+            $cartService->add($product, min($item->quantity, $product->stock));
+        }
+
+        if ($warnings) {
+            session()->flash('reorder_warnings', $warnings);
+        }
+
+        if ($cartService->count() === 0) {
+            return redirect()->route('profile.orders.show', $order)
+                ->with('error', 'Aucun article disponible pour re-commander.');
+        }
+
+        // Re-appliquer le code promo si encore valide
+        if ($order->promoCode && $order->promoCode->isValid()) {
+            $cartTotal = $cartService->total();
+            if ($order->promoCode->meetsMinimumAmount($cartTotal)) {
+                $discount = $order->promoCode->calculateDiscount($cartTotal);
+                session([
+                    'applied_promo_code_id'      => $order->promoCode->id,
+                    'applied_promo_code_code'     => $order->promoCode->code,
+                    'applied_promo_discount'      => $discount,
+                    'applied_promo_free_shipping' => $order->promoCode->type === 'free_shipping',
+                ]);
+            }
+        } else {
+            session()->forget([
+                'applied_promo_code_id', 'applied_promo_code_code',
+                'applied_promo_discount', 'applied_promo_free_shipping',
+            ]);
+        }
+
+        return redirect()->route('checkout.index');
+    }
+
+    public function updateOrder(Order $order, Request $request): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Seules les commandes en attente peuvent être modifiées.');
+        }
+
+        $validated = $request->validate([
+            'address_id'       => 'nullable|exists:addresses,id',
+            'customer_address' => 'nullable|string|max:500',
+        ]);
+
+        if (isset($validated['address_id'])) {
+            $address = \App\Models\Address::where('id', $validated['address_id'])
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+            $order->update([
+                'address_id'      => $address->id,
+                'customer_address' => $address->full_address ?? null,
+            ]);
+        } elseif (isset($validated['customer_address'])) {
+            $order->update(['customer_address' => $validated['customer_address']]);
+        }
+
+        return back()->with('success', 'Commande #' . $order->id . ' mise à jour.');
     }
 }
-

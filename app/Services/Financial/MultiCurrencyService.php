@@ -65,30 +65,49 @@ class MultiCurrencyService
         $cacheKey = "exchange_rate_{$fromCurrency}_{$toCurrency}";
 
         return Cache::remember($cacheKey, now()->addHours(1), function () use ($fromCurrency, $toCurrency) {
-            // TODO: Intégrer une API de taux de change (ex: exchangerate-api.com, fixer.io)
-            // Pour l'instant, utiliser des taux fixes (à remplacer par une vraie API)
-            
-            $rates = [
-                'XAF_EUR' => 0.0015, // 1 XAF = 0.0015 EUR (approximatif)
-                'XAF_USD' => 0.0016, // 1 XAF = 0.0016 USD (approximatif)
-                'EUR_XAF' => 655.96, // 1 EUR = 655.96 XAF
-                'USD_XAF' => 600.00, // 1 USD = 600 XAF (approximatif)
+            // Taux fixes de secours (fallback si API indisponible)
+            $fallbackRates = [
+                'XAF_EUR' => 0.001524,
+                'XAF_USD' => 0.001634,
+                'EUR_XAF' => 655.96,
+                'USD_XAF' => 612.00,
             ];
 
+            $apiKey = config('services.exchange_rate.api_key');
+            $apiUrl = config('services.exchange_rate.url', 'https://v6.exchangerate-api.com/v6');
+
+            if ($apiKey) {
+                try {
+                    $response = Http::timeout(5)->get("{$apiUrl}/{$apiKey}/pair/{$fromCurrency}/{$toCurrency}");
+
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        if (($data['result'] ?? '') === 'success' && isset($data['conversion_rate'])) {
+                            return (float) $data['conversion_rate'];
+                        }
+                    }
+
+                    Log::warning('Exchange rate API returned invalid response', [
+                        'from'   => $fromCurrency,
+                        'to'     => $toCurrency,
+                        'status' => $response->status(),
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Exchange rate API unavailable, using fallback: ' . $e->getMessage());
+                }
+            }
+
+            // Fallback : taux fixes
             $key = "{$fromCurrency}_{$toCurrency}";
-            
-            if (isset($rates[$key])) {
-                return $rates[$key];
+            if (isset($fallbackRates[$key])) {
+                return $fallbackRates[$key];
             }
 
-            // Si le taux inverse existe, l'inverser
             $reverseKey = "{$toCurrency}_{$fromCurrency}";
-            if (isset($rates[$reverseKey])) {
-                return 1 / $rates[$reverseKey];
+            if (isset($fallbackRates[$reverseKey])) {
+                return 1.0 / $fallbackRates[$reverseKey];
             }
-
-            Log::warning("Taux de change non trouvé: {$fromCurrency} → {$toCurrency}");
-            return 1.0; // Fallback
+            return 1.0;
         });
     }
 

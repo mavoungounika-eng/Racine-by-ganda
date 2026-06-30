@@ -1,174 +1,183 @@
 @extends('layouts.admin-master')
-
-@section('title', 'ERP - Fournisseurs')
+@section('title', 'ERP — Fournisseurs')
 @section('page-title', 'Fournisseurs')
 @section('page-subtitle', 'Gérer vos fournisseurs et partenaires')
 
 @section('content')
-
-{{-- En-tête avec actions --}}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-1 fw-bold">
-            <i class="fas fa-truck text-racine-orange me-2"></i>
-            Fournisseurs
-        </h2>
-        <p class="text-muted mb-0">
-            <i class="fas fa-info-circle me-1"></i>
-            Gérer vos fournisseurs et partenaires
-        </p>
-    </div>
-    <a href="{{ route('erp.suppliers.create') }}" class="btn btn-racine-orange">
-        <i class="fas fa-plus me-2"></i>
-        Nouveau Fournisseur
-    </a>
-</div>
-
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-{{-- Barre de filtres --}}
-@include('partials.admin.filter-bar', [
-    'route' => route('erp.suppliers.index'),
-    'search' => true,
-    'filters' => [
-        [
-            'name' => 'status',
-            'label' => 'Statut',
-            'type' => 'select',
-            'icon' => 'fas fa-toggle-on',
-            'width' => 3,
-            'options' => [
-                ['value' => '', 'label' => 'Tous les statuts'],
-                ['value' => 'active', 'label' => 'Actifs'],
-                ['value' => 'inactive', 'label' => 'Inactifs']
-            ]
-        ]
-    ]
+@include('admin.components.admin-list', [
+    'listId'      => 'suppliers',
+    'bulkActions' => [
+        ['label' => 'Supprimer', 'endpoint' => route('erp.suppliers.bulk-delete'), 'confirm' => 'Supprimer définitivement {n} fournisseur(s) ? Action irréversible.', 'danger' => true],
+    ],
 ])
 
-{{-- Tableau des fournisseurs --}}
-<div class="card card-racine">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-building me-2"></i>Nom
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-envelope me-2"></i>Email
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-phone me-2"></i>Téléphone
-                        </th>
-                        <th class="text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-toggle-on me-2"></i>Statut
-                        </th>
-                        <th class="text-end text-uppercase small fw-bold text-muted" style="font-size: 0.75rem;">
-                            <i class="fas fa-cog me-2"></i>Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($suppliers as $supplier)
-                    <tr>
-                        <td style="padding: 1.25rem 1rem;">
-                            <div class="fw-semibold text-racine-black">{{ $supplier->name }}</div>
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            @if($supplier->email)
-                                <div class="text-muted">
-                                    <i class="fas fa-envelope me-1"></i>
-                                    {{ $supplier->email }}
-                                </div>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            @if($supplier->phone)
-                                <div class="text-muted">
-                                    <i class="fas fa-phone me-1"></i>
-                                    {{ $supplier->phone }}
-                                </div>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
-                        </td>
-                        <td style="padding: 1.25rem 1rem;">
-                            @if($supplier->is_active)
-                                <span class="badge bg-success rounded-pill">
-                                    <i class="fas fa-check-circle me-1"></i>Actif
-                                </span>
-                            @else
-                                <span class="badge bg-secondary rounded-pill">
-                                    <i class="fas fa-pause-circle me-1"></i>Inactif
-                                </span>
-                            @endif
-                        </td>
-                        <td class="text-end" style="padding: 1.25rem 1rem;">
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('erp.suppliers.edit', $supplier) }}" 
-                                   class="btn btn-sm btn-outline-primary"
-                                   title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                    <span class="d-none d-md-inline ms-1">Modifier</span>
-                                </a>
-                                <form action="{{ route('erp.suppliers.destroy', $supplier) }}" 
-                                      method="POST" 
-                                      class="d-inline"
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="btn btn-sm btn-outline-danger"
-                                            title="Supprimer">
-                                        <i class="fas fa-trash"></i>
-                                        <span class="d-none d-md-inline ms-1">Supprimer</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-5">
-                            <div class="py-4">
-                                <i class="fas fa-truck fa-3x text-muted mb-3 opacity-50"></i>
-                                <p class="text-muted mb-2">Aucun fournisseur enregistré</p>
-                                <a href="{{ route('erp.suppliers.create') }}" class="btn btn-racine-orange">
-                                    <i class="fas fa-plus me-2"></i>
-                                    Ajouter un fournisseur
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        @if($suppliers->hasPages())
-        <div class="card-footer bg-transparent border-top">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="text-muted small">
-                    Affichage de {{ $suppliers->firstItem() ?? 0 }} à {{ $suppliers->lastItem() ?? 0 }} sur {{ $suppliers->total() }} résultats
-                </div>
-                <div>
-                    {{ $suppliers->links() }}
-                </div>
-            </div>
-        </div>
-        @endif
+<div class="al-card mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h5 class="mb-0 al-title"><i class="fas fa-truck me-2"></i>Fournisseurs</h5>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="#" id="sup-export-btn" class="al-action-btn">↓ Export CSV</a>
+      <a href="{{ route('erp.suppliers.create') }}" class="al-action-btn al-action-btn-primary">+ Nouveau Fournisseur</a>
     </div>
-</div>
+  </div>
 
+  <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+    <input type="text" id="sup-search" class="al-filter-input al-filter-input-wide" placeholder="Nom, email, téléphone…" aria-label="Recherche">
+    <select id="sup-status" class="al-filter-select" aria-label="Statut">
+      <option value="">Tous les statuts</option>
+      <option value="1">Actifs</option>
+      <option value="0">Inactifs</option>
+    </select>
+    <select id="sup-per-page" class="al-per-page" aria-label="Par page">
+      <option value="10">10 / page</option>
+      <option value="20" selected>20 / page</option>
+      <option value="50">50 / page</option>
+      <option value="100">100 / page</option>
+    </select>
+    <button id="sup-reset" class="al-btn-reset">Réinitialiser<span class="al-filter-badge">0</span></button>
+  </div>
+
+  <div class="al-stats mb-3">
+    <div class="al-stat"><div class="al-stat-label">Total</div><div class="al-stat-value" id="sup-s-total">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">Actifs</div><div class="al-stat-value al-stat-ok" id="sup-s-actifs">—</div></div>
+    <div class="al-stat"><div class="al-stat-label">Inactifs</div><div class="al-stat-value al-stat-muted" id="sup-s-inactifs">—</div></div>
+  </div>
+
+  <div class="al-table-wrap">
+    <table class="al-table w-100">
+      <thead><tr>
+        <th class="al-th-cb"><input type="checkbox" id="sup-cb-all" class="al-cb" aria-label="Tout sélectionner"></th>
+        <th id="sup-th-name"  data-col="name">Nom</th>
+        <th id="sup-th-email" data-col="email">Email</th>
+        <th>Téléphone</th>
+        <th id="sup-th-active" data-col="is_active">Statut</th>
+        <th>Matières</th>
+        <th class="al-sticky">Actions</th>
+      </tr></thead>
+      <tbody id="sup-tbody"></tbody>
+    </table>
+  </div>
+  <div class="al-pag-bar mt-3" id="sup-pag"></div>
+</div>
 @endsection
 
+@push('scripts')
+<script nonce="{{ csp_nonce() }}">
+const SUPS = (function(){
+  const DATA_URL   = '{{ route("erp.suppliers.data") }}';
+  const EXPORT_URL = '{{ route("erp.suppliers.export.csv") }}';
+  const hg = { 'Accept':'application/json', 'X-Requested-With':'XMLHttpRequest' };
+  const sortState = { by:'name', dir:'asc' };
+  let state, bulk;
+  const DEFAULTS = { search:'', is_active:'', page:1, per_page:20, sort_by:'name', sort_dir:'asc' };
+
+  function activeFilters() {
+    return [state.search, state.is_active].filter(function(v){ return v!==''; }).length;
+  }
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function statusBadge(active){
+    return active
+      ? '<span class="al-badge al-badge-active">Actif</span>'
+      : '<span class="al-badge al-badge-inactive">Inactif</span>';
+  }
+
+  function renderTable(data) {
+    if (bulk) bulk.clear();
+    const tbody = document.getElementById('sup-tbody');
+    if (!data.data || !data.data.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="al-empty"><div class="al-empty-icon">🏭</div>Aucun fournisseur trouvé</td></tr>';
+    } else {
+      tbody.innerHTML = data.data.map(function(s){
+        return '<tr>'+
+          '<td><input type="checkbox" class="al-row-cb al-cb" data-id="'+s.id+'" aria-label="Sélectionner '+esc(s.name)+'"></td>'+
+          '<td><div class="al-row-name">'+esc(s.name)+'</div></td>'+
+          '<td class="al-row-muted">'+(s.email?'<i class="fas fa-envelope me-1 al-icon-dim"></i>'+esc(s.email):'—')+'</td>'+
+          '<td class="al-row-muted">'+(s.phone?esc(s.phone):'—')+'</td>'+
+          '<td>'+statusBadge(s.is_active)+'</td>'+
+          '<td class="al-row-muted">'+(s.raw_materials_count||0)+' matière(s)</td>'+
+          '<td class="al-sticky">'+
+            '<a href="/erp/fournisseurs/'+s.id+'" class="al-action-btn al-action-btn-sm">Voir</a> '+
+            '<a href="/erp/fournisseurs/'+s.id+'/edit" class="al-action-btn al-action-btn-sm">Modifier</a>'+
+          '</td>'+
+          '</tr>';
+      }).join('');
+    }
+    AL.buildPager('sup-pag', data, load);
+    AL.syncUrl({ search:state.search, is_active:state.is_active, page:state.page, per_page:state.per_page, sort_by:sortState.by, sort_dir:sortState.dir });
+    AL.updateResetBtn('sup-reset', activeFilters());
+    updateExportHref();
+  }
+
+  function updateExportHref(){
+    const btn = document.getElementById('sup-export-btn'); if(!btn) return;
+    const p = new URLSearchParams();
+    if(state.search)    p.set('search', state.search);
+    if(state.is_active !== '') p.set('is_active', state.is_active);
+    btn.href = EXPORT_URL + (p.toString() ? '?' + p.toString() : '');
+  }
+
+  function load(p) {
+    state.page     = p || 1;
+    state.sort_by  = sortState.by;
+    state.sort_dir = sortState.dir;
+    AL.skeleton(document.getElementById('sup-tbody'), 7);
+    const params = new URLSearchParams({ page:state.page, per_page:state.per_page, sort_by:state.sort_by, sort_dir:state.sort_dir });
+    if (state.search)    params.set('search', state.search);
+    if (state.is_active !== '') params.set('is_active', state.is_active);
+    fetch(DATA_URL+'?'+params, { credentials:'same-origin', headers:hg })
+      .then(function(r){ return r.json(); }).then(renderTable)
+      .catch(function(){ AL.toast('Erreur chargement données', false); });
+  }
+
+  function loadStats() {
+    Promise.all([
+      fetch(DATA_URL+'?per_page=1',            {credentials:'same-origin',headers:hg}).then(function(r){ return r.json(); }),
+      fetch(DATA_URL+'?per_page=1&is_active=1',{credentials:'same-origin',headers:hg}).then(function(r){ return r.json(); }),
+    ]).then(function(results){
+      const total  = results[0].total||0;
+      const actifs = results[1].total||0;
+      document.getElementById('sup-s-total').textContent   = total;
+      document.getElementById('sup-s-actifs').textContent  = actifs;
+      document.getElementById('sup-s-inactifs').textContent= Math.max(0, total-actifs);
+    }).catch(function(){});
+  }
+
+  function init() {
+    state = AL.readUrl(DEFAULTS);
+    sortState.by  = state.sort_by  || DEFAULTS.sort_by;
+    sortState.dir = state.sort_dir || DEFAULTS.sort_dir;
+
+    bulk = AL.initBulkBar({ listId:'suppliers', tbody:document.getElementById('sup-tbody'), cbAllId:'sup-cb-all', onSuccess:function(){ load(); loadStats(); } });
+
+    ['sup-th-name','sup-th-email','sup-th-active'].forEach(function(id){
+      const th = document.getElementById(id); if(!th) return;
+      AL.makeSortable(th, th.dataset.col, sortState, function(){ load(1); });
+    });
+
+    const searchEl = document.getElementById('sup-search');
+    const statusEl = document.getElementById('sup-status');
+    const ppEl     = document.getElementById('sup-per-page');
+    const resetEl  = document.getElementById('sup-reset');
+
+    if(searchEl){ searchEl.value=state.search;     let t; searchEl.addEventListener('input',function(){ state.search=this.value; clearTimeout(t); t=setTimeout(function(){ load(1); },350); }); }
+    if(statusEl){ statusEl.value=state.is_active;  statusEl.addEventListener('change',function(){ state.is_active=this.value; load(1); }); }
+    if(ppEl)    { ppEl.value=state.per_page;       ppEl.addEventListener('change',function(){ state.per_page=parseInt(this.value,10); load(1); }); }
+    if(resetEl) { resetEl.addEventListener('click',function(){ SUPS.reset(); }); }
+
+    load(parseInt(state.page,10)||1);
+    loadStats();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  return {
+    reset: function(){ state=Object.assign({},DEFAULTS); sortState.by='name'; sortState.dir='asc';
+      document.getElementById('sup-search').value='';
+      document.getElementById('sup-status').value='';
+      document.getElementById('sup-per-page').value='20';
+      load(1); loadStats();
+    },
+  };
+})();
+</script>
+@endpush

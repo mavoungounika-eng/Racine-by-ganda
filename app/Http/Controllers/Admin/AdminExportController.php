@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\OrdersExport;
 use App\Exports\UsersExport;
 use App\Exports\ProductsExport;
+use App\Exports\AdminMultiSheetExport;
+use App\Imports\AdminBulkImport;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
@@ -365,6 +367,36 @@ class AdminExportController extends Controller
         $totalOrders = $orders->count();
         
         return view('admin.reports.orders', compact('orders', 'filters', 'totalRevenue', 'totalOrders'));
+    }
+
+    /**
+     * Export Excel multi-onglets : commandes, clients, produits, créateurs, finances, POS, promos
+     */
+    public function exportMultiSheet()
+    {
+        $filename = 'admin_export_' . now()->format('Ymd_Hi') . '.xlsx';
+        return Excel::download(new AdminMultiSheetExport(), $filename);
+    }
+
+    /**
+     * Import Excel pour mise à jour DB (onglets : Commandes, Clients, Produits, Createurs, Promos)
+     */
+    public function importMultiSheet(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        $import = new AdminBulkImport();
+
+        try {
+            Excel::import($import, $request->file('file'));
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            return redirect()->back()->with('error', 'Erreur de validation : ' . count($failures) . ' ligne(s) invalide(s).');
+        }
+
+        return redirect()->back()->with('success', 'Import terminé. Données mises à jour avec succès.');
     }
 }
 

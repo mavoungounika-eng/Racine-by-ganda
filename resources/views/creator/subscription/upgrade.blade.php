@@ -4,7 +4,7 @@
 @section('page-title', 'Abonnements')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .pricing-container {
         max-width: 1200px;
         margin: 0 auto;

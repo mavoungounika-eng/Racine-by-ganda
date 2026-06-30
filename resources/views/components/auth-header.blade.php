@@ -46,7 +46,7 @@
     @endif
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
 .auth-title {
     font-size: 1.75rem;
     font-weight: 700;

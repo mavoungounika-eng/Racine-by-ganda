@@ -1,11 +1,11 @@
 @extends('layouts.creator')
 
-@section('title', 'Tableau de Bord Premium - RACINE BY GANDA')
-@section('page-title', 'Tableau de bord Premium')
+@section('title', 'Tableau de Bord Signature - RACINE BY GANDA')
+@section('page-title', 'Tableau de bord — Signature')
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creator-hero {
         background: linear-gradient(135deg, var(--racine-black) 0%, var(--racine-black-soft) 100%);
         padding: 3rem 0;
@@ -87,7 +87,7 @@
     }
     
     .premium-features {
-        background: linear-gradient(135deg, #FFF8F0 0%, #FFFBF5 100%);
+        background: linear-gradient(135deg, #FFFFFFFFF 0%, #FFFFFFFFF 100%);
         border: 2px solid var(--racine-orange);
         border-radius: var(--radius-xl);
         padding: 2rem;
@@ -107,7 +107,7 @@
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
                         <h2 style="color: white; margin: 0; font-size: 2rem;">Bonjour, {{ $creatorProfile->brand_name ?? $user->name ?? 'Créateur' }}</h2>
-                        <span class="premium-badge">⭐ Premium</span>
+                        <span class="premium-badge">✦ Signature</span>
                     </div>
                     <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 1rem;">Accès complet à toutes les fonctionnalités</p>
                 </div>
@@ -121,27 +121,27 @@
     {{-- STATS PREMIUM --}}
     <div class="stats-grid">
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Produits Publiés</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Produits Publiés</div>
             <div class="stat-card-value">{{ $stats['products_count'] ?? 0 }}</div>
-            <div style="font-size: 0.875rem; color: #8B7355;">{{ $stats['active_products_count'] ?? 0 }} actifs</div>
+            <div style="font-size: 0.875rem; color: #160D0C;">{{ $stats['active_products_count'] ?? 0 }} actifs</div>
         </div>
         
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Ventes Total</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Ventes Total</div>
             <div class="stat-card-value" style="font-size: 1.75rem;">
                 {{ number_format($stats['total_sales'] ?? 0, 0, ',', ' ') }}<small style="font-size: 0.6em;"> FCFA</small>
             </div>
         </div>
         
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Revenus ce Mois</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Revenus ce Mois</div>
             <div class="stat-card-value" style="font-size: 1.75rem;">
                 {{ number_format($stats['monthly_sales'] ?? 0, 0, ',', ' ') }}<small style="font-size: 0.6em;"> FCFA</small>
             </div>
         </div>
         
         <div class="stat-card">
-            <div style="font-size: 0.875rem; color: #8B7355; text-transform: uppercase; margin-bottom: 0.5rem;">Commandes en Attente</div>
+            <div style="font-size: 0.875rem; color: #160D0C; text-transform: uppercase; margin-bottom: 0.5rem;">Commandes en Attente</div>
             <div class="stat-card-value">{{ $stats['pending_orders'] ?? 0 }}</div>
         </div>
     </div>
@@ -158,63 +158,74 @@
         </div>
         @endif
 
-        {{-- PREMIUM FEATURES --}}
+        {{-- SIGNATURE FEATURES --}}
         <div class="premium-features">
             <h3 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; color: var(--racine-black);">
-                <i class="fas fa-star" style="color: var(--racine-orange);"></i> Fonctionnalités Premium
+                <i class="fas fa-star" style="color: var(--racine-orange);"></i> Fonctionnalités Signature
             </h3>
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+                    <i class="fas fa-check-circle" style="color: #FFB800;"></i>
                     <span>Produits illimités</span>
                 </li>
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fas fa-check-circle" style="color: #22c55e;"></i>
-                    <span>Analytics avancées</span>
+                    <i class="fas fa-check-circle" style="color: #FFB800;"></i>
+                    <span>Statistiques avancées</span>
                 </li>
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+                    <i class="fas fa-check-circle" style="color: #FFB800;"></i>
                     <span>Export de données</span>
                 </li>
                 <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(237, 95, 30, 0.2); display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fas fa-check-circle" style="color: #22c55e;"></i>
-                    <span>Accès API</span>
+                    <i class="fas fa-check-circle" style="color: #FFB800;"></i>
+                    <span>POS Electron inclus</span>
                 </li>
                 <li style="padding: 0.75rem 0; display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+                    <i class="fas fa-check-circle" style="color: #FFB800;"></i>
                     <span>Support dédié</span>
                 </li>
             </ul>
         </div>
     </div>
 
+    {{-- POS ELECTRON BLOC --}}
+    @if($user->hasCapability('can_use_pos'))
+    <div style="background: linear-gradient(135deg, #160D0C 0%, #2a1a18 100%); border-radius: 1rem; padding: 1.75rem; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h4 style="margin: 0 0 0.35rem 0; color: #FFB800; font-weight: 700; font-size: 1.1rem;"><i class="fas fa-cash-register"></i> POS Electron — Application de caisse</h4>
+            <p style="margin: 0; color: rgba(255,255,255,0.8); font-size: 0.9rem;">Téléchargez l'application desktop pour gérer votre caisse physique en ligne et hors ligne.</p>
+        </div>
+        <a href="{{ route('creator.pos.download') }}" style="padding: 0.7rem 1.5rem; background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; white-space: nowrap;"><i class="fas fa-download"></i> Télécharger POS</a>
+    </div>
+    @endif
+
     {{-- RECENT ORDERS --}}
     @if(isset($recentOrders) && $recentOrders->count() > 0)
     <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-md);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #F8F6F3;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #FFFFFF;">
             <h3 style="margin: 0; font-size: 1.5rem; color: var(--racine-black);">
                 <i class="fas fa-shopping-bag" style="color: var(--racine-orange);"></i> Commandes Récentes
             </h3>
-            <a href="{{ route('creator.orders.index') }}" style="color: #D4A574; text-decoration: none; font-weight: 500;">Voir tout <i class="fas fa-arrow-right"></i></a>
+            <a href="{{ route('creator.orders.index') }}" style="color: #FFB800; text-decoration: none; font-weight: 500;">Voir tout <i class="fas fa-arrow-right"></i></a>
         </div>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse;">
-                <thead style="background: #F8F6F3;">
+                <thead style="background: #FFFFFF;">
                     <tr>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Commande</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Client</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Montant</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Statut</th>
-                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #8B7355; font-size: 0.875rem;">Date</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Commande</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Client</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Montant</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Statut</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #160D0C; font-size: 0.875rem;">Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($recentOrders->take(10) as $order)
-                    <tr style="border-bottom: 1px solid #F8F6F3;">
-                        <td style="padding: 1rem;"><a href="{{ route('creator.orders.show', $order) }}" style="color: #D4A574; text-decoration: none; font-weight: 600;">#{{ $order->id }}</a></td>
+                    <tr style="border-bottom: 1px solid #FFFFFF;">
+                        <td style="padding: 1rem;"><a href="{{ route('creator.orders.show', $order) }}" style="color: #FFB800; text-decoration: none; font-weight: 600;">#{{ $order->id }}</a></td>
                         <td style="padding: 1rem;">{{ $order->customer_name ?? ($order->user->name ?? 'N/A') }}</td>
                         <td style="padding: 1rem;"><strong>{{ number_format($order->total_amount ?? 0, 0, ',', ' ') }} FCFA</strong></td>
-                        <td style="padding: 1rem;"><span style="padding: 0.375rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(34, 197, 94, 0.1); color: #22c55e;">{{ ucfirst($order->status ?? 'En attente') }}</span></td>
+                        <td style="padding: 1rem;"><span style="padding: 0.375rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(34, 197, 94, 0.1); color: #FFB800;">{{ ucfirst($order->status ?? 'En attente') }}</span></td>
                         <td style="padding: 1rem;">{{ $order->created_at->format('d/m/Y') }}</td>
                     </tr>
                     @endforeach
@@ -228,7 +239,7 @@
 @if(isset($salesData))
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
+<script nonce="{{ csp_nonce() }}">
     const ctx = document.getElementById('salesChart');
     if (ctx) {
         new Chart(ctx, {

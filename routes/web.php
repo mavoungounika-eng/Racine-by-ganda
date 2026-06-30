@@ -6,16 +6,26 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Front\FrontendController;
-use App\Http\Controllers\Auth\AuthHubController;
+use App\Http\Controllers\Frontend\FrontendContactController;
 use App\Http\Controllers\Auth\PublicAuthController;
-use App\Http\Controllers\Auth\ErpAuthController;
 use App\Http\Controllers\AppearanceController;
+use App\Http\Controllers\SitemapController;
+
+// ============================================
+// SITEMAP (SEO)
+// ============================================
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // ============================================
 // AUTH ROUTES (Unifiées)
 // ============================================
 // Toutes les routes d'authentification sont maintenant dans routes/auth.php
 require __DIR__.'/auth.php';
+
+// TEMPORARY: Test route
+Route::post('/test-api', function () {
+    return response()->json(['message' => 'Test API works']);
+});
 
 // ============================================
 // AUTH CRÉATEUR (Espace Créateur / Vendeur)
@@ -26,11 +36,43 @@ use App\Http\Controllers\Creator\CreatorFinanceController;
 use App\Http\Controllers\Creator\CreatorSettingsController;
 use App\Http\Controllers\Creator\CreatorMessageController;
 
-Route::prefix('createur')->name('creator.')->group(function () {
+// Métriques & Health Check
+Route::get('/metrics', [\App\Http\Controllers\Admin\MetricsController::class, 'prometheus'])
+    ->middleware('auth.basic');
+Route::get('/health', [\App\Http\Controllers\Admin\MetricsController::class, 'health']);
+
+// Admin Queue Metrics (requires admin auth)
+Route::middleware(['auth', 'can:viewAny,App\Models\Order'])->prefix('admin/queue-metrics')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\MetricsController::class, 'dashboard']);
+    Route::post('/circuit-breaker/{queue}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetCircuitBreaker']);
+    Route::post('/rate-limiter/{jobType}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetRateLimiter']);
+});
+
+Route::prefix('createur')->name('creator.')->middleware('throttle:50,1')->group(function () {
+    // ✅ C4: CGV Créateur (route publique)
+    Route::get('cgv', function () {
+        return view('creator.cgv');
+    })->name('cgv');
+    
+    // API Documentation (Swagger UI)
+    Route::get('/api/documentation', function () {
+        return redirect('/api/documentation');
+    });
+    
     // Routes publiques (guest)
     Route::middleware('guest')->group(function () {
-        Route::get('login', [CreatorAuthController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [CreatorAuthController::class, 'login'])->name('login.post');
+        // ====================================
+        // UNIFICATION LOGIN - Phase 2
+        // ====================================
+        // Les créateurs utilisent maintenant le login unifié /login
+        // Ces routes redirigent vers /login pour compatibilité
+        Route::get('login', function () {
+            return redirect()->route('login');
+        })->name('login');
+        
+        Route::post('login', function () {
+            return redirect()->route('login.post');
+        })->name('login.post');
         
         Route::get('register', [CreatorAuthController::class, 'showRegisterForm'])->name('register');
         Route::post('register', [CreatorAuthController::class, 'register'])->name('register.post');
@@ -53,7 +95,8 @@ Route::prefix('createur')->name('creator.')->group(function () {
     });
 
     // Routes protégées (créateur actif)
-    Route::middleware(['auth', 'role.creator', 'creator.active'])->group(function () {
+    // PHASE 3: Migration vers EnsureAuthenticated
+    Route::middleware(['ensure:creator,createur', 'creator.active', 'onboarding'])->group(function () {
         Route::get('dashboard', [CreatorDashboardController::class, 'index'])->name('dashboard');
         
         // Produits
@@ -72,6 +115,7 @@ Route::prefix('createur')->name('creator.')->group(function () {
         
         // Finances (Dashboard Financier - Phase 4)
         Route::get('/finances', [\App\Http\Controllers\Creator\CreatorFinanceDashboardController::class, 'index'])->name('finances.index');
+        Route::post('/finances/kyc-submit', [\App\Http\Controllers\Creator\CreatorFinanceController::class, 'submitKycDocument'])->name('finances.kyc-submit');
         
         // Paramètres (V1.5)
         Route::prefix('settings')->name('settings.')->group(function () {
@@ -138,6 +182,9 @@ Route::prefix('createur')->name('creator.')->group(function () {
         });
         
         // Abonnements (Phase 8 - Legacy, à migrer)
+        // POS Electron — téléchargement application desktop (plan Signature)
+        Route::get('pos/download', [\App\Http\Controllers\Creator\CreatorPosDownloadController::class, 'index'])->name('pos.download');
+
         Route::prefix('abonnement')->name('subscription.')->group(function () {
             Route::get('upgrade', [\App\Http\Controllers\Creator\SubscriptionController::class, 'upgrade'])->name('upgrade');
             Route::get('plan/{plan}', [\App\Http\Controllers\Creator\SubscriptionController::class, 'show'])->name('show');
@@ -145,9 +192,9 @@ Route::prefix('createur')->name('creator.')->group(function () {
             Route::get('plan/{plan}/paiement', [\App\Http\Controllers\Creator\SubscriptionController::class, 'payment'])->name('payment');
             Route::post('plan/{plan}/stripe', [\App\Http\Controllers\Creator\SubscriptionController::class, 'handleStripePayment'])->name('stripe');
             Route::post('plan/{plan}/mobile-money', [\App\Http\Controllers\Creator\SubscriptionController::class, 'handleMobileMoneyPayment'])->name('mobile-money');
-            // Callbacks Stripe Checkout
-            Route::get('plan/{plan}/checkout/success', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutSuccess'])->name('checkout.success');
-            Route::get('plan/{plan}/checkout/cancel', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutCancel'])->name('checkout.cancel');
+            // Callbacks Stripe Checkout (Legacy - renommées pour éviter conflit)
+            Route::get('plan/{plan}/checkout/success', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutSuccess'])->name('legacy.checkout.success');
+            Route::get('plan/{plan}/checkout/cancel', [\App\Http\Controllers\Creator\SubscriptionController::class, 'checkoutCancel'])->name('legacy.checkout.cancel');
             // Route legacy (dépréciée, conservée pour compatibilité)
             Route::get('plan/{plan}/success', [\App\Http\Controllers\Creator\SubscriptionController::class, 'handlePaymentSuccess'])->name('success');
             Route::get('actuel', [\App\Http\Controllers\Creator\SubscriptionController::class, 'current'])->name('current');
@@ -168,9 +215,9 @@ Route::prefix('createur')->name('creator.')->group(function () {
         
         // Notifications
         Route::get('notifications', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'index'])->name('notifications.index');
-        Route::patch('notifications/{notification}/marquer-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-        Route::patch('notifications/marquer-tout-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
         
+        Route::patch('notifications/marquer-tout-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAllAsRead'])->name('notifications.marquer-tout-lu');
+        Route::patch('notifications/{notification}/marquer-lu', [\App\Http\Controllers\Creator\CreatorNotificationController::class, 'markAsRead'])->name('notifications.marquer-lu');
         // Profil (route legacy - redirige vers la route unifiée)
         Route::get('profil', function () {
             return redirect()->route('profile.edit');
@@ -185,95 +232,54 @@ use App\Http\Controllers\Auth\TwoFactorController;
 
 // Challenge 2FA (lors de la connexion)
 Route::get('/2fa/challenge', [TwoFactorController::class, 'challenge'])->name('2fa.challenge');
-Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify');
+Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:10,1')->name('2fa.verify');
 
 // Gestion 2FA (utilisateur connecté)
 Route::middleware('auth')->prefix('2fa')->name('2fa.')->group(function () {
     Route::get('/setup', [TwoFactorController::class, 'setup'])->name('setup');
-    Route::post('/confirm', [TwoFactorController::class, 'confirm'])->name('confirm');
+    Route::post('/confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:5,1')->name('confirm');
     Route::get('/manage', [TwoFactorController::class, 'manage'])->name('manage');
     Route::post('/disable', [TwoFactorController::class, 'disable'])->name('disable');
     Route::post('/recovery-codes/regenerate', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('recovery-codes.regenerate');
 });
 
 // ============================================
-// ROUTES ERP (Désactivées temporairement - utiliser /login)
-// ============================================
-// Les routes ERP sont désactivées. Utiliser /login pour tous les utilisateurs.
-// Route::prefix('erp')->name('erp.')->group(function () {
-//     Route::middleware('guest')->group(function () {
-//         Route::get('/login', [ErpAuthController::class, 'showLoginForm'])->name('login');
-//         Route::post('/login', [ErpAuthController::class, 'login'])->name('login.post');
-//     });
-//     Route::post('/logout', [ErpAuthController::class, 'logout'])->name('logout')->middleware('auth');
-// });
-
-// ============================================
 // DASHBOARDS PAR RÔLE
 // ============================================
-Route::middleware('auth')->group(function () {
+// Dashboard Staff (alias vers dashboard équipe unique)
+// PHASE 3: Migration vers EnsureAuthenticated
+Route::get('/staff/dashboard', function () {
+    $now = now();
+    $stats = [
+        'monthly_sales'      => \App\Models\Order::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->sum('total_amount') ?? 0,
+        'monthly_orders'     => \App\Models\Order::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count(),
+        'pending_orders'     => \App\Models\Order::where('status', 'pending')->count(),
+        'total_clients'      => \App\Models\User::where('role', 'client')->count(),
+        'new_clients_month'  => \App\Models\User::where('role', 'client')->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count(),
+        'total_products'     => \App\Models\Product::where('is_active', true)->count(),
+        'low_stock_products' => \App\Models\StockAlert::where('status', 'active')->distinct('product_id')->count(),
+    ];
+    $recentActivity = [
+        'recent_orders' => \App\Models\Order::with('user')->latest()->limit(5)->get(),
+        'new_users'     => \App\Models\User::where('role', 'client')->latest()->limit(5)->get(),
+    ];
+    return view('admin.dashboard', compact('stats', 'recentActivity'));
+})->name('staff.dashboard')->middleware(['auth', 'ensure:staff,admin,super_admin']);
+
+// Onboarding
+Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(function () {
+    Route::get('/client',   [\App\Http\Controllers\OnboardingController::class, 'showClient'])->name('client');
+    Route::post('/client',  [\App\Http\Controllers\OnboardingController::class, 'completeClient'])->name('client.complete');
+    Route::get('/creator',  [\App\Http\Controllers\OnboardingController::class, 'showCreator'])->name('creator');
+    Route::post('/creator', [\App\Http\Controllers\OnboardingController::class, 'completeCreator'])->name('creator.complete');
+    Route::post('/skip',    [\App\Http\Controllers\OnboardingController::class, 'skip'])->name('skip');
+});
+
+Route::middleware(['auth', 'ensure:client', 'onboarding'])->group(function () {
     // Dashboard Client - Route principale (utiliser celle-ci uniquement)
     Route::get('/compte', [\App\Http\Controllers\Account\ClientAccountController::class, 'index'])
         ->name('account.dashboard');
-    
-    // Redirection depuis l'ancienne route du module Frontend vers la route principale
-    Route::get('/dashboard/client', function() {
-        return redirect()->route('account.dashboard');
-    })->name('dashboard.client.redirect');
-    
-    // Dashboard Créateur (route legacy - redirige vers la nouvelle route)
-    // ⚠️ Route obsolète : /atelier-creator mélangeait "atelier" (marque) et "creator" (marketplace)
-    // Utiliser /createur/dashboard à la place
-    Route::get('/atelier-creator', function() {
-        return redirect()->route('creator.dashboard');
-    })->name('creator.dashboard.legacy')->middleware('role.creator');
-    
-    // Dashboard Staff (temporaire - à implémenter)
-    Route::get('/staff/dashboard', function() {
-        return view('admin.dashboard'); // Utiliser le dashboard admin pour l'instant
-    })->name('staff.dashboard')->middleware('staff');
-    
-    // Routes Profil (Phase 7) - Unifiées pour tous les rôles
-    Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
-    Route::get('/profil/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
-    Route::get('/profil/commandes', [\App\Http\Controllers\ProfileController::class, 'orders'])->name('profile.orders');
-    Route::get('/profil/commandes/{order}', [\App\Http\Controllers\ProfileController::class, 'showOrder'])->name('profile.orders.show');
-    Route::get('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'addresses'])->name('profile.addresses');
-    Route::post('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
-    Route::delete('/profil/adresses/{address}', [\App\Http\Controllers\ProfileController::class, 'deleteAddress'])->name('profile.addresses.delete');
-    Route::get('/profil/fidelite', [\App\Http\Controllers\ProfileController::class, 'loyalty'])->name('profile.loyalty');
-    Route::post('/profil/verify-email', [\App\Http\Controllers\ProfileController::class, 'verifyProfessionalEmail'])->name('profile.verify-email');
-    
-    // Favoris
-    Route::get('/profil/favoris', [\App\Http\Controllers\Profile\WishlistController::class, 'index'])->name('profile.wishlist');
-    Route::post('/profil/favoris/add', [\App\Http\Controllers\Profile\WishlistController::class, 'add'])->name('profile.wishlist.add');
-    Route::delete('/profil/favoris/remove/{id}', [\App\Http\Controllers\Profile\WishlistController::class, 'remove'])->name('profile.wishlist.remove');
-    Route::post('/profil/favoris/toggle', [\App\Http\Controllers\Profile\WishlistController::class, 'toggle'])->name('profile.wishlist.toggle');
-    Route::post('/profil/favoris/clear', [\App\Http\Controllers\Profile\WishlistController::class, 'clear'])->name('profile.wishlist.clear');
 
-    // Reviews (Profile)
-    Route::get('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'index'])->name('profile.reviews');
-    Route::get('/profil/commandes/{order}/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'create'])->name('profile.reviews.create');
-    Route::post('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'store'])->name('profile.reviews.store');
-    Route::get('/profil/avis/{review}/edit', [\App\Http\Controllers\Profile\ReviewController::class, 'edit'])->name('profile.reviews.edit');
-    Route::put('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'update'])->name('profile.reviews.update');
-    Route::delete('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'destroy'])->name('profile.reviews.destroy');
-    
-    // Reviews (Frontend - depuis produit)
-    Route::post('/products/{product}/reviews', [\App\Http\Controllers\Front\ReviewController::class, 'store'])->name('reviews.store');
-    
-    // Factures
-    Route::get('/profil/commandes/{order}/facture', [\App\Http\Controllers\Profile\InvoiceController::class, 'show'])->name('profile.invoice.show');
-    Route::get('/profil/commandes/{order}/facture/download', [\App\Http\Controllers\Profile\InvoiceController::class, 'download'])->name('profile.invoice.download');
-    Route::get('/profil/commandes/{order}/facture/print', [\App\Http\Controllers\Profile\InvoiceController::class, 'print'])->name('profile.invoice.print');
-    
-    // Export Données RGPD
-    Route::get('/profil/export-donnees', [\App\Http\Controllers\Profile\DataExportController::class, 'export'])->name('profile.data.export');
-    Route::get('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'showDeleteAccount'])->name('profile.delete-account');
-    Route::delete('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'deleteAccount'])->name('profile.delete-account.destroy');
-    
     // Routes Apparence
     Route::get('/appearance/settings', [AppearanceController::class, 'index'])->name('appearance.settings');
     Route::post('/appearance/update', [AppearanceController::class, 'update'])->name('appearance.update');
@@ -292,6 +298,69 @@ Route::middleware('auth')->group(function () {
         Route::delete('/clear/read', [\App\Http\Controllers\NotificationController::class, 'deleteRead'])->name('delete-read');
     });
 
+    // Routes Sécurité - Gestion des sessions (Phase 10)
+    Route::prefix('account/security')->name('account.security.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\SecurityController::class, 'index'])->name('index');
+        Route::post('sessions/{id}/logout', [\App\Http\Controllers\Client\SecurityController::class, 'logoutOther'])->name('logout-session');
+        Route::post('logout-others', [\App\Http\Controllers\Client\SecurityController::class, 'logoutAllOthers'])->name('logout-others');
+    });
+});
+
+// Routes Profil & Messagerie — accessibles à tous les rôles authentifiés
+Route::middleware(['auth', 'ensure'])->group(function () {
+    // Routes Profil (Phase 7) - Unifiées pour tous les rôles
+    Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    Route::get('/profil/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/profil/commandes', [\App\Http\Controllers\ProfileController::class, 'orders'])->name('profile.orders');
+    Route::get('/profil/commandes/{order}', [\App\Http\Controllers\ProfileController::class, 'showOrder'])->name('profile.orders.show');
+    Route::post('/profil/commandes/{order}/cancel', [\App\Http\Controllers\ProfileController::class, 'cancelOrder'])->name('profile.orders.cancel');
+    Route::post('/profil/commandes/{order}/items/{item}/quantity', [\App\Http\Controllers\ProfileController::class, 'updateOrderItemQuantity'])->name('profile.orders.item.quantity');
+    Route::post('/profil/commandes/{order}/return', [\App\Http\Controllers\ProfileController::class, 'requestReturn'])->name('profile.orders.return');
+    Route::delete('/profil/commandes/{order}/articles/{item}', [\App\Http\Controllers\ProfileController::class, 'cancelItem'])->name('orders.items.cancel');
+    Route::patch('/profil/commandes/{order}/articles/{item}/restore', [\App\Http\Controllers\ProfileController::class, 'restoreItem'])->name('orders.items.restore');
+    Route::get('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'addresses'])->name('profile.addresses');
+    Route::post('/profil/adresses', [\App\Http\Controllers\ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
+    Route::delete('/profil/adresses/{address}', [\App\Http\Controllers\ProfileController::class, 'deleteAddress'])->name('profile.addresses.delete');
+    Route::get('/profil/fidelite', [\App\Http\Controllers\ProfileController::class, 'loyalty'])->name('profile.loyalty');
+    Route::post('/profil/verify-email', [\App\Http\Controllers\ProfileController::class, 'verifyProfessionalEmail'])->name('profile.verify-email');
+
+    // Favoris
+    Route::get('/profil/favoris', [\App\Http\Controllers\Profile\WishlistController::class, 'index'])->name('profile.wishlist');
+    Route::post('/profil/favoris/add', [\App\Http\Controllers\Profile\WishlistController::class, 'add'])->name('profile.wishlist.add');
+    Route::delete('/profil/favoris/remove/{id}', [\App\Http\Controllers\Profile\WishlistController::class, 'remove'])->name('profile.wishlist.remove');
+    Route::post('/profil/favoris/toggle', [\App\Http\Controllers\Profile\WishlistController::class, 'toggle'])->name('profile.wishlist.toggle');
+    Route::post('/profil/favoris/clear', [\App\Http\Controllers\Profile\WishlistController::class, 'clear'])->name('profile.wishlist.clear');
+
+    // Reviews (Profile)
+    Route::get('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'index'])->name('profile.reviews');
+    Route::get('/profil/commandes/{order}/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'create'])->name('profile.reviews.create');
+    Route::post('/profil/avis', [\App\Http\Controllers\Profile\ReviewController::class, 'store'])->name('profile.reviews.store');
+    Route::get('/profil/avis/{review}/edit', [\App\Http\Controllers\Profile\ReviewController::class, 'edit'])->name('profile.reviews.edit');
+    Route::put('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'update'])->name('profile.reviews.update');
+    Route::delete('/profil/avis/{review}', [\App\Http\Controllers\Profile\ReviewController::class, 'destroy'])->name('profile.reviews.destroy');
+
+    // Reviews (Frontend - depuis produit)
+    Route::post('/products/{product}/reviews', [\App\Http\Controllers\Front\ReviewController::class, 'store'])->name('reviews.store');
+
+    // Factures
+    Route::get('/profil/commandes/{order}/facture', [\App\Http\Controllers\Profile\InvoiceController::class, 'show'])->name('profile.invoice.show');
+    Route::get('/profil/commandes/{order}/facture/download', [\App\Http\Controllers\Profile\InvoiceController::class, 'download'])->name('profile.invoice.download');
+    Route::get('/profil/commandes/{order}/facture/print', [\App\Http\Controllers\Profile\InvoiceController::class, 'print'])->name('profile.invoice.print');
+
+    // Actions commandes annulées (client)
+    Route::patch('/profil/commandes/{order}/restore', [\App\Http\Controllers\ProfileController::class, 'restoreOrder'])->name('orders.restore');
+    Route::delete('/profil/commandes/{order}/archive', [\App\Http\Controllers\ProfileController::class, 'archiveOrder'])->name('orders.archive');
+    Route::post('/profil/commandes/{order}/recommander', [\App\Http\Controllers\ProfileController::class, 'reorderFromOrder'])->name('orders.reorder');
+    Route::patch('/profil/commandes/{order}/modifier', [\App\Http\Controllers\ProfileController::class, 'updateOrder'])->name('orders.update');
+    Route::get('/profil/commandes/{order}/relancer', [\App\Http\Controllers\Client\ClientOrderController::class, 'showRelaunchForm'])->name('client.orders.relaunch');
+    Route::post('/profil/commandes/{order}/relancer', [\App\Http\Controllers\Client\ClientOrderController::class, 'relaunch'])->name('client.orders.relaunch.submit');
+    // Export Données RGPD
+    Route::get('/profil/export-donnees', [\App\Http\Controllers\Profile\DataExportController::class, 'export'])->name('profile.data.export');
+    Route::get('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'showDeleteAccount'])->name('profile.delete-account');
+    Route::delete('/profil/supprimer-compte', [\App\Http\Controllers\Profile\DataExportController::class, 'deleteAccount'])->name('profile.delete-account.destroy');
+
     // Messagerie
     Route::prefix('messages')->name('messages.')->group(function () {
         Route::get('/', [\App\Http\Controllers\MessageController::class, 'index'])->name('index');
@@ -302,9 +371,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\MessageController::class, 'show'])->name('show');
         Route::get('/{id}/messages', [\App\Http\Controllers\MessageController::class, 'getMessages'])->name('get-messages');
         // Rate limiting: 10 messages par minute
-    Route::post('/{id}/send', [\App\Http\Controllers\MessageController::class, 'sendMessage'])
-        ->middleware('throttle:10,1')
-        ->name('send');
+        Route::post('/{id}/send', [\App\Http\Controllers\MessageController::class, 'sendMessage'])
+            ->middleware('throttle:10,1')
+            ->name('send');
         Route::put('/{id}/archive', [\App\Http\Controllers\MessageController::class, 'archive'])->name('archive');
         Route::put('/{id}/unarchive', [\App\Http\Controllers\MessageController::class, 'unarchive'])->name('unarchive');
         Route::put('/message/{messageId}/edit', [\App\Http\Controllers\MessageController::class, 'editMessage'])->name('edit-message');
@@ -315,6 +384,9 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+Route::get('/profile/professional-email/confirm', [\App\Http\Controllers\ProfileController::class, 'confirmProfessionalEmail'])
+    ->name('profile.professional-email.confirm');
+
 // ============================================
 // FRONTEND ROUTES
 // ============================================
@@ -324,14 +396,22 @@ Route::middleware('auth')->group(function () {
 Route::get('/language/{locale}', [\App\Http\Controllers\LanguageController::class, 'switch'])->name('language.switch');
 
 // Routes Frontend (Rate Limited: 60 req/min)
-Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
+// Anciennes routes statiques → CMS dynamique
+// Note: /a-propos, /cgv, /confidentialite, /mentions-legales sont définis comme
+// routes nommées dans le groupe frontend.* ci-dessous (voir terms, privacy, about, legal).
+// On garde ici uniquement les redirections qui n'ont pas de route nommée équivalente.
+Route::redirect('/faq', '/pages/faq', 301);
+Route::redirect('/contact-old', '/pages/contact', 301); // Eviter conflit avec /contact existant si souhaité
+
+Route::middleware('throttle:web')->name('frontend.')->group(function () {
     Route::get('/', [FrontendController::class, 'home'])->name('home');
     Route::get('/boutique', [FrontendController::class, 'shop'])->name('shop');
     Route::get('/search', [\App\Http\Controllers\Front\SearchController::class, 'index'])->name('search');
     Route::get('/api/search/suggest', [\App\Http\Controllers\Front\SearchController::class, 'suggest'])->name('search.suggest');
     Route::get('/showroom', [FrontendController::class, 'showroom'])->name('showroom');
     Route::get('/atelier', [FrontendController::class, 'atelier'])->name('atelier');
-    Route::get('/contact', [FrontendController::class, 'contact'])->name('contact');
+    Route::get('/contact', [FrontendContactController::class, 'show'])->name('contact');
+    Route::post('/contact', [FrontendContactController::class, 'submit'])->name('contact.submit');
     Route::get('/produit/{id}', [FrontendController::class, 'product'])->name('product');
     Route::get('/createurs', [FrontendController::class, 'creators'])->name('creators');
     Route::get('/marketplace', [FrontendController::class, 'marketplace'])->name('marketplace');
@@ -343,7 +423,8 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/albums', [FrontendController::class, 'albums'])->name('albums');
     Route::get('/amira-ganda', [FrontendController::class, 'ceo'])->name('ceo');
     
-    // Pages informatives
+    // ✅ LES ROUTES CI-DESSOUS SONT DÉRIVÉES VERS LE CMS VIA LES REDIRECTIONS EN HAUT DE CE FICHIER
+    // OU POINTENT VERS DES MÉTHODES QUI REDIRIGENT SI BESOIN.
     Route::get('/aide', [FrontendController::class, 'help'])->name('help');
     Route::get('/aide/compte-client-createur', [FrontendController::class, 'accountClientCreator'])->name('account-client-creator');
     Route::get('/livraison', [FrontendController::class, 'shipping'])->name('shipping');
@@ -351,13 +432,19 @@ Route::middleware('throttle:60,1')->name('frontend.')->group(function () {
     Route::get('/cgv', [FrontendController::class, 'terms'])->name('terms');
     Route::get('/confidentialite', [FrontendController::class, 'privacy'])->name('privacy');
     Route::get('/a-propos', [FrontendController::class, 'about'])->name('about');
+    Route::get('/cookies', [FrontendController::class, 'cookies'])->name('cookies');
+    Route::get('/mentions-legales', [FrontendController::class, 'legal'])->name('legal');
     Route::get('/devenir-createur', [FrontendController::class, 'becomeCreator'])->name('become-creator');
+
+    // ✅ NOUVEAU: Routes CMS dynamiques
+    Route::get('/pages/{slug}', [FrontendController::class, 'page'])->name('page.show');
+    Route::post('/banner/{id}/click', [\App\Http\Controllers\Api\Admin\BannerController::class, 'click'])->name('banner.click');
 });
 
 // ============================================
 // ROUTES ADMIN
 // ============================================
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('throttle:100,1')->group(function () {
     // PHASE 10: Gestion des abonnements créateurs
     Route::prefix('creator-subscriptions')->name('creator-subscriptions.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CreatorSubscriptionController::class, 'index'])->name('index');
@@ -365,15 +452,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('{creator}/plan', [\App\Http\Controllers\Admin\CreatorSubscriptionController::class, 'updatePlan'])->name('update-plan');
         Route::get('{creator}/audit', [\App\Http\Controllers\Admin\CreatorSubscriptionController::class, 'audit'])->name('audit');
     });
-    // Routes de login admin (désactivées - utiliser /login)
-    // Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
-    // Route::post('login', [AdminAuthController::class, 'login'])->name('login.post');
 
-    // Routes protégées par le middleware "admin" + "2fa" (sécurité production)
-    Route::middleware(['admin', '2fa'])->group(function () {
+    // Déconnexion accessible à tous les rôles de l'espace admin (admin, super_admin, staff)
+    Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+    // Routes protégées par le middleware "ensure:admin,super_admin" + "2fa" (sécurité production)
+    // PHASE 3: Migration vers EnsureAuthenticated middleware
+    Route::middleware(['ensure:admin,super_admin', '2fa'])->group(function () {
         // Phase 6: Dashboard Financier & BI
         Route::prefix('financial')->name('financial.')->group(function () {
-            Route::get('dashboard', [\App\Http\Controllers\Admin\FinancialDashboardController::class, 'index'])->name('dashboard');
+            Route::get('dashboard', [\App\Http\Controllers\Admin\FinancialDashboardController::class, 'showDashboard'])->name('dashboard');
             Route::get('snapshot', [\App\Http\Controllers\Admin\FinancialDashboardController::class, 'snapshot'])->name('snapshot');
         });
 
@@ -382,6 +470,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('creator/{id}', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'creator'])->name('creator');
             Route::get('overview', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'overview'])->name('overview');
         });
+
+        // Phase 7.5: IA Décisionnelle - Gouvernance (NOUVEAU)
+        Route::prefix('ai')->name('ai.')->group(function () {
+            Route::get('/creator/{id}', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'creator'])->name('creator');
+            Route::get('/overview', [\App\Http\Controllers\Admin\DecisionIntelligenceController::class, 'overview'])->name('overview');
+        });
+
 
         // Phase 8: Automatisation Contrôlée & Actions Assistées
         Route::prefix('actions')->name('actions.')->group(function () {
@@ -394,19 +489,41 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('{id}/execute', [\App\Http\Controllers\Admin\ActionController::class, 'execute'])->name('execute');
         });
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
+        Route::post('dashboard/refresh', [AdminDashboardController::class, 'refresh'])->name('dashboard.refresh');
+        Route::get('dashboard/kpis', [AdminDashboardController::class, 'kpis'])->name('dashboard.kpis');
+        Route::get('dashboard/chart', [AdminDashboardController::class, 'chartData'])->name('dashboard.chart');
 
         // Gestion des utilisateurs
+        Route::get('users/export/csv', [\App\Http\Controllers\Admin\AdminUserController::class, 'exportCsv'])->name('users.export.csv');
+        Route::get('users/data', [\App\Http\Controllers\Admin\AdminUserController::class, 'dataUsers'])->name('users.data');
+        Route::post('users/bulk-disable', [\App\Http\Controllers\Admin\AdminUserController::class, 'bulkDisable'])->name('users.bulk-disable');
+        Route::post('users/bulk-delete', [\App\Http\Controllers\Admin\AdminUserController::class, 'bulkDelete'])->name('users.bulk-delete');
         Route::resource('users', AdminUserController::class);
 
         // Gestion des rôles
         Route::resource('roles', AdminRoleController::class)->except(['show']);
 
         // Gestion des catégories
+        Route::get('categories/export/csv', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'exportCsv'])->name('categories.export.csv');
+        Route::get('categories/data', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'dataCategories'])->name('categories.data');
+        Route::post('categories/bulk-activate', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'bulkActivate'])->name('categories.bulk-activate');
+        Route::post('categories/bulk-deactivate', [\App\Http\Controllers\Admin\AdminCategoryController::class, 'bulkDeactivate'])->name('categories.bulk-deactivate');
         Route::resource('categories', \App\Http\Controllers\Admin\AdminCategoryController::class);
 
         // Gestion des produits
+        Route::get('products/data', [\App\Http\Controllers\Admin\AdminProductController::class, 'dataProducts'])->name('products.data');
+        Route::post('products/bulk-disable', [\App\Http\Controllers\Admin\AdminProductController::class, 'bulkDisable'])->name('products.bulk-disable');
+        Route::post('products/bulk-delete', [\App\Http\Controllers\Admin\AdminProductController::class, 'bulkDelete'])->name('products.bulk-delete');
         Route::resource('products', \App\Http\Controllers\Admin\AdminProductController::class);
+
+        // Gestion des codes promo (hors-show : tout se passe dans la liste + edit)
+        Route::get('promo-codes/export/csv', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'exportCsv'])->name('promo-codes.export.csv');
+        Route::get('promo-codes/data', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'dataPromoCodes'])->name('promo-codes.data');
+        Route::post('promo-codes/bulk-disable', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'bulkDisable'])->name('promo-codes.bulk-disable');
+        Route::post('promo-codes/bulk-delete', [\App\Http\Controllers\Admin\AdminPromoCodeController::class, 'bulkDelete'])->name('promo-codes.bulk-delete');
+        Route::resource('promo-codes', \App\Http\Controllers\Admin\AdminPromoCodeController::class)
+            ->except(['show'])
+            ->parameters(['promo-codes' => 'promo_code']);
         
         // Galerie d'images produits
         Route::prefix('products/{product}/images')->name('products.images.')->group(function () {
@@ -423,9 +540,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('/providers/{provider}', [\App\Http\Controllers\Admin\Payments\PaymentProviderController::class, 'update'])->name('providers.update');
             
             // Transactions (Sprint 3)
+            Route::get('/transactions/data', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'dataTransactions'])->name('transactions.data');
+            Route::get('/transactions/export/csv', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'exportCsv'])->name('transactions.export.csv');
             Route::get('/transactions', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'index'])->name('transactions.index');
             Route::get('/transactions/{transaction}', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'show'])->name('transactions.show');
-            Route::get('/transactions/export/csv', [\App\Http\Controllers\Admin\Payments\PaymentTransactionController::class, 'exportCsv'])->name('transactions.export.csv');
             
             // Webhooks (Sprint 3)
             Route::get('/webhooks', [\App\Http\Controllers\Admin\Payments\WebhookMonitorController::class, 'index'])->name('webhooks.index');
@@ -442,21 +560,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         // Gestion des commandes - Routes spécifiques AVANT la route resource
+        Route::get('orders/export/csv', [\App\Http\Controllers\Admin\AdminOrderController::class, 'exportCsv'])->name('orders.export.csv');
+        Route::get('orders/data', [\App\Http\Controllers\Admin\AdminOrderController::class, 'dataOrders'])->name('orders.data');
+        Route::post('orders/bulk-complete', [\App\Http\Controllers\Admin\AdminOrderController::class, 'bulkComplete'])->name('orders.bulk-complete');
+        Route::post('orders/bulk-cancel', [\App\Http\Controllers\Admin\AdminOrderController::class, 'bulkCancel'])->name('orders.bulk-cancel');
         Route::get('orders/scan', [\App\Http\Controllers\Admin\AdminOrderController::class, 'scanForm'])->name('orders.scan');
         Route::post('orders/scan', [\App\Http\Controllers\Admin\AdminOrderController::class, 'scanHandle'])->name('orders.scan.handle');
         Route::get('orders/{order}/qrcode', [\App\Http\Controllers\Admin\AdminOrderController::class, 'showQr'])->name('orders.qr');
-        
+        Route::get('orders/a-traiter', [\App\Http\Controllers\Admin\AdminOrderController::class, 'toHandle'])->name('orders.to-handle');
+        Route::patch('orders/{order}/articles/{item}/transition', [\App\Http\Controllers\Admin\AdminOrderController::class, 'transitionItem'])->name('orders.items.transition');
+        Route::post('orders/{order}/articles/{item}/return', [\App\Http\Controllers\Admin\AdminOrderController::class, 'processReturn'])->name('orders.items.return');
+
         // Route resource pour les commandes (doit être APRÈS les routes spécifiques)
         Route::resource('orders', \App\Http\Controllers\Admin\AdminOrderController::class)->only(['index', 'show', 'update']);
-        
-        // Système POS (Point of Sale) - Boutique physique
-        Route::prefix('pos')->name('pos.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('index');
-            Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
-            Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
-            Route::post('order/{order}/confirm-payment', [\App\Http\Controllers\Admin\PosController::class, 'confirmCardPayment'])->name('confirm-payment');
-            Route::get('order/{order}', [\App\Http\Controllers\Admin\PosController::class, 'getOrder'])->name('order');
-        });
         
         // Analytics / Dashboard
         Route::prefix('analytics')->name('analytics.')->group(function () {
@@ -465,7 +581,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/sales', [\App\Http\Controllers\Admin\AnalyticsController::class, 'sales'])->name('sales');
         });
 
+        // Queue Metrics & Management
+        Route::prefix('queue-metrics')->name('queue-metrics.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\MetricsController::class, 'dashboard'])->name('dashboard');
+            Route::post('/circuit-breaker/{queue}/reset', [\App\Http\Controllers\Admin\MetricsController::class, 'resetCircuitBreaker'])->name('circuit-breaker.reset');
+        });
+
+
         // Gestion des créateurs
+        Route::get('creators/data', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'dataCreators'])->name('creators.data');
+        Route::post('creators/bulk-verify', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'bulkVerify'])->name('creators.bulk-verify');
+        Route::post('creators/bulk-suspend', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'bulkSuspend'])->name('creators.bulk-suspend');
         Route::get('creators', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'index'])->name('creators.index');
         Route::get('creators/{id}', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'show'])->name('creators.show');
         Route::patch('creators/{id}/verify', [\App\Http\Controllers\Admin\AdminCreatorController::class, 'verify'])->name('creators.verify');
@@ -496,6 +622,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         
         // Dashboard KYC
         Route::prefix('kyc')->name('kyc.')->group(function () {
+            Route::get('/data', [\App\Http\Controllers\Admin\AdminKycController::class, 'dataKyc'])->name('data');
             Route::get('/', [\App\Http\Controllers\Admin\AdminKycController::class, 'index'])->name('index');
             Route::get('/creator/{creator}', [\App\Http\Controllers\Admin\AdminKycController::class, 'show'])->name('show');
             Route::post('/creator/{creator}/sync', [\App\Http\Controllers\Admin\AdminKycController::class, 'sync'])->name('sync');
@@ -505,7 +632,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('mobile-money')->name('mobile-money.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'index'])->name('index');
             Route::get('/{subscription}', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'show'])->name('show');
-            Route::post('/{subscription}/validate', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'validate'])->name('validate');
+            Route::post('/{subscription}/validate', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'validateTransaction'])->name('validate');
             Route::post('/{subscription}/reject', [\App\Http\Controllers\Admin\AdminMobileMoneyController::class, 'reject'])->name('reject');
         });
         
@@ -521,12 +648,27 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('users', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportUsers'])->name('users');
             Route::get('products', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportProducts'])->name('products');
             Route::get('financial-report', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportFinancialReport'])->name('financial-report');
+            Route::get('multi-sheet', [\App\Http\Controllers\Admin\AdminExportController::class, 'exportMultiSheet'])->name('multi-sheet');
+            Route::get('multi-sheet/page', fn () => view('admin.exports.multi-sheet'))->name('multi-sheet.page');
+            Route::post('multi-sheet/import', [\App\Http\Controllers\Admin\AdminExportController::class, 'importMultiSheet'])->name('multi-sheet.import');
         });
         
         // Paramètres
-        Route::get('settings', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
-        Route::post('settings', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
-        
+        Route::get('settings/{tab?}', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
+        Route::post('settings/{tab}', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/test/email', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testEmail'])->name('settings.test-email');
+        Route::post('settings/test/stripe', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testStripe'])->name('settings.test.stripe');
+        Route::post('settings/test/monetbil', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testMonetbil'])->name('settings.test.monetbil');
+        Route::post('settings/test/google', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testGoogle'])->name('settings.test.google');
+        Route::post('settings/test/ai', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'testAI'])->name('settings.test.ai');
+
+        Route::post('settings/actions/clear-cache', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'clearCache'])->name('settings.actions.clear-cache');
+        Route::post('settings/actions/retry-jobs', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'retryJobs'])->name('settings.actions.retry-jobs');
+        Route::get('settings/profile', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'showProfile'])->name('settings.profile');
+        Route::post('settings/profile/update', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'updateProfile'])->name('settings.profile.update');
+        Route::post('settings/profile/password', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'updatePassword'])->name('settings.profile.password');
+        Route::post('settings/profile/logout-others', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'logoutOtherSessions'])->name('settings.profile.logout-others');
+
         // Notifications
         Route::get('notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->name('notifications.index');
         Route::get('orders/{order}/qrcode', [\App\Http\Controllers\Admin\AdminOrderController::class, 'showQr'])->name('orders.qr');
@@ -543,11 +685,60 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/routes', [\App\Http\Controllers\Admin\PerformanceController::class, 'routes'])->name('routes');
             Route::get('/alerts', [\App\Http\Controllers\Admin\PerformanceController::class, 'alerts'])->name('alerts');
         });
-
-        // Gestion CMS - Routes migrées vers modules/CMS/routes/web.php
-        // Utiliser les routes cms.admin.* du module CMS
     });
 });
+
+// ============================================
+// SYSTÈME POS (Point of Sale) - Interface Dédiée
+// ============================================
+// Groupe pour l'interface POS (Web) accessible par Staff et Admin
+// Situé en dehors du préfixe /admin pour correspondre à la configuration Electron
+Route::middleware(['auth', 'ensure:admin,super_admin,staff', '2fa'])->prefix('pos-terminal')->name('pos.interface.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('index');
+    Route::get('/sessions', [\App\Http\Controllers\Admin\PosController::class, 'sessions'])->name('sessions');
+    Route::get('/sessions/{id}/detail', [\App\Http\Controllers\Admin\PosController::class, 'showSession'])->name('sessions.detail');
+    Route::get('/sessions/export-global', [\App\Http\Controllers\Admin\PosController::class, 'exportAllCsv'])->name('sessions.export-global');
+    Route::get('/sessions/data', [\App\Http\Controllers\Admin\PosController::class, 'apiSessions'])->name('sessions.data');
+    Route::get('/sessions/{id}/export-csv', [\App\Http\Controllers\Admin\PosController::class, 'exportSessionCsv'])->name('sessions.export-csv');
+    Route::post('/sessions/{id}/force-close', [\App\Http\Controllers\Admin\PosController::class, 'apiForceClose'])->name('sessions.force-close');
+    Route::post('/sessions/bulk-close', [\App\Http\Controllers\Admin\PosController::class, 'bulkClose'])->name('sessions.bulk-close');
+    Route::get('/sessions/{id}/sales', [\App\Http\Controllers\Admin\PosController::class, 'apiSessionSales'])->name('sessions.sales');
+    Route::post('search-product', [\App\Http\Controllers\Admin\PosController::class, 'searchProduct'])->name('search-product');
+    Route::post('create-order', [\App\Http\Controllers\Admin\PosController::class, 'createOrder'])->name('create-order');
+    Route::post('order/{order}/confirm-payment', [\App\Http\Controllers\Admin\PosController::class, 'confirmCardPayment'])->name('confirm-payment');
+    Route::post('order/{order}/validate-pickup', [\App\Http\Controllers\Admin\PosController::class, 'validatePickup'])->name('validate-pickup');
+    Route::get('order/{order}', [\App\Http\Controllers\Admin\PosController::class, 'getOrder'])->name('order');
+    
+    // Analytics POS simplifiées pour le staff
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'index'])->name('index');
+        Route::post('/daily', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDailyReport'])->name('daily');
+        Route::post('/period', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getPeriodReport'])->name('period');
+        Route::post('/discrepancy', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'getDiscrepancyReport'])->name('discrepancy');
+        Route::get('/export', [\App\Http\Controllers\Admin\PosAnalyticsController::class, 'exportCsv'])->name('export');
+    });
+});
+
+
+
+
+
+// Multi-devise
+Route::post('/currency/switch', [\App\Http\Controllers\CurrencyController::class, 'switch'])->name('currency.switch');
+Route::post('/shipping/calculate', function(\Illuminate\Http\Request $req) {
+    $service = app(\App\Services\ShippingService::class);
+    $zone    = $service->detectZone($req->input('country'));
+    $cost    = $service->cost($zone, (float) $req->input('subtotal', 0));
+    $config  = $service->zoneConfig($zone);
+    return response()->json([
+        'cost'      => $cost,
+        'formatted' => format_price($cost),
+        'zone'      => $zone,
+        'label'     => $config['label'],
+        'delay'     => $config['delay'],
+        'free_above'=> format_price($config['free_above']),
+    ]);
+})->name('shipping.calculate')->middleware('web');
 
 // Routes Front-end (Panier & Checkout) - Rate Limited: 120 req/min
 Route::middleware('throttle:120,1')->group(function () {
@@ -578,12 +769,13 @@ Route::middleware(['auth', 'throttle:120,1'])->group(function () {
     Route::post('/api/checkout/validate-email', [\App\Http\Controllers\Front\CheckoutController::class, 'validateEmail'])->name('api.checkout.validate-email');
     Route::post('/api/checkout/validate-phone', [\App\Http\Controllers\Front\CheckoutController::class, 'validatePhone'])->name('api.checkout.validate-phone');
     Route::post('/api/checkout/apply-promo', [\App\Http\Controllers\Front\CheckoutController::class, 'applyPromo'])->name('api.checkout.apply-promo');
+    Route::post('/api/checkout/remove-promo', [\App\Http\Controllers\Front\CheckoutController::class, 'removePromo'])->name('api.checkout.remove-promo');
 });
 
 // Routes Paiement
 Route::middleware(['auth'])->group(function () {
     // Paiement par Carte Bancaire (Stripe)
-    Route::post('/checkout/card/pay', [\App\Http\Controllers\Front\CardPaymentController::class, 'pay'])->name('checkout.card.pay');
+    Route::match(['GET', 'POST'], '/checkout/card/pay', [\App\Http\Controllers\Front\CardPaymentController::class, 'pay'])->name('checkout.card.pay');
     Route::get('/checkout/card/{order}/success', [\App\Http\Controllers\Front\CardPaymentController::class, 'success'])->name('checkout.card.success');
     Route::get('/checkout/card/{order}/cancel', [\App\Http\Controllers\Front\CardPaymentController::class, 'cancel'])->name('checkout.card.cancel');
     
@@ -599,30 +791,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout/mobile-money/{order}/cancel', [\App\Http\Controllers\Front\MobileMoneyPaymentController::class, 'cancel'])->name('checkout.mobile-money.cancel');
 });
 
-// Webhook Stripe Legacy (déprécié - utiliser /api/webhooks/stripe)
-// TODO: Supprimer cette route après migration complète des webhooks Stripe vers /api/webhooks/stripe
-Route::post('/webhooks/stripe', [\App\Http\Controllers\Front\CardPaymentController::class, 'webhook'])
-    ->middleware([
-        'legacy.webhook.guard',
-        'legacy.webhook.deprecation',
-    ])
-    ->name('payment.webhook');
-
-// Webhook Stripe officiel pour paiement par carte (déprécié - utiliser /api/webhooks/stripe)
-// TODO: Supprimer cette route après migration complète des webhooks Stripe vers /api/webhooks/stripe
-Route::post('/payment/card/webhook', [\App\Http\Controllers\Front\CardPaymentController::class, 'webhook'])
-    ->middleware([
-        'legacy.webhook.guard',
-        'legacy.webhook.deprecation',
-    ])
-    ->name('payment.card.webhook');
-
 // Webhooks Payments Hub : Routes déplacées vers routes/api.php
 // Voir routes/api.php pour les routes /api/webhooks/stripe et /api/webhooks/monetbil
 Route::post('/payment/mobile-money/{provider}/callback', [\App\Http\Controllers\Front\MobileMoneyPaymentController::class, 'callback'])->name('payment.mobile-money.callback');
 
 // Monetbil Payment Routes
-Route::post('/payment/monetbil/start/{order}', [\App\Http\Controllers\Payments\MonetbilController::class, 'start'])->middleware(['auth'])->name('payment.monetbil.start');
+Route::match(['GET', 'POST'], '/payment/monetbil/start/{order}', [\App\Http\Controllers\Payments\MonetbilController::class, 'start'])->middleware(['auth'])->name('payment.monetbil.start');
 Route::match(['GET', 'POST'], '/payment/monetbil/notify', [\App\Http\Controllers\Payments\MonetbilController::class, 'notify'])->name('payment.monetbil.notify');
 
 // ============================================
@@ -640,3 +814,6 @@ Route::match(['GET', 'POST'], '/payment/monetbil/notify', [\App\Http\Controllers
 //         ->with('status', 'Déconnecté avec succès');
 // })->name('debug.force-logout');
 
+
+// Health Check Endpoint (monitoring)
+Route::get('/health', [App\Http\Controllers\HealthCheckController::class, 'health'])->name('health');

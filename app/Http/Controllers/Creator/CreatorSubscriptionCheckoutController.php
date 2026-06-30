@@ -34,24 +34,43 @@ class CreatorSubscriptionCheckoutController extends Controller
     }
 
     /**
-     * Redirige vers Stripe Checkout pour un plan donné.
+     * Redirige vers Stripe Checkout pour un plan donne.
      */
     public function checkout(CreatorPlan $plan): RedirectResponse
     {
         $user = Auth::user();
 
+        if ((float) $plan->price <= 0.0) {
+            return redirect()->route('creator.subscription.plans')
+                ->with('info', 'Ce plan ne nécessite pas Stripe Checkout.');
+        }
+
+        if (empty($plan->stripe_price_id)) {
+            Log::warning('Plan creator sans stripe_price_id au checkout', [
+                'plan_id' => $plan->id,
+                'plan_code' => $plan->code,
+            ]);
+
+            return redirect()->route('creator.subscription.plans')
+                ->with('error', "Le plan '{$plan->name}' n'a pas de price_id Stripe. Lancez: php artisan stripe:sync-plans");
+        }
+
         try {
             $checkoutUrl = $this->subscriptionService->createCheckoutSession($user, $plan);
             return redirect()->away($checkoutUrl);
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la création de la session Checkout : ' . $e->getMessage());
+            Log::error('Erreur lors de la creation de la session Checkout : ' . $e->getMessage(), [
+                'plan_id' => $plan->id,
+                'user_id' => $user->id,
+            ]);
+
             return redirect()->route('creator.subscription.plans')
-                ->with('error', 'Impossible de créer la session de paiement. Veuillez réessayer plus tard.');
+                ->with('error', 'Impossible de creer la session de paiement. Verifiez la configuration Stripe des plans.');
         }
     }
 
     /**
-     * Gère le retour après paiement réussi.
+     * Gere le retour apres paiement reussi.
      */
     public function success(Request $request, CreatorPlan $plan): View
     {
@@ -62,18 +81,16 @@ class CreatorSubscriptionCheckoutController extends Controller
                 ->with('warning', 'Session de paiement introuvable.');
         }
 
-        // Le webhook Stripe s'occupera de créer/mettre à jour l'abonnement
-        // Afficher la page de confirmation avec les détails du plan
         return view('creator.subscriptions.success', compact('plan'));
     }
 
     /**
-     * Gère l'annulation du paiement.
+     * Gere l'annulation du paiement.
      */
     public function cancel(CreatorPlan $plan): RedirectResponse
     {
         return redirect()->route('creator.subscription.plans')
-            ->with('info', 'Vous avez annulé le paiement. Vous pouvez réessayer à tout moment.');
+            ->with('info', 'Vous avez annule le paiement. Vous pouvez reessayer a tout moment.');
     }
 
     /**
@@ -90,52 +107,41 @@ class CreatorSubscriptionCheckoutController extends Controller
     public function processMomoPayment(Request $request, CreatorPlan $plan): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'provider' => 'required|in:orange,mtn,moov,wave',
-            'phone' => 'required|string|regex:/^[0-9]{10}$/',
+            'phone' => 'required|string|min:9|max:15',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $user = Auth::user();
-        $provider = $request->input('provider');
-        $phone = $request->input('phone');
 
         try {
-            // TODO: Intégrer l'API de paiement Mobile Money (Monetbil, etc.)
-            // Pour l'instant, on simule un paiement réussi
-            
-            Log::info('Paiement Mobile Money initié', [
+            $monetbil = app(\App\Services\Payments\MonetbilService::class);
+
+            $paymentUrl = $monetbil->createPaymentUrl([
+                'amount'     => $plan->price,
+                'currency'   => 'XAF',
+                'phone'      => $request->input('phone'),
+                'reference'  => 'SUB-' . $user->id . '-' . $plan->id . '-' . time(),
+                'return_url' => route('creator.subscription.checkout.success', $plan),
+                'notify_url' => route('payment.monetbil.notify'),
+            ]);
+
+            Log::info('Monetbil subscription payment initiated', [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
-                'provider' => $provider,
-                'phone' => $phone,
-                'amount' => $plan->price,
             ]);
 
-            // Créer l'abonnement manuellement (en attendant l'intégration de l'API)
-            $subscription = $user->creatorProfile->subscriptions()->create([
-                'creator_plan_id' => $plan->id,
-                'status' => 'active',
-                'current_period_start' => now(),
-                'current_period_end' => now()->addMonth(),
-                'stripe_subscription_id' => null, // Pas de Stripe pour MoMo
-                'stripe_customer_id' => null,
-                'stripe_price_id' => null,
-            ]);
-
-            // Mettre à jour les capacités du créateur
-            app(\App\Services\CreatorCapabilityService::class)->clearCache($user->id);
-
-            return redirect()->route('creator.subscription.checkout.success', $plan)
-                ->with('session_id', 'momo_' . $subscription->id);
+            return redirect()->away($paymentUrl);
         } catch (\Exception $e) {
-            Log::error('Erreur lors du paiement Mobile Money : ' . $e->getMessage());
+            Log::error('Erreur paiement Monetbil abonnement : ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
+
             return redirect()->back()
-                ->with('error', 'Une erreur est survenue lors du paiement. Veuillez réessayer.');
+                ->with('error', 'Impossible d\'initier le paiement Mobile Money. Veuillez reessayer.');
         }
     }
 }

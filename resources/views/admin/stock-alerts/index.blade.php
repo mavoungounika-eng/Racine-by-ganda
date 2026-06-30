@@ -250,7 +250,7 @@
                     Affichage de {{ $alerts->firstItem() ?? 0 }} à {{ $alerts->lastItem() ?? 0 }} sur {{ $alerts->total() }} résultats
                 </div>
                 <div>
-                    {{ $alerts->links() }}
+                    {{ $alerts->links('vendor.pagination.bootstrap-5') }}
                 </div>
             </div>
         </div>

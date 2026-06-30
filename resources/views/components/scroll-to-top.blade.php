@@ -6,7 +6,7 @@
     <i class="fas fa-arrow-up"></i>
 </button>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     /* ===== SCROLL TO TOP BUTTON RACINE BY GANDA ===== */
     .scroll-to-top-btn {
         position: fixed;
@@ -59,7 +59,7 @@
     }
 </style>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
     (function() {
         const scrollBtn = document.getElementById('scroll-to-top');
         

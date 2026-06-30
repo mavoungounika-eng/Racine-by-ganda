@@ -7,7 +7,7 @@
     <!-- Note moyenne -->
     <div class="mb-4">
         <div class="d-flex align-items-center mb-2">
-            <strong class="mr-2">Note moyenne :</strong>
+            <strong class="me-2">Note moyenne :</strong>
             <div class="rating">
                 @for($i = 1; $i <= 5; $i++)
                     @if($i <= floor($product->average_rating))
@@ -19,7 +19,7 @@
                     @endif
                 @endfor
             </div>
-            <span class="ml-2"><strong>{{ number_format($product->average_rating, 1) }}/5</strong></span>
+            <span class="ms-2"><strong>{{ number_format($product->average_rating, 1) }}/5</strong></span>
         </div>
     </div>
 
@@ -31,7 +31,7 @@
                 <div>
                     <strong>{{ $review->user->name ?? 'Client' }}</strong>
                     @if($review->is_verified_purchase)
-                    <span class="badge badge-success ml-2">Achat vérifié</span>
+                    <span class="badge bg-success ms-2">Achat vérifié</span>
                     @endif
                 </div>
                 <div class="rating">
@@ -89,7 +89,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary">
-                <i class="icon-check mr-2"></i>
+                <i class="icon-check me-2"></i>
                 Publier mon avis
             </button>
         </form>
@@ -107,7 +107,7 @@
 </div>
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
 .rating-input {
     display: flex;
     flex-direction: row-reverse;

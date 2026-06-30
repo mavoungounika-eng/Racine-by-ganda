@@ -86,13 +86,13 @@
                 <i class="fas fa-tags text-[#ED5F1E]"></i>
                 Catégories
             </h3>
-            <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+            <div class="space-y-4 max-h-96 overflow-y-auto pe-2">
                 @foreach($categories as $parent)
                     <div class="category-group">
                         <div class="font-semibold text-[#2C1810] mb-2 text-sm uppercase tracking-wide">
                             {{ $parent->name }}
                         </div>
-                        <div class="space-y-2 ml-3">
+                        <div class="space-y-2 ms-3">
                             @foreach($parent->children as $child)
                                 <label class="flex items-center gap-2 cursor-pointer group">
                                     <input type="checkbox" 
@@ -191,14 +191,14 @@
         @if(request()->hasAny(['gender', 'product_type', 'category', 'price_min', 'price_max', 'stock_filter', 'search']))
             <a href="{{ route('frontend.shop') }}" 
                class="block w-full text-center py-2 px-4 border-2 border-[#E5DDD3] text-[#2C1810] rounded-lg hover:bg-[#F8F6F3] transition font-semibold">
-                <i class="fas fa-redo mr-2"></i>
+                <i class="fas fa-redo me-2"></i>
                 Réinitialiser les filtres
             </a>
         @endif
     </form>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     .shop-filters::-webkit-scrollbar {
         width: 6px;
     }

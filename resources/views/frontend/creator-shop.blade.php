@@ -1,9 +1,9 @@
 @extends('layouts.frontend')
 
-@section('title', $creatorProfile->brand_name . ' - Boutique Créateur - RACINE BY GANDA')
+@section('title', ($creatorProfile->brand_name ?? $creatorProfile->user->name) . ' - Boutique Créateur - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .creator-header {
         position: relative;
         margin-top: -70px;
@@ -12,7 +12,7 @@
     
     .creator-banner {
         height: 300px;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         position: relative;
         overflow: hidden;
     }
@@ -32,7 +32,7 @@
     {{-- Banner --}}
     <div class="creator-banner">
         @if($creatorProfile->banner_path)
-            <img src="{{ $creatorProfile->banner_path }}" alt="{{ $creatorProfile->brand_name }}">
+            <img src="{{ asset('storage/' . $creatorProfile->banner_path) }}" alt="{{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}">
         @endif
     </div>
     
@@ -43,17 +43,17 @@
                 {{-- Logo --}}
                 <div class="flex-shrink-0">
                     <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-2xl overflow-hidden">
-                        <img src="{{ $creatorProfile->logo_path ?? asset('images/default-creator.png') }}" 
-                             alt="{{ $creatorProfile->brand_name }}"
+                        <img src="{{ $creatorProfile->logo_path ? asset('storage/' . $creatorProfile->logo_path) : asset('images/default-creator.png') }}"
+                             alt="{{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}"
                              class="w-full h-full object-cover">
                     </div>
                 </div>
                 
                 {{-- Info --}}
-                <div class="flex-1 text-center md:text-left">
+                <div class="flex-1 text-center md:text-start">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                        <h1 class="text-3xl md:text-4xl font-bold text-[#2C1810]" style="font-family: 'Cormorant Garamond', serif;">
-                            {{ $creatorProfile->brand_name }}
+                        <h1 class="text-3xl md:text-4xl font-bold text-[#160D0C]" class="font-cormorant">
+                            {{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}
                         </h1>
                         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold w-fit mx-auto md:mx-0">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -64,7 +64,7 @@
                     </div>
                     
                     @if($creatorProfile->location)
-                        <p class="text-[#8B7355] mb-3 flex items-center gap-2 justify-center md:justify-start">
+                        <p class="text-[rgba(22,13,12,0.5)] mb-3 flex items-center gap-2 justify-center md:justify-start">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                             </svg>
@@ -81,11 +81,11 @@
                 
                 {{-- Stats & Social --}}
                 <div class="flex-shrink-0 text-center">
-                    <div class="bg-[#F8F6F3] rounded-2xl px-6 py-4 mb-3">
+                    <div class="bg-[rgba(22,13,12,0.05)] rounded-2xl px-6 py-4 mb-3">
                         <div class="text-3xl font-bold text-[#ED5F1E] mb-1">
                             {{ $products->total() }}
                         </div>
-                        <div class="text-sm text-[#8B7355]">
+                        <div class="text-sm text-[rgba(22,13,12,0.5)]">
                             Produit(s)
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                         @endif
                         @if($creatorProfile->website)
                             <a href="{{ $creatorProfile->website }}" target="_blank" 
-                               class="w-10 h-10 rounded-full bg-[#8B5A2B] text-white flex items-center justify-center hover:shadow-lg transition">
+                               class="w-10 h-10 rounded-full bg-[#160D0C] text-white flex items-center justify-center hover:shadow-lg transition">
                                 <i class="fas fa-globe"></i>
                             </a>
                         @endif
@@ -124,14 +124,14 @@
 </section>
 
 {{-- Products Section --}}
-<section class="py-12 bg-[#F8F6F3]">
+<section class="py-12 bg-[rgba(22,13,12,0.05)]">
     <div class="container">
         <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold text-[#2C1810]" style="font-family: 'Cormorant Garamond', serif;">
-                Produits de {{ $creatorProfile->brand_name }}
+            <h2 class="text-2xl font-bold text-[#160D0C]" class="font-cormorant">
+                Produits de {{ $creatorProfile->brand_name ?? $creatorProfile->user->name }}
             </h2>
             <a href="{{ route('frontend.shop', ['product_type' => 'marketplace']) }}" 
-               class="text-[#8B5A2B] hover:text-[#ED5F1E] transition flex items-center gap-2">
+               class="text-[#160D0C] hover:text-[#ED5F1E] transition flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -146,7 +146,11 @@
                        class="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
                         {{-- Image --}}
                         <div class="relative h-64 overflow-hidden">
-                            <img src="{{ $product->main_image ?? 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop' }}" 
+                            @php
+                                $rawImg = $product->main_image ?? null;
+                                $imgUrl = $rawImg ? asset('storage/' . (str_contains($rawImg, '/') ? $rawImg : 'products/' . $rawImg)) : null;
+                            @endphp
+                            <img src="{{ $imgUrl ?? asset('storage/catalogue/vetements/soiree-01.jpeg') }}"
                                  alt="{{ $product->title }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                             
@@ -168,15 +172,15 @@
                         
                         {{-- Info --}}
                         <div class="p-4">
-                            <p class="text-xs text-[#8B7355] uppercase tracking-wide mb-1">
+                            <p class="text-xs text-[rgba(22,13,12,0.5)] uppercase tracking-wide mb-1">
                                 {{ $product->category?->name }}
                             </p>
-                            <h3 class="text-lg font-semibold text-[#2C1810] mb-2 line-clamp-2 group-hover:text-[#ED5F1E] transition">
+                            <h3 class="text-lg font-semibold text-[#160D0C] mb-2 line-clamp-2 group-hover:text-[#ED5F1E] transition">
                                 {{ $product->title }}
                             </h3>
                             <div class="flex items-center justify-between">
-                                <p class="text-xl font-bold text-[#8B5A2B]">
-                                    {{ number_format($product->price, 0, ',', ' ') }} FCFA
+                                <p class="text-xl font-bold text-[#160D0C]">
+                                    {{ format_price($product->price) }}
                                 </p>
                                 @if($product->stock > 0)
                                     <span class="text-xs text-gray-500">

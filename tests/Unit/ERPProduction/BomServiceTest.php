@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\ERPProduction;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ERPProduction\Models\Bom;
@@ -33,8 +35,7 @@ class BomServiceTest extends TestCase
 
         $this->bomService = app(BomService::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_create_bom()
     {
         $bom = $this->bomService->createBom($this->product->id, [
@@ -50,8 +51,7 @@ class BomServiceTest extends TestCase
         $this->assertEquals($this->product->id, $bom->product_id);
         $this->assertTrue($bom->is_active);
     }
-
-    /** @test */
+    #[Test]
     public function it_sets_only_one_default_bom_per_product()
     {
         $bom1 = $this->bomService->createBom($this->product->id, [
@@ -72,8 +72,7 @@ class BomServiceTest extends TestCase
         $this->assertFalse($bom1->is_default);
         $this->assertTrue($bom2->is_default);
     }
-
-    /** @test */
+    #[Test]
     public function it_can_add_items_to_bom()
     {
         $bom = $this->bomService->createBom($this->product->id, [
@@ -96,8 +95,7 @@ class BomServiceTest extends TestCase
         $this->assertEquals(2.5, $item->quantity);
         $this->assertEquals(10.0, $item->waste_percentage);
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_total_material_cost()
     {
         $bom = $this->bomService->createBom($this->product->id, [
@@ -136,8 +134,7 @@ class BomServiceTest extends TestCase
 
         $this->assertEquals(14250, $totalCost); // 13,750 + 500
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_material_requirements_for_quantity()
     {
         $bom = $this->bomService->createBom($this->product->id, [
@@ -166,8 +163,7 @@ class BomServiceTest extends TestCase
         $this->assertEquals(12.5, $requirements[0]['quantity_needed']); // 2.5 × 5
         $this->assertEquals(13.75, $requirements[0]['quantity_with_waste']); // 12.5 × 1.1
     }
-
-    /** @test */
+    #[Test]
     public function it_can_duplicate_bom()
     {
         $originalBom = $this->bomService->createBom($this->product->id, [
@@ -189,8 +185,7 @@ class BomServiceTest extends TestCase
         $this->assertCount(1, $newBom->items);
         $this->assertEquals(2.5, $newBom->items->first()->quantity);
     }
-
-    /** @test */
+    #[Test]
     public function it_gets_default_bom_for_product()
     {
         $this->bomService->createBom($this->product->id, [

@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -49,13 +50,13 @@ class PublicAuthController extends Controller
             
             // Charger la relation roleRelation avant la redirection
             $user->load('roleRelation');
-            
+
             // Sauvegarder le style visuel si fourni
             if ($request->has('visual_style')) {
                 $settings = \App\Models\UserSetting::forUser($user->id);
                 $settings->update(['visual_style' => $request->visual_style]);
             }
-            
+
             return $this->redirectByRole($user);
         }
 
@@ -111,6 +112,7 @@ class PublicAuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role_id' => $role->id,
+            'auth_version' => 1,
         ]);
 
         // Charger la relation roleRelation avant la redirection
@@ -118,22 +120,17 @@ class PublicAuthController extends Controller
 
         // Connecter automatiquement l'utilisateur
         Auth::login($user);
+        // Envoyer email de vérification
+        $user->sendEmailVerificationNotification();
+        // Stocker UserContext en session (refresh depuis DB pour avoir le bon auth_version)
+        $user->refresh();
+        $contextResolver = app(\App\Services\Auth\UserContextResolver::class);
+        $context = $contextResolver->resolve($user);
+        $contextResolver->storeInSession($context);
 
-        return $this->redirectByRole($user);
+        return redirect()->route('verification.notice');
     }
 
-    /**
-     * Handle logout request.
-     */
-    public function logout(Request $request): RedirectResponse
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-    }
 
     /**
      * Afficher le formulaire "Mot de passe oublié"
@@ -149,6 +146,16 @@ class PublicAuthController extends Controller
     public function sendResetLink(Request $request): RedirectResponse
     {
         $request->validate(['email' => 'required|email']);
+
+        // Rate limiting: 3 tentatives par heure par IP
+        $key = 'password-reset:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $seconds = RateLimiter::availableIn($key);
+            return back()->withErrors([
+                'email' => 'Trop de tentatives. Réessayez dans ' . ceil($seconds / 60) . ' min.'
+            ]);
+        }
+        RateLimiter::hit($key, 3600); // 3 tentatives/heure
 
         $status = Password::sendResetLink(
             $request->only('email')

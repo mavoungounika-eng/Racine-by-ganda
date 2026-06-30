@@ -26,54 +26,13 @@ trait HandlesAuthRedirect
      */
     protected function getRedirectPath(User $user): string
     {
-        // Charger la relation roleRelation si pas déjà chargée
-        if (!$user->relationLoaded('roleRelation')) {
-            $user->load('roleRelation');
-        }
+        // 1. Résoudre le contexte utilisateur (Single Source of Truth)
+        $resolver = app(\App\Services\Auth\UserContextResolver::class);
+        $context = $resolver->resolve($user);
 
-        $roleSlug = $user->getRoleSlug() ?? 'client';
-
-        // Cas spécial : Créateur avec gestion des statuts
-        if (in_array($roleSlug, ['createur', 'creator'])) {
-            $creatorProfile = $user->creatorProfile;
-            
-            if (!$creatorProfile) {
-                // Pas de profil créateur → rediriger vers onboarding si existe, sinon register
-                return \Route::has('creator.onboarding') 
-                    ? route('creator.onboarding') 
-                    : route('creator.register');
-            }
-            
-            // Gérer les différents statuts du créateur
-            switch ($creatorProfile->status) {
-                case 'pending':
-                    // En attente de validation
-                    return route('creator.pending');
-                    
-                case 'suspended':
-                    // Suspendu
-                    return route('creator.suspended');
-                    
-                case 'active':
-                    // Actif → dashboard créateur
-                    return route('creator.dashboard');
-                    
-                case 'draft':
-                default:
-                    // Draft ou statut inconnu → onboarding
-                    return \Route::has('creator.onboarding') 
-                        ? route('creator.onboarding') 
-                        : route('creator.register');
-            }
-        }
-
-        // Cas par défaut selon le rôle
-        return match($roleSlug) {
-            'client' => route('account.dashboard'),
-            'staff' => route('staff.dashboard'),
-            'admin', 'super_admin' => route('admin.dashboard'),
-            default => route('frontend.home'),
-        };
+        // 2. Déléguer la décision de redirection au moteur dédié
+        $intended = session()->pull('url.intended');
+        $engine = app(\App\Services\Auth\PostLoginDecisionEngine::class);
+        return $engine->determineRedirect($context, $intended);
     }
 }
-

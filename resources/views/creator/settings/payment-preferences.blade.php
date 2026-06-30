@@ -1,295 +1,152 @@
 @extends('layouts.creator')
 
-@section('title', 'Préférences de Paiement - RACINE BY GANDA')
-@section('page-title', 'Préférences de Paiement')
-
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/creator/payment-preferences.css') }}">
-@endpush
+@section('title', 'Configuration Paiements Directs - RACINE BY GANDA')
+@section('page-title', 'Passerelles de Paiement')
 
 @section('content')
-<div class="payment-preferences-container">
-    
-    {{-- HEADER --}}
-    <div class="payment-header">
-        <div>
-            <h1 class="payment-title">Préférences de Paiement</h1>
-            <p class="payment-subtitle">Gérez vos méthodes de paiement pour recevoir vos revenus</p>
+<div class="container-fluid px-4">
+    <div class="alert alert-info border-0 shadow-sm mb-4">
+        <div class="d-flex align-items-center">
+            <div class="fs-4 me-3 text-primary"><i class="fas fa-shield-alt"></i></div>
+            <div>
+                <h5 class="alert-heading mb-1">Modèle SaaS Pur : Paiements Directs</h5>
+                <p class="mb-0 text-muted">
+                    RACINE agit comme un pur facilitateur technique. En configurant vos propres passerelles, 
+                    <strong>l'argent de vos ventes arrive directement sur votre compte</strong> sans passer par RACINE.
+                </p>
+            </div>
         </div>
-        @if($stripeAccount && $stripeAccount->payouts_enabled)
-            <span class="status-badge status-badge--success">
-                <i class="fas fa-check-circle"></i>
-                Actif
-            </span>
-        @else
-            <span class="status-badge status-badge--warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                Action Requise
-            </span>
-        @endif
     </div>
 
-    {{-- MESSAGES FLASH --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <i class="fas fa-check-circle"></i>
-            {{ session('success') }}
-            <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
+        <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show mb-4">
+            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="show"></button>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ session('error') }}
-            <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
+        <div class="alert alert-danger border-0 shadow-sm alert-dismissible fade show mb-4">
+            <i class="fas fa-exclamation-triangle me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="show"></button>
         </div>
     @endif
 
-    @if(session('warning'))
-        <div class="alert alert-warning alert-dismissible">
-            <i class="fas fa-exclamation-triangle"></i>
-            {{ session('warning') }}
-            <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
+    <div class="row g-4">
+        {{-- STRIPE DIRECT --}}
+        <div class="col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-primary-soft text-primary rounded-circle me-3">
+                                <i class="fab fa-stripe fs-4"></i>
+                            </div>
+                            <h5 class="mb-0">Stripe Direct (CB)</h5>
+                        </div>
+                        @if($preferences->stripe_secret_key)
+                            <span class="badge bg-success-soft text-success"><i class="fas fa-check"></i> Connecté</span>
+                        @else
+                            <span class="badge bg-danger-soft text-danger">Déconnecté</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('creator.settings.payment-preferences.stripe.connect') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Stripe Secret Key (sk_...)</label>
+                            <input type="password" name="stripe_secret_key" class="form-control" 
+                                   value="{{ $preferences->stripe_secret_key ? '********' : '' }}" required>
+                            <div class="form-text">Clé commençant par <code>sk_live_</code> ou <code>sk_test_</code>.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Stripe Publishable Key (pk_...)</label>
+                            <input type="text" name="stripe_publishable_key" class="form-control" 
+                                   value="{{ $preferences->stripe_publishable_key }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            Tester et Enregistrer Stripe
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer bg-light border-0 py-3">
+                    <small class="text-muted">
+                        <i class="fas fa-lock me-1"></i> Vos clés sont encryptées avant stockage.
+                    </small>
+                </div>
+            </div>
         </div>
-    @endif
 
-    {{-- STRIPE CONNECT CARD --}}
-    <div class="payment-card {{ $stripeAccount && $stripeAccount->payouts_enabled ? 'payment-card--success' : 'payment-card--warning' }}">
-        <div class="payment-card-header">
-            <div class="payment-card-icon {{ $stripeAccount && $stripeAccount->payouts_enabled ? 'payment-card-icon--success' : 'payment-card-icon--warning' }}">
-                <i class="fab fa-stripe"></i>
-            </div>
-            <div class="flex-grow-1">
-                <h3 class="payment-card-title">
-                    STRIPE CONNECT 
-                    <span class="badge-principal">Principal</span>
-                </h3>
-                @if($stripeAccount && $stripeAccount->payouts_enabled)
-                    <span class="status-badge status-badge--success status-badge--sm">
-                        <i class="fas fa-check"></i>
-                        Connecté
-                    </span>
-                @else
-                    <span class="status-badge status-badge--warning status-badge--sm">
-                        <i class="fas fa-exclamation-circle"></i>
-                        Configuration requise
-                    </span>
-                @endif
+        {{-- MONETBIL DIRECT --}}
+        <div class="col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-warning-soft text-warning rounded-circle me-3">
+                                <i class="fas fa-mobile-alt fs-4"></i>
+                            </div>
+                            <h5 class="mb-0">Monetbil (Mobile Money)</h5>
+                        </div>
+                        @if($preferences->momo_api_key)
+                            <span class="badge bg-success-soft text-success"><i class="fas fa-check"></i> Configuré</span>
+                        @else
+                            <span class="badge bg-danger-soft text-danger">Non configuré</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('creator.settings.payment-preferences.mobile-money.save') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Service Key</label>
+                            <input type="text" name="momo_provider" class="form-control" 
+                                   value="{{ $preferences->momo_provider }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Service Secret / API Key</label>
+                            <input type="password" name="momo_api_key" class="form-control" 
+                                   value="{{ $preferences->momo_api_key ? '********' : '' }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100 text-white">
+                            Enregistrer Monetbil
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer bg-light border-0 py-3">
+                    <small class="text-muted">
+                        Utilisé pour Orange Money, MTN MoMo et Airtel Money localement.
+                    </small>
+                </div>
             </div>
         </div>
 
-        @if(!$stripeAccount || !$stripeAccount->payouts_enabled)
-            {{-- État Inactif --}}
-            <div class="alert alert-warning-light">
-                <i class="fas fa-info-circle"></i>
-                <strong>Aucun compte Stripe Connect configuré</strong>
+        {{-- ZONE DE DANGER --}}
+        @if($preferences->stripe_secret_key || $preferences->momo_api_key)
+        <div class="col-12 mt-4">
+            <div class="card border-danger-soft bg-danger-soft shadow-none">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-danger mb-1">Désactiver mes passerelles</h6>
+                        <p class="mb-0 text-muted small">Vos produits ne pourront plus être achetés en ligne tant qu'aucune passerelle n'est active.</p>
+                    </div>
+                    <form action="{{ route('creator.settings.payment-preferences.stripe.disconnect') }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment déconnecter vos paiements directs ?');">
+                        @csrf
+                        <button type="submit" class="btn btn-danger btn-sm">Déconnecter tout</button>
+                    </form>
+                </div>
             </div>
-            <p class="payment-card-description">
-                Connectez votre compte Stripe pour recevoir vos paiements automatiquement. Nécessaire pour l'activation des autres méthodes.
-            </p>
-            <div class="payment-card-actions">
-                <form action="{{ route('creator.settings.payment-preferences.stripe.connect') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn-payment btn-payment--primary">
-                        Activer Stripe Connect
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </form>
-                <a href="#" class="payment-link" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
-                    Comment ça marche?
-                </a>
-            </div>
-        @else
-            {{-- État Actif --}}
-            <p class="payment-card-description">
-                <i class="fas fa-check-circle text-success"></i>
-                Vous recevez vos paiements automatiquement sur votre compte bancaire.
-            </p>
-            <div class="payment-card-actions">
-                <a href="{{ route('creator.finances.index') }}" class="btn-payment btn-payment--secondary">
-                    <i class="fas fa-chart-line"></i>
-                    Voir mon dashboard Stripe
-                </a>
-                <button class="btn-icon" data-bs-toggle="tooltip" title="En savoir plus">
-                    <i class="fas fa-info-circle"></i>
-                </button>
-            </div>
+        </div>
         @endif
     </div>
-
-    {{-- MOBILE MONEY CARD --}}
-    <div class="payment-card {{ $stripeAccount && $stripeAccount->payouts_enabled ? 'payment-card--info' : 'payment-card--disabled' }}">
-        <div class="payment-card-header">
-            <div class="payment-card-icon {{ $stripeAccount && $stripeAccount->payouts_enabled ? 'payment-card-icon--orange' : 'payment-card-icon--gray' }}">
-                <i class="fas fa-mobile-alt"></i>
-            </div>
-            <div class="flex-grow-1">
-                <h3 class="payment-card-title">
-                    MOBILE MONEY 
-                    <span class="badge-secondary">Secours</span>
-                </h3>
-                @if(!$stripeAccount || !$stripeAccount->payouts_enabled)
-                    <span class="status-badge status-badge--disabled status-badge--sm">
-                        Indisponible
-                    </span>
-                @elseif($preferences->hasMobileMoneyConfigured())
-                    <span class="status-badge status-badge--success status-badge--sm">
-                        <i class="fas fa-check"></i>
-                        Configuré
-                    </span>
-                @else
-                    <span class="status-badge status-badge--warning status-badge--sm">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Configuration recommandée
-                    </span>
-                @endif
-            </div>
-        </div>
-
-        @if(!$stripeAccount || !$stripeAccount->payouts_enabled)
-            <p class="payment-card-description text-muted">
-                <i class="fas fa-lock"></i>
-                Activez d'abord Stripe Connect.
-            </p>
-        @else
-            <p class="payment-card-description">
-                Moyen de secours en cas de problème Stripe. Les paiements locaux sont plus rapides.
-            </p>
-
-            <form action="{{ route('creator.settings.payment-preferences.mobile-money.save') }}" method="POST" id="mobileMoneyForm">
-                @csrf
-                <div class="form-group">
-                    <label for="operator">Opérateur</label>
-                    <select name="operator" id="operator" class="form-control @error('operator') is-invalid @enderror">
-                        <option value="">Sélectionner...</option>
-                        <option value="orange" {{ old('operator', $preferences->mobile_money_operator) == 'orange' ? 'selected' : '' }}>Orange Money</option>
-                        <option value="mtn" {{ old('operator', $preferences->mobile_money_operator) == 'mtn' ? 'selected' : '' }}>MTN MoMo</option>
-                        <option value="wave" {{ old('operator', $preferences->mobile_money_operator) == 'wave' ? 'selected' : '' }}>Wave</option>
-                    </select>
-                    @error('operator')
-                        <span class="error-message">
-                            <i class="fas fa-exclamation-circle"></i>
-                            {{ $message }}
-                        </span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="phone">Numéro de téléphone</label>
-                    <input 
-                        type="tel" 
-                        name="phone" 
-                        id="phone" 
-                        class="form-control @error('phone') is-invalid @enderror"
-                        placeholder="0XXXXXXXXX"
-                        value="{{ old('phone', $preferences->mobile_money_number) }}"
-                        maxlength="10"
-                    >
-                    @error('phone')
-                        <span class="error-message">
-                            <i class="fas fa-exclamation-circle"></i>
-                            {{ $message }}
-                        </span>
-                    @enderror
-                </div>
-
-                <button type="submit" class="btn-payment btn-payment--primary">
-                    <i class="fas fa-save"></i>
-                    Sauvegarder
-                </button>
-            </form>
-        @endif
-    </div>
-
-    {{-- FACTURATION INFO CARD --}}
-    <div class="payment-card payment-card--info-light">
-        <div class="payment-card-header">
-            <div class="payment-card-icon payment-card-icon--blue">
-                <i class="fas fa-receipt"></i>
-            </div>
-            <div>
-                <h3 class="payment-card-title">FACTURATION INFO</h3>
-            </div>
-        </div>
-
-        <div class="info-grid">
-            <div class="info-item">
-                <i class="fas fa-crown text-orange-500"></i>
-                <div>
-                    <div class="info-label">Plan Actuel</div>
-                    <div class="info-value">Créateur Premium</div>
-                </div>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-calendar-alt text-orange-500"></i>
-                <div>
-                    <div class="info-label">Prochain Paiement</div>
-                    <div class="info-value">{{ $preferences->payout_schedule === 'automatic' ? 'Dans 7 jours' : 'Le 1er du mois' }}</div>
-                </div>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-percentage text-orange-500"></i>
-                <div>
-                    <div class="info-label">Frais de Plateforme</div>
-                    <div class="info-value">5% par transaction + 0.30€</div>
-                </div>
-            </div>
-        </div>
-
-        <a href="{{ route('creator.finances.index') }}" class="payment-link">
-            Voir l'historique complet
-            <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-
-    {{-- LIEN VERS PARAMÈTRES AVANCÉS --}}
-    <div class="text-center mt-4">
-        <a href="{{ route('creator.settings.payment-preferences.advanced') }}" class="btn-payment btn-payment--secondary">
-            <i class="fas fa-cog"></i>
-            Paramètres Avancés
-        </a>
-    </div>
-
 </div>
 
-{{-- MODAL "Comment ça marche?" --}}
-<div class="modal fade" id="howItWorksModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fab fa-stripe text-primary"></i>
-                    Comment fonctionne Stripe Connect?
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <ul class="feature-list">
-                    <li><i class="fas fa-check text-success"></i> Paiements automatiques sous 7 jours</li>
-                    <li><i class="fas fa-check text-success"></i> Sécurisé et conforme aux normes bancaires</li>
-                    <li><i class="fas fa-check text-success"></i> Tableau de bord détaillé de vos revenus</li>
-                    <li><i class="fas fa-check text-success"></i> Support 24/7</li>
-                </ul>
-                <div class="alert alert-info mt-3">
-                    <i class="fas fa-info-circle"></i>
-                    Vous serez redirigé vers Stripe pour compléter votre profil en toute sécurité.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-payment btn-payment--secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-</div>
+<style nonce="{{ csp_nonce() }}">
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-danger-soft { background-color: rgba(220, 53, 69, 0.1); }
+    .bg-warning-soft { background-color: rgba(255, 193, 7, 0.1); }
+    .avatar-sm { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+</style>
 @endsection
-
-@push('scripts')
-<script src="{{ asset('js/creator/payment-preferences.js') }}"></script>
-@endpush

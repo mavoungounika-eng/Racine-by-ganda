@@ -4,19 +4,19 @@
     <div class="row no-gutters d-flex align-items-start align-items-center px-md-0">
       <div class="col-lg-12 d-block">
         <div class="row d-flex">
-          <div class="col-md pr-4 d-flex topper align-items-center">
-            <div class="icon mr-2 d-flex justify-content-center align-items-center">
+          <div class="col-md pe-4 d-flex topper align-items-center">
+            <div class="icon me-2 d-flex justify-content-center align-items-center">
               <span class="icon-phone2"></span>
             </div>
-            <span class="text">+242 06 6XX XX XX</span>
+            <span class="text">{{ config('company.phone') }}</span>
           </div>
-          <div class="col-md pr-4 d-flex topper align-items-center">
-            <div class="icon mr-2 d-flex justify-content-center align-items-center">
+          <div class="col-md pe-4 d-flex topper align-items-center">
+            <div class="icon me-2 d-flex justify-content-center align-items-center">
               <span class="icon-paper-plane"></span>
             </div>
-            <span class="text">contact@racinebyganda.com</span>
+            <span class="text">{{ config('company.email') }}</span>
           </div>
-          <div class="col-md-5 pr-4 d-flex topper align-items-center text-lg-right">
+          <div class="col-md-5 pe-4 d-flex topper align-items-center text-lg-right">
             <span class="text">Livraison gratuite à Pointe-Noire &amp; Retours gratuits</span>
           </div>
         </div>
@@ -39,7 +39,7 @@
     </button>
 
     <div class="collapse navbar-collapse" id="ftco-nav">
-      <ul class="navbar-nav ml-auto">
+      <ul class="navbar-nav ms-auto">
         <li class="nav-item {{ request()->routeIs('frontend.home') ? 'active' : '' }}">
           <a href="{{ route('frontend.home') }}" class="nav-link">Accueil</a>
         </li>
@@ -122,7 +122,7 @@
           <a href="{{ route('cart.index') }}" class="nav-link position-relative">
             <span class="icon-shopping_cart"></span>
             @if(isset($cartCount) && $cartCount > 0)
-              <span class="badge badge-danger position-absolute" 
+              <span class="badge bg-danger position-absolute" 
                     style="top: -8px; right: -8px; font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 50%; min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"
                     id="cart-count-badge">{{ $cartCount }}</span>
             @endif

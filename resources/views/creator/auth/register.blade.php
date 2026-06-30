@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ouverture de Compte Créateur - RACINE BY GANDA</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    <style nonce="{{ csp_nonce() }}">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -298,10 +298,17 @@
     <div class="noise"></div>
     
     <div class="container">
-        <a href="{{ route('auth.hub') }}" class="auth-back-link">
-            <i class="fas fa-arrow-left"></i>
-            <span>Retour au choix d'espace</span>
-        </a>
+        {{-- Boutons de navigation --}}
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <a href="javascript:history.back()" class="auth-back-link" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; transition: all 0.3s;">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+            <a href="{{ route('frontend.home') }}" class="auth-back-link" style="flex: 1; min-width: 140px; text-align: center; padding: 0.75rem 1.5rem; background: rgba(212, 165, 116, 0.1); border: 1px solid rgba(212, 165, 116, 0.2); border-radius: 12px; transition: all 0.3s;">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+        </div>
         
         <div class="register-card">
             <div class="register-header">
@@ -315,7 +322,7 @@
             </div>
             
             {{-- MESSAGE INFORMATIF --}}
-            <div style="background: rgba(212, 165, 116, 0.15); border: 1px solid rgba(212, 165, 116, 0.3); border-left: 4px solid #D4A574; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem;">
+            <div style="background: rgba(212, 165, 116, 0.15); border: 1px solid rgba(212, 165, 116, 0.3); border-start: 4px solid #D4A574; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem;">
                 <div style="display: flex; align-items: start; gap: 0.75rem;">
                     <i class="fas fa-info-circle" style="color: #D4A574; font-size: 1rem; margin-top: 0.1rem;"></i>
                     <div>
@@ -333,24 +340,12 @@
                     <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">Ou s'inscrire avec</span>
                 </div>
                 
-                <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'creator']) }}" 
+                <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'createur']) }}" 
                    class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 0.75rem;">
                     <i class="fab fa-google"></i>
                     <span>S'inscrire avec Google</span>
                 </a>
-                
-                <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'creator']) }}" 
-                   class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.3); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 0.75rem;">
-                    <i class="fab fa-apple"></i>
-                    <span>S'inscrire avec Apple</span>
-                </a>
-                
-                <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'creator']) }}" 
-                   class="btn-social-google" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border-radius: 999px; border: 1px solid rgba(24, 119, 242, 0.4); background: rgba(24, 119, 242, 0.2); color: #fff; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; margin-bottom: 1rem;">
-                    <i class="fab fa-facebook-f"></i>
-                    <span>S'inscrire avec Facebook</span>
-                </a>
-                
+
                 <div style="text-align: center; margin: 1.5rem 0 1rem 0;">
                     <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">Ou remplir le formulaire</span>
                 </div>
@@ -559,6 +554,20 @@
                     </div>
                 </div>
                 
+                {{-- ✅ C4: CGV CRÉATEUR (nouveau) --}}
+                <div class="form-check">
+                    <input 
+                        type="checkbox" 
+                        class="form-check-input" 
+                        id="cgv_creator" 
+                        name="cgv_creator" 
+                        required
+                    >
+                    <label class="form-check-label" for="cgv_creator">
+                        J'accepte les <a href="{{ route('creator.cgv') }}" target="_blank" style="color: #D4A574; text-decoration: underline;">Conditions Générales de Vente Créateur</a> de RACINE BY GANDA. <span class="required">*</span>
+                    </label>
+                </div>
+                
                 <div class="form-check">
                     <input 
                         type="checkbox" 
@@ -578,7 +587,7 @@
             </form>
             
             <div class="register-footer">
-                <p>Déjà un compte créateur ? <a href="{{ route('creator.login') }}">Se connecter</a></p>
+                <p>Déjà un compte créateur ? <a href="{{ route('login') }}">Se connecter</a></p>
             </div>
             
             <div class="creator-link-section">

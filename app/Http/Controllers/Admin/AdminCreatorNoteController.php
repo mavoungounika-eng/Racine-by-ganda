@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CreatorProfile;
-use App\Models\CreatorAdminNote;
+use Modules\CreatorNetwork\Models\CreatorAdminNote;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 

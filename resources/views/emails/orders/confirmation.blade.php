@@ -7,7 +7,7 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #4F46E5;">RACINE BY GANDA</h1>
+        <h1 style="color: #4F46E5;">{{ config('company.name') }}</h1>
     </div>
 
     <h2 style="color: #4F46E5;">Confirmation de votre commande</h2>
@@ -55,8 +55,8 @@
     <p>Merci pour votre confiance !</p>
 
     <p style="margin-top: 30px;">
-        <strong>L'équipe RACINE BY GANDA</strong><br>
-        <a href="mailto:contact@racinebyganda.com">contact@racinebyganda.com</a><br>
+        <strong>L'équipe {{ config('company.name') }}</strong><br>
+        <a href="mailto:{{ config('company.email') }}">{{ config('company.email') }}</a><br>
         <a href="{{ route('frontend.home') }}">www.racinebyganda.com</a>
     </p>
 </body>

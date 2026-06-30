@@ -1,253 +1,277 @@
 @extends('layouts.creator')
 
-@section('title', 'Mes Préférences de Paiement - RACINE BY GANDA')
-@section('page-title', 'Préférences de Paiement')
+@section('title', 'Paramètres de Paiement - RACINE BY GANDA')
+@section('page-title', 'Paramètres de Paiement')
 
 @push('styles')
-<style>
-    .premium-card {
+<style nonce="{{ csp_nonce() }}">
+    .payment-card {
         background: white;
-        border-radius: 24px;
-        padding: 2.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(212, 165, 116, 0.1);
-    }
-
-    .payment-option {
-        border: 2px solid #E5DDD3;
-        border-radius: 16px;
-        padding: 1.5rem;
-        cursor: pointer;
-        transition: all 0.3s;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #F0EBE5;
         height: 100%;
+        transition: all 0.3s ease;
     }
 
-    .payment-option:hover {
-        border-color: #D4A574;
-        background: #F8F6F3;
+    .payment-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--racine-orange);
     }
 
-    .payment-option.active {
-        border-color: #ED5F1E;
-        background: rgba(237, 95, 30, 0.05);
-        box-shadow: 0 4px 12px rgba(237, 95, 30, 0.1);
-    }
-
-    .provider-logo {
+    .payment-icon-wrapper {
         width: 60px;
         height: 60px;
-        object-fit: contain;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stripe-icon { background: #F6F9FC; color: #635BFF; }
+    .momo-icon { background: #FFF7ED; color: #ED5F1E; }
+
+    .card-title-premium {
+        font-family: 'Libre Baskerville', serif;
+        font-weight: 700;
+        color: var(--racine-black);
+        margin-bottom: 0.5rem;
+    }
+
+    .badge-premium {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bg-success-premium { background: #DCFCE7; color: #166534; }
+    .bg-warning-premium { background: #FEF3C7; color: #92400E; }
+    .bg-info-premium { background: #E0F2FE; color: #075985; }
+
+    .payment-info-box {
+        background: #F8F6F3;
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid #E5DDD3;
+        margin-top: 2rem;
+    }
+
+    .info-item {
         margin-bottom: 1rem;
     }
-    
-    .form-control {
-        width: 100%;
-        padding: 0.875rem 1.25rem;
-        border: 2px solid #E5DDD3;
-        border-radius: 12px;
-        font-size: 0.95rem;
-        color: #2C1810;
-        background: white;
-        transition: all 0.3s;
+
+    .info-label {
+        color: #8B7355;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
     }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: #D4A574;
-        box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
-    }
-    
-    .premium-btn {
-        background: linear-gradient(135deg, #ED5F1E 0%, #FFB800 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 0.875rem 2rem;
+
+    .info-value {
+        color: var(--racine-black);
         font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.3s;
-        box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);
-        cursor: pointer;
+        display: block;
     }
-    
-    .premium-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(237, 95, 30, 0.4);
-        color: white;
+
+    .creator-label {
+        font-weight: 700;
+        color: var(--racine-black) !important;
+        margin-bottom: 0.5rem;
     }
 </style>
 @endpush
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="container-fluid py-4">
     
-    {{-- Feedback Messages --}}
+    {{-- Navigation Unifiée --}}
+    @include('creator.partials.settings-nav')
+
+    <div class="mb-5">
+        <h2 class="h3 font-weight-bold" style="color: var(--racine-black); font-family: 'Libre Baskerville', serif;">
+            Configuration des paiements
+        </h2>
+        <p class="text-muted font-weight-bold">Choisissez comment vous souhaitez recevoir vos revenus de créateur.</p>
+    </div>
+
+    {{-- MESSAGES --}}
     @if(session('success'))
-        <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-3">
-            <i class="fas fa-check-circle text-xl"></i>
-            {{ session('success') }}
+        <div class="alert alert-success border-0 shadow-sm mb-4 rounded-pill px-4">
+            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
         </div>
     @endif
 
-    <div class="premium-card">
-        <div class="mb-8 pb-6 border-b-2 border-[#E5DDD3]">
-            <h2 class="text-2xl font-bold text-[#2C1810]" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-wallet text-[#ED5F1E] mr-2"></i>
-                Préférences de Paiement
-            </h2>
-            <p class="text-[#8B7355] mt-2">Configurez vos moyens de reversement et consultez vos revenus.</p>
-            
-            {{-- Nouveau modèle économique --}}
-            <div class="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-info-circle text-blue-600 text-xl mt-1"></i>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-blue-900 mb-1">💰 Nouveau Modèle de Facturation</h4>
-                        <p class="text-sm text-blue-800">
-                            Vous recevez <strong>100% du prix HT</strong> de vos produits. 
-                            RACINE prélève <strong>5% de frais de service</strong> + <strong>TVA 18%</strong> sur le total.
-                        </p>
-                        <a href="{{ route('creator.finances.index') }}" class="inline-block mt-2 text-sm text-blue-700 hover:text-blue-900 font-semibold underline">
-                            <i class="fas fa-chart-line mr-1"></i>
-                            Voir mon dashboard financier
-                        </a>
+    @if(session('error'))
+        <div class="alert alert-danger border-0 shadow-sm mb-4 rounded-pill px-4">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+        </div>
+    @endif
+
+    <div class="row">
+        {{-- STRIPE CONNECT --}}
+        <div class="col-lg-6 mb-4">
+            <div class="payment-card">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="payment-icon-wrapper stripe-icon shadow-sm">
+                        <i class="fab fa-stripe"></i>
                     </div>
+                    @if($stripeAccount && $stripeAccount->versements_enabled)
+                        <span class="badge-premium bg-success-premium">
+                            <i class="fas fa-check-circle me-1"></i> Compte Actif
+                        </span>
+                    @else
+                        <span class="badge-premium bg-warning-premium">
+                            <i class="fas fa-clock me-1"></i> À configurer
+                        </span>
+                    @endif
+                </div>
+
+                <h3 class="card-title-premium h4">Stripe Connect</h3>
+                <p class="text-muted">Standard mondial pour les paiements en ligne. Recommandé pour les virements automatiques.</p>
+
+                <div class="mt-4">
+                    @if(!$stripeAccount || !$stripeAccount->versements_enabled)
+                        <div class="alert bg-warning border-0 px-3 py-3" style="background-color: #FEF3C7 !important;">
+                            <p class="small mb-0 font-weight-bold" style="color: #92400E !important;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Votre compte Stripe n'est pas encore actif. Connectez-vous pour automatiser vos virements bancaires.
+                            </p>
+                        </div>
+                    @else
+                        {{-- ... (reste inchangé) --}}
+                    @endif
+
+                    <form action="{{ route('creator.settings.payment-preferences.stripe.connect') }}" method="POST" class="{{ $stripeAccount && $stripeAccount->versements_enabled ? 'd-none' : '' }}">
+                        @csrf
+                        <button type="submit" class="btn creator-btn w-100 py-3">
+                            <i class="fas fa-link me-2"></i> Configurer mon compte Stripe
+                        </button>
+                    </form>
+
+                    @if($stripeAccount && $stripeAccount->versements_enabled)
+                        <div class="info-item border-bottom pb-2 mb-3">
+                            <span class="info-label">Identifiant Compte</span>
+                            <span class="info-value">{{ $stripeAccount->stripe_account_id }}</span>
+                        </div>
+                        <div class="info-item mb-4">
+                            <span class="info-label">Statut des virements</span>
+                            <span class="info-value {{ $stripeAccount->charges_enabled ? 'text-success' : 'text-warning' }}">
+                                {{ $stripeAccount->charges_enabled ? 'Opérations prêtes' : 'Vérification en cours' }}
+                            </span>
+                        </div>
+                        <a href="{{ route('creator.finances.index') }}" class="btn btn-outline-dark w-100 rounded-pill font-weight-bold">
+                            <i class="fas fa-external-link-alt me-2"></i> Gérer via le Tableau de bord
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
 
-        <form method="POST" action="{{ route('creator.settings.payment.update') }}">
-            @csrf
-            @method('PUT')
-
-
-            {{-- Widget Statut KYC --}}
-            @include('creator.partials.kyc-status-widget')
-
-            {{-- Stripe Connect (Phase 2) --}}
-            <div class="mt-8 mb-10 p-6 rounded-2xl border-2 {{ $stripeAccount && $stripeAccount->onboarding_status === 'complete' ? 'border-green-200 bg-green-50' : 'border-[#ED5F1E] border-dashed bg-orange-50' }}">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl {{ $stripeAccount && $stripeAccount->onboarding_status === 'complete' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-[#ED5F1E]' }}">
-                            <i class="fab fa-stripe"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-[#2C1810]">Stripe Connect</h3>
-                            <p class="text-sm text-[#8B7355]">Recevez vos paiements automatiquement sur votre compte bancaire.</p>
-                            
-                            @if($stripeAccount)
-                                <div class="mt-2 flex items-center gap-2">
-                                    @if($stripeAccount->onboarding_status === 'complete')
-                                        <span class="px-2 py-1 bg-green-200 text-green-800 text-xs font-bold rounded-full uppercase">Actif</span>
-                                        <span class="text-xs text-green-700"><i class="fas fa-check-circle mr-1"></i> Prêt pour les versements</span>
-                                    @else
-                                        <span class="px-2 py-1 bg-orange-200 text-orange-800 text-xs font-bold rounded-full uppercase">Incomplet</span>
-                                        <span class="text-xs text-orange-700"><i class="fas fa-exclamation-triangle mr-1"></i> Configuration à terminer</span>
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                    
-                    <div>
-                        @if(!$stripeAccount || $stripeAccount->onboarding_status !== 'complete')
-                            <a href="{{ route('creator.settings.stripe.connect') }}" class="premium-btn inline-block whitespace-nowrap">
-                                <i class="fas fa-plug mr-2"></i>
-                                {{ $stripeAccount ? 'Terminer la configuration' : 'Activer Stripe Connect' }}
-                            </a>
-                        @else
-                            <button type="button" disabled class="px-6 py-3 rounded-xl bg-green-600 text-white font-semibold cursor-default">
-                                <i class="fas fa-check-double mr-2"></i>
-                                Compte Connecté
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            {{-- Méthode de Paiement (Legacy / Local) --}}
-            <h3 class="text-lg font-semibold text-[#2C1810] mb-4">Moyen de secours (Mobile Money)</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                {{-- Mobile Money --}}
-                <label class="payment-option relative flex flex-col items-center text-center {{ old('payout_method', $profile->payout_method) == 'mobile_money' ? 'active' : '' }}">
-                    <input type="radio" name="payout_method" value="mobile_money" class="absolute opacity-0" 
-                           {{ old('payout_method', $profile->payout_method) == 'mobile_money' ? 'checked' : '' }}
-                           onchange="togglePaymentFields(this.value)">
-                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-3 text-orange-600 text-2xl">
+        {{-- MOBILE MONEY (SECOURS) --}}
+        <div class="col-lg-6 mb-4">
+            <div class="payment-card">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="payment-icon-wrapper momo-icon shadow-sm">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
-                    <span class="font-bold text-[#2C1810]">Mobile Money</span>
-                    <span class="text-sm text-[#8B7355] mt-1">Orange Money, MTN MoMo, Wave...</span>
-                </label>
+                    <span class="badge-premium bg-info-premium">Méthode Locales</span>
+                </div>
 
-                {{-- Virement Bancaire (Désactivé pour V1.5 mais visible) --}}
-                <label class="payment-option relative flex flex-col items-center text-center opacity-60 cursor-not-allowed bg-gray-50">
-                    <input type="radio" name="payout_method" value="bank_transfer" class="absolute opacity-0" disabled>
-                    <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-3 text-gray-500 text-2xl">
-                        <i class="fas fa-university"></i>
-                    </div>
-                    <span class="font-bold text-gray-500">Virement Bancaire</span>
-                    <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded mt-1">Bientôt disponible</span>
-                </label>
-            </div>
+                <h3 class="card-title-premium h4">Mobile Money</h3>
+                <p class="text-muted">Recevez vos fonds directement sur votre numéro Orange, MTN, Moov ou Wave.</p>
 
-            {{-- Champs Mobile Money --}}
-            <div id="mobile_money_fields" class="{{ old('payout_method', $profile->payout_method) == 'mobile_money' ? '' : 'hidden' }}">
-                <div class="bg-[#F8F6F3] p-6 rounded-xl border border-[#E5DDD3]">
-                    <h4 class="font-semibold text-[#2C1810] mb-4">Détails Mobile Money</h4>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="form-group">
-                            <label for="mobile_money_provider" class="form-label">Opérateur</label>
-                            <select id="mobile_money_provider" name="mobile_money_provider" class="form-control">
-                                <option value="">-- Choisir un opérateur --</option>
-                                <option value="orange" {{ (old('mobile_money_provider') ?? ($profile->payout_details['mobile_money']['provider'] ?? '')) == 'orange' ? 'selected' : '' }}>Orange Money</option>
-                                <option value="mtn" {{ (old('mobile_money_provider') ?? ($profile->payout_details['mobile_money']['provider'] ?? '')) == 'mtn' ? 'selected' : '' }}>MTN MoMo</option>
-                                <option value="moov" {{ (old('mobile_money_provider') ?? ($profile->payout_details['mobile_money']['provider'] ?? '')) == 'moov' ? 'selected' : '' }}>Moov Money</option>
-                                <option value="wave" {{ (old('mobile_money_provider') ?? ($profile->payout_details['mobile_money']['provider'] ?? '')) == 'wave' ? 'selected' : '' }}>Wave</option>
+                <div class="mt-4">
+                    {{-- On permet désormais la config MoMo même si Stripe est en attente, mais avec un avertissement --}}
+                    @if(!$stripeAccount || !$stripeAccount->versements_enabled)
+                        <div class="alert border-0 px-3 py-3 mb-4" style="background-color: #E0F2FE; color: #075985;">
+                            <p class="small mb-0 font-weight-bold">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Note : Stripe est recommandé pour les virements automatiques, mais vous pouvez configurer votre MoMo pour les retraits manuels.
+                            </p>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('creator.settings.payment.update') }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="versement_method" value="mobile_money">
+
+                        <div class="form-group mb-3">
+                            <label class="creator-label">Opérateur</label>
+                            <select name="mobile_money_provider" class="form-control creator-input h-auto py-3 @error('mobile_money_provider') is-invalid @enderror">
+                                <option value="">Choisir un opérateur</option>
+                                <option value="orange" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'orange' ? 'selected' : '' }}>Orange Money</option>
+                                <option value="mtn" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'mtn' ? 'selected' : '' }}>MTN MoMo</option>
+                                <option value="moov" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'moov' ? 'selected' : '' }}>Moov Money</option>
+                                <option value="wave" {{ old('mobile_money_provider', $profile->versement_details['mobile_money']['provider'] ?? '') == 'wave' ? 'selected' : '' }}>Wave</option>
                             </select>
-                            @error('mobile_money_provider') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                            @error('mobile_money_provider') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="form-group">
-                            <label for="mobile_money_number" class="form-label">Numéro de téléphone</label>
-                            <input type="text" id="mobile_money_number" name="mobile_money_number" 
-                                   value="{{ old('mobile_money_number') ?? ($profile->payout_details['mobile_money']['number'] ?? '') }}" 
-                                   placeholder="Ex: 0707070707" class="form-control">
-                            <p class="text-sm text-[#8B7355] mt-1">Le numéro doit être enregistré à votre nom.</p>
-                            @error('mobile_money_number') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                        <div class="form-group mb-3">
+                            <label class="creator-label">Numéro de téléphone</label>
+                            <input type="tel" name="mobile_money_number" class="form-control creator-input h-auto py-3 @error('mobile_money_number') is-invalid @enderror" 
+                                   placeholder="06 XXX XXX" value="{{ old('mobile_money_number', $profile->versement_details['mobile_money']['number'] ?? '') }}">
+                            @error('mobile_money_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                    </div>
+
+                        <div class="form-group mb-4">
+                            <label class="creator-label d-flex justify-content-between">
+                                Seuil de versement (F CFA)
+                                <span class="badge bg-info-premium shadow-none">Min. 5 000 F</span>
+                            </label>
+                            <input type="number" name="minimum_payout_threshold" class="form-control creator-input h-auto py-3 @error('minimum_payout_threshold') is-invalid @enderror" 
+                                   placeholder="5000" min="5000" step="1000"
+                                   value="{{ old('minimum_payout_threshold', $preferences->minimum_payout_threshold ?? 5000) }}">
+                            <small class="text-muted">Vos gains seront transférés dès ce montant atteint.</small>
+                            @error('minimum_payout_threshold') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill font-weight-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i> Sauvegarder mes coordonnées MoMo
+                        </button>
+                    </form>
                 </div>
             </div>
+        </div>
+    </div>
 
-            {{-- Actions --}}
-            <div class="flex items-center justify-end gap-4 pt-6 mt-6 border-t-2 border-[#E5DDD3]">
-                <a href="{{ route('creator.dashboard') }}" class="px-6 py-3 rounded-xl border-2 border-[#E5DDD3] text-[#2C1810] font-semibold hover:bg-[#F8F6F3] transition-colors">
-                    Annuler
-                </a>
-                <button type="submit" class="premium-btn">
-                    <i class="fas fa-save mr-2"></i>
-                    Sauvegarder les préférences
-                </button>
+    {{-- INFORMATIONS --}}
+    <div class="payment-info-box shadow-sm">
+        <h4 class="h5 font-weight-bold mb-4" style="color: var(--racine-black); font-family: 'Libre Baskerville', serif;">
+            <i class="fas fa-info-circle text-orange me-2"></i> À savoir sur vos revenus
+        </h4>
+        <div class="row">
+            <div class="col-md-3 mb-4 mb-md-0">
+                <span class="info-label">Commission RACINE</span>
+                <span class="info-value">20% par vente</span>
+                <p class="small text-muted mt-1">Maintenance de la plateforme.</p>
             </div>
-
-        </form>
+            <div class="col-md-3 mb-4 mb-md-0">
+                <span class="info-label">Seuil de retrait</span>
+                <span class="info-value">Dès 5 000 FCFA</span>
+                <p class="small text-muted mt-1">Montant min. accumulé.</p>
+            </div>
+            <div class="col-md-3 mb-4 mb-md-0">
+                <span class="info-label">Délai de traitement</span>
+                <span class="info-value">7 jours glissants</span>
+                <p class="small text-muted mt-1">Sécurité anti-fraude.</p>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-white rounded-lg border">
+                    <span class="info-label text-warning"><i class="fas fa-shield-alt me-1"></i> Mode Test Actif</span>
+                    <p class="small text-muted mb-0">Les transactions Stripe ne sont pas réelles pour le moment.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-    function togglePaymentFields(method) {
-        document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
-        if(method === 'mobile_money') {
-            document.querySelector('input[value="mobile_money"]').closest('.payment-option').classList.add('active');
-            document.getElementById('mobile_money_fields').classList.remove('hidden');
-        } else {
-            document.getElementById('mobile_money_fields').classList.add('hidden');
-        }
-    }
-</script>
-@endpush
 @endsection
+
+

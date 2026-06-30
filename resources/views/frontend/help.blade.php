@@ -3,9 +3,9 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Centre d\'aide - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .help-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -51,13 +51,13 @@
         left: 1.5rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     /* QUICK LINKS */
     .quick-links {
         padding: 4rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .links-grid {
@@ -83,25 +83,25 @@
     .link-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(139, 90, 43, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(237, 95, 30, 0.08) 0%, rgba(237, 95, 30, 0.08) 100%);
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.25rem;
         font-size: 1.75rem;
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .link-card h3 {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .link-card p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
     }
     
@@ -118,8 +118,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -133,7 +133,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .faq-tabs {
@@ -146,18 +146,18 @@
     
     .faq-tab {
         padding: 0.75rem 1.5rem;
-        border: 2px solid #E5DDD3;
+        border: 2px solid rgba(22,13,12,0.1);
         background: white;
         border-radius: 30px;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         font-weight: 500;
         cursor: pointer;
         transition: all 0.3s;
     }
     
     .faq-tab:hover, .faq-tab.active {
-        background: #2C1810;
-        border-color: #2C1810;
+        background: #160D0C;
+        border-color: #160D0C;
         color: white;
     }
     
@@ -167,7 +167,7 @@
     }
     
     .faq-item {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 16px;
         margin-bottom: 1rem;
         overflow: hidden;
@@ -183,24 +183,24 @@
     }
     
     .faq-question:hover {
-        background: rgba(212, 165, 116, 0.1);
+        background: rgba(237, 95, 30, 0.08);
     }
     
     .faq-question h4 {
         font-size: 1.05rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin: 0;
     }
     
     .faq-question i {
-        color: #D4A574;
+        color: #FFB800;
         transition: transform 0.3s;
     }
     
     .faq-answer {
         padding: 0 1.5rem 1.5rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         display: none;
     }
@@ -216,7 +216,7 @@
     /* GUIDES */
     .guides-section {
         padding: 5rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .guides-grid {
@@ -260,8 +260,8 @@
     
     .guide-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.3rem 0.75rem;
         border-radius: 20px;
         font-size: 0.75rem;
@@ -273,12 +273,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.35rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .guide-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -286,7 +286,7 @@
     /* CONTACT CTA */
     .contact-cta {
         padding: 5rem 0;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
     }
     
     .cta-content {
@@ -315,7 +315,7 @@
         gap: 0.75rem;
         padding: 1rem 2rem;
         background: white;
-        color: #2C1810;
+        color: #160D0C;
         border-radius: 50px;
         text-decoration: none;
         font-weight: 600;
@@ -325,7 +325,7 @@
     .btn-cta:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .contact-options {
@@ -383,7 +383,7 @@
         <p>{{ $heroData['description'] ?? 'Trouvez rapidement les réponses à vos questions ou contactez notre équipe.' }}</p>
         <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Rechercher une question...">
+            <input type="text" id="faq-search" placeholder="Rechercher une question..." autocomplete="off" aria-label="Rechercher dans la FAQ">
         </div>
     </div>
 </section>
@@ -469,7 +469,7 @@
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    Oui, la livraison est offerte en France métropolitaine pour toute commande supérieure à 100€. En dessous de ce montant, les frais de port sont de 5,90€.
+                    Oui, la livraison est offerte en France métropolitaine pour toute commande supérieure à 75 000 FCFA. En dessous de ce montant, les frais de port sont de 3 500 FCFA.
                 </div>
             </div>
             
@@ -525,9 +525,9 @@
         </div>
         
         <div class="guides-grid">
-            <a href="#" class="guide-card">
+            <a href="{{ route('frontend.contact') }}" class="guide-card">
                 <div class="guide-image">
-                    <img src="https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=400" alt="Guide tailles">
+                    <img src="{{ asset('storage/catalogue/vetements/soiree-01.jpeg') }}" alt="Guide tailles">
                 </div>
                 <div class="guide-content">
                     <span class="guide-tag">Guide</span>
@@ -535,9 +535,9 @@
                     <p>Toutes les astuces pour choisir la bonne taille.</p>
                 </div>
             </a>
-            <a href="#" class="guide-card">
+            <a href="{{ route('frontend.contact') }}" class="guide-card">
                 <div class="guide-image">
-                    <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400" alt="Entretien wax">
+                    <img src="{{ asset('storage/catalogue/vetements/bazin-01.jpeg') }}" alt="Entretien wax">
                 </div>
                 <div class="guide-content">
                     <span class="guide-tag">Entretien</span>
@@ -545,9 +545,9 @@
                     <p>Conseils pour préserver vos pièces africaines.</p>
                 </div>
             </a>
-            <a href="#" class="guide-card">
+            <a href="{{ route('frontend.contact') }}" class="guide-card">
                 <div class="guide-image">
-                    <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=400" alt="Style">
+                    <img src="{{ asset('storage/catalogue/vetements/pagne-01.jpeg') }}" alt="Style">
                 </div>
                 <div class="guide-content">
                     <span class="guide-tag">Style</span>
@@ -574,12 +574,19 @@
                 <div class="contact-option">
                     <i class="fas fa-envelope"></i>
                     <h4>Email</h4>
-                    <span>contact@racine-ganda.com</span>
+                    <span>{{ config('company.support_email') }}</span>
                 </div>
                 <div class="contact-option">
                     <i class="fas fa-phone"></i>
                     <h4>Téléphone</h4>
-                    <span>+33 1 23 45 67 89</span>
+                    <span>
+                    @if(config('company.phone'))
+                        {{ config('company.phone') }}
+                    @else
+                        <!-- TODO PROD BLOQUANT: Renseigner téléphone support avant mise en ligne -->
+                        <span class="todo-prod" style="display:none">[TELEPHONE_A_RENSEIGNER]</span><em>(à renseigner)</em>
+                    @endif
+                    </span>
                 </div>
                 <div class="contact-option">
                     <i class="fas fa-comments"></i>
@@ -598,7 +605,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 // FAQ accordion
 document.querySelectorAll('.faq-question').forEach(question => {
     question.addEventListener('click', function() {
@@ -628,6 +635,23 @@ document.querySelectorAll('.faq-tab').forEach(tab => {
                 item.style.display = 'none';
             }
         });
+        document.getElementById('faq-search').value = '';
+    });
+});
+
+// FAQ live search
+document.getElementById('faq-search')?.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+    const items = document.querySelectorAll('.faq-item');
+
+    // Reset tab active state
+    document.querySelectorAll('.faq-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.faq-tab[data-category="all"]')?.classList.add('active');
+
+    items.forEach(item => {
+        const text = item.querySelector('h4')?.textContent.toLowerCase() ?? '';
+        const answer = item.querySelector('.faq-answer')?.textContent.toLowerCase() ?? '';
+        item.style.display = (query === '' || text.includes(query) || answer.includes(query)) ? 'block' : 'none';
     });
 });
 </script>

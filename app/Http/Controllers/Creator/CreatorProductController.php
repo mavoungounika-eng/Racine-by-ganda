@@ -9,10 +9,12 @@ use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Modules\ERP\Models\ErpStockMovement;
 
 /**
  * Contrôleur pour la gestion des produits (créateur)
@@ -29,6 +31,8 @@ class CreatorProductController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Product::class);
+
         $user = Auth::user();
         
         $query = Product::where('user_id', $user->id);
@@ -75,7 +79,7 @@ class CreatorProductController extends Controller
     /**
      * Afficher le formulaire de création de produit.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
         $this->authorize('create', Product::class);
 
@@ -145,7 +149,30 @@ class CreatorProductController extends Controller
             $validated['is_active'] = false;
         }
         
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        if (($validated['stock'] ?? 0) > 0) {
+            try {
+                ErpStockMovement::create([
+                    'stockable_type' => Product::class,
+                    'stockable_id' => $product->id,
+                    'type' => 'in',
+                    'quantity' => $validated['stock'],
+                    'from_location' => 'Initial creator stock',
+                    'to_location' => 'Entrepôt Principal',
+                    'reason' => 'Stock initial à la création produit',
+                    'reference_type' => Product::class,
+                    'reference_id' => $product->id,
+                    'user_id' => $user->id,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Initial ERP stock movement not created for creator product', [
+                    'product_id' => $product->id,
+                    'creator_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
         
         return redirect()->route('creator.products.index')
             ->with('success', 'Produit créé avec succès.');

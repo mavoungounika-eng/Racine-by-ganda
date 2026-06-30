@@ -7,25 +7,27 @@
     <title>@yield('title', 'Espace Créateur') - RACINE BY GANDA</title>
     
     {{-- Fonts --}}
-    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Aileron:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    {{-- Bootstrap 4 --}}
-    <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
-    
-    {{-- RACINE Design System --}}
+    {{-- RACINE Design System (Consolidé AXE D) --}}
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/creator-design-system.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system-base.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system-creator.css') }}">
     
     {{-- Font Awesome --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     
-    <style>
+    {{-- Core JavaScript (AXE E - Cleanup) --}}
+    <script src="{{ asset('js/core/utilities.js') }}" defer></script>
+    <script src="{{ asset('js/core/ajax.js') }}" defer></script>
+    
+    <style nonce="{{ csp_nonce() }}">
         /* =============================================
            🎨 LAYOUT CRÉATEUR - RACINE BY GANDA
            ============================================= */
         
         body {
-            background: linear-gradient(135deg, #f5f3f0 0%, #faf8f5 100%);
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%);
             font-family: var(--font-body);
             color: var(--racine-black);
             min-height: 100vh;
@@ -44,7 +46,7 @@
             overflow-x: hidden;
             transition: var(--transition-normal);
             box-shadow: var(--shadow-xl);
-            border-right: 2px solid rgba(237, 95, 30, 0.2);
+            border-end: 2px solid rgba(237, 95, 30, 0.2);
         }
         
         .creator-sidebar::-webkit-scrollbar {
@@ -135,20 +137,20 @@
             transition: var(--transition-fast);
             font-size: 0.9rem;
             font-weight: 500;
-            border-left: 3px solid transparent;
+            border-start: 3px solid transparent;
         }
         
         .creator-sidebar-link:hover {
             background: rgba(237, 95, 30, 0.1);
             color: var(--racine-orange);
-            border-left-color: var(--racine-orange);
+            border-start-color: var(--racine-orange);
             text-decoration: none;
         }
         
         .creator-sidebar-link.active {
             background: rgba(237, 95, 30, 0.2);
             color: var(--racine-orange);
-            border-left-color: var(--racine-orange);
+            border-start-color: var(--racine-orange);
             font-weight: 600;
         }
         
@@ -160,15 +162,15 @@
         
         .creator-sidebar-link.new-product {
             background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
+            color: #FFB800;
             margin: 0.5rem 1.5rem;
             border-radius: var(--radius-md);
-            border-left: none;
+            border-start: none;
         }
         
         .creator-sidebar-link.new-product:hover {
             background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
+            color: #FFB800;
         }
         
         .creator-sidebar-footer {
@@ -226,7 +228,7 @@
             background: rgba(231, 76, 60, 0.1);
             border: 1px solid rgba(231, 76, 60, 0.3);
             border-radius: var(--radius-md);
-            color: #e74c3c;
+            color: #ED5F1E;
             font-size: 0.875rem;
             font-weight: 500;
             text-align: center;
@@ -236,8 +238,8 @@
         
         .creator-sidebar-logout:hover {
             background: rgba(231, 76, 60, 0.2);
-            border-color: #e74c3c;
-            color: #e74c3c;
+            border-color: #ED5F1E;
+            color: #ED5F1E;
             text-decoration: none;
         }
         
@@ -245,7 +247,7 @@
         .creator-main-wrapper {
             margin-left: 280px;
             min-height: 100vh;
-            background: linear-gradient(135deg, #f5f3f0 0%, #faf8f5 100%);
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%);
         }
         
         .creator-header {
@@ -359,9 +361,13 @@
         }
     </style>
     
+    {{-- Vite assets --}}
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
     @stack('styles')
 </head>
 <body>
+    <x-flash />
     {{-- SIDEBAR CRÉATEUR --}}
     <aside class="creator-sidebar">
         {{-- Header --}}
@@ -415,8 +421,8 @@
                 <i class="fas fa-shopping-bag"></i>
                 <span>Commandes</span>
             </a>
-            <a href="{{ route('creator.messages.index') }}" 
-               class="creator-sidebar-link {{ request()->routeIs('creator.messages.*') ? 'active' : '' }}">
+            <a href="{{ route('messages.index') }}" 
+               class="creator-sidebar-link {{ request()->routeIs('messages.*') ? 'active' : '' }}">
                 <i class="fas fa-comment-alt"></i>
                 <span>Messages Clients</span>
                 @php
@@ -438,7 +444,7 @@
             </a>
             
             {{-- Section Données --}}
-            <div class="creator-sidebar-section">Données +</div>
+            <div class="creator-sidebar-section">Performance</div>
             <a href="{{ route('creator.analytics.index') }}" 
                class="creator-sidebar-link {{ request()->routeIs('creator.analytics.*') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar"></i>
@@ -533,12 +539,17 @@
     </div>
     
     {{-- Bootstrap JS --}}
-    <script src="{{ asset('racine/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('racine/js/bootstrap.min.js') }}"></script>
+    {{-- Bootstrap 5 + JS via Vite -- jQuery/Bootstrap 4 legacy supprimés --}}
     
     {{-- Scroll to Top Component --}}
     @include('components.scroll-to-top')
-    
+
+    {{-- AMIRA — widget contextuel créateur --}}
+    <x-amira-widget space="creator" />
+
+    {{-- Modal de confirmation universel --}}
+    @include('components.confirm-modal')
+
     @stack('scripts')
 </body>
 </html>

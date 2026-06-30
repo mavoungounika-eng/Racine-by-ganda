@@ -1,19 +1,21 @@
-@extends('layouts.frontend')
+@extends('layouts.internal')
 
 @section('title', 'Mes Notifications - RACINE BY GANDA')
+@section('page-title', 'Mes Notifications')
+@section('page-subtitle', 'Vos alertes et mises à jour')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .notifications-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
-        padding: 3rem 0;
-        margin-top: -70px;
-        padding-top: calc(3rem + 70px);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
+        padding: 2rem 0;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
     }
     
     .notifications-content {
         padding: 3rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 60vh;
     }
     
@@ -47,13 +49,13 @@
     }
     
     .filter-tab:not(.active) {
-        background: #f8f9fa;
-        color: #6c757d;
+        background: rgba(22,13,12,0.05);
+        color: rgba(22,13,12,0.5);
     }
     
     .filter-tab:not(.active):hover {
-        background: #e9ecef;
-        color: #2C1810;
+        background: rgba(22,13,12,0.1);
+        color: #160D0C;
     }
     
     .notifications-list {
@@ -68,12 +70,12 @@
         padding: 1.5rem;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         transition: all 0.3s;
-        border-left: 4px solid transparent;
+        border-start: 4px solid transparent;
         position: relative;
     }
     
     .notification-item.unread {
-        border-left-color: #ED5F1E;
+        border-start-color: #ED5F1E;
         background: linear-gradient(to right, rgba(237, 95, 30, 0.05), white);
     }
     
@@ -101,7 +103,7 @@
         flex-shrink: 0;
     }
     
-    .notification-icon.info { background: rgba(14, 165, 233, 0.1); }
+    .notification-icon.info { background: rgba(237, 95, 30, 0.1); }
     .notification-icon.success { background: rgba(34, 197, 94, 0.1); }
     .notification-icon.warning { background: rgba(255, 184, 0, 0.1); }
     .notification-icon.danger { background: rgba(220, 38, 38, 0.1); }
@@ -114,19 +116,19 @@
     .notification-title {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .notification-message {
-        color: #6c757d;
+        color: rgba(22,13,12,0.5);
         margin-bottom: 0.5rem;
         line-height: 1.6;
     }
     
     .notification-time {
         font-size: 0.85rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.4);
     }
     
     .notification-actions {
@@ -186,13 +188,13 @@
     .empty-notifications-title {
         font-size: 1.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
         font-family: 'Cormorant Garamond', serif;
     }
     
     .empty-notifications-text {
-        color: #8B7355;
+        color: rgba(22,13,12,0.4);
     }
     
     .notifications-actions-top {
@@ -279,7 +281,7 @@
         @if($notifications->count() > 0)
         <div class="notifications-actions-top">
             <div>
-                <strong style="color: #2C1810;">{{ $notifications->total() }} notification(s)</strong>
+                <strong style="color: #160D0C;">{{ $notifications->total() }} notification(s)</strong>
             </div>
             @if($unreadCount > 0)
             <form action="{{ route('notifications.read-all') }}" method="POST" class="d-inline">
@@ -377,7 +379,7 @@
 </section>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // AJAX pour marquer comme lu
     document.querySelectorAll('.mark-read-form').forEach(form => {
         form.addEventListener('submit', function(e) {

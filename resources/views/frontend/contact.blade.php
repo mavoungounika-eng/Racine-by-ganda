@@ -3,9 +3,9 @@
 @section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Contact - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .contact-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         padding: 5rem 0;
         margin-top: -70px;
         padding-top: calc(5rem + 70px);
@@ -28,7 +28,7 @@
     
     .contact-section {
         padding: 5rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .contact-grid {
@@ -61,7 +61,7 @@
     .info-icon {
         width: 60px;
         height: 60px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 16px;
         display: flex;
         align-items: center;
@@ -75,18 +75,18 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .info-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 1rem;
         line-height: 1.6;
     }
     
     .info-content a {
-        color: #8B5A2B;
+        color: #160D0C;
         text-decoration: none;
         font-weight: 500;
     }
@@ -97,7 +97,7 @@
     
     /* SOCIAL */
     .social-card {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         border-radius: 20px;
         padding: 2rem;
         color: white;
@@ -134,7 +134,7 @@
     }
     
     .social-link:hover {
-        background: #D4A574;
+        background: #FFB800;
         transform: translateY(-3px);
     }
     
@@ -154,12 +154,12 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .form-header p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
     }
     
     .form-row {
@@ -175,7 +175,7 @@
     .form-group label {
         display: block;
         font-weight: 500;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
@@ -184,21 +184,21 @@
     .form-group textarea {
         width: 100%;
         padding: 1rem 1.25rem;
-        border: 1.5px solid #E5DDD3;
+        border: 1.5px solid rgba(22,13,12,0.1);
         border-radius: 12px;
         font-size: 1rem;
         font-family: inherit;
         transition: all 0.3s;
-        background: #FAFAFA;
+        background: rgba(22,13,12,0.02);
     }
     
     .form-group input:focus,
     .form-group select:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: #D4A574;
+        border-color: #FFB800;
         background: white;
-        box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
+        box-shadow: 0 0 0 4px rgba(237, 95, 30, 0.08);
     }
     
     .form-group textarea {
@@ -209,7 +209,7 @@
     .btn-submit {
         width: 100%;
         padding: 1.1rem;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -225,13 +225,13 @@
     
     .btn-submit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 15px 40px rgba(44, 24, 16, 0.3);
+        box-shadow: 0 15px 40px rgba(22,13,12, 0.3);
     }
     
     /* MAP */
     .map-section {
         padding: 0 0 5rem;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .map-wrapper {
@@ -260,8 +260,8 @@
     
     .section-tag {
         display: inline-block;
-        background: rgba(212, 165, 116, 0.1);
-        color: #8B5A2B;
+        background: rgba(237, 95, 30, 0.08);
+        color: #160D0C;
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 0.8rem;
@@ -275,7 +275,7 @@
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
     }
     
     .faq-grid {
@@ -287,7 +287,7 @@
     }
     
     .faq-item {
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         border-radius: 16px;
         padding: 1.5rem;
     }
@@ -295,7 +295,7 @@
     .faq-item h4 {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
@@ -303,11 +303,11 @@
     }
     
     .faq-item h4 i {
-        color: #D4A574;
+        color: #FFB800;
     }
     
     .faq-item p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.95rem;
         line-height: 1.6;
     }
@@ -348,7 +348,7 @@
                     <div class="info-content">
                         <h3>Email</h3>
                         <p>Pour toute question générale</p>
-                        <a href="mailto:contact@racine-ganda.com">contact@racine-ganda.com</a>
+                        <a href="mailto:{{ config('company.email') }}">{{ config('company.email') }}</a>
                     </div>
                 </div>
                 
@@ -357,7 +357,7 @@
                     <div class="info-content">
                         <h3>Téléphone</h3>
                         <p>Du lundi au vendredi, 9h-18h</p>
-                        <a href="tel:+33123456789">+33 1 23 45 67 89</a>
+                        <a href="tel:{{ str_replace(' ', '', config('company.phone')) }}">{{ config('company.phone') }}</a>
                     </div>
                 </div>
                 
@@ -366,7 +366,7 @@
                     <div class="info-content">
                         <h3>Showroom</h3>
                         <p>Sur rendez-vous uniquement</p>
-                        <span>15 Rue de la Mode, 75003 Paris</span>
+                        <span>République du Congo, Pointe-Noire, Galerie NF</span>
                     </div>
                 </div>
                 
@@ -374,10 +374,18 @@
                     <h3>Suivez-nous</h3>
                     <p>Restez connecté pour découvrir nos dernières créations et actualités.</p>
                     <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-pinterest"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                        @if(config('company.instagram'))
+                        <a href="{{ config('company.instagram') }}" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        @endif
+                        @if(config('company.facebook'))
+                        <a href="{{ config('company.facebook') }}" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        @endif
+                        @if(config('company.pinterest'))
+                        <a href="{{ config('company.pinterest') }}" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+                        @endif
+                        @if(config('company.tiktok'))
+                        <a href="{{ config('company.tiktok') }}" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -388,34 +396,40 @@
                     <h2>Envoyez-nous un message</h2>
                     <p>Nous vous répondrons dans les 24 heures</p>
                 </div>
-                
-                <form action="#" method="POST">
+
+                @if(session('success'))
+                    <div class="alert alert-success contact-success-alert">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('frontend.contact.submit') }}" method="POST">
                     @csrf
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Prénom</label>
-                            <input type="text" name="first_name" placeholder="Votre prénom" required>
+                            <label for="first_name">Prénom</label>
+                            <input type="text" id="first_name" name="first_name" placeholder="Votre prénom" required aria-required="true">
                         </div>
                         <div class="form-group">
-                            <label>Nom</label>
-                            <input type="text" name="last_name" placeholder="Votre nom" required>
+                            <label for="last_name">Nom</label>
+                            <input type="text" id="last_name" name="last_name" placeholder="Votre nom" required aria-required="true">
                         </div>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" name="email" placeholder="votre@email.com" required>
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="votre@email.com" required aria-required="true">
                         </div>
                         <div class="form-group">
-                            <label>Téléphone</label>
-                            <input type="tel" name="phone" placeholder="+33 6 12 34 56 78">
+                            <label for="phone">Téléphone</label>
+                            <input type="tel" id="phone" name="phone" placeholder="+33 6 12 34 56 78" aria-label="Numéro de téléphone optionnel">
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Sujet</label>
-                        <select name="subject" required>
+                        <label for="subject">Sujet</label>
+                        <select id="subject" name="subject" required aria-required="true">
                             <option value="">Choisir un sujet</option>
                             <option value="order">Question sur une commande</option>
                             <option value="product">Question sur un produit</option>
@@ -425,10 +439,10 @@
                             <option value="other">Autre</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Votre message</label>
-                        <textarea name="message" placeholder="Décrivez votre demande en détail..." required></textarea>
+                        <label for="message">Votre message</label>
+                        <textarea id="message" name="message" placeholder="Décrivez votre demande en détail..." required aria-required="true"></textarea>
                     </div>
                     
                     <button type="submit" class="btn-submit">
@@ -445,7 +459,7 @@
 <section class="map-section">
     <div class="container">
         <div class="map-wrapper">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.9916256937595!2d2.3522!3d48.8566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDjCsDUxJzIzLjgiTiAywrAyMScwNy45IkU!5e0!3m2!1sfr!2sfr!4v1234567890" allowfullscreen loading="lazy"></iframe>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.226!2d11.8561539!3d-4.7865099!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1a62fb3b041bcf65%3A0x2e46b9444ce41326!2sGalerie%20NF%20(M%C3%A9tro%20Club)!5e0!3m2!1sfr!2scg!4v1715000000000" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
     </div>
 </section>
@@ -469,7 +483,7 @@
             </div>
             <div class="faq-item">
                 <h4><i class="fas fa-credit-card"></i> Quels moyens de paiement acceptez-vous ?</h4>
-                <p>Nous acceptons CB, Visa, Mastercard, PayPal et le paiement en 3x sans frais.</p>
+                <p>Nous acceptons CB, Visa, Mastercard, Mobile Money (MTN, Airtel) et Stripe.</p>
             </div>
             <div class="faq-item">
                 <h4><i class="fas fa-ruler"></i> Comment choisir ma taille ?</h4>

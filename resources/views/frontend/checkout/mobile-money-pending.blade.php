@@ -24,9 +24,9 @@
                     <h3 class="h5 mb-4">Paiement en attente de confirmation</h3>
                     
                     {{-- Instructions --}}
-                    <div class="alert alert-info text-left mb-4">
+                    <div class="alert alert-info text-start mb-4">
                         <h6 class="font-weight-bold">
-                            <i class="fas fa-info-circle mr-2"></i>
+                            <i class="fas fa-info-circle me-2"></i>
                             Instructions
                         </h6>
                         <p class="mb-2">
@@ -40,7 +40,7 @@
                         </p>
                         <p class="mb-0">
                             <strong>Numéro :</strong> {{ $payment->customer_phone }}<br>
-                            <strong>Montant :</strong> {{ number_format($payment->amount, 0, ',', ' ') }} FCFA<br>
+                            <strong>Montant :</strong> {{ format_price($payment->amount) }}<br>
                             <strong>Transaction ID :</strong> <code>{{ $payment->external_reference }}</code>
                         </p>
                     </div>
@@ -56,11 +56,11 @@
                     {{-- Message timeout (caché par défaut) --}}
                     <div id="timeout-message" class="alert alert-warning mb-4" style="display: none;">
                         <h6 class="font-weight-bold">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <i class="fas fa-exclamation-triangle me-2"></i>
                             Temps d'attente dépassé
                         </h6>
                         <p class="mb-2">Le paiement n'a pas été confirmé dans les délais. Vous pouvez :</p>
-                        <ul class="text-left mb-0">
+                        <ul class="text-start mb-0">
                             <li>Réessayer avec un nouveau paiement</li>
                             <li>Vérifier votre téléphone pour confirmer le paiement</li>
                             <li>Contacter le support si le problème persiste</li>
@@ -72,19 +72,19 @@
                         <div class="row">
                             <div class="col-md-4 mb-2">
                                 <a href="{{ route('checkout.mobile-money.cancel', $order) }}" class="btn btn-outline-danger btn-block">
-                                    <i class="fas fa-times mr-2"></i>
+                                    <i class="fas fa-times me-2"></i>
                                     Annuler
                                 </a>
                             </div>
                             <div class="col-md-4 mb-2">
-                                <button type="button" onclick="checkStatus()" class="btn btn-outline-primary btn-block" id="check-status-btn">
-                                    <i class="fas fa-sync-alt mr-2"></i>
+                                <button type="button" data-action="check-status" class="btn btn-outline-primary btn-block" id="check-status-btn">
+                                    <i class="fas fa-sync-alt me-2"></i>
                                     Vérifier
                                 </button>
                             </div>
                             <div class="col-md-4 mb-2">
                                 <a href="{{ route('checkout.mobile-money.form', $order) }}" class="btn btn-primary btn-block" id="retry-btn" style="display: none;">
-                                    <i class="fas fa-redo mr-2"></i>
+                                    <i class="fas fa-redo me-2"></i>
                                     Réessayer
                                 </a>
                             </div>
@@ -98,7 +98,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Gestion du polling et timeout
     let checkInterval;
     const POLLING_INTERVAL = 5000; // 5 secondes
@@ -120,13 +120,13 @@
                 const timeoutMessage = document.getElementById('timeout-message');
                 
                 if (data.paid) {
-                    statusDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle mr-2"></i> Paiement confirmé ! Redirection...</div>';
+                    statusDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i> Paiement confirmé ! Redirection...</div>';
                     clearInterval(checkInterval);
                     setTimeout(() => {
                         window.location.href = '{{ route("checkout.mobile-money.success", $order) }}';
                     }, 2000);
                 } else if (data.failed) {
-                    statusDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle mr-2"></i> Le paiement a échoué. Vous pouvez réessayer.</div>';
+                    statusDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i> Le paiement a échoué. Vous pouvez réessayer.</div>';
                     clearInterval(checkInterval);
                     if (retryBtn) retryBtn.style.display = 'block';
                     if (checkStatusBtn) checkStatusBtn.style.display = 'none';
@@ -142,7 +142,7 @@
             .catch(error => {
                 console.error('Erreur:', error);
                 const statusDiv = document.getElementById('payment-status');
-                statusDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle mr-2"></i> Erreur de connexion. Vérifiez votre connexion internet.</div>';
+                statusDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i> Erreur de connexion. Vérifiez votre connexion internet.</div>';
             });
     }
 
@@ -155,7 +155,7 @@
         const checkStatusBtn = document.getElementById('check-status-btn');
         const retryBtn = document.getElementById('retry-btn');
         
-        statusDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle mr-2"></i> Temps d\'attente dépassé (5 minutes).</div>';
+        statusDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i> Temps d\'attente dépassé (5 minutes).</div>';
         if (timeoutMessage) timeoutMessage.style.display = 'block';
         if (retryBtn) retryBtn.style.display = 'block';
         if (checkStatusBtn) checkStatusBtn.style.display = 'none';

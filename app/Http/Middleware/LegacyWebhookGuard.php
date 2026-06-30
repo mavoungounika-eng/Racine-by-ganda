@@ -4,43 +4,39 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * Legacy Webhook Guard Middleware
+ * 
+ * Guards legacy webhook endpoints that are deprecated.
+ * Behavior is controlled by config('payments.legacy_webhooks_enabled').
+ * 
+ * @deprecated These routes should be migrated to /api/webhooks/*
+ */
 class LegacyWebhookGuard
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $legacyWebhooksEnabled = config('payments.legacy_webhooks_enabled', true);
+        $enabled = (bool) config('payments.legacy_webhooks_enabled', true);
 
-        $context = [
-            'provider' => 'stripe',
-            'route_name' => optional($request->route())->getName(),
+        // Log the attempt for monitoring
+        Log::warning('[DEPRECATED] Legacy webhook endpoint accessed', [
             'path' => $request->path(),
-            'full_url' => $request->fullUrl(),
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
-        ];
-
-        if (!$legacyWebhooksEnabled) {
-            Log::warning('Legacy webhook blocked', $context + [
-                'action' => 'blocked',
-                'reason' => 'disabled_by_config',
-            ]);
-
-            return response()->json(['error' => 'Legacy webhook disabled'], 410);
-        }
-
-        Log::warning('Legacy webhook used', $context + [
-            'action' => 'allowed',
+            'enabled' => $enabled,
         ]);
+
+        // If legacy endpoints are disabled, return 410 Gone (config-driven).
+        if (!$enabled) {
+            abort(410, 'Legacy webhook endpoint disabled. Use /api/webhooks/* instead.');
+        }
 
         return $next($request);
     }
 }
-

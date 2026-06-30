@@ -1,7 +1,11 @@
 // Variables personnalisées RACINE
-$racine-orange: #E65100;
-$racine-black: #1A1A1A;
-$font-family-sans-serif: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+// Polices custom indisponibles en public/fonts/ :
+//   - Aleppo (titres) → Cormorant Garamond (Google Fonts, chargée dans layouts)
+//   - Coco Gothic (corps) → Nunito (Google Fonts, chargée dans layouts)
+//   - Aileron (accentué) → déjà chargée via Google Fonts dans les layouts
+$racine-orange: #ED5F1E;
+$racine-black: #160D0C;
+$font-family-sans-serif: 'Nunito', 'Aileron', 'Helvetica Neue', Arial, sans-serif;
 
 // Override Bootstrap variables
 $primary: $racine-orange;
@@ -37,7 +41,15 @@ $dark: $racine-black;
     }
 }
 
-// Utilitaires de texte
+// Utilitaires typographie RACINE
 .font-heading {
-    font-family: 'Playfair Display', serif; // Assurez-vous d'importer cette font si nécessaire
+    font-family: 'Cormorant Garamond', 'Aileron', serif; // Aleppo fallback
+}
+
+.font-body {
+    font-family: 'Nunito', 'Aileron', sans-serif; // Coco Gothic fallback
+}
+
+.font-accent {
+    font-family: 'Aileron', 'Nunito', sans-serif;
 }

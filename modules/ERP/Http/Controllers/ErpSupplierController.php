@@ -3,28 +3,15 @@
 namespace Modules\ERP\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Modules\ERP\Models\ErpSupplier;
 use Modules\ERP\Http\Requests\StoreSupplierRequest;
 use Modules\ERP\Http\Requests\UpdateSupplierRequest;
-use Illuminate\Http\Request;
 
-/**
- * Contrôleur de gestion des fournisseurs ERP
- * 
- * Gère le CRUD complet des fournisseurs.
- * 
- * @package Modules\ERP\Http\Controllers
- */
 class ErpSupplierController extends Controller
 {
-    /**
-     * Affiche la liste des fournisseurs
-     * 
-     * Permet de rechercher et filtrer les fournisseurs.
-     * 
-     * @param Request $request Requête avec paramètres de recherche/filtre
-     * @return \Illuminate\View\View
-     */
     public function index(Request $request)
     {
         $query = ErpSupplier::query();
@@ -45,22 +32,78 @@ class ErpSupplierController extends Controller
         return view('erp::suppliers.index', compact('suppliers'));
     }
 
-    /**
-     * Affiche le formulaire de création d'un fournisseur
-     * 
-     * @return \Illuminate\View\View
-     */
+    public function dataSuppliers(Request $request): JsonResponse
+    {
+        $query = ErpSupplier::withCount('rawMaterials');
+
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                  ->orWhere('email', 'like', "%{$s}%")
+                  ->orWhere('phone', 'like', "%{$s}%");
+            });
+        }
+
+        if ($request->filled('is_active') && $request->get('is_active') !== '') {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        $allowed = ['name', 'email', 'is_active', 'created_at'];
+        $sortBy  = in_array($request->get('sort_by'), $allowed, true) ? $request->get('sort_by') : 'name';
+        $sortDir = $request->get('sort_dir') === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortBy, $sortDir);
+
+        return response()->json($query->paginate(min($request->integer('per_page', 20), 100)));
+    }
+
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $ids   = $request->validate(['ids' => 'required|array|min:1|max:100', 'ids.*' => 'integer'])['ids'];
+        $count = ErpSupplier::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true, 'message' => $count.' fournisseur(s) supprimé(s)']);
+    }
+
+    public function exportCsv(Request $request): Response
+    {
+        $query = ErpSupplier::query();
+
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('is_active') && $request->get('is_active') !== '') {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        $rows = $query->orderBy('name')->get();
+        $csv  = "\xEF\xBB\xBF";
+        $csv .= "ID;Nom;Email;Téléphone;Adresse;Statut\n";
+        foreach ($rows as $r) {
+            $csv .= implode(';', [
+                $r->id,
+                '"'.str_replace('"', '\"\"', $r->name).'"',
+                '"'.str_replace('"', '\"\"', $r->email ?? '').'"',
+                '"'.str_replace('"', '\"\"', $r->phone ?? '').'"',
+                '"'.str_replace('"', '\"\"', $r->address ?? '').'"',
+                $r->is_active ? 'actif' : 'inactif',
+            ])."\n";
+        }
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="fournisseurs_'.now()->format('Y-m-d').'.csv"',
+        ]);
+    }
+
     public function create()
     {
         return view('erp::suppliers.create');
     }
 
-    /**
-     * Enregistre un nouveau fournisseur
-     * 
-     * @param StoreSupplierRequest $request Données validées
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function store(StoreSupplierRequest $request)
     {
         $validated = $request->validated();
@@ -72,36 +115,17 @@ class ErpSupplierController extends Controller
             ->with('success', 'Fournisseur créé avec succès !');
     }
 
-    /**
-     * Affiche les détails d'un fournisseur
-     * 
-     * @param ErpSupplier $fournisseur Fournisseur à afficher
-     * @return \Illuminate\View\View
-     */
     public function show(ErpSupplier $fournisseur)
     {
         $fournisseur->load(['rawMaterials', 'purchases']);
         return view('erp::suppliers.show', compact('fournisseur'));
     }
 
-    /**
-     * Affiche le formulaire d'édition d'un fournisseur
-     * 
-     * @param ErpSupplier $fournisseur Fournisseur à modifier
-     * @return \Illuminate\View\View
-     */
     public function edit(ErpSupplier $fournisseur)
     {
         return view('erp::suppliers.edit', compact('fournisseur'));
     }
 
-    /**
-     * Met à jour un fournisseur
-     * 
-     * @param UpdateSupplierRequest $request Données validées
-     * @param ErpSupplier $fournisseur Fournisseur à modifier
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function update(UpdateSupplierRequest $request, ErpSupplier $fournisseur)
     {
         $validated = $request->validated();
@@ -113,12 +137,6 @@ class ErpSupplierController extends Controller
             ->with('success', 'Fournisseur mis à jour !');
     }
 
-    /**
-     * Supprime un fournisseur
-     * 
-     * @param ErpSupplier $fournisseur Fournisseur à supprimer
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function destroy(ErpSupplier $fournisseur)
     {
         $fournisseur->delete();
@@ -127,4 +145,3 @@ class ErpSupplierController extends Controller
             ->with('success', 'Fournisseur supprimé !');
     }
 }
-

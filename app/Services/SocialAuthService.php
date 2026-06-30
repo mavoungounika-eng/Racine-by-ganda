@@ -29,7 +29,7 @@ class SocialAuthService
     /**
      * Gère le callback OAuth et retourne l'utilisateur connecté
      * 
-     * @param string $provider Provider OAuth (google|apple|facebook)
+     * @param string $provider Provider OAuth (google)
      * @param ProviderUser $providerUser Utilisateur retourné par Socialite
      * @param string $requestedRole Rôle demandé (client|createur)
      * @param string $context Contexte (boutique)
@@ -47,8 +47,8 @@ class SocialAuthService
         $providerEmail = $providerUser->getEmail();
         $providerName = $providerUser->getName();
         
-        // Vérifier que l'email est disponible (sauf pour Apple qui peut masquer l'email)
-        if (!$providerEmail && $provider !== 'apple') {
+        // Vérifier que l'email est disponible
+        if (!$providerEmail) {
             throw new OAuthException(
                 "Impossible de récupérer votre adresse email depuis {$provider}."
             );
@@ -110,11 +110,12 @@ class SocialAuthService
         string $requestedRole,
         string $context
     ): User {
-        $user = $oauthAccount->user;
-        $user->load('roleRelation');
+        try {
+            $user = $oauthAccount->user;
+            $user->loadMissing(['roleRelation', 'creatorProfile']);
 
-        // Vérifier la cohérence de l'email (si disponible)
-        $providerEmail = $providerUser->getEmail();
+            // Vérifier la cohérence de l'email (si disponible)
+            $providerEmail = $providerUser->getEmail();
         if ($providerEmail && $user->email !== $providerEmail) {
             Log::warning('OAuth email mismatch', [
                 'user_id' => $user->id,
@@ -123,12 +124,9 @@ class SocialAuthService
                 'provider_email' => $providerEmail,
             ]);
             
-            // Pour Apple, l'email peut changer (private relay)
-            if ($oauthAccount->provider !== 'apple') {
-                throw new OAuthException(
-                    'Ce compte est déjà associé à un autre email. Contactez le support.'
-                );
-            }
+            throw new OAuthException(
+                'Ce compte est déjà associé à un autre email. Contactez le support.'
+            );
         }
 
         // Vérifier le rôle
@@ -145,6 +143,16 @@ class SocialAuthService
         ]);
 
         return $user;
+    } catch (\Throwable $e) {
+            Log::error("OAuth existing account error", [
+                'user_id' => $oauthAccount->user_id ?? null,
+                'provider' => $oauthAccount->provider ?? null,
+                'error' => $e->getMessage(),
+            ]);
+            throw new OAuthException(
+                'Erreur lors de la connexion avec votre compte. Veuillez réessayer.'
+            );
+        }
     }
 
     /**
@@ -230,14 +238,7 @@ class SocialAuthService
         string $requestedRole,
         string $context
     ): User {
-        // Pour Apple, si l'email est masqué, utiliser provider_user_id comme identifiant
         $email = $providerUser->getEmail();
-        if (!$email && $provider === 'apple') {
-            // Générer un email temporaire basé sur provider_user_id
-            // L'utilisateur devra compléter son profil plus tard
-            $email = 'apple_' . Str::slug($providerUser->getId()) . '@oauth.temp';
-        }
-
         if (!$email) {
             throw new OAuthException(
                 "Impossible de créer un compte sans email. Veuillez utiliser un autre moyen de connexion."
@@ -283,8 +284,12 @@ class SocialAuthService
                     'email' => $email,
                     'password' => Hash::make(Str::random(32)), // Mot de passe généré
                     'role_id' => $role->id,
-                    'email_verified_at' => now(), // Email vérifié via OAuth
+                    'role' => $requestedRole, // Expliciter le champ role
+                    'auth_version' => 1,
                 ]);
+
+                // OAuth = email fourni par le provider = vérifié
+                $user->markEmailAsVerified();
 
                 // Créer le compte OAuth (marqué comme primary)
                 OauthAccount::create([
@@ -335,14 +340,21 @@ class SocialAuthService
     {
         $currentRoleSlug = $user->getRoleSlug();
         
-        // Normaliser les rôles pour comparaison
-        $currentRoleNormalized = $currentRoleSlug === 'createur' ? 'creator' : ($currentRoleSlug === 'creator' ? 'creator' : 'client');
-        $requestedRoleNormalized = $requestedRole === 'createur' ? 'creator' : 'client';
-        
-        if ($currentRoleNormalized !== $requestedRoleNormalized) {
+        // If the user already owns a creator profile, infer creator role from that profile.
+        if ($requestedRole === 'createur' && in_array($currentRoleSlug, [null, 'client'], true)) {
+            if ($user->relationLoaded('creatorProfile') ? $user->creatorProfile : $user->creatorProfile()->exists()) {
+                return;
+            }
+        }
+
+        // Slug créateur canonique unique : 'createur'. Tout le reste = 'client'.
+        $currentIsCreator = $currentRoleSlug === 'createur';
+        $requestedIsCreator = $requestedRole === 'createur';
+
+        if ($currentIsCreator !== $requestedIsCreator) {
             // Conflit de rôle → refus avec message explicite
-            $currentRoleLabel = in_array($currentRoleSlug, ['createur', 'creator']) ? 'créateur' : 'client';
-            $requestedRoleLabel = $requestedRole === 'createur' ? 'créateur' : 'client';
+            $currentRoleLabel = $currentIsCreator ? 'créateur' : 'client';
+            $requestedRoleLabel = $requestedIsCreator ? 'créateur' : 'client';
             
             $exception = new OAuthException(
                 "Un compte existe déjà avec cet email avec le rôle {$currentRoleLabel}. " .

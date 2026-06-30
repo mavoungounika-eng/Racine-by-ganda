@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use App\Models\CreatorPlan;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
@@ -40,8 +42,7 @@ class RecommendationEngineServiceTest extends TestCase
             $alertService
         );
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_recommendations_for_creator()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -75,8 +76,7 @@ class RecommendationEngineServiceTest extends TestCase
         $this->assertIsArray($result['recommendations']);
         $this->assertGreaterThan(0, $result['total_count']);
     }
-
-    /** @test */
+    #[Test]
     public function it_generates_critical_recommendation_for_high_risk()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -102,8 +102,7 @@ class RecommendationEngineServiceTest extends TestCase
 
         $this->assertNotEmpty($criticalRecommendations);
     }
-
-    /** @test */
+    #[Test]
     public function it_includes_justification_for_each_recommendation()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -130,8 +129,7 @@ class RecommendationEngineServiceTest extends TestCase
             $this->assertNotEmpty($recommendation['justification']);
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_sorts_recommendations_by_priority()
     {
         $plan = CreatorPlan::factory()->create(['price' => 5000]);
@@ -160,8 +158,7 @@ class RecommendationEngineServiceTest extends TestCase
             $this->assertGreaterThanOrEqual($nextPriority, $currentPriority);
         }
     }
-
-    /** @test */
+    #[Test]
     public function it_handles_creator_with_no_data()
     {
         $creator = CreatorProfile::factory()->create([

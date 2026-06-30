@@ -28,6 +28,7 @@ class OAuthGoogleClientTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\RolesTableSeeder::class);
         
         // Créer les rôles nécessaires
         Role::firstOrCreate(['slug' => 'client'], ['name' => 'Client', 'is_active' => true]);
@@ -53,16 +54,22 @@ class OAuthGoogleClientTest extends TestCase
     {
         $googleUser = $this->mockGoogleUser('client@gmail.com', 'google-123', 'Client Test');
 
-        // Simuler la redirection OAuth
-        $redirectResponse = $this->get(route('auth.social.redirect', ['provider' => 'google']));
-        $redirectResponse->assertRedirect();
-
-        // Simuler le callback OAuth
-        $callbackResponse = $this->get(route('auth.social.callback', ['provider' => 'google']), [
-            'state' => Session::get('oauth_state'),
+        // Simuler le state dans la session pour passer la validation CSRF dans le contrôleur
+        $state = \Illuminate\Support\Str::random(40);
+        // Simuler le callback OAuth avec le state correct
+        $callbackResponse = $this->withSession([
+            'oauth_state' => $state,
+            'oauth_provider' => 'google',
+            'social_login_context' => 'boutique',
+            'oauth_role' => 'client',
         ]);
+        $callbackResponse = $this->get(route('auth.social.callback', [
+            'provider' => 'google',
+            'state' => $state,
+            'role' => 'client',
+        ]));
 
-        // Vérifications
+        // Vérifications DB
         $this->assertDatabaseHas('users', [
             'email' => 'client@gmail.com',
         ]);
@@ -70,6 +77,15 @@ class OAuthGoogleClientTest extends TestCase
         $user = User::where('email', 'client@gmail.com')->first();
         $this->assertNotNull($user);
         $this->assertAuthenticatedAs($user);
+
+        // Vérifier que le UserContext est en session
+        $this->assertTrue(Session::has('user_context'));
+        $contextArray = Session::get('user_context');
+        $context = \App\DTO\Auth\UserContext::fromArray($contextArray);
+        $this->assertEquals('client', $context->role);
+
+        // Redirection vers le dashboard client (via PostLoginDecisionEngine)
+        $callbackResponse->assertRedirect(route('account.dashboard'));
 
         // Vérifier que OauthAccount est créé
         $this->assertDatabaseHas('oauth_accounts', [
@@ -88,7 +104,6 @@ class OAuthGoogleClientTest extends TestCase
     public function google_oauth_creator_is_redirected_to_pending(): void
     {
         $role = Role::where('slug', 'createur')->first();
-        
         $user = User::factory()->create([
             'role_id' => $role->id,
             'email' => 'creator@gmail.com',
@@ -107,10 +122,29 @@ class OAuthGoogleClientTest extends TestCase
 
         $this->mockGoogleUser('creator@gmail.com', 'google-123', 'Creator User');
 
-        $this->actingAs($user);
-
-        $response = $this->get(route('auth.social.callback', ['provider' => 'google']));
+        // Simuler le state
+        $state = \Illuminate\Support\Str::random(40);
+        // Simuler le state
+        $response = $this->withSession([
+            'oauth_state' => $state,
+            'oauth_provider' => 'google',
+            'social_login_context' => 'boutique',
+            'oauth_role' => 'creator',
+        ])->get(route('auth.social.callback', [
+            'provider' => 'google',
+            'state' => $state,
+            'role' => 'creator',
+        ]));
+        
+        if (session('error')) { dump(session('error')); }
+        $response->assertSessionHasNoErrors();
         $response->assertRedirect(route('creator.pending'));
+        $this->assertAuthenticatedAs($user);
+        
+        // Vérifier context
+        $this->assertTrue(Session::has('user_context'));
+        $userContext = Session::get('user_context');
+        $this->assertEquals('pending', is_array($userContext) ? $userContext['creator_status'] : $userContext->creatorStatus);
     }
 
     /**
@@ -136,11 +170,24 @@ class OAuthGoogleClientTest extends TestCase
 
         $this->mockGoogleUser('existing@gmail.com', 'google-456', 'Existing User');
 
-        $response = $this->get(route('auth.social.callback', ['provider' => 'google']));
+        // Simuler le state
+        $state = \Illuminate\Support\Str::random(40);
+        $response = $this->withSession([
+            'oauth_state' => $state,
+            'oauth_provider' => 'google',
+            'social_login_context' => 'boutique',
+            'oauth_role' => 'client',
+        ])->get(route('auth.social.callback', [
+            'provider' => 'google',
+            'state' => $state,
+        ]));
 
         // Vérifier qu'un seul user existe
         $this->assertDatabaseCount('users', 1);
         $this->assertAuthenticatedAs($user);
+        
+        // Vérifier context
+        $this->assertTrue(Session::has('user_context'));
     }
 
     /**
@@ -153,7 +200,10 @@ class OAuthGoogleClientTest extends TestCase
         $googleUser->shouldReceive('getId')->andReturn($googleId);
         $googleUser->shouldReceive('getName')->andReturn($name);
         $googleUser->shouldReceive('getAvatar')->andReturn(null);
+        $googleUser->shouldReceive('getRaw')->andReturn(['sub' => $googleId]);
+        $googleUser->shouldReceive('token')->andReturn('access-token');
 
+        Socialite::shouldReceive('stateless')->andReturnSelf();
         Socialite::shouldReceive('driver')
             ->with('google')
             ->andReturnSelf();

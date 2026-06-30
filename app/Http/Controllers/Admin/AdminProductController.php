@@ -6,6 +6,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -64,6 +65,75 @@ class AdminProductController extends AdminController
     }
 
     /**
+     * JSON endpoint for the vanilla-JS products list page.
+     */
+    public function dataProducts(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Product::class);
+        $query = Product::with(['category:id,name', 'erpDetails:id,product_id,sku,barcode']);
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('erpDetails', fn ($q) => $q->where('sku', 'like', "%{$search}%")->orWhere('barcode', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->get('category_id'));
+        }
+
+        if ($request->filled('is_active') && $request->get('is_active') !== '') {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        $allowed = ['created_at', 'title', 'price', 'stock'];
+        $sortBy  = in_array($request->get('sort_by'), $allowed) ? $request->get('sort_by') : 'created_at';
+        $sortDir = $request->get('sort_dir') === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortBy, $sortDir);
+
+        return response()->json($query->paginate($request->integer('per_page', 20)));
+    }
+
+    /**
+     * Bulk disable products.
+     */
+    public function bulkDisable(Request $request): JsonResponse
+    {
+        $this->authorize('update', new Product());
+        $ids = $request->validate([
+            'ids'   => 'required|array|min:1|max:100',
+            'ids.*' => 'integer',
+        ])['ids'];
+
+        $count = Product::whereIn('id', $ids)->update(['is_active' => false]);
+        return response()->json(['success' => true, 'message' => $count.' produit(s) désactivé(s)']);
+    }
+
+    /**
+     * Bulk delete products.
+     */
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $this->authorize('delete', new Product());
+        $ids = $request->validate([
+            'ids'   => 'required|array|min:1|max:100',
+            'ids.*' => 'integer',
+        ])['ids'];
+
+        $products = Product::whereIn('id', $ids)->get();
+        foreach ($products as $product) {
+            if ($product->main_image) {
+                Storage::disk('public')->delete('products/'.$product->main_image);
+            }
+            $product->delete();
+        }
+
+        return response()->json(['success' => true, 'message' => count($ids).' produit(s) supprimé(s)']);
+    }
+
+    /**
      * Show the form for creating a new product.
      */
     public function create(): View
@@ -80,6 +150,7 @@ class AdminProductController extends AdminController
     {
         $this->authorize('create', Product::class);
         $data = $request->validated();
+        $data['product_type'] = $data['product_type'] ?? 'brand';
 
         // Gestion de l'image
         if ($request->hasFile('main_image')) {

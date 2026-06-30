@@ -4,9 +4,10 @@ namespace App\Services;
 
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
-use App\Models\User;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -83,7 +84,7 @@ class ConversationService
             }
 
             // Ajouter les admins/staff
-            $teamMembers = User::whereIn('role', ['super_admin', 'admin', 'staff'])
+            $teamMembers = User::whereIn('role', [Role::SUPER_ADMIN, Role::ADMIN, Role::STAFF])
                 ->pluck('id');
             
             foreach ($teamMembers as $teamId) {
@@ -151,7 +152,7 @@ class ConversationService
             }
 
             // Ajouter les admins
-            $admins = User::whereIn('role', ['super_admin', 'admin'])
+            $admins = User::whereIn('role', [Role::SUPER_ADMIN, Role::ADMIN])
                 ->pluck('id');
             
             foreach ($admins as $adminId) {

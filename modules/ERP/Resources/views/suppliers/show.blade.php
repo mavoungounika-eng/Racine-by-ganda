@@ -119,7 +119,7 @@
                                         <tr>
                                             <td>{{ $material->name }}</td>
                                             <td>{{ $material->unit }}</td>
-                                            <td>{{ $material->stock_quantity ?? 0 }}</td>
+                                            <td>{{ $material->current_stock ?? 0 }}</td>
                                             <td>
                                                 <a href="{{ route('erp.materials.edit', $material) }}" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-edit"></i>

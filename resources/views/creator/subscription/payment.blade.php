@@ -4,7 +4,7 @@
 @section('page-title', 'Paiement')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .payment-container {
         max-width: 600px;
         margin: 0 auto;
@@ -154,7 +154,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     function selectPaymentMethod(method) {
         // Désélectionner toutes les méthodes
         document.querySelectorAll('.payment-method').forEach(el => {

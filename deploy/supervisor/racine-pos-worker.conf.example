@@ -1,0 +1,18 @@
+[program:racine-pos-worker]
+process_name=%(program_name)s_%(process_num)02d
+directory=/var/www/racine-backend
+command=/usr/bin/php /var/www/racine-backend/artisan queue:work --queue=default,pos --sleep=3 --tries=3 --max-time=3600 --timeout=120
+autostart=true
+autorestart=true
+startsecs=5
+startretries=10
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/racine-backend/storage/logs/worker.log
+stdout_logfile_maxbytes=50MB
+stdout_logfile_backups=10
+stopwaitsecs=3600
+killasgroup=true
+stopasgroup=true
+

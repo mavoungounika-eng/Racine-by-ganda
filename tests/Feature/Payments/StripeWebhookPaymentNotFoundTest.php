@@ -7,7 +7,6 @@ use App\Models\Order;
 use App\Models\StripeWebhookEvent;
 use App\Services\Payments\PaymentEventMapperService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
 use Tests\TestCase;
 
 class StripeWebhookPaymentNotFoundTest extends TestCase
@@ -23,18 +22,6 @@ class StripeWebhookPaymentNotFoundTest extends TestCase
             'services.stripe.webhook_secret' => '',
             'app.env' => 'local', // Mode dev pour éviter la vérification de signature
         ]);
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
-
-    private function mockStripeConstructEvent(array $eventArray): void
-    {
-        $mock = Mockery::mock('alias:Stripe\Webhook');
-        $mock->shouldReceive('constructEvent')->andReturn((object) $eventArray);
     }
 
     public function test_stripe_webhook_fails_when_payment_not_found(): void
@@ -53,8 +40,6 @@ class StripeWebhookPaymentNotFoundTest extends TestCase
                 ],
             ],
         ];
-        $this->mockStripeConstructEvent($event);
-
         $this->call('POST', '/api/webhooks/stripe', [], [], [], [], json_encode($event))->assertStatus(200);
 
         $webhookEvent = StripeWebhookEvent::where('event_id', 'evt_nf')->firstOrFail();
@@ -115,8 +100,6 @@ class StripeWebhookPaymentNotFoundTest extends TestCase
                 ],
             ],
         ];
-
-        $this->mockStripeConstructEvent($event);
 
         // Appeler l'endpoint webhook
         $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [], json_encode($event));

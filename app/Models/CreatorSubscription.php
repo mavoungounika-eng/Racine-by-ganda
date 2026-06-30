@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CreatorSubscription extends Model
 {
+    use HasFactory;
     protected $table = 'creator_subscriptions';
 
     protected $fillable = [
@@ -17,6 +19,7 @@ class CreatorSubscription extends Model
         'stripe_subscription_id',
         'stripe_customer_id',
         'stripe_price_id',
+        'payment_provider',
         'status',
         'current_period_start',
         'current_period_end',

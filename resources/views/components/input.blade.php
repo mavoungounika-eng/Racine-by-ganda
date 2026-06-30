@@ -21,7 +21,7 @@
 
     @if($icon)
         <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <div class="absolute inset-y-0 left-0 ps-4 flex items-center pointer-events-none">
                 <i class="{{ $icon }} text-gray-400"></i>
             </div>
             <input 
@@ -31,7 +31,7 @@
                 value="{{ old($name, $value) }}"
                 placeholder="{{ $placeholder }}"
                 {{ $required ? 'required' : '' }}
-                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all {{ $error ? 'border-red-500' : '' }}"
+                class="w-full pl-12 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all {{ $error ? 'border-red-500' : '' }}"
             >
         </div>
     @else

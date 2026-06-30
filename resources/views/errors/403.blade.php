@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>403 - Accès Refusé</title>
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         * {
             margin: 0;
             padding: 0;
@@ -58,7 +58,7 @@
         
         .error-details {
             background: #f7fafc;
-            border-left: 4px solid #667eea;
+            border-start: 4px solid #667eea;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 40px;
@@ -138,11 +138,11 @@
         <h1 class="error-title">Accès Refusé</h1>
         <p class="error-message">
             @if(request()->is('erp*'))
-                Vous n'avez pas l'autorisation d'accéder au module ERP.
+                Tu n'as pas accès d'accéder au module ERP.
             @elseif(request()->is('admin*'))
-                Vous n'avez pas l'autorisation d'accéder à l'administration.
+                Tu n'as pas accès d'accéder à l'administration.
             @else
-                Cette action n'est pas autorisée.
+                Tu n'as pas accès à cette page.
             @endif
         </p>
         

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -69,9 +70,9 @@ class Conversation extends Model
     /**
      * Dernier message
      */
-    public function lastMessage(): HasMany
+    public function lastMessage(): HasOne
     {
-        return $this->hasMany(Message::class)->latestOfMany();
+        return $this->hasOne(Message::class)->latestOfMany();
     }
 
     /**

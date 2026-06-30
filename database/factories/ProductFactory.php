@@ -25,10 +25,32 @@ class ProductFactory extends Factory
      *
      * @return array<string, mixed>
      */
+    /** Images catalogue réelles disponibles dans storage/app/public/catalogue/ */
+    private static array $catalogueImages = [
+        'catalogue/vetements/bazin-01.jpeg',
+        'catalogue/vetements/bazin-02.jpeg',
+        'catalogue/vetements/bazin-03.jpeg',
+        'catalogue/vetements/chemise-01.jpeg',
+        'catalogue/vetements/chemise-02.jpeg',
+        'catalogue/vetements/chemise-03.jpeg',
+        'catalogue/vetements/kimono-01.jpeg',
+        'catalogue/vetements/kimono-02.jpeg',
+        'catalogue/vetements/kimono-03.jpeg',
+        'catalogue/vetements/pagne-01.jpeg',
+        'catalogue/vetements/pagne-02.jpeg',
+        'catalogue/vetements/soiree-01.jpeg',
+        'catalogue/vetements/soiree-02.jpeg',
+        'catalogue/vetements/veste-01.jpeg',
+        'catalogue/vetements/veste-02.jpeg',
+        'catalogue/accessoires/kit-voyage-bleu-01.jpeg',
+        'catalogue/accessoires/kit-voyage-noir-01.jpeg',
+        'catalogue/accessoires/kit-voyage-rouge-01.jpeg',
+    ];
+
     public function definition(): array
     {
         $title = fake()->words(3, true);
-        
+
         return [
             'category_id' => Category::factory(), // Créer une catégorie par défaut
             'collection_id' => null,
@@ -40,7 +62,7 @@ class ProductFactory extends Factory
             'price' => fake()->randomFloat(2, 1000, 50000),
             'stock' => fake()->numberBetween(0, 100),
             'is_active' => true,
-            'main_image' => null,
+            'main_image' => fake()->randomElement(self::$catalogueImages),
         ];
     }
 

@@ -25,9 +25,9 @@
             <div class="col-lg-10">
                 
                 {{-- MESSAGE CENTRAL (IMPORTANT) --}}
-                <div class="alert alert-info border-0 shadow-sm mb-5" style="background: linear-gradient(135deg, rgba(212, 165, 116, 0.15) 0%, rgba(139, 90, 43, 0.1) 100%); border-left: 4px solid #D4A574 !important;">
+                <div class="alert alert-info border-0 shadow-sm mb-5" style="background: linear-gradient(135deg, rgba(255, 184, 0, 0.1) 0%, rgba(237, 95, 30, 0.08) 100%); border-start: 4px solid #FFB800 !important;">
                     <div class="d-flex align-items-start">
-                        <i class="fas fa-info-circle text-racine-orange mr-3 mt-1" style="font-size: 1.5rem;"></i>
+                        <i class="fas fa-info-circle text-racine-orange me-3 mt-1" style="font-size: 1.5rem;"></i>
                         <div>
                             <h3 class="text-racine-orange font-weight-bold mb-3">
                                 Un seul compte suffit.
@@ -49,13 +49,13 @@
                         <div class="text-center mb-4">
                             <div class="account-structure" style="font-size: 1.1rem; line-height: 2.5;">
                                 <div class="mb-3">
-                                    <strong style="color: #D4A574; font-size: 1.3rem;">UN UTILISATEUR</strong>
+                                    <strong style="color: #FFB800; font-size: 1.3rem;">UN UTILISATEUR</strong>
                                 </div>
                                 <div class="mb-3">
                                     <i class="fas fa-arrow-down text-racine-orange" style="font-size: 1.5rem;"></i>
                                 </div>
                                 <div class="mb-3">
-                                    <strong style="color: #8B5A2B; font-size: 1.2rem;">UN COMPTE</strong><br>
+                                    <strong style="color: #ED5F1E; font-size: 1.2rem;">UN COMPTE</strong><br>
                                     <span class="text-muted">(email / Google / Apple / Facebook)</span>
                                 </div>
                                 <div class="mb-3">
@@ -74,9 +74,9 @@
                                             <i class="fas fa-palette text-racine-orange mb-2" style="font-size: 2rem;"></i><br>
                                             <strong>Vendre</strong><br>
                                             <span class="text-muted small">(CRÉATEUR)</span><br>
-                                            <span class="badge badge-warning mt-2">En attente</span>
-                                            <span class="badge badge-success mt-2">Actif</span>
-                                            <span class="badge badge-danger mt-2">Suspendu</span>
+                                            <span class="badge bg-warning mt-2">En attente</span>
+                                            <span class="badge bg-success mt-2">Actif</span>
+                                            <span class="badge bg-danger mt-2">Suspendu</span>
                                         </div>
                                     </div>
                                 </div>
@@ -94,7 +94,7 @@
 
                         {{-- QUESTION 1 --}}
                         <div class="faq-item mb-4 pb-4 border-bottom">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Ai-je besoin de créer deux comptes ?
                             </h3>
                             <div class="alert alert-danger border-0 mb-3" style="background: rgba(239, 68, 68, 0.1);">
@@ -103,21 +103,21 @@
                             <p class="mb-3" style="font-size: 1.05rem; line-height: 1.8;">
                                 Vous utilisez <strong>un seul compte</strong> pour tout faire :
                             </p>
-                            <ul class="list-unstyled ml-4" style="font-size: 1.05rem; line-height: 2;">
+                            <ul class="list-unstyled ms-4" style="font-size: 1.05rem; line-height: 2;">
                                 <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
+                                    <i class="fas fa-check text-success me-2"></i>
                                     Acheter des produits
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
+                                    <i class="fas fa-check text-success me-2"></i>
                                     Suivre vos commandes
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
+                                    <i class="fas fa-check text-success me-2"></i>
                                     Devenir créateur
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
+                                    <i class="fas fa-check text-success me-2"></i>
                                     Vendre vos produits
                                 </li>
                             </ul>
@@ -128,7 +128,7 @@
 
                         {{-- QUESTION 2 --}}
                         <div class="faq-item mb-4 pb-4 border-bottom">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Que se passe-t-il si je deviens créateur ?
                             </h3>
                             <div class="alert alert-success border-0 mb-3" style="background: rgba(34, 197, 94, 0.1);">
@@ -137,21 +137,21 @@
                             <p class="mb-3" style="font-size: 1.05rem; line-height: 1.8;">
                                 Quand vous devenez créateur :
                             </p>
-                            <ul class="list-unstyled ml-4" style="font-size: 1.05rem; line-height: 2;">
+                            <ul class="list-unstyled ms-4" style="font-size: 1.05rem; line-height: 2;">
                                 <li class="mb-2">
-                                    <i class="fas fa-check-circle text-success mr-2"></i>
+                                    <i class="fas fa-check-circle text-success me-2"></i>
                                     <strong>Vos commandes passées restent visibles</strong>
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-check-circle text-success mr-2"></i>
+                                    <i class="fas fa-check-circle text-success me-2"></i>
                                     <strong>Votre panier reste intact</strong>
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-check-circle text-success mr-2"></i>
+                                    <i class="fas fa-check-circle text-success me-2"></i>
                                     <strong>Vos adresses, paiements et favoris sont conservés</strong>
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-plus-circle text-racine-orange mr-2"></i>
+                                    <i class="fas fa-plus-circle text-racine-orange me-2"></i>
                                     <strong>Un espace créateur s'ajoute à votre compte</strong>
                                 </li>
                             </ul>
@@ -159,7 +159,7 @@
 
                         {{-- QUESTION 3 --}}
                         <div class="faq-item mb-4 pb-4 border-bottom">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Puis-je continuer à acheter même si je suis créateur ?
                             </h3>
                             <div class="alert alert-success border-0 mb-3" style="background: rgba(34, 197, 94, 0.1);">
@@ -168,17 +168,17 @@
                             <p class="mb-3" style="font-size: 1.05rem; line-height: 1.8;">
                                 Même en tant que créateur :
                             </p>
-                            <ul class="list-unstyled ml-4" style="font-size: 1.05rem; line-height: 2;">
+                            <ul class="list-unstyled ms-4" style="font-size: 1.05rem; line-height: 2;">
                                 <li class="mb-2">
-                                    <i class="fas fa-shopping-bag text-racine-orange mr-2"></i>
+                                    <i class="fas fa-shopping-bag text-racine-orange me-2"></i>
                                     Vous pouvez acheter vos propres produits
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-shopping-bag text-racine-orange mr-2"></i>
+                                    <i class="fas fa-shopping-bag text-racine-orange me-2"></i>
                                     Vous pouvez acheter chez d'autres créateurs
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fas fa-shopping-bag text-racine-orange mr-2"></i>
+                                    <i class="fas fa-shopping-bag text-racine-orange me-2"></i>
                                     Vous gardez toutes les fonctionnalités client
                                 </li>
                             </ul>
@@ -186,7 +186,7 @@
 
                         {{-- QUESTION 4 --}}
                         <div class="faq-item mb-4">
-                            <h3 class="h5 font-weight-bold mb-3" style="color: #8B5A2B;">
+                            <h3 class="h5 font-weight-bold mb-3" style="color: #ED5F1E;">
                                 ❓ Pourquoi mon compte créateur est "en attente" ?
                             </h3>
                             <p class="mb-3" style="font-size: 1.05rem; line-height: 1.8;">
@@ -196,20 +196,20 @@
                                 <p class="mb-2" style="font-size: 1.05rem; line-height: 1.8;">
                                     <strong>Lorsque vous demandez à devenir créateur :</strong>
                                 </p>
-                                <ul class="mb-2 ml-4" style="font-size: 1.05rem; line-height: 2;">
+                                <ul class="mb-2 ms-4" style="font-size: 1.05rem; line-height: 2;">
                                     <li>Votre compte est créé immédiatement</li>
                                     <li>Votre demande est vérifiée par l'équipe RACINE</li>
                                 </ul>
                                 <p class="mb-2 mt-3" style="font-size: 1.05rem; line-height: 1.8;">
                                     <strong>Pendant ce temps :</strong>
                                 </p>
-                                <ul class="mb-0 ml-4" style="font-size: 1.05rem; line-height: 2;">
+                                <ul class="mb-0 ms-4" style="font-size: 1.05rem; line-height: 2;">
                                     <li>
-                                        <i class="fas fa-check text-success mr-2"></i>
+                                        <i class="fas fa-check text-success me-2"></i>
                                         <strong>Vous pouvez acheter</strong>
                                     </li>
                                     <li>
-                                        <i class="fas fa-times text-danger mr-2"></i>
+                                        <i class="fas fa-times text-danger me-2"></i>
                                         <strong>Vous ne pouvez pas encore vendre</strong>
                                     </li>
                                 </ul>
@@ -231,13 +231,13 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <a href="{{ route('login') }}" class="btn btn-outline-racine-orange btn-block py-3">
-                                    <i class="fas fa-sign-in-alt mr-2"></i>
+                                    <i class="fas fa-sign-in-alt me-2"></i>
                                     Se connecter
                                 </a>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <a href="{{ route('register') }}" class="btn btn-racine-primary btn-block py-3">
-                                    <i class="fas fa-user-plus mr-2"></i>
+                                    <i class="fas fa-user-plus me-2"></i>
                                     Créer un compte
                                 </a>
                             </div>
@@ -250,6 +250,11 @@
     </div>
 </section>
 @endsection
+
+
+
+
+
 
 
 

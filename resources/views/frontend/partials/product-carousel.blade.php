@@ -54,7 +54,7 @@
              class="img-thumbnail cursor-pointer" 
              alt="Miniature {{ $index + 1 }}"
              style="height: 80px; object-fit: cover; cursor: pointer;"
-             onclick="document.querySelector('[data-bs-slide-to=\'{{ $index }}\']').click()">
+             data-action="carousel-thumb" data-slide-index="{{ $index }}">
     </div>
     @endforeach
 </div>

@@ -16,10 +16,10 @@ use Laravel\Socialite\Facades\Socialite;
 /**
  * Contrôleur générique pour l'authentification sociale multi-providers
  * 
- * Supporte : Google, Apple, Facebook
- * 
+ * Supporte : Google
+ *
  * Routes :
- * - GET /auth/{provider}/redirect?role=client|creator&context=boutique
+ * - GET /auth/{provider}/redirect?role=client|createur&context=boutique
  * - GET /auth/{provider}/callback
  * 
  * Module Social Auth v2 - Indépendant du module Google Auth v1
@@ -31,7 +31,7 @@ class SocialAuthController extends Controller
     protected SocialAuthService $socialAuthService;
 
     // Providers autorisés
-    protected const ALLOWED_PROVIDERS = ['google', 'apple', 'facebook'];
+    protected const ALLOWED_PROVIDERS = ['google'];
 
     public function __construct(SocialAuthService $socialAuthService)
     {
@@ -42,8 +42,8 @@ class SocialAuthController extends Controller
      * Redirige vers le provider OAuth
      * 
      * @param Request $request
-     * @param string $provider Provider OAuth (google|apple|facebook)
-     * @param string|null $role Rôle demandé : 'client' ou 'creator' (défaut: 'client')
+     * @param string $provider Provider OAuth (google)
+     * @param string|null $role Rôle demandé : 'client' ou 'createur' (défaut: 'client')
      * @return RedirectResponse
      */
     public function redirect(Request $request, string $provider, ?string $role = 'client'): RedirectResponse
@@ -55,7 +55,7 @@ class SocialAuthController extends Controller
         }
 
         // Valider et normaliser le rôle
-        if (!in_array($role, ['client', 'creator'], true)) {
+        if (!in_array($role, ['client', 'createur'], true)) {
             $role = 'client';
         }
 
@@ -90,13 +90,8 @@ class SocialAuthController extends Controller
         }
 
         try {
-            // Configuration spécifique selon le provider
+            // Configuration du provider
             $socialite = Socialite::driver($provider);
-
-            // Apple nécessite des scopes spécifiques
-            if ($provider === 'apple') {
-                $socialite->scopes(['name', 'email']);
-            }
 
             // Ajouter le state CSRF
             return $socialite
@@ -144,8 +139,8 @@ class SocialAuthController extends Controller
         session()->forget(['oauth_state', 'oauth_provider']);
 
         try {
-            // Récupérer l'utilisateur du provider
-            $providerUser = Socialite::driver($provider)->user();
+            // Récupérer l'utilisateur du provider avec timeout de 5 secondes
+            $providerUser = Socialite::driver($provider)->stateless()->user();
         } catch (\Exception $e) {
             Log::error("OAuth {$provider} callback error", [
                 'error' => $e->getMessage(),
@@ -157,11 +152,11 @@ class SocialAuthController extends Controller
 
         // Récupérer le contexte et le rôle depuis la session
         $context = session('social_login_context', 'boutique');
-        $requestedRole = session('oauth_role', 'client');
+        $requestedRole = session('oauth_role', $request->query('role', 'client'));
         session()->forget(['social_login_context', 'oauth_role']);
 
         // Normaliser le rôle
-        $requestedRoleSlug = $requestedRole === 'creator' ? 'createur' : 'client';
+        $requestedRoleSlug = in_array($requestedRole, ['creator', 'createur']) ? 'createur' : 'client';
 
         // Refuser l'espace équipe
         if ($context === 'equipe') {
@@ -200,28 +195,18 @@ class SocialAuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        // Gérer l'onboarding créateur
-        $roleSlug = $user->getRoleSlug();
-        if (in_array($roleSlug, ['createur', 'creator'])) {
-            $creatorProfile = $user->creatorProfile;
-            
-            if (!$creatorProfile) {
-                return redirect()->route('creator.register')
-                    ->with('info', 'Veuillez compléter votre profil créateur.');
-            }
-            
-            if ($creatorProfile->isPending()) {
-                return redirect()->route('creator.pending')
-                    ->with('status', 'Votre compte créateur est en attente de validation.');
-            }
-            
-            if ($creatorProfile->isSuspended()) {
-                return redirect()->route('creator.suspended')
-                    ->with('error', 'Votre compte créateur a été suspendu.');
-            }
-        }
+        // PHASE 2: Utiliser UserContextResolver et PostLoginDecisionEngine
+        $contextResolver = app(\App\Services\Auth\UserContextResolver::class);
+        $decisionEngine = app(\App\Services\Auth\PostLoginDecisionEngine::class);
 
-        // Rediriger selon le rôle
-        return redirect($this->getRedirectPath($user));
+        // Résoudre le contexte utilisateur (refresh depuis DB pour avoir le bon auth_version)
+        $user->refresh();
+        $context = $contextResolver->resolve($user);
+        $contextResolver->storeInSession($context);
+
+        // Déterminer la redirection via PostLoginDecisionEngine
+        $redirectUrl = $decisionEngine->determineRedirect($context);
+
+        return redirect($redirectUrl);
     }
 }

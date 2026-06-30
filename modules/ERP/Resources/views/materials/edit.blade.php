@@ -4,17 +4,19 @@
 @section('page-title', 'Modifier Matière Première')
 
 @section('content')
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 fw-bold">🧵 Modifier : {{ $matiere->name }}</h2>
+    <div>
+        <a href="{{ route('erp.materials.index') }}" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+        <a href="{{ route('erp.materials.show', $matiere) }}" class="btn btn-outline-primary">
+            <i class="fas fa-eye me-2"></i>Voir
+        </a>
+    </div>
+</div>
 <div class="row justify-content-center">
     <div class="col-lg-8">
-                {{-- Header --}}
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb bg-transparent p-0 mb-2">
-                        <li class="breadcrumb-item"><a href="{{ route('erp.dashboard') }}">ERP</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('erp.materials.index') }}">Matières</a></li>
-                        <li class="breadcrumb-item active">Modifier</li>
-                    </ol>
-                </nav>
-                <h1 class="h2 mb-4">🧵 Modifier : {{ $matiere->name }}</h1>
 
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
@@ -80,7 +82,7 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="minimum_stock">Stock Minimum</label>
-                                        <input type="number" name="minimum_stock" id="minimum_stock" class="form-control @error('minimum_stock') is-invalid @enderror" value="{{ old('minimum_stock', $matiere->minimum_stock) }}" min="0">
+                                        <input type="number" name="minimum_stock" id="minimum_stock" class="form-control @error('minimum_stock') is-invalid @enderror" value="{{ old('minimum_stock', $matiere->min_stock_alert) }}" min="0">
                                         @error('minimum_stock')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror

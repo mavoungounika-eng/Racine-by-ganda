@@ -4,17 +4,14 @@
 @section('page-title', 'Nouvelle Matière Première')
 
 @section('content')
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 fw-bold">🧵 Nouvelle Matière Première</h2>
+    <a href="{{ route('erp.materials.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+</div>
 <div class="row justify-content-center">
     <div class="col-lg-8">
-                {{-- Header --}}
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb bg-transparent p-0 mb-2">
-                        <li class="breadcrumb-item"><a href="{{ route('erp.dashboard') }}">ERP</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('erp.materials.index') }}">Matières</a></li>
-                        <li class="breadcrumb-item active">Nouvelle</li>
-                    </ol>
-                </nav>
-                <h1 class="h2 mb-4">🧵 Nouvelle Matière Première</h1>
 
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">

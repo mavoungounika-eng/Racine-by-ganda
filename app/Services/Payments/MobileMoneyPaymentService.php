@@ -28,6 +28,13 @@ use Illuminate\Support\Str;
  */
 class MobileMoneyPaymentService
 {
+    protected \App\Services\SaaSCheckoutService $saasCheckoutService;
+
+    public function __construct(\App\Services\SaaSCheckoutService $saasCheckoutService)
+    {
+        $this->saasCheckoutService = $saasCheckoutService;
+    }
+
     /**
      * Initier un paiement Mobile Money
      *
@@ -72,26 +79,29 @@ class MobileMoneyPaymentService
             'phone' => $phone,
         ]);
 
-        // Vérifier si le provider est activé et configuré
-        $providerConfig = config("services.{$provider}");
-        
-        if ($providerConfig['enabled'] ?? false) {
-            // Mode production : appeler l'API réelle
-            try {
-                $this->callProviderAPI($payment, $provider);
-            } catch (\Exception $e) {
-                Log::error('Mobile Money API call failed', [
-                    'payment_id' => $payment->id,
-                    'provider' => $provider,
-                    'error' => $e->getMessage(),
-                ]);
-                
-                // En cas d'erreur, basculer en mode simulation pour ne pas bloquer
-                $this->simulatePaymentRequest($payment);
+        // ✅ SAAS PUR : Récupérer la configuration de paiement (RACINE ou Créateur)
+        $paymentConfig = $this->saasCheckoutService->getPaymentConfig($order->creator_id);
+
+        // Si le provider est Monetbil, on utilise les clés dynamiques
+        if ($provider === 'monetbil') {
+            if (empty($paymentConfig['momo_api_key'])) {
+                 throw new \Exception("Passerelle Monetbil du vendeur non configurée.");
             }
+            
+            // On configure le MonetbilService avec les clés spécifiques
+            $monetbil = app(MonetbilService::class);
+            $monetbil->setServiceKeys($paymentConfig['momo_provider'], $paymentConfig['momo_api_key']);
+            
+            // Note: callProviderAPI utilisera le MonetbilService déjà configuré si injecté
+            $this->callProviderAPI($payment, $provider);
         } else {
-            // Mode développement : simuler le processus
-            $this->simulatePaymentRequest($payment);
+             // Autres providers (Legacy ou Future)
+             $providerConfig = config("services.{$provider}");
+             if ($providerConfig['enabled'] ?? false) {
+                 $this->callProviderAPI($payment, $provider);
+             } else {
+                 $this->simulatePaymentRequest($payment);
+             }
         }
 
         return $payment;
@@ -558,7 +568,13 @@ class MobileMoneyPaymentService
 
         if ($response->successful()) {
             $data = $response->json();
-            return $data['access_token'] ?? '';
+            $token = $data['access_token'] ?? null;
+
+            if (empty($token)) {
+                throw new \Exception('Token absent de la réponse API');
+            }
+
+            return $token;
         }
 
         throw new \Exception('Impossible d\'obtenir le token MTN MoMo');
@@ -584,7 +600,13 @@ class MobileMoneyPaymentService
 
         if ($response->successful()) {
             $data = $response->json();
-            return $data['access_token'] ?? '';
+            $token = $data['access_token'] ?? null;
+
+            if (empty($token)) {
+                throw new \Exception('Token absent de la réponse API');
+            }
+
+            return $token;
         }
 
         throw new \Exception('Impossible d\'obtenir le token Airtel Money');

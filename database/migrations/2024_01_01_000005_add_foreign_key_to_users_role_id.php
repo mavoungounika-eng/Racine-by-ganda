@@ -31,20 +31,31 @@ return new class extends Migration
         // Ajouter la contrainte de clé étrangère
         Schema::table('users', function (Blueprint $table) {
             // Vérifier si la contrainte n'existe pas déjà
-            $foreignKeys = [];
+            $hasForeignKey = false;
+            $driver = \DB::getDriverName();
             
-            if (DB::getDriverName() !== 'sqlite') {
-                $foreignKeys = \DB::select("
+            if ($driver === 'pgsql') {
+                $hasForeignKey = !empty(\DB::select("
+                    SELECT tc.constraint_name
+                    FROM information_schema.table_constraints tc
+                    JOIN information_schema.key_column_usage kcu
+                      ON tc.constraint_name = kcu.constraint_name
+                    WHERE tc.constraint_type = 'FOREIGN KEY'
+                      AND tc.table_name = 'users'
+                      AND kcu.column_name = 'role_id'
+                "));
+            } elseif ($driver === 'mysql') {
+                $hasForeignKey = !empty(\DB::select("
                     SELECT CONSTRAINT_NAME 
                     FROM information_schema.KEY_COLUMN_USAGE 
                     WHERE TABLE_SCHEMA = DATABASE() 
                     AND TABLE_NAME = 'users' 
                     AND COLUMN_NAME = 'role_id' 
                     AND REFERENCED_TABLE_NAME IS NOT NULL
-                ");
+                "));
             }
 
-            if (empty($foreignKeys)) {
+            if (!$hasForeignKey) {
                 $table->foreign('role_id')
                     ->references('id')
                     ->on('roles')

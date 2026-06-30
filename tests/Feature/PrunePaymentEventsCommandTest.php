@@ -11,25 +11,47 @@ class PrunePaymentEventsCommandTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function createStripeEvent(array $attributes, int $daysAgo): void
+    {
+        $event = StripeWebhookEvent::create($attributes);
+        $timestamp = now()->subDays($daysAgo);
+
+        $event->timestamps = false;
+        $event->forceFill([
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ])->saveQuietly();
+    }
+
+    protected function createMonetbilEvent(array $attributes, int $daysAgo): void
+    {
+        $event = MonetbilCallbackEvent::create($attributes);
+        $timestamp = now()->subDays($daysAgo);
+
+        $event->timestamps = false;
+        $event->forceFill([
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ])->saveQuietly();
+    }
+
     /**
      * Test que le dry-run ne supprime rien
      */
     public function test_prune_events_dry_run_does_not_delete_anything(): void
     {
         // Créer des événements anciens
-        StripeWebhookEvent::create([
+        $this->createStripeEvent([
             'event_id' => 'evt_test_1',
             'event_type' => 'checkout.session.completed',
             'status' => 'processed',
-            'created_at' => now()->subDays(100),
-        ]);
+        ], 100);
 
-        MonetbilCallbackEvent::create([
+        $this->createMonetbilEvent([
             'event_key' => 'test_key_1',
             'status' => 'processed',
             'payload' => [],
-            'created_at' => now()->subDays(100),
-        ]);
+        ], 100);
 
         $this->assertDatabaseCount('stripe_webhook_events', 1);
         $this->assertDatabaseCount('monetbil_callback_events', 1);
@@ -50,34 +72,30 @@ class PrunePaymentEventsCommandTest extends TestCase
     public function test_prune_events_deletes_old_events(): void
     {
         // Créer des événements anciens (> 90 jours)
-        StripeWebhookEvent::create([
+        $this->createStripeEvent([
             'event_id' => 'evt_old_1',
             'event_type' => 'checkout.session.completed',
             'status' => 'processed',
-            'created_at' => now()->subDays(100),
-        ]);
+        ], 100);
 
-        MonetbilCallbackEvent::create([
+        $this->createMonetbilEvent([
             'event_key' => 'old_key_1',
             'status' => 'processed',
             'payload' => [],
-            'created_at' => now()->subDays(100),
-        ]);
+        ], 100);
 
         // Créer des événements récents (< 90 jours)
-        StripeWebhookEvent::create([
+        $this->createStripeEvent([
             'event_id' => 'evt_recent_1',
             'event_type' => 'checkout.session.completed',
             'status' => 'processed',
-            'created_at' => now()->subDays(30),
-        ]);
+        ], 30);
 
-        MonetbilCallbackEvent::create([
+        $this->createMonetbilEvent([
             'event_key' => 'recent_key_1',
             'status' => 'processed',
             'payload' => [],
-            'created_at' => now()->subDays(30),
-        ]);
+        ], 30);
 
         $this->assertDatabaseCount('stripe_webhook_events', 2);
         $this->assertDatabaseCount('monetbil_callback_events', 2);
@@ -99,20 +117,18 @@ class PrunePaymentEventsCommandTest extends TestCase
     public function test_prune_events_keeps_failed_events_when_enabled(): void
     {
         // Créer un événement failed ancien
-        StripeWebhookEvent::create([
+        $this->createStripeEvent([
             'event_id' => 'evt_failed_old',
             'event_type' => 'checkout.session.completed',
             'status' => 'failed',
-            'created_at' => now()->subDays(100),
-        ]);
+        ], 100);
 
         // Créer un événement processed ancien
-        StripeWebhookEvent::create([
+        $this->createStripeEvent([
             'event_id' => 'evt_processed_old',
             'event_type' => 'checkout.session.completed',
             'status' => 'processed',
-            'created_at' => now()->subDays(100),
-        ]);
+        ], 100);
 
         // Configurer keep_failed = true
         config(['payments.events.keep_failed' => true]);
@@ -125,6 +141,11 @@ class PrunePaymentEventsCommandTest extends TestCase
         $this->assertDatabaseMissing('stripe_webhook_events', ['event_id' => 'evt_processed_old']);
     }
 }
+
+
+
+
+
 
 
 

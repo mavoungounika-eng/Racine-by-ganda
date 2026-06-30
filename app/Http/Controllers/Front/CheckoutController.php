@@ -16,16 +16,22 @@ use App\Services\StockValidationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Services\ShippingService;
 
 class CheckoutController extends Controller
 {
     protected OrderService $orderService;
     protected StockValidationService $stockValidationService;
+    protected \App\Services\SaaSCheckoutService $saasCheckoutService;
 
-    public function __construct(OrderService $orderService, StockValidationService $stockValidationService)
-    {
+    public function __construct(
+        OrderService $orderService, 
+        StockValidationService $stockValidationService,
+        \App\Services\SaaSCheckoutService $saasCheckoutService
+    ) {
         $this->orderService = $orderService;
         $this->stockValidationService = $stockValidationService;
+        $this->saasCheckoutService = $saasCheckoutService;
     }
 
     /**
@@ -48,26 +54,47 @@ class CheckoutController extends Controller
         }
 
         $user = Auth::user();
-        
-        // ✅ Vérification du rôle client
+
         if (!$user->isClient()) {
-            return redirect()->route('frontend.home')
-                ->with('error', 'Seuls les clients peuvent passer des commandes.');
+            return redirect()->route('frontend.shop')
+                ->with('error', 'Cette page est réservée aux clients.');
         }
-        
-        // ✅ Vérification du statut utilisateur
+
         if ($user->status !== 'active') {
-            return redirect()->route('frontend.home')
-                ->with('error', 'Votre compte doit être actif pour passer une commande.');
+            return redirect()->route('frontend.shop')
+                ->with('error', 'Votre compte est désactivé. Contactez le support.');
         }
 
         $cartService = $this->getCartService();
+
+        // Resync des prix avant affichage — alerte si des prix ont changé
+        if ($cartService instanceof DatabaseCartService) {
+            $priceChanges = $cartService->refreshPrices();
+            if (!empty($priceChanges)) {
+                $lines = array_map(
+                    fn($c) => "{$c['product_name']} : " .
+                              number_format($c['old_price'], 0, ',', ' ') . ' → ' .
+                              number_format($c['new_price'], 0, ',', ' ') . ' FCFA',
+                    $priceChanges
+                );
+                session()->flash('warning',
+                    'Les prix de certains articles ont été mis à jour : ' . implode(' | ', $lines)
+                );
+            }
+        }
+
         $items = $cartService->getItems();
         $subtotal = $cartService->total();
-        $shipping_default = 2000; // 2000 FCFA par défaut pour livraison à domicile
 
         if ($items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
+        }
+
+        // ✅ SAAS PUR : Valider l'intégrité du panier (Pas de mixité)
+        try {
+            $this->saasCheckoutService->validateCartIntegrity($items);
+        } catch (OrderException $e) {
+            return redirect()->route('cart.index')->with('error', $e->getUserMessage());
         }
 
         // Phase 3 : Émettre l'event CheckoutStarted pour le monitoring
@@ -75,82 +102,64 @@ class CheckoutController extends Controller
 
         // Charger les adresses du client
         $addresses = Address::where('user_id', $user->id)->get();
+        $shippingService     = app(ShippingService::class);
+        $addrForShipping     = $addresses->where("is_default", true)->first() ?? $addresses->first();
+        $detectedZone        = $shippingService->detectZone($addrForShipping?->country);
+        $shipping_default    = (int) $shippingService->cost($detectedZone, $subtotal);
+        $shipping_zone_config = $shippingService->zoneConfig($detectedZone);
         $defaultAddress = $addresses->where('is_default', true)->first() ?? $addresses->first();
 
         // ✅ Module 8 - Protection double soumission : Générer token unique
         $checkoutToken = \Illuminate\Support\Str::random(32);
-        session(['checkout_token' => $checkoutToken]);
+        $idempotencyKey = (string) \Illuminate\Support\Str::uuid();
+        session([
+            'checkout_token' => $checkoutToken,
+            'checkout_idempotency_key' => $idempotencyKey,
+        ]);
 
-        return view('checkout.index', compact('items', 'subtotal', 'shipping_default', 'addresses', 'defaultAddress', 'user', 'checkoutToken'));
+        return view('frontend.checkout.index', compact('items', 'subtotal', 'shipping_default', 'shipping_zone_config', 'addresses', 'defaultAddress', 'user', 'checkoutToken', 'idempotencyKey'));
     }
 
     /**
      * Créer une commande depuis le checkout
-     * 
-     * Circuit propre selon spécifications :
-     * - Crée la commande avec status='pending', payment_status='pending'
-     * - DÉCRÉMENT STOCK :
-     *   - cash_on_delivery : Décrémenté immédiatement dans OrderObserver@created
-     *   - card/mobile_money : Décrémenté dans OrderObserver@handlePaymentStatusChange quand payment_status='paid'
-     * - Redirige selon payment_method :
-     *   - cash_on_delivery → checkout.success
-     *   - card → checkout.card.pay
-     *   - mobile_money → checkout.mm.form
-     * 
-     * La logique métier (validation stock, calculs, création) est déléguée à OrderService.
      */
     public function placeOrder(PlaceOrderRequest $request)
     {
-        // Log d'entrée pour tracer le flux
-        \Log::info('=== CHECKOUT PLACEORDER START ===', [
-            'user_id' => $request->user()->id ?? null,
-            'payment_method' => $request->input('payment_method'),
-            'csrf_token_present' => $request->has('_token'),
-            'session_token' => session()->token(),
-            'request_method' => $request->method(),
-            'request_url' => $request->fullUrl(),
-        ]);
-
-        // ✅ Module 8 - Protection double soumission : Vérifier token unique
-        $submittedToken = $request->input('_checkout_token');
-        $sessionToken = session('checkout_token');
-
-        if (!$sessionToken || $submittedToken !== $sessionToken) {
-            \Log::warning('Checkout: Double submission attempt blocked', [
-                'user_id' => $request->user()->id ?? null,
-                'ip' => $request->ip(),
-                'user_agent' => substr($request->userAgent() ?? '', 0, 100),
-                'has_session_token' => !empty($sessionToken),
-                'tokens_match' => $submittedToken === $sessionToken,
-            ]);
-            return back()
-                ->with('error', 'Ce formulaire a déjà été soumis. Si votre commande a été créée, vérifiez vos commandes.')
-                ->withInput();
-        }
-
+        // ... (Log headers)
         $user = $request->user();
         $data = $request->validated();
 
-        \Log::info('Checkout: Data validated', [
-            'payment_method' => $data['payment_method'] ?? 'NOT SET',
-            'full_name' => $data['full_name'] ?? 'NOT SET',
-            'email' => $data['email'] ?? 'NOT SET',
-        ]);
+        // Validate anti-replay token when checkout flow has initialized one in session.
+        $sessionToken = session('checkout_token');
+        if ($sessionToken !== null) {
+            $requestToken = (string) $request->input('_checkout_token', '');
+            if ($requestToken === '' || !hash_equals((string) $sessionToken, $requestToken)) {
+                \Log::warning('Checkout: Invalid checkout token detected', [
+                    'user_id' => $user?->id,
+                    'has_session_token' => true,
+                    'has_request_token' => $request->filled('_checkout_token'),
+                    'ip' => $request->ip(),
+                ]);
+
+                return redirect()->route('checkout.index')
+                    ->with('error', 'Session de paiement invalide. Veuillez recommencer le checkout.');
+            }
+        }
 
         // Charger le panier
         $cartService = $this->getCartService();
         $items = $cartService->getItems();
         
-        \Log::info('Checkout: Cart loaded', [
-            'items_count' => $items->count(),
-            'cart_total' => $cartService->total(),
-            'user_id' => $user->id,
-        ]);
-        
         if ($items->isEmpty()) {
-            \Log::warning('Checkout: Cart is empty');
             return redirect()->route('cart.index')
                 ->with('error', 'Votre panier est vide.');
+        }
+
+        // ✅ SAAS PUR : Valider l'intégrité du panier (Pas de mixité) avant toute action
+        try {
+            $this->saasCheckoutService->validateCartIntegrity($items);
+        } catch (OrderException $e) {
+            return redirect()->route('cart.index')->with('error', $e->getUserMessage());
         }
 
         // ✅ VÉRIFICATION CRITIQUE : Ownership du panier
@@ -196,7 +205,74 @@ class CheckoutController extends Controller
 
             // Déléguer la création de commande au service avec token pour idempotence
             $checkoutToken = $request->input('_checkout_token');
-            $order = $this->orderService->createOrderFromCart($data, $items, $user->id, $checkoutToken);
+            $idempotencyKey = $request->header('X-Idempotency-Key')
+                ?: $request->input('idempotency_key')
+                ?: session('checkout_idempotency_key');
+
+            // Re-valider le code promo en DB (la session peut être périmée)
+            $promoCodeId      = null;
+            $promoDiscount    = 0;
+            $promoFreeShipping = false;
+
+            $sessionPromoId = session('applied_promo_code_id');
+            if ($sessionPromoId) {
+                $promoCode = \App\Models\PromoCode::find($sessionPromoId);
+                if ($promoCode && $promoCode->isValid()) {
+                    $cartTotal = $cartService->total();
+                    if ($promoCode->meetsMinimumAmount($cartTotal)) {
+                        $promoCodeId      = $promoCode->id;
+                        $promoDiscount    = $promoCode->calculateDiscount($cartTotal);
+                        $promoFreeShipping = $promoCode->type === 'free_shipping';
+                    } else {
+                        session()->forget([
+                            'applied_promo_code_id', 'applied_promo_code_code',
+                            'applied_promo_discount', 'applied_promo_free_shipping',
+                        ]);
+                    }
+                } else {
+                    session()->forget([
+                        'applied_promo_code_id', 'applied_promo_code_code',
+                        'applied_promo_discount', 'applied_promo_free_shipping',
+                    ]);
+                }
+            }
+
+            // Detect previously cancelled items (reorder duplicates)
+            $reorderWarnings = [];
+            foreach ($items as $cartItem) {
+                $productId = is_object($cartItem) ? $cartItem->product_id : $cartItem['product_id'];
+                $previousCancellation = \App\Models\OrderItem::where('product_id', $productId)
+                    ->whereHas('order', fn ($q) => $q->where('user_id', $user->id))
+                    ->where('status', \App\Models\OrderItem::STATUS_CANCELLED)
+                    ->latest()
+                    ->first();
+                if ($previousCancellation) {
+                    $reorderWarnings[$productId] = $previousCancellation->id;
+                }
+            }
+
+            $order = $this->orderService->createOrderFromCart(
+                $data, $items, $user->id, $idempotencyKey, $checkoutToken,
+                $promoCodeId, $promoDiscount, $promoFreeShipping
+            );
+
+            // Assign previous_cancellation_id on the newly created items
+            if (!empty($reorderWarnings)) {
+                $order->load('items.product');
+                $productNames = [];
+                foreach ($order->items as $newItem) {
+                    if (isset($reorderWarnings[$newItem->product_id])) {
+                        $newItem->update(['previous_cancellation_id' => $reorderWarnings[$newItem->product_id]]);
+                        $productNames[] = $newItem->product->title ?? 'Produit #' . $newItem->product_id;
+                    }
+                }
+                if (!empty($productNames)) {
+                    session()->put('reorder_warnings', array_map(
+                        fn ($name) => ['product_name' => $name],
+                        $productNames
+                    ));
+                }
+            }
 
             \Log::info('Checkout: Order created', [
                 'order_id' => $order->id ?? 'NO ID',
@@ -222,7 +298,11 @@ class CheckoutController extends Controller
             \Log::info('Checkout: Cart cleared');
 
             // ✅ Module 8 - Protection double soumission : Supprimer token après utilisation
-            session()->forget('checkout_token');
+            session()->forget([
+                'checkout_token', 'checkout_idempotency_key',
+                'applied_promo_code_id', 'applied_promo_code_code',
+                'applied_promo_discount', 'applied_promo_free_shipping',
+            ]);
 
             \Log::info('Checkout: Calling redirectToPayment', [
                 'order_id' => $order->id,
@@ -376,12 +456,11 @@ class CheckoutController extends Controller
             'session_success' => session('success'),
         ]);
 
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
-        $order->load(['items.product', 'address']);
+        $order->load(['items.product.category', 'items.product.creator', 'address']);
 
-        return view('checkout.success', compact('order'));
+        return view('frontend.checkout.success', compact('order'));
     }
 
     /**
@@ -389,13 +468,12 @@ class CheckoutController extends Controller
      */
     public function cancel(Order $order)
     {
-        // Utiliser OrderPolicy pour vérifier l'accès
-        $this->authorize('view', $order);
+        abort_unless($order->user_id === auth()->id(), 403);
 
         // Récupérer le mode de paiement depuis la commande
         $paymentMethod = $order->payment_method ?? 'card';
 
-        return view('checkout.cancel', compact('order', 'paymentMethod'));
+        return view('frontend.checkout.cancel', compact('order', 'paymentMethod'));
     }
 
     /**
@@ -507,10 +585,18 @@ class CheckoutController extends Controller
         $discount = $promoCode->calculateDiscount($total);
         $freeShipping = $promoCode->type === 'free_shipping';
 
+        // Persister le code promo en session pour qu'il soit appliqué lors du placeOrder
+        session([
+            'applied_promo_code_id'     => $promoCode->id,
+            'applied_promo_code_code'   => $promoCode->code,
+            'applied_promo_discount'    => $discount,
+            'applied_promo_free_shipping' => $freeShipping,
+        ]);
+
         return response()->json([
             'success' => true,
-            'message' => $freeShipping 
-                ? 'Livraison gratuite appliquée !' 
+            'message' => $freeShipping
+                ? 'Livraison gratuite appliquée !'
                 : 'Code promo appliqué ! Réduction de ' . number_format($discount, 0, ',', ' ') . ' FCFA',
             'promo_code' => [
                 'id' => $promoCode->id,
@@ -521,5 +607,17 @@ class CheckoutController extends Controller
             'discount_amount' => $discount,
             'free_shipping' => $freeShipping,
         ]);
+    }
+
+    public function removePromo(): \Illuminate\Http\JsonResponse
+    {
+        session()->forget([
+            'applied_promo_code_id',
+            'applied_promo_code_code',
+            'applied_promo_discount',
+            'applied_promo_free_shipping',
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }

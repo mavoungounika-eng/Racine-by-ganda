@@ -2,42 +2,77 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class LoyaltyPoint extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'user_id',
+        'customer_id',
         'points',
-        'total_earned',
-        'total_spent',
-        'tier',
+        'type',
+        'source',
+        'reference_id',
+        'reference_type',
+        'description',
+        'expires_at',
+        'created_by',
     ];
 
-    public function user(): BelongsTo
+    protected $casts = [
+        'points' => 'integer',
+        'expires_at' => 'datetime',
+        'reference_id' => 'integer',
+    ];
+
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'customer_id');
     }
 
-    public function transactions(): HasMany
+    public function creator(): BelongsTo
     {
-        return $this->hasMany(LoyaltyTransaction::class, 'user_id', 'user_id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function calculateTier(): string
+    /**
+     * Get the source polymorphic relation (e.g. Order or PosSale).
+     */
+    public function reference(): MorphTo
     {
-        if ($this->total_earned >= 10000) {
-            return 'gold';
-        } elseif ($this->total_earned >= 5000) {
-            return 'silver';
-        }
-        return 'bronze';
+        return $this->morphTo();
     }
 
-    public function updateTier(): void
+    /**
+     * Scopes
+     */
+    public function scopeEarned($query)
     {
-        $this->update(['tier' => $this->calculateTier()]);
+        return $query->where('type', 'earned');
+    }
+
+    public function scopeSpent($query)
+    {
+        return $query->where('type', 'spent');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('expires_at')
+              ->orWhere('expires_at', '>', now());
+        });
+    }
+
+    /**
+     * Get balance for a customer.
+     */
+    public static function getBalanceFor(int $customerId): int
+    {
+        return (int) self::where('customer_id', $customerId)->sum('points');
     }
 }

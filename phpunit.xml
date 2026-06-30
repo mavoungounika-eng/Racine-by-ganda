@@ -21,7 +21,9 @@
 
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
-            <directory>modules/*/tests/Feature</directory>
+            <directory>modules/*/Tests/Feature</directory>
+            <!-- ⚠️ modules/*/Tests/Unit désactivé — hang sur ERP/Pos Unit tests -->
+            <!-- <directory>modules/*/Tests/Unit</directory> -->
         </testsuite>
     </testsuites>
 
@@ -44,13 +46,17 @@
         <env name="APP_DEBUG" value="true"/>
         <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/>
 
-        <!-- Database (CI = MySQL) -->
+        <!-- Database (MySQL local + CI) -->
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="3306"/>
-        <env name="DB_DATABASE" value="testing"/>
-        <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value="password"/>
+        <env name="DB_DATABASE" value="racine_testing"/>
+        <env name="DB_USERNAME" value="laravel"/>
+        <env name="DB_PASSWORD" value="secret"/>
+        <!-- SQLite (backup if MySQL unavailable)
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        -->
 
         <!-- Performance -->
         <env name="BCRYPT_ROUNDS" value="4"/>
@@ -68,5 +74,9 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+
+        <!-- Stripe Mock -->
+        <env name="STRIPE_KEY" value="pk_test_mock_key_for_testing_purposes"/>
+        <env name="STRIPE_SECRET" value="sk_test_mock_secret_key_for_testing_purposes_long_enough"/>
     </php>
 </phpunit>

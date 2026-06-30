@@ -21,7 +21,6 @@ class StockValidationServiceTest extends TestCase
         parent::setUp();
         $this->service = new StockValidationService();
     }
-
     #[Test]
     public function it_validates_stock_successfully(): void
     {
@@ -37,7 +36,6 @@ class StockValidationServiceTest extends TestCase
         $this->assertCount(1, $result['locked_products']);
         $this->assertTrue($result['locked_products']->has($product->id));
     }
-
     #[Test]
     public function it_throws_exception_for_insufficient_stock(): void
     {
@@ -52,7 +50,6 @@ class StockValidationServiceTest extends TestCase
 
         $this->service->validateStockForCart($items);
     }
-
     #[Test]
     public function it_throws_exception_for_nonexistent_product(): void
     {
@@ -65,7 +62,6 @@ class StockValidationServiceTest extends TestCase
 
         $this->service->validateStockForCart($items);
     }
-
     #[Test]
     public function it_checks_stock_issues_without_throwing(): void
     {

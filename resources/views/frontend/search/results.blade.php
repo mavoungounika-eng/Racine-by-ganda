@@ -48,7 +48,7 @@
 
                         <!-- Prix -->
                         <div class="form-group mb-3">
-                            <label>Prix (FCFA)</label>
+                            <label>Prix ({{ current_currency() }})</label>
                             <div class="row">
                                 <div class="col-6">
                                     <input type="number" name="price_min" class="form-control" 
@@ -109,7 +109,7 @@
                         <div class="product-item">
                             <a href="{{ route('frontend.product', $product->id) }}" class="img-prod">
                                 <img class="img-fluid" 
-                                     src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('racine/images/product-1.jpg') }}" 
+                                     src="{{ $product->main_image ? asset('storage/products/' . $product->main_image) : asset('racine/images/product-1.jpg') }}" 
                                      alt="{{ $product->title }}">
                                 @if($product->stock <= 0)
                                 <span class="status">Rupture de stock</span>
@@ -122,7 +122,7 @@
                                 <div class="d-flex">
                                     <div class="pricing">
                                         <p class="price">
-                                            <span class="price-sale">{{ number_format($product->price, 0, ',', ' ') }} FCFA</span>
+                                            <span class="price-sale">{{ format_price($product->price) }}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -133,11 +133,11 @@
                                             <span><i class="icon-eye"></i></span>
                                         </a>
                                         @if($product->stock > 0)
-                                        <form action="{{ route('cart.add') }}" method="POST" class="d-inline">
+                                        <form action="{{ route('cart.add') }}" method="POST" class="d-inline search-cart-form">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                                             <input type="hidden" name="quantity" value="1">
-                                            <button type="submit" class="buy-now d-flex justify-content-center align-items-center text-center">
+                                            <button type="submit" class="buy-now d-flex justify-content-center align-items-center text-center" title="Ajouter au panier">
                                                 <span><i class="icon-shopping-cart"></i></span>
                                             </button>
                                         </form>
@@ -172,7 +172,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Autocomplete pour la recherche
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.querySelector('input[name="q"]');
@@ -188,10 +188,34 @@
                             .then(response => response.json())
                             .then(data => {
                                 // Afficher les suggestions (à implémenter avec un dropdown)
-                                console.log('Suggestions:', data);
+                                // TODO: Implement autocomplete dropdown
                             });
                     }, 300);
                 }
+            });
+        }
+    });
+
+    // Ajout panier depuis la recherche — toast feedback
+    document.querySelectorAll('.search-cart-form').forEach(function(form) {
+        if (window.Racine && window.Racine.Ajax) {
+            window.Racine.Ajax.handleFormSubmit(form, {
+                onSuccess: function(data) {
+                    if (data.count !== undefined) {
+                        window.Racine.Ajax.updateCartCount(data.count);
+                    }
+                    window.Racine.Utils.showNotification(
+                        data.message || 'Produit ajouté au panier !',
+                        'success'
+                    );
+                },
+                onError: function(data) {
+                    window.Racine.Utils.showNotification(
+                        data.message || 'Impossible d\'ajouter ce produit.',
+                        'error'
+                    );
+                },
+                loadingText: 'Ajout...'
             });
         }
     });

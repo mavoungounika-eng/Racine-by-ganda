@@ -38,9 +38,54 @@ class EventServiceProvider extends ServiceProvider
         PaymentFailed::class => [
             [LogFunnelEvent::class, 'handlePaymentFailed'],
         ],
+        // Accounting
+        \Modules\Accounting\Events\PaymentRecorded::class => [
+            \Modules\Accounting\Listeners\PaymentRecordedListener::class,
+        ],
+        \Modules\Accounting\Events\PurchaseReceived::class => [
+            \Modules\Accounting\Listeners\PurchaseReceivedListener::class,
+        ],
+        \Modules\ERPProduction\Events\ProductionStarted::class => [
+            \Modules\Accounting\Listeners\ProductionStartedListener::class,
+        ],
+        \Modules\ERPProduction\Events\ProductionFinished::class => [
+            \Modules\Accounting\Listeners\ProductionFinishedListener::class,
+        ],
+        \Modules\ERPProduction\Events\ProductionScrapped::class => [
+            \Modules\Accounting\Listeners\ProductionScrappedListener::class,
+        ],
+        // ==========================================
+        // POS Events (Audit-Ready Architecture)
+        // ==========================================
+        \App\Events\PosSessionClosed::class => [
+            \App\Listeners\PosSessionClosedListener::class,
+        ],
+        \App\Events\CashDiscrepancyDetected::class => [
+            \App\Listeners\SendCashDiscrepancyAlert::class,
+        ],
+        \App\Events\PosCardPaymentConfirmed::class => [
+            \App\Listeners\PosCardPaymentConfirmedListener::class,
+        ],
+        \App\Events\PosMobilePaymentConfirmed::class => [
+            \App\Listeners\PosMobilePaymentConfirmedListener::class,
+        ],
+        \App\Events\OrphanedPaymentDetected::class => [
+            \App\Listeners\NotifyOrphanedPaymentDetected::class,
+        ],
         // ✅ Phase 2 : Limiter les sessions actives
         \Illuminate\Auth\Events\Login::class => [
             \App\Listeners\LogSuccessfulLogin::class,
+        ],
+        // ── ERP Stock Sync ──────────────────────────────────────────────
+        \App\Events\StockLowAlert::class => [
+            \App\Listeners\HandleStockLowAlert::class,
+        ],
+        \App\Events\StockAnomalyDetected::class => [
+            \App\Listeners\HandleStockAnomaly::class,
+        ],
+        // ── Order Relaunch ──────────────────────────────────────────────
+        \App\Events\OrderRelaunched::class => [
+            \App\Listeners\NotifyAdminOrderRelaunched::class,
         ],
     ];
 
@@ -49,7 +94,34 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register model observers
+        \App\Models\User::observe(\App\Observers\UserObserver::class);
+        
+        // Task 3: Global Audit Trail Observers
+        \App\Models\User::observe(\App\Observers\AuditObserver::class);
+        if (class_exists(\App\Models\Order::class)) {
+            \App\Models\Order::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\Payment::class)) {
+            \App\Models\Payment::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\Product::class)) {
+            \App\Models\Product::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\Role::class)) {
+            \App\Models\Role::observe(\App\Observers\AuditObserver::class);
+        }
+        if (class_exists(\App\Models\CreatorProfile::class)) {
+            \App\Models\CreatorProfile::observe(\App\Observers\AuditObserver::class);
+        }
+
+        // POS Analytics Cache Invalidation Observers
+        if (class_exists(\App\Models\PosSession::class)) {
+            \App\Models\PosSession::observe(\App\Observers\PosSessionObserver::class);
+        }
+        if (class_exists(\App\Models\PosSale::class)) {
+            \App\Models\PosSale::observe(\App\Observers\PosSaleObserver::class);
+        }
     }
 
     /**
@@ -60,4 +132,3 @@ class EventServiceProvider extends ServiceProvider
         return false;
     }
 }
-

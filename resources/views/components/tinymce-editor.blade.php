@@ -37,7 +37,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     tinymce.init({
         selector: '#{{ $name }}',

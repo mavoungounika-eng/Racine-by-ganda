@@ -1,2 +1,22 @@
+# Robots.txt - RACINE BY GANDA
+# Mise à jour: Juin 2026
+
 User-agent: *
-Disallow:
+# Bloquer espaces admin et créateur
+Disallow: /admin/
+Disallow: /compte/
+Disallow: /creator/
+Disallow: /erp/
+
+# Bloquer routes API et authentification
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+
+# Bloquer processus checkout
+Disallow: /checkout/
+Disallow: /cart/
+
+# Sitemap
+Sitemap: https://racinebyganda.com/sitemap.xml

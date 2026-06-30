@@ -26,7 +26,7 @@
       </div>
 
       <div class="col-md">
-        <div class="ftco-footer-widget mb-4 ml-md-5">
+        <div class="ftco-footer-widget mb-4 ms-md-5">
           <h2 class="ftco-heading-2">Menu</h2>
           <ul class="list-unstyled">
             <li><a href="{{ route('frontend.shop') }}" class="py-2 d-block">Boutique</a></li>
@@ -42,7 +42,7 @@
         <div class="ftco-footer-widget mb-4">
           <h2 class="ftco-heading-2">Aide</h2>
           <div class="d-flex">
-            <ul class="list-unstyled mr-l-5 pr-l-3 mr-4">
+            <ul class="list-unstyled mr-l-5 pr-l-3 me-4">
               <li><a href="{{ route('frontend.shipping') }}" class="py-2 d-block">Livraison</a></li>
               <li><a href="{{ route('frontend.returns') }}" class="py-2 d-block">Retours &amp; échanges</a></li>
               <li><a href="{{ route('frontend.terms') }}" class="py-2 d-block">Conditions générales</a></li>
@@ -57,9 +57,9 @@
           <h2 class="ftco-heading-2">Vous avez une question ?</h2>
           <div class="block-23 mb-3">
             <ul>
-              <li><span class="icon icon-map-marker"></span><span class="text">Pointe-Noire, Congo-Brazzaville</span></li>
-              <li><a href="#"><span class="icon icon-phone"></span><span class="text">+242 06 6XX XX XX</span></a></li>
-              <li><a href="mailto:contact@racinebyganda.com"><span class="icon icon-envelope"></span><span class="text">contact@racinebyganda.com</span></a></li>
+              <li><span class="icon icon-map-marker"></span><span class="text">Centre ville, Galerie NF, Pointe-Noire</span></li>
+              <li><a href="tel:{{ str_replace(' ', '', config('company.phone')) }}"><span class="icon icon-phone"></span><span class="text">{{ config('company.phone') }}</span></a></li>
+              <li><a href="mailto:{{ config('company.email') }}"><span class="icon icon-envelope"></span><span class="text">{{ config('company.email') }}</span></a></li>
             </ul>
           </div>
         </div>
@@ -70,7 +70,7 @@
     <div class="row">
       <div class="col-md-12 text-center">
         <p>
-          &copy; <script>document.write(new Date().getFullYear());</script> RACINE BY GANDA. Tous droits réservés.
+          &copy; <script nonce="{{ csp_nonce() }}">document.write(new Date().getFullYear());</script> RACINE BY GANDA. Tous droits réservés.
         </p>
       </div>
     </div>

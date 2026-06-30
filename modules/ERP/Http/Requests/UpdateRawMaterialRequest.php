@@ -23,7 +23,7 @@ class UpdateRawMaterialRequest extends FormRequest
         
         return [
             'name' => 'required|string|max:255',
-            'sku' => 'nullable|string|max:100|unique:erp_raw_materials,sku,' . $materialId,
+            'sku' => 'nullable|string|max:100',
             'supplier_id' => 'nullable|exists:erp_suppliers,id',
             'unit' => 'nullable|string|max:50',
             'unit_price' => 'nullable|numeric|min:0',
@@ -35,6 +35,17 @@ class UpdateRawMaterialRequest extends FormRequest
     /**
      * Messages de validation personnalisés.
      */
+    /**
+     * Remapping champ formulaire → colonne base de données.
+     */
+    protected function passedValidation(): void
+    {
+        if ($this->has('minimum_stock')) {
+            $this->merge(['min_stock_alert' => $this->input('minimum_stock')]);
+            $this->request->remove('minimum_stock');
+        }
+    }
+
     public function messages(): array
     {
         return [

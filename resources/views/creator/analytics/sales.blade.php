@@ -7,8 +7,8 @@
 <div class="creator-content-wrapper">
     {{-- Breadcrumb --}}
     <div class="creator-breadcrumb mb-3">
-        <a href="{{ route('creator.dashboard') }}">Dashboard</a> / 
-        <a href="{{ route('creator.analytics.index') }}">Analytics</a> / 
+        <a href="{{ route('creator.dashboard') }}">Tableau de bord</a> / 
+        <a href="{{ route('creator.statistics.index') }}">Statistiques</a> / 
         <span>Ventes</span>
     </div>
 
@@ -19,12 +19,12 @@
             <p class="text-muted mb-0">Analyse détaillée de vos ventes et performances</p>
         </div>
         <div>
-            <a href="{{ route('creator.analytics.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left mr-2"></i>
+            <a href="{{ route('creator.statistics.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
                 Retour
             </a>
-            <a href="{{ route('creator.analytics.sales', ['refresh' => 1]) }}" class="btn btn-outline-primary ml-2" title="Actualiser les données">
-                <i class="fas fa-sync-alt mr-2"></i>
+            <a href="{{ route('creator.statistics.sales', ['refresh' => 1]) }}" class="btn btn-outline-primary ms-2" title="Actualiser les données">
+                <i class="fas fa-sync-alt me-2"></i>
                 Actualiser
             </a>
         </div>
@@ -32,7 +32,7 @@
 
     {{-- Filtres période --}}
     <div class="card-racine mb-4">
-        <form method="GET" action="{{ route('creator.analytics.sales') }}" class="d-flex align-items-center gap-3 flex-wrap">
+        <form method="GET" action="{{ route('creator.statistics.sales') }}" class="d-flex align-items-center gap-3 flex-wrap">
             <label class="mb-0 font-weight-bold">Période :</label>
             <select name="period" class="form-control form-control-sm" style="width: auto;">
                 <option value="7days" {{ $period === '7days' ? 'selected' : '' }}>7 derniers jours</option>
@@ -89,7 +89,7 @@
         <div class="col-12">
             <div class="card-racine">
                 <h3 class="h5 font-weight-bold mb-3">
-                    <i class="fas fa-trophy mr-2 text-warning"></i>
+                    <i class="fas fa-trophy me-2 text-warning"></i>
                     Top Produits (par quantité vendue)
                 </h3>
                 @if(!empty($stats['top_products']))
@@ -99,9 +99,9 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Produit</th>
-                                    <th class="text-right">Quantité vendue</th>
-                                    <th class="text-right">CA généré</th>
-                                    <th class="text-right">Prix unitaire moyen</th>
+                                    <th class="text-end">Quantité vendue</th>
+                                    <th class="text-end">CA généré</th>
+                                    <th class="text-end">Prix unitaire moyen</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -115,13 +115,13 @@
                                         <td>
                                             <strong>{{ $product['name'] }}</strong>
                                         </td>
-                                        <td class="text-right">
-                                            <span class="badge badge-primary badge-pill">{{ $product['total_quantity'] }}</span>
+                                        <td class="text-end">
+                                            <span class="badge bg-primary badge-pill">{{ $product['total_quantity'] }}</span>
                                         </td>
-                                        <td class="text-right">
+                                        <td class="text-end">
                                             <strong class="text-success">{{ number_format($product['total_revenue'], 0, ',', ' ') }} FCFA</strong>
                                         </td>
-                                        <td class="text-right">
+                                        <td class="text-end">
                                             {{ number_format($product['total_revenue'] / $product['total_quantity'], 0, ',', ' ') }} FCFA
                                         </td>
                                     </tr>
@@ -134,7 +134,7 @@
                         <i class="fas fa-inbox fa-3x mb-3"></i>
                         <p>Aucune vente pour cette période.</p>
                         <a href="{{ route('creator.products.index') }}" class="btn btn-primary mt-3">
-                            <i class="fas fa-plus mr-2"></i>
+                            <i class="fas fa-plus me-2"></i>
                             Ajouter des produits
                         </a>
                     </div>
@@ -149,7 +149,7 @@
             <div class="col-12">
                 <div class="card-racine">
                     <h3 class="h5 font-weight-bold mb-3">
-                        <i class="fas fa-chart-area mr-2 text-primary"></i>
+                        <i class="fas fa-chart-area me-2 text-primary"></i>
                         Évolution Journalière
                     </h3>
                     <div class="table-responsive">
@@ -157,8 +157,8 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th class="text-right">Commandes</th>
-                                    <th class="text-right">Chiffre d'affaires</th>
+                                    <th class="text-end">Commandes</th>
+                                    <th class="text-end">Chiffre d'affaires</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -167,10 +167,10 @@
                                         <td>
                                             <strong>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</strong>
                                         </td>
-                                        <td class="text-right">
-                                            <span class="badge badge-info">{{ $stats['timeline']['orders'][$index] ?? 0 }}</span>
+                                        <td class="text-end">
+                                            <span class="badge bg-info">{{ $stats['timeline']['orders'][$index] ?? 0 }}</span>
                                         </td>
-                                        <td class="text-right">
+                                        <td class="text-end">
                                             <strong class="text-success">
                                                 {{ number_format($stats['timeline']['revenue'][$index] ?? 0, 0, ',', ' ') }} FCFA
                                             </strong>
@@ -181,10 +181,10 @@
                             <tfoot>
                                 <tr class="font-weight-bold">
                                     <td>Total</td>
-                                    <td class="text-right">
+                                    <td class="text-end">
                                         {{ array_sum($stats['timeline']['orders'] ?? []) }}
                                     </td>
-                                    <td class="text-right text-success">
+                                    <td class="text-end text-success">
                                         {{ number_format(array_sum($stats['timeline']['revenue'] ?? []), 0, ',', ' ') }} FCFA
                                     </td>
                                 </tr>

@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Inscription - RACINE BY GANDA</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('racine/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/racine-variables.css') }}">
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -75,7 +76,7 @@
         .alert-reassuring {
             background: rgba(212, 165, 116, 0.15);
             border: 1px solid rgba(212, 165, 116, 0.3);
-            border-left: 4px solid #D4A574;
+            border-start: 4px solid #D4A574;
             border-radius: 12px;
             padding: 1.25rem;
             margin-bottom: 2rem;
@@ -317,6 +318,18 @@
     <div class="noise"></div>
     
     <div class="container">
+        {{-- Boutons de navigation --}}
+        <div class="auth-action-btns">
+            <a href="javascript:history.back()" class="auth-btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+            <a href="{{ route('frontend.home') }}" class="auth-btn-secondary auth-btn-secondary--warm">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+        </div>
+        
         <div class="register-header">
             <h1 class="register-title">Créer un compte</h1>
             <p class="register-subtitle">Rejoignez l'univers RACINE BY GANDA</p>
@@ -330,7 +343,7 @@
         
         @if ($errors->any())
             <div class="alert-error">
-                <ul style="margin: 0; padding-left: 1.25rem;">
+                <ul class="auth-feature-list">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -364,78 +377,86 @@
                     <input type="hidden" name="account_type" value="creator">
                     
                     <div class="form-group">
-                        <label for="name" class="form-label">Nom complet</label>
-                        <input type="text" 
-                               id="name" 
-                               name="name" 
-                               class="form-control" 
-                               placeholder="Votre nom complet" 
+                        <label for="creator-name" class="form-label">Nom complet</label>
+                        <input type="text"
+                               id="creator-name"
+                               name="name"
+                               class="form-control"
+                               placeholder="Votre nom complet"
+                               aria-label="Nom complet"
+                               aria-describedby="creator-name-hint"
+                               aria-required="true"
                                required
                                autofocus
                                value="{{ old('name') }}">
+                        <small id="creator-name-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Votre nom complet</small>
                         @error('name')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="email" class="form-label">Adresse Email</label>
-                        <input type="email" 
-                               id="email" 
-                               name="email" 
-                               class="form-control" 
-                               placeholder="exemple@email.com" 
+                        <label for="creator-email" class="form-label">Adresse Email</label>
+                        <input type="email"
+                               id="creator-email"
+                               name="email"
+                               class="form-control"
+                               placeholder="exemple@email.com"
+                               aria-label="Adresse email"
+                               aria-describedby="creator-email-hint"
+                               aria-required="true"
                                required
                                autocomplete="email"
                                value="{{ old('email') }}">
+                        <small id="creator-email-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Votre adresse email</small>
                         @error('email')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="password" class="form-label">Mot de passe</label>
-                        <input type="password" 
-                               id="password" 
-                               name="password" 
-                               class="form-control" 
-                               placeholder="12 caractères min." 
+                        <label for="creator-password" class="form-label">Mot de passe</label>
+                        <input type="password"
+                               id="creator-password"
+                               name="password"
+                               class="form-control"
+                               placeholder="12 caractères min."
+                               aria-label="Mot de passe"
+                               aria-describedby="creator-password-hint"
+                               aria-required="true"
                                required
                                autocomplete="new-password">
+                        <small id="creator-password-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Minimum 12 caractères</small>
                         @error('password')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="password_confirmation" class="form-label">Confirmation</label>
-                        <input type="password" 
-                               id="password_confirmation" 
-                               name="password_confirmation" 
-                               class="form-control" 
-                               placeholder="Répétez le mot de passe" 
+                        <label for="creator-password-confirmation" class="form-label">Confirmation</label>
+                        <input type="password"
+                               id="creator-password-confirmation"
+                               name="password_confirmation"
+                               class="form-control"
+                               placeholder="Répétez le mot de passe"
+                               aria-label="Confirmation du mot de passe"
+                               aria-describedby="creator-password-confirmation-hint"
+                               aria-required="true"
                                required
                                autocomplete="new-password">
+                        <small id="creator-password-confirmation-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Répétez votre mot de passe</small>
                     </div>
-                    
-                    <button type="submit" class="btn-register">
+
+                    <button type="submit" class="btn-register" id="creator-submit-btn">
                         Créer mon compte créateur
                     </button>
                 </form>
                 
                 <div class="oauth-section">
                     <div class="oauth-divider">ou</div>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'creator']) }}" class="btn-oauth google">
+                    <a href="{{ route('auth.social.redirect', ['provider' => 'google', 'role' => 'createur']) }}" class="btn-oauth google">
                         <i class="fab fa-google"></i>
                         <span>Google</span>
-                    </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'creator']) }}" class="btn-oauth apple">
-                        <i class="fab fa-apple"></i>
-                        <span>Apple</span>
-                    </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'creator']) }}" class="btn-oauth facebook">
-                        <i class="fab fa-facebook-f"></i>
-                        <span>Facebook</span>
                     </a>
                 </div>
                 
@@ -444,9 +465,9 @@
                         Vous souhaitez simplement acheter ? 
                         <a href="{{ route('register', ['context' => 'boutique']) }}">Créer un compte client</a>
                     </p>
-                    <p style="margin-top: 0.5rem;">
+                    <p class="auth-link-hint">
                         Déjà un compte ? 
-                        <a href="{{ route('creator.login') }}">Se connecter</a>
+                        <a href="{{ route('login') }}">Se connecter</a>
                     </p>
                 </div>
             </div>
@@ -460,61 +481,77 @@
                     <input type="hidden" name="account_type" value="client">
                     
                     <div class="form-group">
-                        <label for="name" class="form-label">Nom complet</label>
-                        <input type="text" 
-                               id="name" 
-                               name="name" 
-                               class="form-control" 
-                               placeholder="Votre nom complet" 
+                        <label for="client-name" class="form-label">Nom complet</label>
+                        <input type="text"
+                               id="client-name"
+                               name="name"
+                               class="form-control"
+                               placeholder="Votre nom complet"
+                               aria-label="Nom complet"
+                               aria-describedby="client-name-hint"
+                               aria-required="true"
                                required
                                autofocus
                                value="{{ old('name') }}">
+                        <small id="client-name-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Votre nom complet</small>
                         @error('name')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="email" class="form-label">Adresse Email</label>
-                        <input type="email" 
-                               id="email" 
-                               name="email" 
-                               class="form-control" 
-                               placeholder="exemple@email.com" 
+                        <label for="client-email" class="form-label">Adresse Email</label>
+                        <input type="email"
+                               id="client-email"
+                               name="email"
+                               class="form-control"
+                               placeholder="exemple@email.com"
+                               aria-label="Adresse email"
+                               aria-describedby="client-email-hint"
+                               aria-required="true"
                                required
                                autocomplete="email"
                                value="{{ old('email') }}">
+                        <small id="client-email-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Votre adresse email</small>
                         @error('email')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="password" class="form-label">Mot de passe</label>
-                        <input type="password" 
-                               id="password" 
-                               name="password" 
-                               class="form-control" 
-                               placeholder="12 caractères min." 
+                        <label for="client-password" class="form-label">Mot de passe</label>
+                        <input type="password"
+                               id="client-password"
+                               name="password"
+                               class="form-control"
+                               placeholder="12 caractères min."
+                               aria-label="Mot de passe"
+                               aria-describedby="client-password-hint"
+                               aria-required="true"
                                required
                                autocomplete="new-password">
+                        <small id="client-password-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Minimum 12 caractères</small>
                         @error('password')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="password_confirmation" class="form-label">Confirmation</label>
-                        <input type="password" 
-                               id="password_confirmation" 
-                               name="password_confirmation" 
-                               class="form-control" 
-                               placeholder="Répétez le mot de passe" 
+                        <label for="client-password-confirmation" class="form-label">Confirmation</label>
+                        <input type="password"
+                               id="client-password-confirmation"
+                               name="password_confirmation"
+                               class="form-control"
+                               placeholder="Répétez le mot de passe"
+                               aria-label="Confirmation du mot de passe"
+                               aria-describedby="client-password-confirmation-hint"
+                               aria-required="true"
                                required
                                autocomplete="new-password">
+                        <small id="client-password-confirmation-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Répétez votre mot de passe</small>
                     </div>
-                    
-                    <button type="submit" class="btn-register">
+
+                    <button type="submit" class="btn-register" id="client-submit-btn">
                         Créer mon compte client
                     </button>
                 </form>
@@ -525,14 +562,6 @@
                         <i class="fab fa-google"></i>
                         <span>Google</span>
                     </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'apple', 'role' => 'client']) }}" class="btn-oauth apple">
-                        <i class="fab fa-apple"></i>
-                        <span>Apple</span>
-                    </a>
-                    <a href="{{ route('auth.social.redirect', ['provider' => 'facebook', 'role' => 'client']) }}" class="btn-oauth facebook">
-                        <i class="fab fa-facebook-f"></i>
-                        <span>Facebook</span>
-                    </a>
                 </div>
                 
                 <div class="register-footer">
@@ -540,7 +569,7 @@
                         Vous souhaitez vendre vos créations ? 
                         <a href="{{ route('creator.register') }}">Créer un compte créateur</a>
                     </p>
-                    <p style="margin-top: 0.5rem;">
+                    <p class="auth-link-hint">
                         Déjà un compte ? 
                         <a href="{{ route('login', ['context' => 'boutique']) }}">Se connecter</a>
                     </p>
@@ -548,6 +577,38 @@
             </div>
         @endif
     </div>
+
+<script nonce="{{ csp_nonce() }}">
+// Loading state pour formulaire créateur
+@if($isCreatorContext)
+document.querySelector('#creator-submit-btn').closest('form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('creator-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Création en cours...';
+    const spinner = document.createElement('i');
+    spinner.className = 'fas fa-spinner fa-spin';
+    spinner.style.marginRight = '0.5rem';
+    btn.insertBefore(spinner, btn.firstChild);
+});
+@else
+// Loading state pour formulaire client
+document.querySelector('#client-submit-btn').closest('form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('client-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Création en cours...';
+    const spinner = document.createElement('i');
+    spinner.className = 'fas fa-spinner fa-spin';
+    spinner.style.marginRight = '0.5rem';
+    btn.insertBefore(spinner, btn.firstChild);
+});
+@endif
+</script>
+
 </body>
 </html>
+
+
+
+
+
 

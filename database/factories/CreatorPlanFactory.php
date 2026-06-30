@@ -12,17 +12,18 @@ class CreatorPlanFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => fake()->unique()->word(),
-            'name' => fake()->words(2, true),
-            'price' => fake()->randomFloat(2, 0, 20000),
-            'annual_price' => null,
-            'billing_cycle' => 'monthly',
-            'is_active' => true,
-            'description' => fake()->sentence(),
-            'features' => [],
+            'code'            => fake()->unique()->word(),
+            'name'            => fake()->words(2, true),
+            'price'           => fake()->randomFloat(2, 5000, 75000),
+            'quarterly_price' => null,
+            'annual_price'    => null,
+            'billing_cycle'   => 'monthly',
+            'is_active'       => true,
+            'products_limit'  => 80,
+            'has_pos'         => false,
+            'trial_days'      => 30,
+            'description'     => fake()->sentence(),
+            'features'        => [],
         ];
     }
 }
-
-
-

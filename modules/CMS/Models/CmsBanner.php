@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class CmsBanner extends Model
 {
     protected $fillable = [
-        'title', 'subtitle', 'image', 'image_mobile', 'link_url',
-        'link_text', 'position', 'order', 'is_active', 'start_date', 'end_date'
+        'name', 'title', 'subtitle', 'image', 'image_mobile', 'cta_link',
+        'cta_text', 'position', 'order', 'is_active', 'start_date', 'end_date'
     ];
 
     protected $casts = [

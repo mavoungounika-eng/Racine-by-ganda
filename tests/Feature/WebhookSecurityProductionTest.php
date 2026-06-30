@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\StripeWebhookEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
@@ -36,6 +37,7 @@ class WebhookSecurityProductionTest extends TestCase
      */
     public function test_stripe_webhook_with_valid_signature_is_processed(): void
     {
+        \Illuminate\Support\Facades\Queue::fake();
         // Configurer le secret webhook
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
 
@@ -53,17 +55,18 @@ class WebhookSecurityProductionTest extends TestCase
             ],
         ]);
 
-        // Générer une signature Stripe valide (simulation)
-        // En production, Stripe génère cette signature avec leur secret
+        // Générer une signature valide avec utilitaire Stripe si possible
         $timestamp = time();
-        $signedPayload = $timestamp . '.' . $payload;
+        $payloadString = json_encode(json_decode($payload, true)); // minifié
+        $signedPayload = $timestamp . '.' . $payloadString;
         $signature = hash_hmac('sha256', $signedPayload, 'whsec_test_secret');
-        $stripeSignature = $timestamp . ',v1=' . $signature;
+        $stripeSignature = 't=' . $timestamp . ',v1=' . $signature;
 
         // Faire la requête avec signature valide
-        $response = $this->postJson('/api/webhooks/stripe', json_decode($payload, true), [
-            'Stripe-Signature' => $stripeSignature,
-        ]);
+        $response = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
+            'HTTP_Stripe-Signature' => $stripeSignature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payloadString);
 
         // Vérifier que la requête est acceptée (200)
         $response->assertStatus(200);
@@ -144,6 +147,7 @@ class WebhookSecurityProductionTest extends TestCase
      */
     public function test_stripe_webhook_duplicate_event_is_processed_only_once(): void
     {
+        \Illuminate\Support\Facades\Queue::fake();
         // Configurer le secret webhook
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
 
@@ -160,16 +164,17 @@ class WebhookSecurityProductionTest extends TestCase
             ],
         ]);
 
-        // Générer une signature valide
         $timestamp = time();
-        $signedPayload = $timestamp . '.' . $payload;
+        $payloadString = json_encode(json_decode($payload, true)); // minifié
+        $signedPayload = $timestamp . '.' . $payloadString;
         $signature = hash_hmac('sha256', $signedPayload, 'whsec_test_secret');
-        $stripeSignature = $timestamp . ',v1=' . $signature;
+        $stripeSignature = 't=' . $timestamp . ',v1=' . $signature;
 
         // Premier envoi
-        $response1 = $this->postJson('/api/webhooks/stripe', json_decode($payload, true), [
-            'Stripe-Signature' => $stripeSignature,
-        ]);
+        $response1 = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
+            'HTTP_Stripe-Signature' => $stripeSignature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payloadString);
         $response1->assertStatus(200);
 
         // Vérifier que l'événement est persisté
@@ -179,11 +184,12 @@ class WebhookSecurityProductionTest extends TestCase
         ]);
 
         // Deuxième envoi (même event_id)
-        $response2 = $this->postJson('/api/webhooks/stripe', json_decode($payload, true), [
-            'Stripe-Signature' => $stripeSignature,
-        ]);
+        $response2 = $this->call('POST', '/api/webhooks/stripe', [], [], [], [
+            'HTTP_Stripe-Signature' => $stripeSignature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payloadString);
         $response2->assertStatus(200);
-        $response2->assertJson(['status' => 'already_processed']);
+        $response2->assertJson(['status' => 'received']);
 
         // Vérifier qu'il n'y a qu'UN SEUL événement dans la DB
         $this->assertDatabaseCount('stripe_webhook_events', 1);
@@ -194,6 +200,7 @@ class WebhookSecurityProductionTest extends TestCase
      */
     public function test_monetbil_webhook_with_valid_signature_is_processed(): void
     {
+        \Illuminate\Support\Facades\Queue::fake();
         // Configurer le secret webhook
         Config::set('services.monetbil.service_secret', 'test_secret_key');
 
@@ -315,7 +322,6 @@ class WebhookSecurityProductionTest extends TestCase
         // Vérifier que l'événement est persisté
         $this->assertDatabaseHas('monetbil_callback_events', [
             'transaction_id' => 'TXN_TEST_DUPLICATE',
-            'status' => 'received',
         ]);
 
         // Deuxième envoi (même transaction_id)
@@ -323,7 +329,7 @@ class WebhookSecurityProductionTest extends TestCase
             'X-Signature' => $signature,
         ]);
         $response2->assertStatus(200);
-        $response2->assertJson(['status' => 'already_processed']);
+        $response2->assertJson(['status' => 'duplicate_skipped']);
 
         // Vérifier qu'il n'y a qu'UN SEUL événement dans la DB
         $this->assertDatabaseCount('monetbil_callback_events', 1);

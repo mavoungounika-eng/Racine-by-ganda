@@ -1,19 +1,21 @@
-@extends('layouts.frontend')
+@extends('layouts.internal')
 
 @section('title', 'Mes Favoris - RACINE BY GANDA')
+@section('page-title', 'Mes Favoris')
+@section('page-subtitle', 'Vos produits sauvegardés')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .wishlist-hero {
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
-        padding: 3rem 0;
-        margin-top: -70px;
-        padding-top: calc(3rem + 70px);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
+        padding: 2rem 0;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
     }
     
     .wishlist-content {
         padding: 3rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
         min-height: 60vh;
     }
     
@@ -42,7 +44,7 @@
         width: 100%;
         height: 300px;
         overflow: hidden;
-        background: #f0f0f0;
+        background: rgba(22,13,12,0.05);
     }
     
     .wishlist-item-image img {
@@ -92,7 +94,7 @@
     
     .wishlist-item-category {
         font-size: 0.85rem;
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 0.5rem;
@@ -101,7 +103,7 @@
     .wishlist-item-title {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.75rem;
         line-height: 1.4;
     }
@@ -145,7 +147,7 @@
     }
     
     .btn-add-to-cart:hover {
-        background: #c44b12;
+        background: #ED5F1E;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(237, 95, 30, 0.3);
         color: white;
@@ -168,13 +170,13 @@
     .empty-wishlist-title {
         font-size: 1.75rem;
         font-weight: 600;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
         font-family: 'Cormorant Garamond', serif;
     }
     
     .empty-wishlist-text {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         margin-bottom: 2rem;
     }
     
@@ -250,12 +252,16 @@
                                  alt="{{ $item->product->title ?? $item->product->name }}">
                         </a>
                         <div class="wishlist-item-actions">
-                            <form action="{{ route('profile.wishlist.remove', $item->product->id) }}" method="POST" class="remove-wishlist-form">
+                            <form id="wishlist-remove-{{ $item->product->id }}"
+                                  action="{{ route('profile.wishlist.remove', $item->product->id) }}"
+                                  method="POST" class="remove-wishlist-form d-none">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="wishlist-remove-btn" title="Retirer des favoris">
-                                    <i class="fas fa-heart"></i>
-                                </button>
+                            </form>
+                            <button type="button" class="wishlist-remove-btn" title="Retirer des favoris"
+                                onclick="ConfirmModal.show({title:'Retirer des favoris ?',message:'Ce produit sera retiré de vos favoris.',confirmText:'Retirer',confirmClass:'btn-warning',onConfirm:function(){ document.getElementById('wishlist-remove-{{ $item->product->id }}').submit(); }})">
+                                <i class="fas fa-heart"></i>
+                            </button>
                             </form>
                         </div>
                     </div>
@@ -318,7 +324,7 @@
 </section>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     // AJAX pour retirer des favoris
     document.querySelectorAll('.remove-wishlist-form').forEach(form => {
         form.addEventListener('submit', function(e) {

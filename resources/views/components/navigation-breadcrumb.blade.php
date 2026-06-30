@@ -54,7 +54,7 @@
 </nav>
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .navigation-breadcrumb {
         background: rgba(44, 24, 16, 0.05);
         padding: 1rem 0;

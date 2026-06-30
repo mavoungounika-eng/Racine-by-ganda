@@ -4,7 +4,7 @@
 @section('page-title', 'Modifier l\'Utilisateur')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .premium-card {
         background: rgba(22, 13, 12, 0.6);
         border: 1px solid rgba(212, 165, 116, 0.1);
@@ -107,7 +107,7 @@
     <div class="premium-card">
         <div class="mb-8 pb-6 border-b-2 border-slate-700">
             <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Libre Baskerville', serif;">
-                <i class="fas fa-user-edit text-racine-orange mr-2"></i>
+                <i class="fas fa-user-edit text-racine-orange me-2"></i>
                 Modifier l'Utilisateur
             </h2>
             <p class="text-slate-400">Modifiez les informations de l'utilisateur</p>

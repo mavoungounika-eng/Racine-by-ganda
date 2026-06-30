@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ERPProduction;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ERPProduction\Models\ProductionOrder;
@@ -14,10 +15,11 @@ use App\Models\Product;
 use App\Models\User;
 use Modules\ERP\Models\ErpRawMaterial;
 use Illuminate\Support\Facades\Event;
+use Tests\Traits\SeedsAccounting;
 
 class WipFlowTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsAccounting;
 
     protected User $user;
     protected Product $product;
@@ -33,11 +35,11 @@ class WipFlowTest extends TestCase
         $this->actingAs($this->user);
 
         // Seed accounting data
-        $this->artisan('db:seed', ['--class' => 'Modules\\Accounting\\Database\\Seeders\\AccountingDatabaseSeeder']);
+        $this->seedAccounting();
 
         $this->product = Product::factory()->create(['name' => 'Robe Pagne Luxe']);
         
-        // Créer BOM avec items
+        // CrÃ©er BOM avec items
         $this->bom = Bom::create([
             'product_id' => $this->product->id,
             'version' => '1.0',
@@ -61,8 +63,7 @@ class WipFlowTest extends TestCase
         $this->productionOrderService = app(ProductionOrderService::class);
         $this->wipService = app(WipService::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_creates_wip_movement_when_production_starts()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -74,15 +75,14 @@ class WipFlowTest extends TestCase
         $this->productionOrderService->planProductionOrder($order);
         $this->productionOrderService->startProductionOrder($order->fresh());
 
-        // Enregistrer démarrage WIP
+        // Enregistrer dÃ©marrage WIP
         $movement = $this->wipService->startProduction($order->fresh());
 
         $this->assertInstanceOf(WipMovement::class, $movement);
         $this->assertEquals('production_started', $movement->type);
         $this->assertEquals(10, $movement->quantity);
     }
-
-    /** @test */
+    #[Test]
     public function it_tracks_wip_movements_through_production()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -94,10 +94,10 @@ class WipFlowTest extends TestCase
         $this->productionOrderService->planProductionOrder($order);
         $this->productionOrderService->startProductionOrder($order->fresh());
 
-        // Démarrage
+        // DÃ©marrage
         $this->wipService->startProduction($order->fresh());
 
-        // Compléter étapes
+        // ComplÃ©ter Ã©tapes
         $steps = $order->fresh()->steps;
         foreach ($steps as $step) {
             if ($step->canStart()) {
@@ -111,16 +111,15 @@ class WipFlowTest extends TestCase
         $this->productionOrderService->finishProductionOrder($order->fresh(), 9, 1);
         $this->wipService->finishProduction($order->fresh());
 
-        // Vérifier mouvements
+        // VÃ©rifier mouvements
         $movements = $this->wipService->getMovements($order->fresh());
         $this->assertGreaterThan(0, $movements->count());
         
-        // Vérifier types
+        // VÃ©rifier types
         $this->assertTrue($movements->contains('type', 'production_started'));
         $this->assertTrue($movements->contains('type', 'production_finished'));
     }
-
-    /** @test */
+    #[Test]
     public function it_calculates_wip_balance_correctly()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -134,7 +133,7 @@ class WipFlowTest extends TestCase
 
         $this->wipService->startProduction($order->fresh());
 
-        // Balance après démarrage
+        // Balance aprÃ¨s dÃ©marrage
         $balance = $this->wipService->getWipBalance($order->fresh());
         $this->assertEquals(10, $balance['started']);
         $this->assertEquals(0, $balance['finished']);
@@ -144,14 +143,13 @@ class WipFlowTest extends TestCase
         $this->productionOrderService->finishProductionOrder($order->fresh(), 9, 1);
         $this->wipService->finishProduction($order->fresh());
 
-        // Balance après fin
+        // Balance aprÃ¨s fin
         $balance = $this->wipService->getWipBalance($order->fresh());
         $this->assertEquals(10, $balance['started']);
         $this->assertEquals(9, $balance['finished']);
         $this->assertEquals(1, $balance['in_progress']); // 10 - 9 = 1 (en attente ou rebut)
     }
-
-    /** @test */
+    #[Test]
     public function it_dispatches_production_started_event()
     {
         Event::fake([\Modules\ERPProduction\Events\ProductionStarted::class]);
@@ -169,8 +167,7 @@ class WipFlowTest extends TestCase
 
         Event::assertDispatched(\Modules\ERPProduction\Events\ProductionStarted::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_dispatches_production_finished_event()
     {
         Event::fake([\Modules\ERPProduction\Events\ProductionFinished::class]);
@@ -190,8 +187,7 @@ class WipFlowTest extends TestCase
 
         Event::assertDispatched(\Modules\ERPProduction\Events\ProductionFinished::class);
     }
-
-    /** @test */
+    #[Test]
     public function it_creates_accounting_entries_for_production_flow()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -203,18 +199,18 @@ class WipFlowTest extends TestCase
         $this->productionOrderService->planProductionOrder($order);
         $this->productionOrderService->startProductionOrder($order->fresh());
 
-        // Démarrage production → Écriture 331/311
+        // DÃ©marrage production â†’ Ã‰criture 331/311
         $this->wipService->startProduction($order->fresh());
 
-        $startEntry = AccountingEntry::where('reference_type', 'production_order')
+        $startEntry = AccountingEntry::where('reference_type', 'production_order_started')
             ->where('reference_id', $order->id)
-            ->where('description', 'like', '%Démarrage production%')
+            ->where('description', 'like', '%production%')
             ->first();
 
         $this->assertNotNull($startEntry);
         $this->assertTrue($startEntry->is_posted);
 
-        // Vérifier lignes (331 débit, 311 crédit)
+        // VÃ©rifier lignes (331 dÃ©bit, 311 crÃ©dit)
         $debitLine = $startEntry->lines->where('account_code', '331')->first();
         $creditLine = $startEntry->lines->where('account_code', '311')->first();
 
@@ -223,11 +219,11 @@ class WipFlowTest extends TestCase
         $this->assertGreaterThan(0, $debitLine->debit);
         $this->assertGreaterThan(0, $creditLine->credit);
 
-        // Fin production → Écriture 351/331
+        // Fin production â†’ Ã‰criture 351/331
         $this->productionOrderService->finishProductionOrder($order->fresh(), 10);
         $this->wipService->finishProduction($order->fresh());
 
-        $finishEntry = AccountingEntry::where('reference_type', 'production_order')
+        $finishEntry = AccountingEntry::where('reference_type', 'production_order_finished')
             ->where('reference_id', $order->id)
             ->where('description', 'like', '%Fin production%')
             ->first();
@@ -235,8 +231,7 @@ class WipFlowTest extends TestCase
         $this->assertNotNull($finishEntry);
         $this->assertTrue($finishEntry->is_posted);
     }
-
-    /** @test */
+    #[Test]
     public function it_records_scrap_with_accounting_entry()
     {
         $order = $this->productionOrderService->createProductionOrder(
@@ -253,14 +248,14 @@ class WipFlowTest extends TestCase
         $scrapMovement = $this->wipService->recordScrap(
             $order->fresh(),
             2,
-            'Défaut tissu'
+            'DÃ©faut tissu'
         );
 
         $this->assertEquals('scrap', $scrapMovement->type);
         $this->assertEquals(2, $scrapMovement->quantity);
 
-        // Vérifier écriture comptable rebut
-        $scrapEntry = AccountingEntry::where('reference_type', 'production_order')
+        // VÃ©rifier Ã©criture comptable rebut
+        $scrapEntry = AccountingEntry::where('reference_type', 'production_order_scrapped')
             ->where('reference_id', $order->id)
             ->where('description', 'like', '%Rebut%')
             ->first();

@@ -3,7 +3,7 @@
 @section('title', 'Gérer la Double Authentification - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .manage-page {
         min-height: 100vh;
         background: #F8F6F3;
@@ -323,6 +323,12 @@
                     <h4 class="section-title">
                         <i class="fas fa-key"></i> Codes de récupération
                     </h4>
+                    @if(!empty($recoveryCodesLow))
+                    <div class="alert" style="background: #FEF3C7; border-color: #F59E0B; color: #92400E; margin-bottom: 1rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span><strong>Attention :</strong> Il ne vous reste que {{ $recoveryCodesCount }} code(s) de récupération. Pensez à en régénérer pour éviter de vous bloquer.</span>
+                    </div>
+                    @endif
                     <div class="recovery-status">
                         <div class="info">
                             <span class="count">{{ $recoveryCodesCount }}</span>
@@ -355,7 +361,7 @@
                         </div>
                         <div class="form-group">
                             <label>Code 2FA ou code de récupération</label>
-                            <input type="text" name="code" class="form-input" placeholder="000000 ou XXXX-XXXX" required>
+                            <input type="text" name="code" class="form-input" placeholder="000000 ou code 8 caractères" required>
                         </div>
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir désactiver la double authentification ?')">
                             <i class="fas fa-shield-alt"></i> Désactiver la protection

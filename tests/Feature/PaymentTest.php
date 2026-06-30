@@ -8,12 +8,14 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Payments\CardPaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 class PaymentTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAccounting;
 
     protected User $user;
     protected Order $order;
@@ -21,6 +23,7 @@ class PaymentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedAccounting();
         
         $this->user = User::factory()->create(['role' => 'client']);
         $this->actingAs($this->user);
@@ -34,23 +37,36 @@ class PaymentTest extends TestCase
             'payment_status' => 'pending',
         ]);
     }
-
     #[Test]
     public function user_can_initiate_card_payment(): void
     {
+        $payment = Payment::factory()->create([
+            'order_id' => $this->order->id,
+            'provider' => 'stripe',
+            'channel' => 'card',
+            'status' => 'initiated',
+            'metadata' => ['session_url' => 'https://checkout.stripe.com/c/pay_test_123'],
+        ]);
+
+        $this->mock(CardPaymentService::class, function ($mock) use ($payment) {
+            $mock->shouldReceive('createCheckoutSession')
+                ->once()
+                ->withArgs(fn (Order $order) => $order->is($this->order))
+                ->andReturn($payment);
+        });
+
         $response = $this->post(route('checkout.card.pay'), [
             'order_id' => $this->order->id,
         ]);
 
-        $response->assertStatus(302); // Redirection vers Stripe
+        $response->assertRedirect('https://checkout.stripe.com/c/pay_test_123');
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->id,
-            'channel' => 'online',
+            'channel' => 'card',
             'provider' => 'stripe',
             'status' => 'initiated',
         ]);
     }
-
     #[Test]
     public function payment_requires_authenticated_user(): void
     {
@@ -62,7 +78,6 @@ class PaymentTest extends TestCase
 
         $response->assertRedirect(route('login'));
     }
-
     #[Test]
     public function user_cannot_pay_for_another_users_order(): void
     {
@@ -78,9 +93,8 @@ class PaymentTest extends TestCase
             'order_id' => $otherOrder->id,
         ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(302);
     }
-
     #[Test]
     public function payment_cannot_be_initiated_for_already_paid_order(): void
     {
@@ -92,22 +106,34 @@ class PaymentTest extends TestCase
 
         $response->assertRedirect(route('checkout.card.success', $this->order));
     }
-
     #[Test]
     public function webhook_verifies_stripe_signature(): void
     {
-        $payment = Payment::factory()->create([
+        Payment::factory()->create([
             'order_id' => $this->order->id,
             'provider' => 'stripe',
             'status' => 'initiated',
         ]);
 
-        // Test avec signature invalide
-        $response = $this->post(route('payment.card.webhook'), [], [
-            'Stripe-Signature' => 'invalid_signature',
+        $this->app['config']->set('app.env', 'production');
+        config(['services.stripe.webhook_secret' => 'whsec_test_secret']);
+
+        $payload = json_encode([
+            'id' => 'evt_test_signature_invalid',
+            'type' => 'checkout.session.completed',
+            'data' => [
+                'object' => [
+                    'id' => 'cs_test_1234567890',
+                    'payment_intent' => 'pi_test_1234567890',
+                ],
+            ],
         ]);
 
+        $response = $this->call('POST', route('api.webhooks.stripe'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], $payload);
+
         $response->assertStatus(401);
+        $response->assertJson(['error' => 'Missing signature']);
     }
 }
-

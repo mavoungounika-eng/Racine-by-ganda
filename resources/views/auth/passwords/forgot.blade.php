@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Mot de passe oublié - RACINE BY GANDA</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    <style nonce="{{ csp_nonce() }}">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -118,7 +119,7 @@
         .alert-success {
             background: rgba(76, 175, 80, 0.15);
             border: 1px solid rgba(76, 175, 80, 0.3);
-            border-left: 4px solid #4CAF50;
+            border-start: 4px solid #4CAF50;
             border-radius: 12px;
             padding: 1rem;
             margin-bottom: 1.5rem;
@@ -129,7 +130,7 @@
         .alert-error {
             background: rgba(255, 107, 107, 0.1);
             border: 1px solid rgba(255, 107, 107, 0.3);
-            border-left: 4px solid #ff6b6b;
+            border-start: 4px solid #ff6b6b;
             border-radius: 12px;
             padding: 1rem;
             margin-bottom: 1.5rem;
@@ -268,22 +269,26 @@
                 </div>
             @endif
             
-            <form method="POST" action="{{ route('password.email') }}">
+            <form method="POST" action="{{ route('password.email') }}" id="forgot-form">
                 @csrf
-                
+
                 <div class="form-group">
-                    <label for="email" class="form-label">Adresse Email</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           class="form-control" 
-                           placeholder="votre@email.com" 
+                    <label for="forgot-email" class="form-label">Adresse Email</label>
+                    <input type="email"
+                           id="forgot-email"
+                           name="email"
+                           class="form-control"
+                           placeholder="votre@email.com"
+                           aria-label="Adresse email"
+                           aria-describedby="forgot-email-hint"
+                           aria-required="true"
                            required
                            autofocus
                            value="{{ old('email') }}">
+                    <small id="forgot-email-hint" style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:0.25rem;display:block;">Entrez l'email de votre compte</small>
                 </div>
-                
-                <button type="submit" class="btn-submit">
+
+                <button type="submit" class="btn-submit" id="forgot-submit-btn">
                     Envoyer le lien de réinitialisation
                 </button>
             </form>
@@ -296,5 +301,18 @@
             </div>
         </div>
     </div>
+
+<script nonce="{{ csp_nonce() }}">
+document.getElementById('forgot-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('forgot-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours...';
+    const spinner = document.createElement('i');
+    spinner.className = 'fas fa-spinner fa-spin';
+    spinner.style.marginRight = '0.5rem';
+    btn.insertBefore(spinner, btn.firstChild);
+});
+</script>
+
 </body>
 </html>

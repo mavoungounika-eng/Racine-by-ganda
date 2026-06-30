@@ -3,84 +3,518 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\Settings\SettingsService;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class AdminSettingsController extends Controller
 {
-    public function index(): View
+    public function __construct(
+        private SettingsService $settingsService
+    ) {}
+
+    /**
+     * Afficher la page settings avec navigation par onglets
+     */
+    public function index(string $tab = 'general'): View
     {
-        $settings = [
-            'site_name' => Cache::get('settings.site_name', config('app.name')),
-            'site_email' => Cache::get('settings.site_email', config('mail.from.address')),
-            'site_phone' => Cache::get('settings.site_phone', ''),
-            'site_address' => Cache::get('settings.site_address', ''),
-            
-            // Réseaux sociaux
-            'social_facebook' => Cache::get('settings.social_facebook', ''),
-            'social_instagram' => Cache::get('settings.social_instagram', ''),
-            'social_twitter' => Cache::get('settings.social_twitter', ''),
-            'social_whatsapp' => Cache::get('settings.social_whatsapp', ''),
-            
-            // Marketplace
-            'commission_rate' => Cache::get('settings.commission_rate', 15.00),
-            'shipping_fee' => Cache::get('settings.shipping_fee', 2000),
-            'currency' => Cache::get('settings.currency', 'FCFA'),
-            'low_stock_threshold' => Cache::get('settings.low_stock_threshold', 10),
-            
-            // Paiement
-            'stripe_mode' => Cache::get('settings.stripe_mode', 'test'),
-            'payments_enabled' => Cache::get('settings.payments_enabled', true),
-            
-            // Système
-            'maintenance_mode' => app()->isDownForMaintenance(),
-            'registrations_enabled' => Cache::get('settings.registrations_enabled', true),
-            'maintenance_message' => Cache::get('settings.maintenance_message', ''),
+        // 🔒 SÉCURITÉ CRITIQUE : Seul Super Admin peut accéder aux paramètres système
+        $this->authorize('access-system-config');
+
+        // Charger les settings du groupe actuel
+        $settings = $this->settingsService->getForView($tab);
+
+        // Onglets disponibles
+        $tabs = [
+            'general' => ['icon' => 'fa-building', 'label' => 'Général', 'implemented' => true],
+            'marketplace' => ['icon' => 'fa-store', 'label' => 'Marketplace', 'implemented' => true],
+            'payments' => ['icon' => 'fa-credit-card', 'label' => 'Paiements', 'implemented' => true],
+            'integrations' => ['icon' => 'fa-plug', 'label' => 'Intégrations', 'implemented' => true],
+            'email' => ['icon' => 'fa-envelope', 'label' => 'Email & SMTP', 'implemented' => true],
+            'security' => ['icon' => 'fa-shield-alt', 'label' => 'Sécurité', 'implemented' => true],
+            'appearance' => ['icon' => 'fa-palette', 'label' => 'Apparence', 'implemented' => true],
+            'advanced' => ['icon' => 'fa-cog', 'label' => 'Avancé', 'implemented' => true],
+            'profile' => ['icon' => 'fa-user', 'label' => 'Mon Profil', 'implemented' => true],
         ];
 
-        return view('admin.settings.index', compact('settings'));
+        return view('admin.settings.index', [
+            'currentTab' => $tab,
+            'settings' => $settings,
+            'tabs' => $tabs,
+        ]);
     }
 
-    public function update(Request $request)
+    /**
+     * Mettre à jour les settings d'un onglet
+     */
+    public function update(Request $request, string $tab = 'general'): RedirectResponse
     {
+        // 🔒 SÉCURITÉ CRITIQUE : Seul Super Admin peut modifier les paramètres système
+        $this->authorize('access-system-config');
+
+        // Validation selon l'onglet
+        $validated = $this->validateForTab($request, $tab);
+
+        // Sauvegarder via le service
+        $this->settingsService->updateBatch($validated, $tab);
+
+        return redirect()->route('admin.settings.index', $tab)
+            ->with('success', 'Paramètres mis à jour avec succès !');
+    }
+
+    /**
+     * Tester la connexion email
+     */
+    public function testEmail(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            $user = auth()->user();
+
+            Mail::raw('Ceci est un email de test depuis RACINE BY GANDA.', function ($message) use ($user) {
+                $message->to($user->email)
+                    ->subject('Test SMTP - RACINE BY GANDA');
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Email de test envoyé à ' . $user->email,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Test email failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tester la connexion Stripe
+     */
+    public function testStripe(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+            // Tenter de récupérer le compte Stripe
+            $account = \Stripe\Account::retrieve();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Connexion Stripe réussie ! Compte: ' . $account->id,
+            ]);
+        } catch (\Stripe\Exception\AuthenticationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur d\'authentification Stripe: Clé API invalide',
+            ], 401);
+        } catch (\Exception $e) {
+            Log::error('Test Stripe failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur Stripe: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tester la connexion Monetbil
+     */
+    public function testMonetbil(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            $serviceKey = config('services.monetbil.service_key');
+            $baseUrl = config('services.monetbil.base_url');
+
+            if (!$serviceKey || !$baseUrl) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuration Monetbil incomplète (.env)',
+                ], 500);
+            }
+
+            // Ping simple vers l'API Monetbil
+            $response = \Illuminate\Support\Facades\Http::timeout(5)->get($baseUrl . '/status', [
+                'service_key' => $serviceKey,
+            ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Connexion Monetbil réussie ! API accessible.',
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur Monetbil: HTTP ' . $response->status(),
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Test Monetbil failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur Monetbil: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tester la connexion Google OAuth
+     */
+    public function testGoogle(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            $clientId = config('services.google.client_id');
+            $clientSecret = config('services.google.client_secret');
+            $redirectUri = \App\Models\Setting::get('google_redirect_uri', config('services.google.redirect'));
+
+            if (!$clientId || !$clientSecret) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuration Google OAuth incomplète (GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET manquant)',
+                ], 500);
+            }
+
+            if (empty($redirectUri)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'URI de redirection non configurée. Configurez-la dans les paramètres.',
+                ], 500);
+            }
+
+            // Validation basique des credentials présents
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuration Google OAuth valide ! Client ID et Secret présents, URI: ' . $redirectUri,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Test Google OAuth failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tester la connexion IA (OpenAI/Gemini/Anthropic)
+     */
+    public function testAI(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            $apiKey = config('openai.api_key');
+
+            if (!$apiKey) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Clé API IA non configurée (OPENAI_API_KEY manquant dans .env)',
+                ], 500);
+            }
+
+            // Test basique de présence de la clé (ne pas appeler l'API réelle pour éviter coûts)
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuration IA valide ! Clé API présente. Modèle: ' . config('openai.request_options.model', 'non défini'),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Test AI failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Vider le cache applicatif
+     */
+    public function clearCache(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cache vidé avec succès (cache, views, config, routes)',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Clear cache failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du vidage du cache: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Relancer les jobs échoués
+     */
+    public function retryJobs(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('queue:retry', ['id' => 'all']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jobs échoués relancés avec succès',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Retry jobs failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du relancement des jobs: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Règles de validation selon l'onglet
+     */
+    /**
+     * Afficher le profil admin
+     */
+    public function showProfile(): View
+    {
+        $this->authorize('access-system-config');
+
+        $settings = $this->settingsService->getForView('profile');
+
+        $tabs = [
+            'general' => ['icon' => 'fa-building', 'label' => 'Général', 'implemented' => true],
+            'marketplace' => ['icon' => 'fa-store', 'label' => 'Marketplace', 'implemented' => true],
+            'payments' => ['icon' => 'fa-credit-card', 'label' => 'Paiements', 'implemented' => true],
+            'integrations' => ['icon' => 'fa-plug', 'label' => 'Intégrations', 'implemented' => true],
+            'email' => ['icon' => 'fa-envelope', 'label' => 'Email & SMTP', 'implemented' => true],
+            'security' => ['icon' => 'fa-shield-alt', 'label' => 'Sécurité', 'implemented' => true],
+            'appearance' => ['icon' => 'fa-palette', 'label' => 'Apparence', 'implemented' => true],
+            'advanced' => ['icon' => 'fa-cog', 'label' => 'Avancé', 'implemented' => true],
+            'profile' => ['icon' => 'fa-user', 'label' => 'Mon Profil', 'implemented' => true],
+        ];
+
+        return view('admin.settings.index', [
+            'currentTab' => 'profile',
+            'settings' => $settings,
+            'tabs' => $tabs,
+        ]);
+    }
+
+    /**
+     * Mettre à jour le profil admin
+     */
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $this->authorize('access-system-config');
+
         $validated = $request->validate([
-            // Informations générales
-            'site_name' => 'nullable|string|max:255',
-            'site_email' => 'nullable|email',
-            'site_phone' => 'nullable|string|max:50',
-            'site_address' => 'nullable|string|max:255',
-            
-            // Réseaux sociaux
-            'social_facebook' => 'nullable|url',
-            'social_instagram' => 'nullable|url',
-            'social_twitter' => 'nullable|url',
-            'social_whatsapp' => 'nullable|string|max:50',
-            
-            // Marketplace
-            'commission_rate' => 'nullable|numeric|min:0|max:100',
-            'shipping_fee' => 'nullable|numeric|min:0',
-            'currency' => 'nullable|string|in:FCFA,EUR,USD',
-            'low_stock_threshold' => 'nullable|integer|min:1',
-            
-            // Paiement
-            'stripe_mode' => 'nullable|string|in:test,live',
-            'payments_enabled' => 'nullable|boolean',
-            
-            // Système
-            'registrations_enabled' => 'nullable|boolean',
-            'maintenance_message' => 'nullable|string|max:500',
+            'admin_display_name' => 'required|string|max:100',
+            'admin_bio' => 'nullable|string|max:500',
+            'admin_language' => 'required|in:fr,en',
+            'admin_avatar_url' => 'nullable|url',
+            'admin_notifications_email' => 'boolean',
+            'admin_notifications_browser' => 'boolean',
         ]);
 
-        // Convertir les checkboxes en booléens
-        $validated['payments_enabled'] = $request->has('payments_enabled');
-        $validated['registrations_enabled'] = $request->has('registrations_enabled');
+        $this->settingsService->updateBatch($validated, 'profile');
 
-        // Stocker tous les paramètres dans le cache (1 an)
-        foreach ($validated as $key => $value) {
-            Cache::put("settings.{$key}", $value, now()->addYear());
+        return redirect()->route('admin.settings.index', 'profile')
+            ->with('success', 'Profil mis à jour avec succès !');
+    }
+
+    /**
+     * Changer le mot de passe admin
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $this->authorize('access-system-config');
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+            'new_password_confirmation' => 'required',
+        ]);
+
+        $user = auth()->user();
+
+        if (!\Illuminate\Support\Facades\Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->route('admin.settings.index', 'profile')
+                ->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
         }
 
-        return redirect()->back()->with('success', 'Paramètres mis à jour avec succès !');
+        $user->update([
+            'password' => bcrypt($validated['new_password']),
+        ]);
+
+        return redirect()->route('admin.settings.index', 'profile')
+            ->with('success', 'Mot de passe changé avec succès !');
+    }
+
+    /**
+     * Déconnecter toutes les autres sessions
+     */
+    public function logoutOtherSessions(): JsonResponse
+    {
+        $this->authorize('access-system-config');
+
+        try {
+            \Illuminate\Support\Facades\DB::table('sessions')
+                ->where('user_id', auth()->id())
+                ->where('id', '!=', session()->getId())
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Toutes les autres sessions ont été déconnectées.',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Logout other sessions failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la déconnexion des autres sessions.',
+            ], 500);
+        }
+    }
+
+    private function validateForTab(Request $request, string $tab): array
+    {
+        return match ($tab) {
+            'general' => $request->validate([
+                // Informations entreprise
+                'site_name' => 'nullable|string|max:255',
+                'site_email' => 'nullable|email|max:255',
+                'site_phone' => 'nullable|string|max:50',
+                'site_address' => 'nullable|string|max:500',
+                'site_country' => 'nullable|string|max:100',
+                'site_timezone' => 'nullable|string|max:100',
+
+                // Réseaux sociaux
+                'social_facebook' => 'nullable|url|max:255',
+                'social_instagram' => 'nullable|url|max:255',
+                'social_twitter' => 'nullable|url|max:255',
+                'social_whatsapp' => 'nullable|string|max:50',
+                'social_tiktok' => 'nullable|url|max:255',
+                'social_linkedin' => 'nullable|url|max:255',
+            ]),
+
+            'marketplace' => $request->validate([
+                'commission_rate' => 'required|numeric|min:0|max:100',
+                'shipping_fee' => 'required|integer|min:0',
+                'currency' => 'required|string|in:FCFA,EUR,USD',
+                'low_stock_threshold' => 'required|integer|min:1',
+                'low_stock_critical' => 'required|integer|min:1',
+                'max_variants_per_product' => 'required|integer|min:1|max:100',
+                'order_auto_cancel_hours' => 'required|integer|min:0|max:168',
+                'auto_reorder_enabled' => 'boolean',
+                'free_shipping_threshold' => 'required|integer|min:0',
+            ]),
+
+            'payments' => $request->validate([
+                'stripe_mode' => 'required|string|in:test,live',
+                'stripe_currency' => 'required|string|in:EUR,USD,GBP',
+                'payments_enabled' => 'boolean',
+                'monetbil_auto_approve_threshold' => 'required|integer|min:0',
+                'payment_max_attempts' => 'required|integer|min:1|max:10',
+                'payment_retry_enabled' => 'boolean',
+            ]),
+
+            'email' => $request->validate([
+                'mail_from_name' => 'required|string|max:100',
+                'mail_from_address' => 'required|email',
+                'admin_notification_email' => 'nullable|email',
+                'admin_notification_enabled' => 'boolean',
+                'mail_logo_url' => 'nullable|url',
+            ]),
+
+            'integrations' => $request->validate([
+                'google_oauth_enabled' => 'boolean',
+                'google_redirect_uri' => 'nullable|string|max:500',
+                'recaptcha_enabled' => 'boolean',
+                'recaptcha_threshold' => 'required|numeric|min:0|max:1',
+                'openai_enabled' => 'boolean',
+                'openai_model' => 'required|string|max:100',
+                'openai_max_tokens' => 'required|integer|min:100|max:8000',
+                'openai_temperature' => 'required|numeric|min:0|max:2',
+                'amira_provider' => 'required|string|in:openai,gemini,anthropic',
+                'sentry_enabled' => 'boolean',
+                'sentry_traces_rate' => 'required|numeric|min:0|max:1',
+                'exchange_rate_cache_ttl' => 'required|integer|min:1|max:168',
+            ]),
+
+            'security' => $request->validate([
+                'force_2fa_admin' => 'boolean',
+                'force_2fa_creator' => 'boolean',
+                'session_timeout' => 'required|integer|min:15|max:1440',
+                'max_concurrent_sessions' => 'required|integer|min:1|max:20',
+                'login_max_attempts' => 'required|integer|min:3|max:20',
+                'login_lockout_minutes' => 'required|integer|min:1|max:1440',
+                'password_min_length' => 'required|integer|min:6|max:32',
+                'password_require_uppercase' => 'boolean',
+                'password_require_numbers' => 'boolean',
+                'password_require_special' => 'boolean',
+                'password_expiry_days' => 'required|integer|min:0|max:365',
+                'trusted_device_enabled' => 'boolean',
+                'trusted_device_days' => 'required|integer|min:1|max:365',
+                'ip_whitelist_enabled' => 'boolean',
+                'ip_whitelist' => 'nullable|string',
+            ]),
+
+            'appearance' => $request->validate([
+                'logo_url' => 'nullable|url',
+                'logo_dark_url' => 'nullable|url',
+                'favicon_url' => 'nullable|url',
+                'primary_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'secondary_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'dark_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'default_theme' => 'required|in:light,dark,auto',
+                'default_accent' => 'required|in:orange,yellow,gold,red',
+                'animation_intensity' => 'required|in:none,soft,standard,luxury',
+                'custom_css' => 'nullable|string|max:10000',
+            ]),
+
+            'advanced' => $request->validate([
+                'maintenance_mode' => 'boolean',
+                'registrations_enabled' => 'boolean',
+                'maintenance_message' => 'nullable|string|max:500',
+                'debug_mode' => 'boolean',
+                'log_level' => 'required|in:debug,info,warning,error',
+                'log_channel' => 'required|in:single,daily,stack',
+                'logs_retention_days' => 'required|integer|min:1|max:365',
+                'cache_enabled' => 'boolean',
+                'queue_connection' => 'required|in:redis,database,sync',
+                'backup_enabled' => 'boolean',
+            ]),
+
+            // Autres onglets à implémenter dans les sprints suivants
+            default => [],
+        };
     }
 }

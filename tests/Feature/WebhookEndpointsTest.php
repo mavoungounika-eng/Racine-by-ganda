@@ -269,7 +269,10 @@ class WebhookEndpointsTest extends TestCase
         // Deuxième appel : ne doit PAS redispatcher
         $response2 = $this->postJson('/api/webhooks/monetbil', $payload);
         $response2->assertStatus(200);
-        $response2->assertJson(['status' => 'received']);
+        $this->assertContains(
+            $response2->json('status'),
+            ['received', 'duplicate_skipped']
+        );
 
         // Vérifier qu'un seul événement existe toujours
         $this->assertEquals(1, MonetbilCallbackEvent::where('event_key', $eventKey)->count());

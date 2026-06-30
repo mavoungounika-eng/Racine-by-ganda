@@ -17,41 +17,32 @@ class MiddlewareSecurityGuardTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test que les middlewares role, permission et 2fa sont enregistrés
-     * 
-     * Ce test échoue si un middleware critique est désactivé dans bootstrap/app.php
+     * Test que les middlewares critiques (architecture actuelle) sont enregistrés.
      */
     public function test_critical_middlewares_are_registered(): void
     {
-        $middlewares = app('router')->getMiddleware();
-        
-        // Vérifier que les middlewares critiques sont enregistrés
-        $this->assertArrayHasKey('role', $middlewares, 'Middleware "role" doit être enregistré');
-        $this->assertArrayHasKey('permission', $middlewares, 'Middleware "permission" doit être enregistré');
-        $this->assertArrayHasKey('2fa', $middlewares, 'Middleware "2fa" doit être enregistré');
-        
-        // Vérifier que les classes sont correctes
-        $this->assertEquals(
-            \App\Http\Middleware\CheckRole::class,
-            $middlewares['role'],
-            'Middleware "role" doit pointer vers CheckRole::class'
+        // Vérifier que les classes critiques existent.
+        $this->assertTrue(class_exists(\App\Http\Middleware\EnsureAuthenticated::class));
+        $this->assertTrue(class_exists(\App\Http\Middleware\CheckPermission::class));
+        $this->assertTrue(class_exists(\App\Http\Middleware\TwoFactorMiddleware::class));
+
+        // Vérifier que les routes utilisent bien ensure + 2fa (garde active côté routing).
+        $allRouteMiddlewares = collect(Route::getRoutes())
+            ->flatMap(fn ($route) => $route->middleware());
+
+        $hasEnsure = $allRouteMiddlewares->contains(
+            fn ($middleware) => str_starts_with($middleware, 'ensure')
         );
-        
-        $this->assertEquals(
-            \App\Http\Middleware\CheckPermission::class,
-            $middlewares['permission'],
-            'Middleware "permission" doit pointer vers CheckPermission::class'
+        $has2fa = $allRouteMiddlewares->contains(
+            fn ($middleware) => str_contains($middleware, '2fa')
         );
-        
-        $this->assertEquals(
-            \App\Http\Middleware\TwoFactorMiddleware::class,
-            $middlewares['2fa'],
-            'Middleware "2fa" doit pointer vers TwoFactorMiddleware::class'
-        );
+
+        $this->assertTrue($hasEnsure, 'Au moins une route doit utiliser le middleware ensure');
+        $this->assertTrue($has2fa, 'Au moins une route doit utiliser le middleware 2fa');
     }
 
     /**
-     * Test que les routes admin sont protégées par auth + admin + 2fa
+     * Test que les routes admin sont protégées par ensure:admin,super_admin + 2fa
      */
     public function test_admin_routes_are_protected(): void
     {
@@ -62,13 +53,20 @@ class MiddlewareSecurityGuardTest extends TestCase
         $middlewares = $adminRoute->middleware();
         
         // Vérifier que les middlewares critiques sont présents
-        $this->assertContains('auth', $middlewares, 'Route admin doit avoir middleware auth');
-        $this->assertContains('admin', $middlewares, 'Route admin doit avoir middleware admin');
         $this->assertContains('2fa', $middlewares, 'Route admin doit avoir middleware 2fa');
+
+        $hasEnsureAdmin = false;
+        foreach ($middlewares as $middleware) {
+            if (str_starts_with($middleware, 'ensure:') && str_contains($middleware, 'admin')) {
+                $hasEnsureAdmin = true;
+                break;
+            }
+        }
+        $this->assertTrue($hasEnsureAdmin, 'Route admin doit avoir middleware ensure:admin,super_admin');
     }
 
     /**
-     * Test que les routes ERP sont protégées par auth + can:access-erp + 2fa
+     * Test que les routes ERP sont protégées par auth + ensure + 2fa
      */
     public function test_erp_routes_are_protected(): void
     {
@@ -82,15 +80,15 @@ class MiddlewareSecurityGuardTest extends TestCase
         $this->assertContains('auth', $middlewares, 'Route ERP doit avoir middleware auth');
         $this->assertContains('2fa', $middlewares, 'Route ERP doit avoir middleware 2fa');
         
-        // Vérifier que can:access-erp est présent (peut être dans un groupe)
-        $hasAccessErp = false;
+        // Vérifier qu'un middleware ensure est présent (rôle staff/admin/super_admin).
+        $hasEnsure = false;
         foreach ($middlewares as $middleware) {
-            if (str_contains($middleware, 'access-erp') || str_contains($middleware, 'can:')) {
-                $hasAccessErp = true;
+            if (str_starts_with($middleware, 'ensure')) {
+                $hasEnsure = true;
                 break;
             }
         }
-        $this->assertTrue($hasAccessErp, 'Route ERP doit avoir Gate can:access-erp');
+        $this->assertTrue($hasEnsure, 'Route ERP doit avoir middleware ensure');
     }
 
     /**
@@ -172,4 +170,3 @@ class MiddlewareSecurityGuardTest extends TestCase
         );
     }
 }
-

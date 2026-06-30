@@ -3,7 +3,7 @@
 @section('title', 'Vérification 2FA - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .challenge-page {
         min-height: 100vh;
         background: linear-gradient(135deg, #1a0f09 0%, #2C1810 50%, #1a0f09 100%);
@@ -248,33 +248,37 @@
             </div>
             @endif
             
-            <form action="{{ route('2fa.verify') }}" method="POST">
+            <form action="{{ route('2fa.verify') }}" method="POST" id="challenge-form">
                 @csrf
-                
+
                 <div class="form-group">
-                    <label for="code">
+                    <label for="2fa-code">
                         <i class="fas fa-key"></i> Code de vérification
                     </label>
-                    <input type="text" 
-                           name="code" 
-                           id="code" 
-                           class="code-input" 
+                    <input type="text"
+                           name="code"
+                           id="2fa-code"
+                           class="code-input"
                            maxlength="9"
                            autocomplete="one-time-code"
                            placeholder="000000"
+                           aria-label="Code de vérification 2FA"
+                           aria-describedby="2fa-code-hint"
+                           aria-required="true"
                            autofocus
                            required>
+                    <small id="2fa-code-hint" style="font-size:0.85rem;color:#8B7355;margin-top:0.5rem;display:block;">Entrez le code de votre application d'authentification</small>
                 </div>
-                
-                <label class="trust-device">
-                    <input type="checkbox" name="trust_device" value="1">
+
+                <label class="trust-device" for="trust-device-checkbox">
+                    <input type="checkbox" name="trust_device" value="1" id="trust-device-checkbox" aria-label="Faire confiance à cet appareil">
                     <span>
                         <strong>Faire confiance à cet appareil</strong><br>
                         <small style="color: #8B7355;">Vous ne serez plus demandé pendant 30 jours</small>
                     </span>
                 </label>
-                
-                <button type="submit" class="btn-primary">
+
+                <button type="submit" class="btn-primary" id="challenge-submit-btn">
                     <i class="fas fa-check-circle"></i>
                     Vérifier et continuer
                 </button>
@@ -298,21 +302,32 @@
 @endsection
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
+// Loading state
+document.getElementById('challenge-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('challenge-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Vérification...';
+    const spinner = document.createElement('i');
+    spinner.className = 'fas fa-spinner fa-spin';
+    spinner.style.marginRight = '0.5rem';
+    btn.insertBefore(spinner, btn.firstChild);
+});
+
 // Auto-format du code
-document.getElementById('code').addEventListener('input', function(e) {
+document.getElementById('2fa-code').addEventListener('input', function(e) {
     let value = this.value.replace(/[^0-9A-Za-z-]/g, '');
-    
+
     // Si c'est un code numérique (6 chiffres), formater
     if (/^\d+$/.test(value)) {
         value = value.substring(0, 6);
     }
-    
+
     this.value = value;
 });
 
 function showRecoveryInput() {
-    const input = document.getElementById('code');
+    const input = document.getElementById('2fa-code');
     input.placeholder = 'XXXX-XXXX';
     input.maxLength = 9;
     alert('Entrez un de vos codes de récupération (format: XXXX-XXXX)');

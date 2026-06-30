@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Traits\SeedsAccounting;
 
 /**
  * Tests de gestion des événements hors ordre
@@ -19,6 +20,16 @@ use Tests\TestCase;
 class OutOfOrderEventsTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAccounting;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Authentifier pour Auth::id() dans LedgerService
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+        $this->seedAccounting();
+    }
 
     /**
      * Test que le webhook traité avant le callback ne cause pas de double transition
@@ -31,7 +42,7 @@ class OutOfOrderEventsTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
         ]);
 
         $payment = Payment::create([
@@ -39,6 +50,7 @@ class OutOfOrderEventsTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_webhook_first',
             'status' => 'pending',
         ]);
@@ -61,12 +73,13 @@ class OutOfOrderEventsTest extends TestCase
             'Stripe-Signature' => 'valid_signature',
         ]);
 
-        // Vérifier que la commande est payée
+        // Vérifier que la commande est payée (modèle actuel)
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
         $payment->refresh();
-        $this->assertEquals('confirmed', $payment->status);
+        $this->assertEquals('paid', $payment->status);
 
         // 2. Callback utilisateur arrive ensuite
         $response = $this->actingAs($user)
@@ -74,7 +87,8 @@ class OutOfOrderEventsTest extends TestCase
 
         // Vérifier qu'il n'y a pas de double transition
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
         // Vérifier qu'il n'y a toujours qu'un seul paiement
         $this->assertEquals(1, Payment::where('order_id', $order->id)->count());
@@ -92,7 +106,7 @@ class OutOfOrderEventsTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
         ]);
 
         $payment = Payment::create([
@@ -100,6 +114,7 @@ class OutOfOrderEventsTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_callback_first',
             'status' => 'pending',
         ]);
@@ -109,9 +124,10 @@ class OutOfOrderEventsTest extends TestCase
         $response = $this->actingAs($user)
             ->get(route('checkout.card.success', ['order' => $order->id]));
 
-        // La commande devrait être marquée comme payée
+        // Le callback front seul ne valide pas le paiement: la source de vérité reste le webhook.
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('pending', $order->status);
+        $this->assertEquals('pending', $order->payment_status);
 
         // 2. Webhook arrive ensuite
         $webhookPayload = [
@@ -133,7 +149,8 @@ class OutOfOrderEventsTest extends TestCase
 
         // Vérifier qu'il n'y a pas de double transition
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
         // Vérifier qu'il n'y a toujours qu'un seul paiement
         $this->assertEquals(1, Payment::where('order_id', $order->id)->count());
@@ -148,7 +165,7 @@ class OutOfOrderEventsTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
         ]);
 
         $payment = Payment::create([
@@ -156,6 +173,7 @@ class OutOfOrderEventsTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_duplicate',
             'status' => 'pending',
         ]);
@@ -183,12 +201,13 @@ class OutOfOrderEventsTest extends TestCase
         // Vérifier qu'il n'y a qu'un seul paiement
         $this->assertEquals(1, Payment::where('order_id', $order->id)->count());
 
-        // Vérifier que la commande est payée une seule fois
+        // Vérifier que la commande est payée une seule fois (modèle actuel)
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
-        // Vérifier que l'événement webhook n'a été traité qu'une fois
-        $this->assertEquals(1, \App\Models\PaymentEvent::where('event_id', 'evt_duplicate_123')->count());
+        // Vérifier que l'événement webhook est persisted une seule fois (idempotence)
+        $this->assertEquals(1, \App\Models\StripeWebhookEvent::where('event_id', 'evt_duplicate_123')->count());
     }
 
     /**
@@ -200,7 +219,7 @@ class OutOfOrderEventsTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
         ]);
 
         $payment = Payment::create([
@@ -208,6 +227,7 @@ class OutOfOrderEventsTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_contradictory',
             'status' => 'pending',
         ]);
@@ -231,7 +251,8 @@ class OutOfOrderEventsTest extends TestCase
         ]);
 
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
         // 2. Webhook failed arrive ensuite (retard réseau)
         $failedPayload = [
@@ -253,11 +274,12 @@ class OutOfOrderEventsTest extends TestCase
 
         // Vérifier que la commande reste payée (succeeded prime sur failed)
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
-        // Vérifier que le paiement reste confirmé
+        // Vérifier que le paiement reste dans l'état final paid
         $payment->refresh();
-        $this->assertEquals('confirmed', $payment->status);
+        $this->assertEquals('paid', $payment->status);
     }
 
     /**
@@ -269,7 +291,7 @@ class OutOfOrderEventsTest extends TestCase
         $order = Order::factory()->create([
             'user_id' => $user->id,
             'status' => 'pending',
-            'total' => 100.00,
+            'total_amount' => 100.00,
         ]);
 
         $payment = Payment::create([
@@ -277,6 +299,7 @@ class OutOfOrderEventsTest extends TestCase
             'amount' => 100.00,
             'currency' => 'XAF',
             'provider' => 'stripe',
+            'channel' => 'card',
             'provider_payment_id' => 'pi_timeout',
             'status' => 'pending',
         ]);
@@ -300,16 +323,18 @@ class OutOfOrderEventsTest extends TestCase
         ]);
 
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
         // Simuler timeout de session (utilisateur ne revient jamais)
         // La commande doit rester payée
         $this->travel(1)->hours();
 
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
 
         $payment->refresh();
-        $this->assertEquals('confirmed', $payment->status);
+        $this->assertEquals('paid', $payment->status);
     }
 }

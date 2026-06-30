@@ -54,7 +54,7 @@
             </div>
             <div class="col-md-3 mb-3">
                 <button type="submit" class="btn btn-primary btn-block">
-                    <i class="fas fa-filter mr-2"></i>
+                    <i class="fas fa-filter me-2"></i>
                     Appliquer
                 </button>
             </div>
@@ -69,7 +69,7 @@
                     {{ number_format($stats['counts']['product_added_to_cart'] ?? 0, 0, ',', ' ') }}
                 </div>
                 <div class="text-muted small mb-1">Produits ajoutés au panier</div>
-                <div class="badge badge-primary">Étape 1</div>
+                <div class="badge bg-primary">Étape 1</div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
@@ -78,7 +78,7 @@
                     {{ number_format($stats['counts']['checkout_started'] ?? 0, 0, ',', ' ') }}
                 </div>
                 <div class="text-muted small mb-1">Checkouts démarrés</div>
-                <div class="badge badge-info">Étape 2</div>
+                <div class="badge bg-info">Étape 2</div>
                 @if(isset($stats['conversion_rates']['cart_to_checkout']) && $stats['conversion_rates']['cart_to_checkout'] !== null)
                 <div class="mt-2">
                     <small class="text-muted">
@@ -94,7 +94,7 @@
                     {{ number_format($stats['counts']['order_placed'] ?? 0, 0, ',', ' ') }}
                 </div>
                 <div class="text-muted small mb-1">Commandes créées</div>
-                <div class="badge badge-warning">Étape 3</div>
+                <div class="badge bg-warning">Étape 3</div>
                 @if(isset($stats['conversion_rates']['checkout_to_order']) && $stats['conversion_rates']['checkout_to_order'] !== null)
                 <div class="mt-2">
                     <small class="text-muted">
@@ -110,7 +110,7 @@
                     {{ number_format($stats['counts']['payment_completed'] ?? 0, 0, ',', ' ') }}
                 </div>
                 <div class="text-muted small mb-1">Paiements complétés</div>
-                <div class="badge badge-success">Étape 4</div>
+                <div class="badge bg-success">Étape 4</div>
                 @if(isset($stats['conversion_rates']['order_to_payment']) && $stats['conversion_rates']['order_to_payment'] !== null)
                 <div class="mt-2">
                     <small class="text-muted">
@@ -127,7 +127,7 @@
         <div class="col-md-6 mb-3">
             <div class="card-racine">
                 <h4 class="h6 font-weight-bold mb-3">
-                    <i class="fas fa-percentage mr-2 text-primary"></i>
+                    <i class="fas fa-percentage me-2 text-primary"></i>
                     Taux de conversion
                 </h4>
                 <div class="list-group list-group-flush">
@@ -161,7 +161,7 @@
         <div class="col-md-6 mb-3">
             <div class="card-racine">
                 <h4 class="h6 font-weight-bold mb-3">
-                    <i class="fas fa-exclamation-triangle mr-2 text-danger"></i>
+                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
                     Échecs
                 </h4>
                 <div class="text-center py-4">
@@ -177,7 +177,7 @@
     {{-- Évolution dans le temps (table simple pour l'instant) --}}
     <div class="card-racine">
         <h4 class="h6 font-weight-bold mb-3">
-            <i class="fas fa-chart-line mr-2 text-primary"></i>
+            <i class="fas fa-chart-line me-2 text-primary"></i>
             Évolution jour par jour
         </h4>
         <div class="table-responsive">
@@ -185,10 +185,10 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th class="text-right">Produits ajoutés</th>
-                        <th class="text-right">Checkouts</th>
-                        <th class="text-right">Commandes</th>
-                        <th class="text-right">Paiements</th>
+                        <th class="text-end">Produits ajoutés</th>
+                        <th class="text-end">Checkouts</th>
+                        <th class="text-end">Commandes</th>
+                        <th class="text-end">Paiements</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -196,10 +196,10 @@
                         @foreach($stats['timeline']['labels'] as $index => $date)
                         <tr>
                             <td>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</td>
-                            <td class="text-right">{{ number_format($stats['timeline']['data']['product_added_to_cart'][$index] ?? 0, 0, ',', ' ') }}</td>
-                            <td class="text-right">{{ number_format($stats['timeline']['data']['checkout_started'][$index] ?? 0, 0, ',', ' ') }}</td>
-                            <td class="text-right">{{ number_format($stats['timeline']['data']['order_placed'][$index] ?? 0, 0, ',', ' ') }}</td>
-                            <td class="text-right">{{ number_format($stats['timeline']['data']['payment_completed'][$index] ?? 0, 0, ',', ' ') }}</td>
+                            <td class="text-end">{{ number_format($stats['timeline']['data']['product_added_to_cart'][$index] ?? 0, 0, ',', ' ') }}</td>
+                            <td class="text-end">{{ number_format($stats['timeline']['data']['checkout_started'][$index] ?? 0, 0, ',', ' ') }}</td>
+                            <td class="text-end">{{ number_format($stats['timeline']['data']['order_placed'][$index] ?? 0, 0, ',', ' ') }}</td>
+                            <td class="text-end">{{ number_format($stats['timeline']['data']['payment_completed'][$index] ?? 0, 0, ',', ' ') }}</td>
                         </tr>
                         @endforeach
                     @else

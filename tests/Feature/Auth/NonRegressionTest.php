@@ -37,7 +37,7 @@ class NonRegressionTest extends TestCase
     #[Test]
     public function legacy_google_auth_still_works(): void
     {
-        $response = $this->get(route('auth.google.redirect'));
+        $response = $this->get(route('auth.social.redirect', ['provider' => 'google']));
         $response->assertStatus(302); // Redirection vers Google
     }
 
@@ -77,16 +77,8 @@ class NonRegressionTest extends TestCase
     #[Test]
     public function social_auth_v2_routes_are_accessible(): void
     {
-        // Test Google
+        // Test Google (seul provider OAuth supporté)
         $response = $this->get(route('auth.social.redirect', ['provider' => 'google']));
-        $response->assertStatus(302);
-
-        // Test Apple
-        $response = $this->get(route('auth.social.redirect', ['provider' => 'apple']));
-        $response->assertStatus(302);
-
-        // Test Facebook
-        $response = $this->get(route('auth.social.redirect', ['provider' => 'facebook']));
         $response->assertStatus(302);
     }
 
@@ -152,6 +144,11 @@ class NonRegressionTest extends TestCase
         $this->assertNotNull($oauthAccounts);
     }
 }
+
+
+
+
+
 
 
 

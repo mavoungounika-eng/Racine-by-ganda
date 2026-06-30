@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CreatorStripeAccount;
 use App\Models\User;
 use App\Services\Payments\StripeConnectService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -27,6 +28,8 @@ class AdminKycController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', CreatorStripeAccount::class);
+
         $query = CreatorStripeAccount::with('creatorProfile.user');
 
         // Filtres
@@ -64,6 +67,28 @@ class AdminKycController extends Controller
         return view('admin.kyc.index', compact('accounts', 'stats'));
     }
 
+    public function dataKyc(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', CreatorStripeAccount::class);
+
+        $query = CreatorStripeAccount::with('creatorProfile.user:id,name,email');
+
+        if ($request->filled('status')) {
+            $status = $request->get('status');
+            if ($status === 'complete') {
+                $query->where('onboarding_status', 'complete')->where('payouts_enabled', true);
+            } elseif ($status === 'incomplete') {
+                $query->where(function ($q) {
+                    $q->where('onboarding_status', '!=', 'complete')->orWhere('payouts_enabled', false);
+                });
+            } elseif ($status === 'pending') {
+                $query->where('details_submitted', true)->where('payouts_enabled', false);
+            }
+        }
+
+        return response()->json($query->latest()->paginate($request->integer('per_page', 20)));
+    }
+
     /**
      * Détails KYC d'un créateur.
      */
@@ -71,6 +96,10 @@ class AdminKycController extends Controller
     {
         $creator->load('creatorProfile.stripeAccount');
         $stripeAccount = $creator->creatorProfile->stripeAccount;
+
+        if ($stripeAccount) {
+            $this->authorize('view', $stripeAccount);
+        }
 
         $kycStatus = null;
         if ($stripeAccount) {
@@ -97,6 +126,8 @@ class AdminKycController extends Controller
             return redirect()->back()
                 ->with('error', 'Ce créateur n\'a pas de compte Stripe Connect.');
         }
+
+        $this->authorize('sync', $stripeAccount);
 
         try {
             $this->stripeService->syncAccountStatus($stripeAccount);

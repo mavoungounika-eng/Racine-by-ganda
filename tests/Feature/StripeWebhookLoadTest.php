@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\CreatorProfile;
 use App\Models\CreatorStripeAccount;
 use App\Models\CreatorSubscription;
+use App\Models\CreatorPlan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -24,6 +25,19 @@ class StripeWebhookLoadTest extends TestCase
     {
         parent::setUp();
         Config::set('services.stripe.webhook_secret', 'whsec_test_secret');
+
+        CreatorPlan::firstOrCreate(
+            ['code' => 'FREE'],
+            [
+                'name' => 'Free Plan',
+                'description' => 'Default free plan',
+                'price' => 0,
+                'stripe_product_id' => 'prod_test_123',
+                'stripe_price_id' => 'price_test_123',
+                'features' => [],
+                'is_active' => true,
+            ]
+        );
     }
 
     /**
@@ -35,20 +49,27 @@ class StripeWebhookLoadTest extends TestCase
      */
     public function test_burst_webhooks_handles_concurrent_requests(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
-        $creatorProfile = CreatorProfile::create([
-            'user_id' => $user->id,
-            'brand_name' => 'Test Creator',
-            'slug' => 'test-creator',
-            'is_active' => true,
-            'status' => 'active',
-        ]);
-
+        $roleCreator = \App\Models\Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur', 'description' => '']);
+        
+        $users = [];
         $subscriptionIds = [];
         $eventIds = [];
 
-        // Préparer 50 webhooks différents
+        // Préparer 50 webhooks différents pour 50 créateurs différents
         for ($i = 1; $i <= 50; $i++) {
+            $user = User::factory()->create([
+                'role' => 'createur',
+                'role_id' => $roleCreator->id
+            ]);
+            CreatorProfile::create([
+                'user_id' => $user->id,
+                'brand_name' => 'Test Creator ' . $i,
+                'slug' => 'test-creator-' . $i,
+                'is_active' => true,
+                'status' => 'active',
+            ]);
+            $users[] = $user;
+
             $subscriptionIds[] = 'sub_test_burst_' . $i;
             $eventIds[] = 'evt_test_burst_' . $i;
         }
@@ -56,6 +77,7 @@ class StripeWebhookLoadTest extends TestCase
         // Envoyer tous les webhooks (simulation séquentielle, en réel ce serait parallèle)
         foreach ($eventIds as $index => $eventId) {
             $subscriptionId = $subscriptionIds[$index];
+            $user = $users[$index];
             
             $payload = [
                 'id' => $eventId,
@@ -83,11 +105,13 @@ class StripeWebhookLoadTest extends TestCase
                 ],
             ];
 
-            $signature = $this->generateStripeSignature(json_encode($payload), 'whsec_test_secret');
+            $payloadString = json_encode($payload);
+            $signature = $this->generateStripeSignature($payloadString, 'whsec_test_secret');
 
-            $response = $this->postJson('/api/webhooks/stripe/billing', $payload, [
-                'Stripe-Signature' => $signature,
-            ]);
+            $response = $this->call('POST', '/api/webhooks/stripe/billing', [], [], [], [
+                'HTTP_Stripe-Signature' => $signature,
+                'CONTENT_TYPE' => 'application/json',
+            ], $payloadString);
 
             $response->assertStatus(200);
         }
@@ -115,7 +139,11 @@ class StripeWebhookLoadTest extends TestCase
      */
     public function test_replay_same_event_10_times_creates_only_one_subscription(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $roleCreator = \App\Models\Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur', 'description' => '']);
+        $user = User::factory()->create([
+            'role' => 'createur',
+            'role_id' => $roleCreator->id
+        ]);
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -154,13 +182,15 @@ class StripeWebhookLoadTest extends TestCase
             ],
         ];
 
-        $signature = $this->generateStripeSignature(json_encode($payload), 'whsec_test_secret');
+        $payloadString = json_encode($payload);
+        $signature = $this->generateStripeSignature($payloadString, 'whsec_test_secret');
 
         // Envoyer le même événement 10 fois
         for ($i = 1; $i <= 10; $i++) {
-            $response = $this->postJson('/api/webhooks/stripe/billing', $payload, [
-                'Stripe-Signature' => $signature,
-            ]);
+            $response = $this->call('POST', '/api/webhooks/stripe/billing', [], [], [], [
+                'HTTP_Stripe-Signature' => $signature,
+                'CONTENT_TYPE' => 'application/json',
+            ], $payloadString);
 
             $response->assertStatus(200);
         }
@@ -184,7 +214,11 @@ class StripeWebhookLoadTest extends TestCase
      */
     public function test_unique_constraint_prevents_duplicate_subscriptions(): void
     {
-        $user = User::factory()->create(['role' => 'createur']);
+        $roleCreator = \App\Models\Role::firstOrCreate(['slug' => 'createur'], ['name' => 'Créateur', 'description' => '']);
+        $user = User::factory()->create([
+            'role' => 'createur',
+            'role_id' => $roleCreator->id
+        ]);
         $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'brand_name' => 'Test Creator',
@@ -237,11 +271,13 @@ class StripeWebhookLoadTest extends TestCase
             ],
         ];
 
-        $signature = $this->generateStripeSignature(json_encode($payload), 'whsec_test_secret');
+        $payloadString = json_encode($payload);
+        $signature = $this->generateStripeSignature($payloadString, 'whsec_test_secret');
 
-        $response = $this->postJson('/api/webhooks/stripe/billing', $payload, [
-            'Stripe-Signature' => $signature,
-        ]);
+        $response = $this->call('POST', '/api/webhooks/stripe/billing', [], [], [], [
+            'HTTP_Stripe-Signature' => $signature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payloadString);
 
         $response->assertStatus(200);
 

@@ -4,110 +4,106 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\CreatorDocument;
+use App\Services\CreatorAnalyticsService;
+use App\Services\CreatorOrderEventService;
+use App\Services\CreatorKycContractualService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
+/**
+ * Contrôleur des finances et de la conformité créateur (SaaS Pur).
+ * 
+ * RACINE BY GANDA n'intervient pas dans les flux monétaires créateurs.
+ * Ce contrôleur gère uniquement l'analytique et le KYC contractuel.
+ */
 class CreatorFinanceController extends Controller
 {
+    protected CreatorAnalyticsService $analyticsService;
+    protected CreatorOrderEventService $orderEventService;
+    protected CreatorKycContractualService $kycService;
+
+    public function __construct(
+        CreatorAnalyticsService $analyticsService,
+        CreatorOrderEventService $orderEventService,
+        CreatorKycContractualService $kycService
+    ) {
+        $this->analyticsService = $analyticsService;
+        $this->orderEventService = $orderEventService;
+        $this->kycService = $kycService;
+    }
+
     /**
-     * Taux de commission RACINE (configurable, par défaut 20%).
+     * Affiche le dashboard analytique du créateur.
      */
-    private const COMMISSION_RATE = 0.20; // 20%
-    
-    /**
-     * Afficher la vue finances du créateur.
-     */
-    public function index(Request $request): View
+    public function index(): View
     {
-        $user = Auth::user();
+        $creatorProfile = Auth::user()->creatorProfile;
         
-        // Période : par défaut, toutes les commandes livrées
-        $period = $request->get('period', 'all');
+        // Récupération des metrics analytiques (SaaS)
+        $metrics = $this->analyticsService->getCreatorMetrics($creatorProfile->id);
         
-        // Construire la requête de base pour les OrderItem du créateur
-        $baseQuery = OrderItem::whereHas('product', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })
-        ->whereHas('order', function ($q) {
-            $q->where('status', 'completed') // Seulement les commandes livrées
-              ->where('payment_status', 'paid'); // Seulement les commandes payées
-        });
+        // Récupération du statut KYC contractuel
+        $kycStatus = $this->kycService->checkContractualStatus($creatorProfile);
+
+        return view('creator.finances.index', [
+            'metrics' => $metrics,
+            'kycStatus' => $kycStatus,
+            'recentSales' => $creatorProfile->saleRecords()->latest()->take(10)->get()
+        ]);
+    }
+
+    /**
+     * Enregistre la remise physique d'une commande via le POS (Événement analytique).
+     * 
+     * @param Request $request Contient l'ID de la commande
+     */
+    public function fulfilledByPos(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'pickup_location' => 'required|string',
+        ]);
+
+        $order = Order::findOrFail($request->order_id);
         
-        // Appliquer le filtre de période
-        if ($period === 'month') {
-            $baseQuery->whereHas('order', function ($q) {
-                $q->whereMonth('created_at', now()->month)
-                  ->whereYear('created_at', now()->year);
-            });
-        } elseif ($period === 'year') {
-            $baseQuery->whereHas('order', function ($q) {
-                $q->whereYear('created_at', now()->year);
-            });
-        }
-        
-        // Calculer le chiffre d'affaires brut
-        $grossRevenue = $baseQuery->sum(DB::raw('price * quantity'));
-        
-        // Calculer la commission RACINE
-        $commission = $grossRevenue * self::COMMISSION_RATE;
-        
-        // Calculer le net créateur
-        $netRevenue = $grossRevenue - $commission;
-        
-        // Récupérer les dernières commandes payées
-        $recentPaidOrders = Order::whereHas('items.product', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })
-        ->where('status', 'completed')
-        ->where('payment_status', 'paid')
-        ->with(['items.product' => function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        }])
-        ->latest()
-        ->take(10)
-        ->get();
-        
-        // Calculer le montant net par commande
-        foreach ($recentPaidOrders as $order) {
-            $orderCreatorTotal = $order->items
-                ->filter(function ($item) use ($user) {
-                    return $item->product && $item->product->user_id === $user->id;
-                })
-                ->sum(function ($item) {
-                    return $item->price * $item->quantity;
-                });
-            
-            $order->creator_gross = $orderCreatorTotal;
-            $order->creator_commission = $orderCreatorTotal * self::COMMISSION_RATE;
-            $order->creator_net = $orderCreatorTotal - ($orderCreatorTotal * self::COMMISSION_RATE);
-        }
-        
-        // Statistiques globales (toutes périodes)
-        $allTimeStats = [
-            'gross' => OrderItem::whereHas('product', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-            ->whereHas('order', function ($q) {
-                $q->where('status', 'completed')
-                  ->where('payment_status', 'paid');
-            })
-            ->sum(DB::raw('price * quantity')),
-        ];
-        
-        $allTimeStats['commission'] = $allTimeStats['gross'] * self::COMMISSION_RATE;
-        $allTimeStats['net'] = $allTimeStats['gross'] - $allTimeStats['commission'];
-        
-        return view('creator.finances.index', compact(
-            'grossRevenue',
-            'commission',
-            'netRevenue',
-            'recentPaidOrders',
-            'allTimeStats',
-            'period'
-        ));
+        // RACINE valide la remise physique sans toucher aux fonds.
+        $this->orderEventService->recordOrderFulfilled(
+            $order,
+            Auth::id(),
+            $request->pickup_location
+        );
+
+        return redirect()->back()->with('success', 'La commande a été marquée comme remise (Fulfilled).');
+    }
+
+    /**
+     * Soumet un document pour le KYC contractuel.
+     */
+    public function submitKycDocument(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'document_type' => 'required|string',
+            'file' => 'required|file|mimes:pdf,jpg,png|max:5120',
+        ]);
+
+        $profile = Auth::user()->creatorProfile;
+        $file = $request->file('file');
+        $path = $file->store('creator_documents/' . $profile->id, 'public');
+
+        CreatorDocument::create([
+            'creator_profile_id' => $profile->id,
+            'document_type' => $request->document_type,
+            'file_path' => $path,
+            'file_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+            'is_verified' => false,
+        ]);
+
+        return redirect()->back()->with('success', 'Document soumis pour vérification contractuelle.');
     }
 }
 

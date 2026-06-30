@@ -1,12 +1,12 @@
 @extends('layouts.frontend')
 
-@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? 'Amira Ganda - Fondatrice & CEO - RACINE BY GANDA')
+@section('title', $cmsPage?->seo_title ?? $cmsPage?->title ?? config('company.ceo') . ' - Fondatrice & CEO - RACINE BY GANDA')
 
 @push('styles')
-<style>
+<style nonce="{{ csp_nonce() }}">
     .ceo-hero {
         min-height: 100vh;
-        background: linear-gradient(135deg, #1a0f09 0%, #2C1810 50%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 50%, #160D0C 100%);
         display: flex;
         align-items: center;
         margin-top: -70px;
@@ -52,7 +52,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        border: 3px solid rgba(212, 165, 116, 0.3);
+        border: 3px solid rgba(255, 184, 0, 0.3);
         border-radius: 24px;
         z-index: 1;
     }
@@ -67,7 +67,7 @@
         position: absolute;
         width: 200px;
         height: 200px;
-        border: 2px solid rgba(212, 165, 116, 0.2);
+        border: 2px solid rgba(237, 95, 30, 0.1);
         border-radius: 50%;
         top: -30px;
         right: -30px;
@@ -92,7 +92,7 @@
     }
     
     .ceo-info .title {
-        color: #D4A574;
+        color: #FFB800;
         font-size: 1.25rem;
         font-weight: 500;
         margin-bottom: 1.5rem;
@@ -106,7 +106,7 @@
         color: rgba(255, 255, 255, 0.8);
         margin-bottom: 2rem;
         padding-left: 1.5rem;
-        border-left: 3px solid #D4A574;
+        border-start: 3px solid #FFB800;
     }
     
     .ceo-social {
@@ -149,7 +149,7 @@
     .bio-intro {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.75rem;
-        color: #2C1810;
+        color: #160D0C;
         text-align: center;
         margin-bottom: 3rem;
         line-height: 1.6;
@@ -162,7 +162,7 @@
     .bio-text {
         columns: 2;
         column-gap: 3rem;
-        color: #5C4A3D;
+        color: rgba(22,13,12,0.6);
         line-height: 1.8;
         font-size: 1.05rem;
     }
@@ -174,7 +174,7 @@
     /* TIMELINE */
     .ceo-timeline {
         padding: 5rem 0;
-        background: #F8F6F3;
+        background: rgba(22,13,12,0.05);
     }
     
     .section-title {
@@ -185,14 +185,14 @@
     .section-title h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .section-title .line {
         width: 60px;
         height: 3px;
-        background: linear-gradient(90deg, #D4A574, #ED5F1E);
+        background: linear-gradient(90deg, #FFB800, #ED5F1E);
         margin: 0 auto;
     }
     
@@ -209,7 +209,7 @@
         transform: translateX(-50%);
         width: 2px;
         height: 100%;
-        background: linear-gradient(to bottom, #D4A574, #ED5F1E);
+        background: linear-gradient(to bottom, #FFB800, #ED5F1E);
     }
     
     .timeline-item {
@@ -250,7 +250,7 @@
     
     .timeline-year {
         display: inline-block;
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
@@ -262,12 +262,12 @@
     .timeline-content h4 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.25rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 0.5rem;
     }
     
     .timeline-content p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 0.9rem;
         line-height: 1.6;
     }
@@ -275,7 +275,7 @@
     /* VALUES */
     .ceo-values {
         padding: 5rem 0;
-        background: linear-gradient(135deg, #2C1810 0%, #1a0f09 100%);
+        background: linear-gradient(135deg, #160D0C 0%, #160D0C 100%);
     }
     
     .values-grid {
@@ -301,7 +301,7 @@
     .value-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(135deg, #D4A574 0%, #8B5A2B 100%);
+        background: linear-gradient(135deg, #FFB800 0%, #ED5F1E 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -334,12 +334,12 @@
     .ceo-cta h2 {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.5rem;
-        color: #2C1810;
+        color: #160D0C;
         margin-bottom: 1rem;
     }
     
     .ceo-cta p {
-        color: #8B7355;
+        color: rgba(22,13,12,0.5);
         font-size: 1.1rem;
         margin-bottom: 2rem;
     }
@@ -349,7 +349,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #ED5F1E 0%, #c44b12 100%);
+        background: linear-gradient(135deg, #ED5F1E 0%, #ED5F1E 100%);
         color: white;
         border-radius: 50px;
         text-decoration: none;
@@ -383,9 +383,9 @@
         }
         
         .ceo-info .quote {
-            border-left: none;
+            border-start: none;
             padding-left: 0;
-            border-top: 3px solid #D4A574;
+            border-top: 3px solid #FFB800;
             padding-top: 1rem;
         }
         
@@ -433,7 +433,12 @@
                 <div class="ceo-decoration"></div>
                 <div class="ceo-decoration-2"></div>
                 <div class="ceo-photo">
-                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=800&fit=crop&crop=faces" alt="Amira Ganda - CEO RACINE BY GANDA">
+                    <img 
+                        src="{{ asset('storage/hero/hero-01.jpeg') }}"
+                        alt="{{ config('company.ceo') }} - CEO {{ config('app.name') }}"
+                        loading="lazy"
+                        decoding="async"
+                    >
                 </div>
             </div>
             
@@ -442,16 +447,24 @@
                     $heroSection = $cmsPage?->section('hero');
                     $heroData = $heroSection?->data ?? [];
                 @endphp
-                <h1>{{ $heroData['title'] ?? $cmsPage?->title ?? 'Amira Ganda' }}</h1>
+                <h1>{{ $heroData['title'] ?? $cmsPage?->title ?? config('company.ceo') }}</h1>
                 <p class="title">{{ $heroData['subtitle'] ?? 'FONDATRICE & CEO' }}</p>
                 <p class="quote">
                     {{ $heroData['quote'] ?? "La mode africaine n'est pas une tendance, c'est un héritage vivant que nous avons le devoir de préserver et de sublimer." }}
                 </p>
                 <div class="ceo-social">
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    @if(config('company.instagram'))
+                    <a href="{{ config('company.instagram') }}" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+                    @endif
+                    @if(config('company.linkedin'))
+                    <a href="{{ config('company.linkedin') }}" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
+                    @endif
+                    @if(config('company.twitter'))
+                    <a href="{{ config('company.twitter') }}" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                    @endif
+                    @if(config('company.facebook'))
+                    <a href="{{ config('company.facebook') }}" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -463,7 +476,7 @@
     <div class="container">
         <div class="bio-content">
             <p class="bio-intro">
-                Visionnaire, créatrice et ambassadrice de la mode africaine, <span>Amira Ganda</span> a fondé RACINE BY GANDA avec une mission claire : célébrer l'héritage africain à travers une mode raffinée et contemporaine.
+                Visionnaire, créatrice et ambassadrice de la mode africaine, <span>{{ config('company.ceo') }}</span> a fondé RACINE BY GANDA avec une mission claire : célébrer l'héritage africain à travers une mode raffinée et contemporaine.
             </p>
             
             <div class="bio-text">
@@ -547,8 +560,8 @@
 <!-- VALUES -->
 <section class="ceo-values">
     <div class="container">
-        <div class="section-title" style="color: white;">
-            <h2 style="color: white;">Mes Valeurs</h2>
+        <div class="section-title section-title--white">
+            <h2 class="text-white">Mes Valeurs</h2>
             <div class="line"></div>
         </div>
         

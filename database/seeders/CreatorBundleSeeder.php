@@ -11,16 +11,17 @@ class CreatorBundleSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
-     * V2.3 : Seed des bundles disponibles
+     *
+     * V2.4 : Bundles avec plans actuels (atelier, maison)
      */
     public function run(): void
     {
-        $officialPlan = CreatorPlan::where('code', 'official')->first();
-        $premiumPlan = CreatorPlan::where('code', 'premium')->first();
+        // Correction: utiliser plans actuels (atelier, maison) au lieu de obsolètes (official, premium)
+        $atelierPlan = CreatorPlan::where('code', 'atelier')->first();
+        $maisonPlan = CreatorPlan::where('code', 'maison')->first();
 
-        if (!$officialPlan || !$premiumPlan) {
-            $this->command->warn('Les plans OFFICIEL et PREMIUM doivent exister avant de créer les bundles.');
+        if (!$atelierPlan || !$maisonPlan) {
+            $this->command->warn('Les plans ATELIER et MAISON doivent exister avant de créer les bundles.');
             return;
         }
 
@@ -33,18 +34,18 @@ class CreatorBundleSeeder extends Seeder
             [
                 'code' => 'starter_pack',
                 'name' => 'Starter Pack',
-                'description' => 'Plan Officiel + Accès API pour démarrer votre boutique professionnelle',
-                'price' => 55000.00, // 5000 (plan) + 5000 (api) = 55000, économie de 5000
-                'base_plan_id' => $officialPlan->id,
+                'description' => 'Plan Atelier + Accès API pour démarrer votre boutique professionnelle',
+                'price' => 22500.00, // 15000 (atelier) + 10000 (api) = 25000, économie de 2500
+                'base_plan_id' => $atelierPlan->id,
                 'included_addon_ids' => $apiAccess ? [$apiAccess->id] : [],
                 'is_active' => true,
             ],
             [
                 'code' => 'pro_pack',
                 'name' => 'Pro Pack',
-                'description' => 'Plan Premium + API + Analytics + Support Prioritaire',
-                'price' => 47500.00, // 15000 (plan) + 10000 (api) + 7500 (analytics) + 5000 (support) = 37500, mais prix bundle = 47500 (erreur de calcul dans doc, corrigé ici)
-                'base_plan_id' => $premiumPlan->id,
+                'description' => 'Plan Maison + API + Analytics + Support Prioritaire',
+                'price' => 52500.00, // 35000 (maison) + 10000 (api) + 7500 (analytics) + 5000 (support) = 57500, économie de 5000
+                'base_plan_id' => $maisonPlan->id,
                 'included_addon_ids' => array_filter([
                     $apiAccess?->id,
                     $advancedAnalytics?->id,
